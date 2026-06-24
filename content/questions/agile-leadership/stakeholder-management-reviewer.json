@@ -1,0 +1,233 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/stakeholder-management-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Definition",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Who counts as a \"stakeholder\"?",
+      "options": [
+        "Anyone who affects or is affected by the work",
+        "Only the people who fund the project",
+        "Only the end users of the product",
+        "Only managers above the team"
+      ],
+      "answer": 0,
+      "explanation": "A stakeholder is anyone who affects or is affected by the work — funders, consumers, blockers, dependents, and governors alike, not just sponsors or users."
+    },
+    {
+      "subtopic": "Power/Interest grid",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "On the Power/Interest grid, how should you treat a high-power, high-interest stakeholder?",
+      "options": ["Manage Closely — partner, co-decide, no surprises", "Monitor — minimal effort", "Keep Informed — demos only", "Ignore until they complain"],
+      "answer": 0,
+      "explanation": "High power + high interest = Manage Closely (partner and co-decide). High/low = Keep Satisfied; low/high = Keep Informed; low/low = Monitor."
+    },
+    {
+      "subtopic": "Cardinal sin",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the cardinal sin of stakeholder management?",
+      "options": ["Surprising a high-power stakeholder", "Sending too many status updates", "Inviting stakeholders to the Sprint Review", "Using a Power/Interest grid"],
+      "answer": 0,
+      "explanation": "Surprising a high-power stakeholder is the cardinal sin — it destroys trust. The \"no surprises\" principle (early bad news with options) is how you keep their confidence."
+    },
+    {
+      "subtopic": "Constructive no",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the \"constructive no\" when a stakeholder demands work that breaks the Sprint Goal?",
+      "options": [
+        "\"Yes, and here's the trade-off\" — make the fixed-capacity cost explicit and let the PO decide",
+        "A flat \"no\" to protect the team",
+        "Silently absorb the work to keep the peace",
+        "Escalate to your manager before responding"
+      ],
+      "answer": 0,
+      "explanation": "Never a flat no — say \"yes, and here's the trade-off\": capacity is fixed, so name what drops or moves, and hand the prioritization decision to the Product Owner who owns priority. That makes you a partner, not a gatekeeper."
+    },
+    {
+      "subtopic": "Authority over stakeholders",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A Scrum Master has formal authority to direct stakeholders.",
+      "answer": false,
+      "explanation": "The Scrum Master has no authority over stakeholders — only influence. Credibility (not a title) earns followership; the moment you try to order people, you've run out of influence."
+    },
+    {
+      "subtopic": "Reporting to executives",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How should you report progress to senior leadership?",
+      "options": [
+        "In outcomes, flow metrics, and the decision needed — lead with the headline and the ask",
+        "As a detailed task list of everything the team did",
+        "Primarily with the team's velocity number",
+        "Only at the end of the quarter, in a long deck"
+      ],
+      "answer": 0,
+      "explanation": "Executives read top-down and are time-poor: lead with the headline outcome and the ask, support with a couple of flow metrics (lead time, cycle time, throughput) and trends, and surface risk early with options — not a task list."
+    },
+    {
+      "subtopic": "Velocity with executives",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why should you avoid reporting velocity to executives?",
+      "options": [
+        "It's a team-internal planning number they misread as productivity, and it gets gamed once it becomes a target",
+        "Velocity is too hard to calculate accurately",
+        "Executives are not allowed to see team metrics",
+        "Velocity always overstates progress"
+      ],
+      "answer": 0,
+      "explanation": "Velocity is for the team's own forecasting. Executives misread it as a productivity score, and turning it into a target invites gaming (Goodhart's Law). Report outcomes and flow instead."
+    },
+    {
+      "subtopic": "VP pulling engineers",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A VP keeps pulling engineers off the Sprint mid-flight. What's the best approach?",
+      "options": [
+        "Privately understand the need, make the cost visible with data, reframe it as a prioritization decision for the PO, and offer a sustainable channel",
+        "Refuse the VP outright to protect the Sprint Goal",
+        "Let the VP take whoever they want, since they outrank you",
+        "Quietly extend the Sprint to absorb the disruption"
+      ],
+      "answer": 0,
+      "explanation": "Understand the real need with curiosity, quantify the cost (\"cycle time jumped 6→11 days\"), and reframe it as a PO prioritization decision (the PO owns the trade-off, not the grabbed developer). Offer a sustainable channel (Planning, or reserved ad-hoc capacity); escalate the pattern, not the person, if it persists."
+    },
+    {
+      "subtopic": "Permeable membrane",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does \"protect the team with a permeable membrane, not a wall\" mean?",
+      "options": [
+        "Let the right things in (real feedback, PO-routed priority changes) and deflect the wrong things (drive-by pings, silent scope creep)",
+        "Block all stakeholder contact with the team",
+        "Forward every stakeholder request directly to developers",
+        "Only allow contact during the Daily Scrum"
+      ],
+      "answer": 0,
+      "explanation": "A permeable membrane admits real customer feedback and genuine PO-routed priority changes while deflecting random pings and scope creep. An informed stakeholder interrupts less than an anxious one, so good protection increases the team's contact with reality."
+    },
+    {
+      "subtopic": "RACI",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a RACI matrix, what is the rule about the \"Accountable\" designation per row?",
+      "options": [
+        "Exactly one Accountable per row — otherwise nobody truly owns the decision",
+        "At least two Accountable people for redundancy",
+        "Accountable and Responsible must always be the same person",
+        "Accountable means \"told after the decision\""
+      ],
+      "answer": 0,
+      "explanation": "RACI = Responsible, Accountable, Consulted, Informed. There must be exactly one Accountable per row (or nobody owns it). Consulted = input before; Informed = told after — never blur them. RACI is for cross-boundary decisions, not micro-assigning tasks inside a self-managing team."
+    },
+    {
+      "subtopic": "Cialdini's principles",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are among Cialdini's classic six principles of influence? (Select all that apply.)",
+      "options": ["Reciprocity", "Social Proof", "Scarcity", "Coercion"],
+      "answer": [0, 1, 2],
+      "explanation": "Cialdini's six are Reciprocity, Commitment/Consistency, Social Proof, Authority, Liking, and Scarcity (a seventh, Unity, was added later). Coercion is not one of them — these are ethical influence levers, not force."
+    },
+    {
+      "subtopic": "Managing up",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Surfacing bad news to leadership early, before they have to ask, is a trust deposit rather than a liability.",
+      "answer": true,
+      "explanation": "Early bad news is uncomfortable but builds trust — it gives leaders time to act and proves they can rely on your signal. A leader surprised by a slip was failed by their reporting line."
+    },
+    {
+      "subtopic": "Trust equation",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the Trust Equation, which factor sits in the denominator (i.e. more of it *reduces* trust)?",
+      "options": ["Self-orientation", "Credibility", "Reliability", "Intimacy"],
+      "answer": 0,
+      "explanation": "Trust = (Credibility + Reliability + Intimacy) ÷ Self-orientation. Visible self-interest is the denominator — the more you appear to serve yourself rather than the outcome, the lower the trust."
+    },
+    {
+      "subtopic": "Re-engaging an undermining stakeholder",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A high-power stakeholder feels left out and is now undermining the work. What is the root cause and best recovery?",
+      "options": [
+        "Information starvation — go directly, acknowledge the gap, listen for the real interest, and bring them inside with a tuned communication channel",
+        "They are simply irrational; ignore them until they calm down",
+        "Win the argument publicly to reassert your position",
+        "Escalate to HR to formally reprimand them"
+      ],
+      "answer": 0,
+      "explanation": "This is a Keep-Satisfied stakeholder who spiked into Manage-Closely because they were surprised (a mapping miss). The root cause is almost always information starvation; the cure is a tuned channel (standing brief, Sprint Review invite, early sight of decisions), not winning an argument."
+    },
+    {
+      "subtopic": "Re-plotting the grid",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "A stakeholder's position on the Power/Interest grid is fixed and only needs to be mapped once.",
+      "answer": false,
+      "explanation": "Positions shift — a Keep-Satisfied VP whose pet feature is suddenly at risk spikes into Manage-Closely overnight. Re-plot the grid every release rather than treating it as a one-time exercise."
+    },
+    {
+      "subtopic": "HiPPO",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does the term \"HiPPO\" refer to in decision-making, and how do you counter it?",
+      "options": [
+        "The Highest-Paid Person's Opinion — counter it by answering with data",
+        "A high-priority production outage — counter it with an expedite lane",
+        "A heavyweight integration process — counter it by automating",
+        "A high-performing product owner — counter it with delegation"
+      ],
+      "answer": 0,
+      "explanation": "HiPPO = the Highest-Paid Person's Opinion driving decisions by authority rather than evidence. The antidote is to bring data (cycle time, conversion, defect trends) so decisions rest on signal, not seniority."
+    },
+    {
+      "subtopic": "Salience model",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The stakeholder Salience model classifies stakeholders along which three dimensions?",
+      "options": ["Power, legitimacy, urgency", "Power, interest, attitude", "Reach, impact, confidence", "Cost, value, risk"],
+      "answer": 0,
+      "explanation": "The Salience model (Mitchell, Agle & Wood) uses power, legitimacy, and urgency — a richer classification than the two-axis Power/Interest grid for deciding whose claims demand attention."
+    },
+    {
+      "subtopic": "Escalation",
+      "source": "agile-leadership/stakeholder-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What makes an escalation to leadership effective rather than just complaining?",
+      "options": [
+        "A specific ask and a by-when, plus options and a recommendation",
+        "A detailed list of everyone who is to blame",
+        "A request to simply 'make the problem go away'",
+        "Waiting until the deadline so the urgency is obvious"
+      ],
+      "answer": 0,
+      "explanation": "Effective escalation pairs the impediment with a specific ask, a by-when, options, and a recommendation — giving leaders a decision to make, not just a problem to absorb. Surfacing it early (not at the deadline) is part of the discipline."
+    }
+  ]
+}

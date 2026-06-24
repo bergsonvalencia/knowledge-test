@@ -1,0 +1,228 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/scrum-master-stances-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Defining the role",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which phrase best captures the Scrum Master per the 2020 Scrum Guide?",
+      "options": ["A true leader who serves the team and organization", "The team's manager who assigns work", "The project manager for the Sprint", "The owner of the Product Backlog"],
+      "answer": 0,
+      "explanation": "The Scrum Master is a \"true leader who serves\" — accountable for the team's effectiveness with no authority to command. The PM owns the plan, and the PO owns the backlog."
+    },
+    {
+      "subtopic": "Authority",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How much command authority does the Scrum Master have over the Developers?",
+      "options": ["None — they lead through influence, expertise, and changing the system", "Full authority to assign tasks", "Authority over scope and deadlines", "Authority to hire and fire team members"],
+      "answer": 0,
+      "explanation": "The Scrum Master has no command authority. The team is self-managing, so the SM leads by influence, expertise, and system change — \"leadership without command.\""
+    },
+    {
+      "subtopic": "Coach vs mentor",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the core difference between coaching and mentoring as a Scrum Master?",
+      "options": ["Coaching asks (you find your own answer); mentoring tells (shares their experience)", "Coaching tells; mentoring asks", "They are the same activity", "Coaching is for managers; mentoring is for executives"],
+      "answer": 0,
+      "explanation": "Coaching uses powerful questions so the person finds and owns the answer (builds autonomy); mentoring shares the mentor's own experience directly. Coach when they can find it; mentor when the gap is genuinely your experience."
+    },
+    {
+      "subtopic": "Accountability vs role",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In the 2020 Scrum Guide, \"Scrum Master\" is an accountability, not a role/title.",
+      "answer": true,
+      "explanation": "The 2020 Guide uses \"accountability\" deliberately — the Scrum Master is accountable for the team's effectiveness, not a job title or seniority level."
+    },
+    {
+      "subtopic": "Daily Scrum facilitation",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the Scrum Master's relationship to the Daily Scrum?",
+      "options": ["It belongs to the Developers; the SM may facilitate if needed, then steps back", "The SM runs it and collects status from each member", "The SM owns it and decides the day's tasks", "The SM is not allowed to attend"],
+      "answer": 0,
+      "explanation": "The Daily Scrum is the Developers' event. The Scrum Master ensures it happens and is productive, may facilitate early on, but steps back — it is not a status report to the SM."
+    },
+    {
+      "subtopic": "Eight stances",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The \"eight stances\" model (Barry Overeem) describes what about the Scrum Master role?",
+      "options": [
+        "That a great SM reads the situation and switches posture (coach, facilitator, teacher, impediment remover, etc.) rather than defaulting to a favorite",
+        "A fixed sequence of eight steps to run every Sprint",
+        "Eight mandatory ceremonies the SM must schedule",
+        "Eight levels of authority the SM gains with seniority"
+      ],
+      "answer": 0,
+      "explanation": "The eight stances (servant leader, coach, facilitator, teacher, mentor, manager/impediment remover, change agent, conflict navigator) reflect that the role isn't one thing — the skill is choosing the right stance for the situation."
+    },
+    {
+      "subtopic": "Three dimensions of service",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Per the 2020 Scrum Guide, the Scrum Master serves which three parties? (Select all that apply.)",
+      "options": ["The Scrum Team", "The Product Owner", "The organization", "The project sponsor's finance committee"],
+      "answer": [0, 1, 2],
+      "explanation": "The three dimensions are service to the Scrum Team, the Product Owner, and the organization. Junior Scrum Masters over-index on the team and neglect the PO and org — where seniority shows."
+    },
+    {
+      "subtopic": "Removing impediments",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The Scrum Guide makes the Scrum Master responsible for personally removing every impediment the team encounters.",
+      "answer": false,
+      "explanation": "The Guide says the Scrum Master *causes the removal* of impediments — enabling, coaching, or escalating the fix. Personally fixing everything is the \"hero\" anti-pattern that makes the SM a bottleneck."
+    },
+    {
+      "subtopic": "Measuring success",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How should a Scrum Master measure their own success?",
+      "options": [
+        "By the team needing them less over time — rising self-sufficiency (\"work yourself out of a job\")",
+        "By the number of meetings facilitated and status reports produced",
+        "By the team's velocity increasing every single Sprint",
+        "By how many impediments they personally resolved"
+      ],
+      "answer": 0,
+      "explanation": "Success is the team's trajectory toward self-sufficiency — solving its own impediments, running its own conversations. \"Meetings facilitated\" is a vanity metric; the goal is to work yourself out of a job and take on harder problems."
+    },
+    {
+      "subtopic": "Scrum Master vs Project Manager",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What most fundamentally distinguishes a Scrum Master from a Project Manager?",
+      "options": [
+        "The SM owns team effectiveness/process with no authority and never assigns work; the PM owns scope/time/cost, usually with authority, and assigns tasks",
+        "The SM owns the budget; the PM owns the retrospective",
+        "They are identical roles with different titles",
+        "The SM has more authority than the PM"
+      ],
+      "answer": 0,
+      "explanation": "The PM controls the plan (scope/time/cost) and assigns work; the Scrum Master serves and coaches a self-managing team with no authority. A PM relabeled as SM who keeps assigning tasks is the classic anti-pattern."
+    },
+    {
+      "subtopic": "Facilitator stance",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the facilitator's \"golden rule\" for a Scrum Master?",
+      "options": [
+        "Stay content-neutral — own the *how* of the conversation, not the *what* (the decision)",
+        "Always make the final decision to keep the meeting moving",
+        "Take detailed minutes and distribute them afterward",
+        "Advocate strongly for the technically best option"
+      ],
+      "answer": 0,
+      "explanation": "A facilitator owns the process (the how) and stays neutral on the content (the what), so the group owns its own decision. Pushing a preferred outcome breaks neutrality."
+    },
+    {
+      "subtopic": "Default stance",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which stance tends to dominate for a brand-new team versus a maturing one?",
+      "options": [
+        "New team: teaching/mentoring (put knowledge in); maturing team: coaching (pull answers out)",
+        "New team: coaching; maturing team: teaching",
+        "Both should be managed top-down until they are senior",
+        "Both should be left entirely alone from day one"
+      ],
+      "answer": 0,
+      "explanation": "A new team has knowledge gaps, so you teach and mentor; as it matures you shift to coaching — asking questions so the team finds its own answers and grows autonomy."
+    },
+    {
+      "subtopic": "The hero anti-pattern",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A Developer brings every small impediment to you and you keep solving them; velocity is fine but the team isn't getting more self-reliant. What is the best response?",
+      "options": [
+        "Shift from hero/manager to coaching — ask \"what have you tried? who could you talk to? what's your next step?\" and reserve direct removal for blockers outside the team's reach",
+        "Keep solving them quickly since velocity is fine",
+        "Escalate the Developer to their manager for not being self-sufficient",
+        "Stop attending the Daily Scrum so they are forced to cope"
+      ],
+      "answer": 0,
+      "explanation": "Solving everything yourself is the hero anti-pattern — it creates dependence. Coach the team to clear its own obstacles with powerful questions, and keep your direct impediment removal for things genuinely outside the team's reach (dependencies, policy, tooling)."
+    },
+    {
+      "subtopic": "Anti-patterns",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A new Scrum Master spends the day booking rooms, taking notes in events, and compiling a daily status report for the manager. Which anti-patterns are in play? (Select all that apply.)",
+      "options": [
+        "Secretary (note-taker / room-booker)",
+        "Meeting scheduler (calendar admin)",
+        "Report collector (status compilation for management)",
+        "Servant leader (serving the team's growth)"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Note-taking/room-booking is the secretary trap, calendar admin is the meeting-scheduler trap, and compiling status for management is the report-collector trap (transparency turned into surveillance). Servant leader is the healthy posture, not an anti-pattern."
+    },
+    {
+      "subtopic": "SAFe 6.0 title",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In SAFe 6.0, what is the title of the team-level servant-leader role, and within what cadence do they help the team plan?",
+      "options": [
+        "\"Scrum Master / Team Coach,\" planning within a Planning Interval (PI)",
+        "\"Release Train Engineer,\" planning within a Sprint",
+        "\"Agile Coach,\" planning within a Program Increment quarter",
+        "\"Product Owner,\" planning within a release"
+      ],
+      "answer": 0,
+      "explanation": "SAFe 6.0 renamed the role to \"Scrum Master / Team Coach.\" They help plan within a Planning Interval (PI) — SAFe 6.0's rename of \"Program Increment,\" keeping the PI acronym — alongside the Release Train Engineer."
+    },
+    {
+      "subtopic": "Scrum Master vs Engineering Manager",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does a Scrum Master differ from an Engineering Manager?",
+      "options": [
+        "The SM owns how the team works (process/effectiveness); the EM owns people's careers and pay",
+        "The SM owns careers and compensation; the EM owns the Sprint board",
+        "They are the same role at different company sizes",
+        "The EM has no authority while the SM assigns tasks"
+      ],
+      "answer": 0,
+      "explanation": "The Scrum Master owns the team's way of working and effectiveness with no authority; the Engineering Manager owns careers, growth, and compensation. Different jobs with different success measures."
+    },
+    {
+      "subtopic": "Part-time / shared role",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Combining the Scrum Master accountability with the Product Owner or Developer accountability creates a conflict of interest that must be managed.",
+      "answer": true,
+      "explanation": "The role can be part-time or shared, but combining it with PO or Developer work is a genuine conflict of interest (e.g., the value-maximizer also guarding process neutrality) that needs to be consciously managed."
+    },
+    {
+      "subtopic": "Servant leadership origin",
+      "source": "agile-leadership/scrum-master-stances-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Who originated the concept of \"servant leadership\" that underpins the Scrum Master stance?",
+      "options": ["Robert Greenleaf (1970)", "Ken Schwaber (1995)", "Barry Overeem (2016)", "Frederick Taylor (1911)"],
+      "answer": 0,
+      "explanation": "Robert Greenleaf coined \"servant leadership\" in 1970. (Barry Overeem authored the eight-stances model; Schwaber co-created Scrum; Taylor is associated with scientific management — the opposite philosophy.)"
+    }
+  ]
+}

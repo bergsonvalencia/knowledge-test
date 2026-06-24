@@ -1,0 +1,233 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "User story template",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the standard user-story template?",
+      "options": ["As a [role], I want [goal], so that [benefit]", "Given [context], When [event], Then [outcome]", "Must / Should / Could / Won't", "Card, Conversation, Confirmation"],
+      "answer": 0,
+      "explanation": "The user-story form is \"As a [role], I want [goal], so that [benefit].\" Given/When/Then is the acceptance-criteria scenario format; MoSCoW is a prioritization scheme; the Three Cs describe a story's nature."
+    },
+    {
+      "subtopic": "INVEST",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "The INVEST acronym describes the qualities of a good what?",
+      "options": ["A single user story", "The whole Product Backlog", "A Sprint Goal", "A Definition of Done"],
+      "answer": 0,
+      "explanation": "INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable) grades a single story. DEEP grades the whole backlog's health."
+    },
+    {
+      "subtopic": "Product Backlog ownership",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Who is accountable for the Product Backlog's content and order, and what is its commitment?",
+      "options": ["The Product Owner; commitment = the Product Goal", "The Scrum Master; commitment = the Sprint Goal", "The Developers; commitment = the Definition of Done", "The stakeholders; commitment = the release date"],
+      "answer": 0,
+      "explanation": "The Product Owner is accountable for the Product Backlog (they may delegate the work, not the accountability). The backlog's commitment is the Product Goal."
+    },
+    {
+      "subtopic": "Three Cs",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What do the \"Three Cs\" of a user story stand for?",
+      "options": ["Card, Conversation, Confirmation", "Context, Cause, Consequence", "Cost, Capacity, Cadence", "Create, Communicate, Close"],
+      "answer": 0,
+      "explanation": "Card (a short written placeholder), Conversation (where real requirements emerge), Confirmation (acceptance criteria/tests). A story is intentionally incomplete on the card — a token for a conversation, not a spec."
+    },
+    {
+      "subtopic": "Refinement is not an event",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Backlog refinement is one of the formal Scrum events defined by the Scrum Guide.",
+      "answer": false,
+      "explanation": "Scrum defines exactly five events (the Sprint, Sprint Planning, Daily Scrum, Sprint Review, Retrospective). Refinement is an ongoing activity, not a mandated event — a common budget is ~10% of capacity."
+    },
+    {
+      "subtopic": "The 'so that' clause",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is the \"so that\" clause of a user story considered the most important part?",
+      "options": [
+        "It carries the why/benefit, so the team can find a cheaper path to the same value and know when it's truly done",
+        "It specifies the database schema for the story",
+        "It assigns the story to a specific developer",
+        "It sets the story's estimate in points"
+      ],
+      "answer": 0,
+      "explanation": "The \"so that\" makes the benefit explicit. Without it the story is a solution with no business case — you can't negotiate scope because you don't know what outcome you're protecting."
+    },
+    {
+      "subtopic": "DEEP",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does the DEEP acronym describe about a Product Backlog?",
+      "options": [
+        "Detailed appropriately, Estimated, Emergent, Prioritized",
+        "Defined, Estimated, Executed, Published",
+        "Detailed, Equal, Exhaustive, Permanent",
+        "Documented, Engineered, Evaluated, Planned"
+      ],
+      "answer": 0,
+      "explanation": "DEEP = Detailed appropriately (top items fine-grained, bottom coarse), Estimated, Emergent (continuously re-ordered), Prioritized (a true top-to-bottom order). It grades backlog health."
+    },
+    {
+      "subtopic": "Vertical slicing",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why split stories vertically (end-to-end) rather than horizontally (by technical layer)?",
+      "options": [
+        "A vertical slice cuts through all layers to deliver demoable value and hits integration risk immediately; a horizontal slice delivers no user value until the last slice lands",
+        "Horizontal slicing is faster and should be preferred",
+        "Vertical slicing avoids the need for acceptance criteria",
+        "Horizontal slicing is required by the Scrum Guide"
+      ],
+      "answer": 0,
+      "explanation": "A vertical slice (UI → API → data) delivers a small, complete, demoable behavior and surfaces integration risk early. A horizontal slice (\"the DB layer\") delivers no value and only proves out after the last slice — violating INVEST's Valuable."
+    },
+    {
+      "subtopic": "SPIDR",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The SPIDR technique offers patterns for splitting a too-large story. What does it stand for?",
+      "options": ["Spikes, Paths, Interfaces, Data, Rules", "Scope, Priority, Iteration, Dependency, Risk", "Story, Plan, Implement, Demo, Review", "Split, Prioritize, Identify, Deliver, Refine"],
+      "answer": 0,
+      "explanation": "SPIDR = Spikes (knowledge), Paths (happy vs unhappy), Interfaces (web then mobile), Data (0/1/many), Rules (simplest rule first). The spike is the only legitimately non-shippable split."
+    },
+    {
+      "subtopic": "Spike",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When is a spike the appropriate response to a story?",
+      "options": [
+        "When the obstacle is knowledge, not size — a timeboxed investigation that produces an answer, not a shippable increment",
+        "When the story is simply too large but well understood",
+        "When the Product Owner wants to skip acceptance criteria",
+        "Whenever a story spans more than one developer"
+      ],
+      "answer": 0,
+      "explanation": "A spike addresses a genuine unknown (new API, feasibility, performance risk) that blocks estimation. It is a tightly timeboxed investigation producing knowledge — not a shippable increment. If the issue is just size, split vertically instead."
+    },
+    {
+      "subtopic": "DoR vs DoD",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key difference between a Definition of Ready (DoR) and a Definition of Done (DoD)?",
+      "options": [
+        "DoR is an optional, team-chosen entry gate (not in the Guide); DoD is the mandatory exit gate and the Increment's commitment",
+        "DoR is mandatory in the Scrum Guide; DoD is optional",
+        "Both are artifact commitments in the Scrum Guide",
+        "DoR is per-story; DoD is per-developer"
+      ],
+      "answer": 0,
+      "explanation": "DoR is an optional entry gate (not in the Scrum Guide). DoD is the mandatory exit gate and the Increment's commitment. A heavy DoR risks becoming a mini-waterfall phase-gate, so keep it light or skip it."
+    },
+    {
+      "subtopic": "Ordered vs prioritized",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The 2020 Scrum Guide deliberately says the Product Backlog is \"ordered\" rather than merely \"prioritized.\"",
+      "answer": true,
+      "explanation": "\"Ordered\" means a single top-to-bottom sequence that folds in value, risk, dependency, size, and learning — richer than a one-dimensional high/medium/low priority label."
+    },
+    {
+      "subtopic": "WSJF",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How is Weighted Shortest Job First (WSJF) calculated, and why can splitting a story move it up the order?",
+      "options": [
+        "WSJF = Cost of Delay ÷ Job Size; splitting shrinks job size, raising the ratio",
+        "WSJF = Job Size ÷ Cost of Delay; splitting lowers the ratio",
+        "WSJF = Reach × Impact × Confidence; splitting raises reach",
+        "WSJF = Value − Effort; splitting has no effect on it"
+      ],
+      "answer": 0,
+      "explanation": "WSJF = Cost of Delay ÷ Job Size — do the most valuable, time-critical, smallest work first. Splitting a story reduces its job size (denominator), which raises its WSJF and can promote it up the order."
+    },
+    {
+      "subtopic": "Everything is a Must",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A stakeholder insists every item is a \"Must have.\" What is the most effective response?",
+      "options": [
+        "Make cost of delay and trade-offs visible — cap Musts to a realistic share of capacity, force-rank within them, and let WSJF/value-vs-effort settle the order",
+        "Accept it, since the stakeholder owns prioritization",
+        "Escalate to the Scrum Master to assign the order",
+        "Mark everything as Could-have to balance it out"
+      ],
+      "answer": 0,
+      "explanation": "\"Everything is a Must\" is an absence of priority. Cap Musts (≈≤60% of capacity), force-rank within them (\"if only one ships, which?\"), tie each to its \"so that,\" and turn the argument into economics with WSJF or value-vs-effort."
+    },
+    {
+      "subtopic": "Epic/Feature/Story/Task",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "The Epic → Feature → Story → Task hierarchy is defined by the Scrum Guide.",
+      "answer": false,
+      "explanation": "Epic/Feature/Story/Task are tooling and SAFe terms, not Scrum Guide concepts. The Guide only defines the Product Backlog and its items; an epic is simply a story too big to finish in one Sprint, and tasks live in the Sprint Backlog."
+    },
+    {
+      "subtopic": "Kano model",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the Kano model, what happens to \"delighter\" (excitement) features over time?",
+      "options": [
+        "They decay into expected basics as customers come to assume them",
+        "They become more delightful the longer they exist",
+        "They are always the highest-priority work",
+        "They never affect customer satisfaction"
+      ],
+      "answer": 0,
+      "explanation": "Kano delighters decay over time — yesterday's wow becomes today's baseline expectation (a basic). That's why you must keep investing in new delighters while covering basics and performance features."
+    },
+    {
+      "subtopic": "Horizontal split critique",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer proposes splitting a large \"Checkout\" story into \"build the DB tables,\" \"build the REST API,\" and \"build the React UI.\" What is the main problem?",
+      "options": [
+        "These are horizontal (by-layer) slices — none is independently valuable or demoable until the last one lands; split vertically (e.g. checkout for one payment type end-to-end) instead",
+        "There are too few slices; it should be split into more layers",
+        "The order of the layers is wrong; UI should come first",
+        "Nothing is wrong — splitting by layer is the recommended approach"
+      ],
+      "answer": 0,
+      "explanation": "By-layer slices deliver no demoable value and defer all integration risk to the end, violating INVEST's Valuable. A better split is vertical: a thin end-to-end path (e.g. checkout with one payment method, then add others)."
+    },
+    {
+      "subtopic": "Refinement budget",
+      "source": "agile-leadership/product-backlog-and-user-stories-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is a common rule-of-thumb budget for ongoing backlog refinement, and what is its goal?",
+      "options": [
+        "About 10% of capacity — enough to keep roughly one to two Sprints of work ready without over-investing in items that may change",
+        "About 50% of capacity, to fully specify the entire backlog up front",
+        "Zero — refinement should only happen during Sprint Planning",
+        "Whatever time is left after the Sprint, with no target"
+      ],
+      "answer": 0,
+      "explanation": "A common budget is ~10% of capacity, keeping ~1–2 Sprints of work ready (DEEP's \"detailed appropriately\") without over-investing in distant items that may still change."
+    }
+  ]
+}

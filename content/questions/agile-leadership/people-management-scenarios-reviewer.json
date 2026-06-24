@@ -1,0 +1,249 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/people-management-scenarios-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Scenario framework",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the recommended five-step framework for answering a people-management scenario?",
+      "options": [
+        "Clarify, Diagnose, Act, Follow up, Reflect",
+        "Plan, Do, Check, Act, Repeat",
+        "Observe, Orient, Decide, Act, Review",
+        "Listen, Decide, Delegate, Document, Done"
+      ],
+      "answer": 0,
+      "explanation": "Clarify the facts, Diagnose the root cause, take a proportionate Act, Follow up to verify, and Reflect on the system. Slow down at the front (clarify) and be decisive at the end — interviewers grade your thinking."
+    },
+    {
+      "subtopic": "Root-cause buckets",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are the four root-cause buckets for underperformance?",
+      "options": ["Skill, will, clarity, system", "Money, time, scope, quality", "Plan, build, test, ship", "Hire, train, retain, promote"],
+      "answer": 0,
+      "explanation": "Diagnose underperformance as a skill gap (teach), will/motivation (coach), clarity gap (set expectations/DoD), or system impediment (remove it). Match the response to the cause."
+    },
+    {
+      "subtopic": "Intrinsic motivation",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to Daniel Pink, what are the three intrinsic motivators for knowledge workers?",
+      "options": ["Autonomy, mastery, purpose", "Money, status, security", "Power, achievement, affiliation", "Recognition, growth, balance"],
+      "answer": 0,
+      "explanation": "Pink's Drive identifies autonomy, mastery, and purpose as the core intrinsic motivators — more powerful than extrinsic rewards for complex, creative work."
+    },
+    {
+      "subtopic": "SBI feedback",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the SBI feedback model stand for?",
+      "options": ["Situation, Behavior, Impact", "Subject, Background, Issue", "Specific, Brief, Immediate", "Strengths, Barriers, Improvements"],
+      "answer": 0,
+      "explanation": "SBI = Situation (when/where), Behavior (the specific observable action), Impact (the effect it had). It keeps feedback specific and non-accusatory by sticking to observed behavior."
+    },
+    {
+      "subtopic": "Diagnose before acting",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "When diagnosing underperformance, \"will\" (laziness or malice) should be the last cause you reach for, not the first.",
+      "answer": true,
+      "explanation": "Assume good intent and rule out skill, clarity, and system first. Deming's point: most performance variation is the system, not the person — applying a motivation fix (or a PIP) to a system problem is unjust and wastes time."
+    },
+    {
+      "subtopic": "Coaching vs performance",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A developer has missed Sprint commitments three Sprints running. Your manager asks when to put them on a performance plan. What is the best answer?",
+      "options": [
+        "Not yet — first diagnose the root cause (skill/will/clarity/system) in a private 1:1 with SBI; a PIP is a last resort after documented support for a will/fit issue fails",
+        "Immediately — three misses is enough for a performance plan",
+        "Never use performance plans; just keep coaching indefinitely",
+        "Publicly set a deadline so the whole team holds them accountable"
+      ],
+      "answer": 0,
+      "explanation": "Diagnose before you punish. Most chronic misses trace to an unclear DoD, a skill gap, or a systemic impediment — none fixed by a PIP. Only after genuinely supporting a will/fit problem that hasn't moved do you escalate to a fair, documented performance conversation with HR involved."
+    },
+    {
+      "subtopic": "Missing the Sprint commitment",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Mid-Sprint the team realizes it can't finish all committed items. What does Scrum prescribe?",
+      "options": [
+        "Renegotiate scope with the Product Owner to protect the Sprint Goal — descope least-valuable items rather than cut the Definition of Done or force overtime",
+        "Force overtime so every committed item ships",
+        "Lower the Definition of Done so the items count as complete",
+        "Immediately cancel the Sprint and start over"
+      ],
+      "answer": 0,
+      "explanation": "The Sprint Goal — not every backlog item — is the commitment. Surface reality transparently and renegotiate scope with the PO to deliver the smallest increment that still meets the goal; never cut quality (DoD) or death-march. Only the PO can cancel a Sprint, and only if the goal is obsolete."
+    },
+    {
+      "subtopic": "Routing demand",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A stakeholder bypasses the Product Owner and asks a developer directly to \"just quickly add\" a feature mid-Sprint. How should this be handled?",
+      "options": [
+        "Route the request through the Product Owner to be ordered against the backlog; shield the developer and make the trade-off cost visible",
+        "Let the developer add it immediately since the stakeholder is senior",
+        "Have the developer refuse the stakeholder directly",
+        "Add it without telling the Product Owner to avoid friction"
+      ],
+      "answer": 0,
+      "explanation": "Work and priority flow through the PO, the single person accountable for value. The Scrum Master helps stakeholders route requests appropriately and shields the developer from having to say no — making the trade-off cost visible instead of letting shoulder-taps bypass the system."
+    },
+    {
+      "subtopic": "Shield not wall",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does it mean to be \"a shield, not a wall\" when protecting the team from stakeholder interruptions?",
+      "options": [
+        "Absorb the noise and route demand through the PO/backlog while making each interruption's cost visible, so the business makes informed trade-offs",
+        "Reflexively say no to every stakeholder request to protect focus",
+        "Forward every request straight to the developers untouched",
+        "Block all stakeholder access to the team permanently"
+      ],
+      "answer": 0,
+      "explanation": "A shield absorbs and routes demand through the right mechanism and makes interruption cost visible; a wall just stonewalls. Reflexive no's lose stakeholder trust and lead them to go around you — the art is making them *want* to work through the system."
+    },
+    {
+      "subtopic": "Task vs relationship conflict",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which kind of conflict should a leader cultivate, and which should they shut down?",
+      "options": [
+        "Cultivate task (ideas) conflict; mediate and shut down relationship (personal) conflict",
+        "Cultivate relationship conflict; shut down task conflict",
+        "Shut down both kinds to keep the peace",
+        "Encourage both equally without distinction"
+      ],
+      "answer": 0,
+      "explanation": "Healthy task/ideas conflict improves decisions (Lencioni's Fear of Conflict is a dysfunction). Personal/relationship conflict harms the team and should be mediated early and privately — keep disagreement on the task axis."
+    },
+    {
+      "subtopic": "Self-assessment",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the truest test of whether you're an effective manager rather than merely a popular one?",
+      "options": [
+        "How well the team runs when you're away — evidence you built self-sufficiency, not dependence",
+        "How many people say they like you",
+        "How many decisions you personally make each week",
+        "How rarely anyone on the team disagrees with you"
+      ],
+      "answer": 0,
+      "explanation": "Popularity is a vanity metric. Capability shows in the team running well without you, people raising hard truths to your face, your reports getting promoted, and sustainable delivery without heroics."
+    },
+    {
+      "subtopic": "Bad news up",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The \"no surprises\" principle means delivering bad news to leadership early, with the impact framed in their terms plus options and a recommendation.",
+      "answer": true,
+      "explanation": "Surface slips the moment the data is credible, lead with the headline and impact in their terms, bring options with a recommendation, and own the outcome. Early disclosure with a path forward builds credibility rather than damaging it."
+    },
+    {
+      "subtopic": "Disengaged top performer",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Your strongest engineer says, \"I'm not sure I want to be here anymore.\" What is the best first response?",
+      "options": [
+        "Treat it as urgent — have a genuine, low-pressure 1:1 fast, diagnose against autonomy/mastery/purpose and broken hygiene factors, then return with something concrete tied to the cause",
+        "Immediately make a large counteroffer to retain them",
+        "Wait to see if the feeling passes before acting",
+        "Quietly start backfilling the role without talking to them"
+      ],
+      "answer": 0,
+      "explanation": "A disengaged top performer is a five-alarm fire. Most have outgrown the challenge or lost the line to meaning — money rarely fixes it, so a panicked counteroffer usually misses. Diagnose autonomy/mastery/purpose and act on the real cause within days."
+    },
+    {
+      "subtopic": "No brilliant jerks",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is \"no brilliant jerks\" a common hiring red line?",
+      "options": [
+        "Their damage to teamwork and psychological safety outweighs their individual output — and safety is the top driver of team performance",
+        "Brilliant people are always difficult, so the rule rarely applies",
+        "Individual brilliance has no measurable value to a team",
+        "It is only about reducing salary costs"
+      ],
+      "answer": 0,
+      "explanation": "Project Aristotle showed psychological safety is the top performance driver; a brilliant jerk erodes it for everyone, so the net cost to teamwork exceeds their personal contribution. Prefer culture-add over culture-fit and over raw stats."
+    },
+    {
+      "subtopic": "Inherited low-trust team",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You inherit a tense, cliquey team going nowhere. What is the best-diagnosed 90-day approach?",
+      "options": [
+        "It's stuck in Storming with missing vulnerability-based trust — build bottom-up: listen first, set working agreements with them, model vulnerability, then shift toward norming",
+        "Reorganize the team immediately to break up the cliques",
+        "Set aggressive delivery targets to force them to gel",
+        "Replace the lowest performers in the first week"
+      ],
+      "answer": 0,
+      "explanation": "Tuckman says Storming; Lencioni says the missing foundation is vulnerability-based trust. Build bottom-up and be patient: earn the right to lead (listen, 1:1s, learn history), co-create working agreements, surface conflict safely, engineer small wins, then move toward norming. Avoid a premature reorg."
+    },
+    {
+      "subtopic": "Absent Product Owner",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Your Product Owner is chronically absent and the backlog is starving the team. What should the Scrum Master do?",
+      "options": [
+        "Support the PO and escalate the impediment with business impact — without becoming a shadow PO and breaking the accountability",
+        "Quietly take over ordering the backlog as a shadow PO",
+        "Let the team build whatever it wants until the PO returns",
+        "Cancel Sprints until the PO shows up"
+      ],
+      "answer": 0,
+      "explanation": "The Scrum Master serves the PO and escalates the impediment (with business impact) to get it fixed. Becoming a shadow PO breaks the single-accountable-person model and hides the real problem rather than solving it."
+    },
+    {
+      "subtopic": "Silent retrospective",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A retrospective is consistently silent. Which are likely causes worth diagnosing? (Select all that apply.)",
+      "options": [
+        "Low psychological safety — people don't feel safe raising problems",
+        "Futility — nothing ever changes, so why bother",
+        "Genuine perfection — the team has no problems at all",
+        "The format is stale and needs varying, with vulnerability modeled"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "A silent retro usually signals low safety or futility (nothing changes), and a stale format compounds it — vary it, model vulnerability, and leave with one owned, named, time-boxed improvement. \"No problems at all\" is almost never the real explanation."
+    },
+    {
+      "subtopic": "Chronic Sprint misses",
+      "source": "agile-leadership/people-management-scenarios-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team consistently misses its Sprints. What is the best first assumption and action?",
+      "options": [
+        "Assume a system signal (over-optimistic estimation, unplanned work, unmanaged dependencies); inspect the pattern with data in the retro and fix the largest systemic cause first",
+        "Assume an individual is at fault and start a performance plan",
+        "Increase the Sprint commitment to motivate the team",
+        "Add more developers to the team to go faster"
+      ],
+      "answer": 0,
+      "explanation": "Chronic misses are usually systemic — estimation, unplanned work breaking in, dependencies, or an unprotected Sprint Goal. Inspect with data (not blame), fix the biggest systemic cause, and reset expectations that velocity stabilizes empirically. Only after fixing the system is an individual a separate, private conversation."
+    }
+  ]
+}

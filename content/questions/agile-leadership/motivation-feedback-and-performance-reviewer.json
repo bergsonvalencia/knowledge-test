@@ -1,0 +1,239 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Pink's AMP",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are Daniel Pink's three pillars of intrinsic motivation?",
+      "options": ["Autonomy, Mastery, Purpose", "Authority, Money, Promotion", "Achievement, Affiliation, Power", "Accountability, Metrics, Process"],
+      "answer": 0,
+      "explanation": "Pink's AMP framework: Autonomy (own how and when), Mastery (get better at something that matters), and Purpose (connection to a larger why)."
+    },
+    {
+      "subtopic": "Herzberg hygiene",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Herzberg's two-factor theory, what kind of factor is salary?",
+      "options": [
+        "A hygiene factor — its absence causes dissatisfaction, but its presence does not create lasting motivation",
+        "A motivator — more pay reliably increases engagement",
+        "Neither a hygiene factor nor a motivator",
+        "A self-actualization need"
+      ],
+      "answer": 0,
+      "explanation": "Salary is a hygiene factor: underpaying causes real dissatisfaction, but overpaying only reaches neutral, not engaged. Motivators (achievement, growth, recognition, meaningful work) are what create satisfaction."
+    },
+    {
+      "subtopic": "SBI",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the recommended structure for delivering specific, behavioral feedback?",
+      "options": ["SBI — Situation, Behavior, Impact", "STAR — Situation, Task, Action, Result", "GROW — Goal, Reality, Options, Will", "SMART — Specific, Measurable, Achievable, Relevant, Timely"],
+      "answer": 0,
+      "explanation": "SBI names the Situation, describes the observable Behavior without interpretation, and states the Impact. STAR is for behavioral interview answers; GROW is a coaching model; SMART is for goals."
+    },
+    {
+      "subtopic": "Radical Candor",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are the two axes of Kim Scott's Radical Candor?",
+      "options": ["Care Personally and Challenge Directly", "Speak Loudly and Act Quickly", "Reward Often and Punish Rarely", "Plan Carefully and Execute Boldly"],
+      "answer": 0,
+      "explanation": "Radical Candor = Care Personally + Challenge Directly. The failure modes are Ruinous Empathy (care but don't challenge), Obnoxious Aggression (challenge but don't care), and Manipulative Insincerity (neither)."
+    },
+    {
+      "subtopic": "PIP intent",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A performance improvement plan (PIP) should be a genuine, supported chance to recover — not a pre-decided firing ritual.",
+      "answer": true,
+      "explanation": "A fair PIP is specific, measurable, time-bound, with real support and clear consequences — a real opportunity to succeed. Using it purely as paperwork before a predetermined exit is unjust and counterproductive."
+    },
+    {
+      "subtopic": "Why bonuses don't fix motivation",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why don't spot bonuses reliably fix a motivation problem in creative knowledge work?",
+      "options": [
+        "Money is a hygiene factor, and contingent if-then rewards can crowd out intrinsic motivation (the overjustification effect)",
+        "Bonuses are always too small to matter",
+        "Money is the only true motivator, so one bonus is never enough",
+        "Bonuses only work if announced publicly"
+      ],
+      "answer": 0,
+      "explanation": "For creative work, money is hygiene, not a motivator. Worse, dangling if-then rewards reframe interesting work as a transaction and can erode intrinsic drive (overjustification). Pay fairly to take money off the table, then compete on autonomy, mastery, and purpose."
+    },
+    {
+      "subtopic": "Intrinsic vs extrinsic",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When are extrinsic \"if-then\" rewards most appropriate, and what is the always-safe alternative?",
+      "options": [
+        "If-then rewards suit routine, mechanical work; unexpected \"now-that\" recognition after the fact is always safe",
+        "If-then rewards suit all creative work; recognition should be avoided",
+        "If-then rewards are never appropriate for any work",
+        "If-then and now-that rewards are interchangeable in all contexts"
+      ],
+      "answer": 0,
+      "explanation": "Contingent if-then rewards work for routine, procedural tasks but can backfire on complex creative work. Unexpected \"now-that\" recognition given after the fact doesn't create the same transactional framing, so it's the safe form."
+    },
+    {
+      "subtopic": "Ruinous Empathy",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the most common feedback mistake managers make, per Radical Candor?",
+      "options": [
+        "Ruinous Empathy — withholding criticism to avoid discomfort, so the person never gets to fix the problem",
+        "Obnoxious Aggression — challenging far too harshly",
+        "Giving too much specific, behavioral feedback",
+        "Asking for upward feedback too often"
+      ],
+      "answer": 0,
+      "explanation": "Ruinous Empathy (high care, low challenge) feels kind but is cruel — the person is denied the truth they need and eventually gets blindsided. The second-biggest mistake is vagueness (\"be more proactive\" is a riddle, not feedback)."
+    },
+    {
+      "subtopic": "OKRs",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement about well-designed OKRs is correct?",
+      "options": [
+        "Key Results measure outcomes (e.g. retention, latency), should be decoupled from compensation, and ~70% attainment signals success for stretch goals",
+        "Key Results measure outputs like \"shipped feature X\" and should be tied to bonuses",
+        "OKRs should be graded once a quarter and otherwise ignored",
+        "An Objective should have 15–20 Key Results for full coverage"
+      ],
+      "answer": 0,
+      "explanation": "An OKR is an inspirational Objective plus 3–5 measurable Key Results tracking outcomes, not outputs. Decouple from comp (coupling drives sandbagging — Goodhart's Law) and treat ~70% of a stretch target as success."
+    },
+    {
+      "subtopic": "Goodhart's Law",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why should OKRs be decoupled from compensation?",
+      "options": [
+        "Coupling drives sandbagging — when a measure becomes a target it stops being a good measure (Goodhart's Law)",
+        "Compensation must always be tied to OKRs for fairness",
+        "OKRs are too easy to hit, so pay would be wasted",
+        "Decoupling is only needed for individual, not team, OKRs"
+      ],
+      "answer": 0,
+      "explanation": "Goodhart's Law: \"when a measure becomes a target, it ceases to be a good measure.\" Tying pay to OKRs incentivizes setting easy targets (sandbagging) and gaming the metric instead of pursuing real outcomes."
+    },
+    {
+      "subtopic": "Situational Leadership",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In Situational Leadership, which style fits an eager novice (low competence, high commitment) on a specific task?",
+      "options": ["S1 — Directing", "S4 — Delegating", "S3 — Supporting", "S2 — Coaching"],
+      "answer": 0,
+      "explanation": "S1 Directing suits a low-competence, high-commitment beginner who needs clear instruction. S4 Delegating is for a high-competence, high-commitment self-reliant achiever. Match the style to task-specific readiness."
+    },
+    {
+      "subtopic": "One-on-ones",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "In an effective recurring one-on-one, the direct report should own the agenda.",
+      "answer": true,
+      "explanation": "The report owns the one-on-one agenda (it's their meeting), typically held weekly. The manager listens, coaches, and also asks for upward feedback to keep the channel two-way and safe."
+    },
+    {
+      "subtopic": "Skill vs will",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An engineer is underperforming. Why is diagnosing \"skill vs will\" the critical first step?",
+      "options": [
+        "The remedies are opposite — a skill gap needs training/pairing, while a will gap needs re-engagement; you must also rule out causes you own (unclear expectations, impediments, broken system)",
+        "Because skill problems and will problems are fixed the same way",
+        "Because it lets you skip the conversation and go straight to a PIP",
+        "Because will problems should always be assumed first"
+      ],
+      "answer": 0,
+      "explanation": "Skill (can't yet) → train, pair, mentor. Will (won't/demotivated) → dig for the real cause. Critically, rule out causes you own first (clear expectations? impediments? broken system?), then have a candid SBI conversation and coach with GROW. A PIP is the last, documented resort."
+    },
+    {
+      "subtopic": "High performer, bad attitude",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How should you handle a high performer with a toxic attitude (high-skill, low-will)?",
+      "options": [
+        "Re-engage, not train — find the real driver, give direct SBI feedback that the behavior (not the output) is non-negotiable because it taxes team safety, and pair expectations with a growth challenge",
+        "Ignore the behavior because their output is excellent",
+        "Put them straight on a PIP for the attitude",
+        "Train them on technical skills they already have"
+      ],
+      "answer": 0,
+      "explanation": "High-skill/low-will calls for \"excite/re-engage,\" not training. Talent doesn't buy a pass on how you treat people — give direct feedback that the behavior taxes the whole team's psychological safety, set non-negotiable conduct expectations, and re-engage with a real challenge."
+    },
+    {
+      "subtopic": "Four T's of autonomy",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Pink describes autonomy over four dimensions — the \"four T's.\" What are they?",
+      "options": ["Task, Time, Technique, Team", "Target, Tools, Timeline, Training", "Trust, Talent, Tenure, Title", "Theory, Tactics, Tempo, Tone"],
+      "answer": 0,
+      "explanation": "The four T's of autonomy are Task (what), Time (when), Technique (how), and Team (with whom). Granting autonomy across these dimensions is a core motivation lever."
+    },
+    {
+      "subtopic": "Seven levels of delegation",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Management 3.0's \"seven levels of delegation\" exist to do what?",
+      "options": [
+        "Make authority explicit per decision area (Tell, Sell, Consult, Agree, Advise, Inquire, Delegate), raising the level as trust and competence grow",
+        "Rank employees from level 1 to 7 by seniority",
+        "Define seven mandatory approval gates for every task",
+        "Replace one-on-ones with a delegation scorecard"
+      ],
+      "answer": 0,
+      "explanation": "The seven levels (Tell, Sell, Consult, Agree, Advise, Inquire, Delegate) make authority explicit per area (\"on architecture you're at Advise, on hiring we're at Agree\") and are deliberately raised over time, turning delegation into a growth/autonomy engine."
+    },
+    {
+      "subtopic": "Maslow hierarchy",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the correct bottom-up order of Maslow's hierarchy of needs?",
+      "options": [
+        "Physiological, Safety, Belonging, Esteem, Self-actualization",
+        "Safety, Physiological, Esteem, Belonging, Self-actualization",
+        "Belonging, Safety, Physiological, Self-actualization, Esteem",
+        "Esteem, Belonging, Safety, Physiological, Self-actualization"
+      ],
+      "answer": 0,
+      "explanation": "Maslow's levels from the base up: Physiological, Safety, Belonging, Esteem, and Self-actualization. Lower needs generally must be reasonably met before higher ones become motivating."
+    },
+    {
+      "subtopic": "70-20-10 model",
+      "source": "agile-leadership/motivation-feedback-and-performance-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does the 70-20-10 model of professional development describe?",
+      "options": [
+        "Roughly 70% of growth from on-the-job experience, 20% from others (coaching/mentoring), 10% from formal training",
+        "70% formal courses, 20% reading, 10% practice",
+        "A budget split: 70% salary, 20% bonus, 10% benefits",
+        "70% of OKRs hit, 20% partial, 10% missed"
+      ],
+      "answer": 0,
+      "explanation": "70-20-10: most development comes from challenging on-the-job experience (70%), then learning from others such as coaching/mentoring (20%), then formal training (10%) — which is why stretch assignments matter more than courses alone."
+    }
+  ]
+}

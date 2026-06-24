@@ -1,0 +1,239 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Tuckman stages",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the correct order of Tuckman's five stages of team development?",
+      "options": [
+        "Forming, Storming, Norming, Performing, Adjourning",
+        "Forming, Norming, Storming, Performing, Adjourning",
+        "Storming, Forming, Norming, Adjourning, Performing",
+        "Norming, Forming, Storming, Performing, Closing"
+      ],
+      "answer": 0,
+      "explanation": "Tuckman's stages are Forming, Storming, Norming, Performing, and Adjourning. Storming — the conflict-heavy stage — is a necessary step on the way to Performing."
+    },
+    {
+      "subtopic": "Psychological safety origin",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Who coined the modern concept of \"psychological safety\"?",
+      "options": ["Amy Edmondson (1999)", "Bruce Tuckman (1965)", "Patrick Lencioni (2002)", "Robert Greenleaf (1970)"],
+      "answer": 0,
+      "explanation": "Amy Edmondson introduced psychological safety in 1999 — the shared belief that the team is safe for interpersonal risk-taking. Tuckman authored the stages model; Lencioni the five dysfunctions; Greenleaf servant leadership."
+    },
+    {
+      "subtopic": "Project Aristotle",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What did Google's Project Aristotle find to be the single most important factor in effective teams?",
+      "options": ["Psychological safety", "Hiring the most senior engineers", "Strict deadlines", "Individual star performers"],
+      "answer": 0,
+      "explanation": "Project Aristotle found psychological safety to be the top factor, ahead of Dependability, Structure & clarity, Meaning, and Impact. Team composition (e.g., star players) mattered far less than how the team worked together."
+    },
+    {
+      "subtopic": "Scrum team size",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Per the 2020 Scrum Guide, how many people should a Scrum Team typically have?",
+      "options": ["10 or fewer", "Exactly 7", "15 to 20", "As many as the work requires, with no guidance"],
+      "answer": 0,
+      "explanation": "The 2020 Guide says typically 10 or fewer people — small enough to stay nimble, large enough to do significant work. If bigger, split into multiple teams sharing one Product Goal and backlog."
+    },
+    {
+      "subtopic": "Quiet retro",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "On a healthy team, a consistently silent retrospective with no dissent usually signals strong agreement.",
+      "answer": false,
+      "explanation": "The absence of dissent is usually a tell for low psychological safety (suppressed concerns), not genuine alignment. Unanimous agreement is often fear, not consensus."
+    },
+    {
+      "subtopic": "Lencioni's five dysfunctions",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In Lencioni's Five Dysfunctions of a Team, what is the root dysfunction and how should the pyramid be fixed?",
+      "options": [
+        "Absence of (vulnerability-based) Trust, fixed bottom-up starting with trust",
+        "Inattention to Results, fixed top-down starting with results",
+        "Fear of Conflict, fixed by enforcing harmony",
+        "Avoidance of Accountability, fixed by adding managers"
+      ],
+      "answer": 0,
+      "explanation": "Absence of Trust (vulnerability-based) is the root. You fix bottom-up: build trust, then make conflict safe, then drive commitment, accountability, and results. Vulnerability-based trust ≈ psychological safety."
+    },
+    {
+      "subtopic": "Safety is not niceness",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "According to Edmondson, how does psychological safety relate to high standards?",
+      "options": [
+        "Safety plus high standards is the high-performance zone; safety plus low standards is a comfortable, coasting team",
+        "Safety means lowering standards so no one feels stressed",
+        "Safety and standards are unrelated",
+        "High standards require removing psychological safety"
+      ],
+      "answer": 0,
+      "explanation": "Safety is not niceness — it's what makes hard feedback possible. Edmondson pairs it with high standards: high safety + high standards is high performance (and aligns with Radical Candor: care personally, challenge directly)."
+    },
+    {
+      "subtopic": "Artificial harmony",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team has polite meetings, no visible conflict, and keeps missing its goals. What is the most likely diagnosis?",
+      "options": [
+        "Artificial harmony — Fear of Conflict masking an Absence of Trust, leading to weak commitment and missed results",
+        "A healthy high-performing team that simply had bad luck",
+        "Too much conflict that needs to be suppressed further",
+        "Excessive psychological safety lowering standards"
+      ],
+      "answer": 0,
+      "explanation": "Polite silence with missed goals is classic artificial harmony: suppressed dissent (Fear of Conflict over an Absence of Trust) yields weak buy-in (Lack of Commitment) that quietly slips (no Accountability), hence poor Results."
+    },
+    {
+      "subtopic": "Communication channels",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How many two-way communication channels exist among n people?",
+      "options": ["n(n − 1) / 2", "n²", "2n", "n − 1"],
+      "answer": 0,
+      "explanation": "The number of pairwise channels is n(n−1)/2 — it grows quadratically, which is part of why smaller teams communicate more easily and large teams need to split."
+    },
+    {
+      "subtopic": "Brooks's Law",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does Brooks's Law state?",
+      "options": [
+        "Adding people to a late software project makes it later",
+        "Doubling the team always doubles the throughput",
+        "Smaller teams always ship faster than larger ones",
+        "Communication overhead is constant regardless of team size"
+      ],
+      "answer": 0,
+      "explanation": "Brooks's Law: adding manpower to a late software project makes it later — onboarding cost and the quadratic growth in communication channels outweigh the added hands in the short term."
+    },
+    {
+      "subtopic": "Self-managing",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The 2020 Scrum Guide changed the team's autonomy term from \"self-organizing\" to \"self-managing.\"",
+      "answer": true,
+      "explanation": "2020 changed \"self-organizing\" (who/how) to the broader \"self-managing\" — the team internally decides who does the work, what to work on, and how."
+    },
+    {
+      "subtopic": "Stuck in Storming",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team has been stuck in Storming for weeks. What is the best Scrum Master response?",
+      "options": [
+        "Diagnose why, then make conflict safe and explicit (mine for conflict), tighten working agreements, and clarify roles/goals — do not suppress it",
+        "Restore surface calm by discouraging any disagreement",
+        "Escalate the whole team to management for a reset",
+        "Wait it out — Storming always resolves itself with time"
+      ],
+      "answer": 0,
+      "explanation": "Stuck-Storming usually means conflict is avoided or has become personal. Surface it in a facilitated session, separate people from ideas, tighten norms, and clarify roles/goals. Suppressing the conflict only defers it."
+    },
+    {
+      "subtopic": "Conway's Law",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does Conway's Law assert?",
+      "options": [
+        "A system's design tends to mirror the communication structure of the organization that builds it",
+        "Teams should be organized strictly by technical layer",
+        "Adding architects always improves system quality",
+        "System complexity is independent of team structure"
+      ],
+      "answer": 0,
+      "explanation": "Conway's Law: organizations design systems that mirror their own communication structures. It's why misaligned team boundaries produce integration friction, and why aligning teams to value streams can remove dependencies."
+    },
+    {
+      "subtopic": "Three frameworks",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How do Tuckman, Lencioni, and Edmondson/Aristotle complement each other as diagnostic lenses?",
+      "options": [
+        "Tuckman locates the stage, Lencioni diagnoses what's broken (and in what order to fix), Aristotle/Edmondson says what to invest in (safety as foundation)",
+        "They are three names for the same five-stage model",
+        "Tuckman fixes results, Lencioni fixes safety, Aristotle fixes conflict",
+        "Only one can apply to a given team at a time"
+      ],
+      "answer": 0,
+      "explanation": "Tuckman to locate the developmental stage, Lencioni to diagnose what's broken and the bottom-up fix order, Aristotle/Edmondson to decide what to build — with psychological safety as the foundation."
+    },
+    {
+      "subtopic": "Proximity bias",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the biggest pitfall of hybrid/remote work for team fairness?",
+      "options": [
+        "Proximity bias — in-office people are heard and promoted more than equally capable remote peers",
+        "Remote workers always outperform in-office workers",
+        "Hybrid work eliminates all communication overhead",
+        "Co-located teams can never be psychologically safe"
+      ],
+      "answer": 0,
+      "explanation": "Proximity bias means physically present people get disproportionate visibility, airtime, and advancement. Countering it (equalizing airtime, remote-first practices) is key to fairness on hybrid teams."
+    },
+    {
+      "subtopic": "Project Aristotle five keys",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are among Project Aristotle's five keys to team effectiveness? (Select all that apply.)",
+      "options": ["Psychological safety", "Dependability", "Structure & clarity", "Individual seniority"],
+      "answer": [0, 1, 2],
+      "explanation": "The five keys are Psychological safety, Dependability, Structure & clarity, Meaning, and Impact. Individual seniority/star talent was notably NOT among the top drivers."
+    },
+    {
+      "subtopic": "Two-pizza rule and Dunbar",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What do the \"two-pizza rule\" and Dunbar's number refer to, respectively?",
+      "options": [
+        "A team of roughly 5–8 people; ~150 stable relationships (which bounds orgs, not single Scrum teams)",
+        "A team of ~20 people; ~50 stable relationships",
+        "Both refer to the same ideal Scrum team size of 7",
+        "A budget rule; a velocity ceiling"
+      ],
+      "answer": 0,
+      "explanation": "The two-pizza rule keeps a team small enough to feed with two pizzas (~5–8). Dunbar's number (~150) is the cognitive limit on stable relationships — it bounds organizations, not individual Scrum teams."
+    },
+    {
+      "subtopic": "Detecting real safety",
+      "source": "agile-leadership/team-dynamics-and-psych-safety-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the fastest single diagnostic of team psychological safety?",
+      "options": [
+        "How fast and freely bad news travels to you",
+        "How many story points the team completes",
+        "Whether meetings always end early",
+        "How rarely anyone disagrees with the leader"
+      ],
+      "answer": 0,
+      "explanation": "Watch whether bad news travels fast and freely — on a safe team, problems and dissent surface early. Rare disagreement is a warning sign (fear), not a strength."
+    }
+  ]
+}

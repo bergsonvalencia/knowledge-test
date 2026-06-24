@@ -1,0 +1,254 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/kanban-and-flow-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "What Kanban is",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What kind of thing is Kanban?",
+      "options": [
+        "A management method/overlay for evolutionary change to an existing process",
+        "A prescriptive framework with defined roles and fixed iterations",
+        "An engineering practice like TDD or pair programming",
+        "A project-scheduling tool that replaces the backlog"
+      ],
+      "answer": 0,
+      "explanation": "Kanban is a method/overlay that improves the process you already run (visualize, limit WIP, manage flow). It prescribes no roles or iterations — that's what distinguishes it from a framework like Scrum."
+    },
+    {
+      "subtopic": "Limiting WIP",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which Kanban practice turns a plain visualization board into a true pull system?",
+      "options": ["Limit work-in-progress (WIP)", "Visualize the workflow", "Make policies explicit", "Implement feedback loops"],
+      "answer": 0,
+      "explanation": "A WIP limit authorizes a pull only when a slot is free, creating the back-pressure that defines a pull system. Visualization alone (a board with no limits) is not yet Kanban."
+    },
+    {
+      "subtopic": "Little's Law",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the flow form of Little's Law?",
+      "options": ["Lead Time = WIP / Throughput", "Throughput = WIP × Lead Time", "WIP = Throughput / Lead Time", "Lead Time = Throughput / WIP"],
+      "answer": 0,
+      "explanation": "Lead Time = WIP / Throughput. With throughput roughly stable, lowering WIP lowers lead time proportionally — the core justification for WIP limits."
+    },
+    {
+      "subtopic": "Lead vs cycle time",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the difference between lead time and cycle time?",
+      "options": [
+        "Lead time is request → delivered (includes queue time); cycle time is active-work-started → done",
+        "Lead time is active-work time; cycle time is the total customer wait",
+        "They are two names for the same measurement",
+        "Lead time measures throughput; cycle time measures WIP"
+      ],
+      "answer": 0,
+      "explanation": "Lead time is the customer's full wait from request to delivery (queue time included). Cycle time is just the team's execution time once work actively starts — a subset of lead time."
+    },
+    {
+      "subtopic": "Foundational principles",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Adopting Kanban requires a Scrum team to drop the Scrum Master and Product Owner accountabilities.",
+      "answer": false,
+      "explanation": "Kanban's foundational principles say to respect current roles, responsibilities, and titles. It adds no roles and removes none — Scrum roles and Kanban flow practices can coexist (that hybrid is Scrumban)."
+    },
+    {
+      "subtopic": "WIP and lead time",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team completes 4 items per week and holds 24 items in progress. By Little's Law, what is the average lead time, and what happens if WIP is cut to 12 with throughput unchanged?",
+      "options": [
+        "6 weeks now; cutting WIP to 12 halves it to 3 weeks",
+        "6 weeks now; cutting WIP to 12 leaves it unchanged at 6 weeks",
+        "3 weeks now; cutting WIP to 12 doubles it to 6 weeks",
+        "96 weeks now; cutting WIP to 12 gives 48 weeks"
+      ],
+      "answer": 0,
+      "explanation": "Lead Time = WIP / Throughput = 24/4 = 6 weeks. At unchanged throughput, 12/4 = 3 weeks — lead time halves because each item waits behind half as many others."
+    },
+    {
+      "subtopic": "Utilization vs flow",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A manager argues that WIP limits \"leave people idle and waste money.\" What is the strongest counter?",
+      "options": [
+        "Idle time is cheaper than idle work — keeping everyone 100% busy by starting more grows queues and inflates lead time; help finish in-flight work instead",
+        "WIP limits do make people idle, so they should only be used on small teams",
+        "Full utilization is the goal, so the manager is right and WIP limits should be removed",
+        "Idle people should be reassigned to other teams to maximize utilization"
+      ],
+      "answer": 0,
+      "explanation": "Driving 100% utilization forces people to start more work, growing queues and lead time (queueing theory). The right response to a block is to swarm and finish in-flight work — \"stop starting, start finishing.\""
+    },
+    {
+      "subtopic": "Push vs pull",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In flow terms, what distinguishes a pull system from a push system?",
+      "options": [
+        "Pull: a stage takes work only when it has a free WIP slot, creating back-pressure; push: upstream shoves work downstream whenever it finishes",
+        "Pull: upstream sends work as soon as it is ready; push: downstream requests work when idle",
+        "Pull and push both require fixed iterations to function",
+        "Pull maximizes utilization; push minimizes queues"
+      ],
+      "answer": 0,
+      "explanation": "Pull authorizes new work only when a downstream slot is free, so back-pressure keeps queues small and surfaces the bottleneck. Push moves work downstream whenever an upstream stage finishes, which grows queues."
+    },
+    {
+      "subtopic": "Classes of service",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is the expedite class of service typically capped at one item in flight at a time?",
+      "options": [
+        "Expedites break WIP limits and jump the queue, so allowing many at once would let \"everything is urgent\" destroy predictability for standard work",
+        "Because the tooling can only track a single expedite item",
+        "Because expedite items must always be the smallest in the backlog",
+        "Because expedites are forbidden from breaking WIP limits"
+      ],
+      "answer": 0,
+      "explanation": "Each expedite may break WIP limits and jump to the front. The one-at-a-time cap prevents \"everything is urgent\" from shredding flow and predictability for all the standard work."
+    },
+    {
+      "subtopic": "Cumulative Flow Diagram",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On a Cumulative Flow Diagram, one stage's band steadily widens over several weeks while the others stay thin. What does this indicate?",
+      "options": [
+        "WIP is accumulating in that stage — a bottleneck is forming (arrivals outpace departures)",
+        "That stage has gone idle and should be removed from the board",
+        "Throughput across the whole system has doubled",
+        "Lead time is shrinking for items in that stage"
+      ],
+      "answer": 0,
+      "explanation": "On a CFD the vertical gap of a band is its WIP; a widening band means work arrives faster than it leaves that stage — a bottleneck. The fix is to attack the constraint (lower upstream WIP, swarm, add capacity), not start more work."
+    },
+    {
+      "subtopic": "Standup focus metric",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a Kanban standup, which metric best decides what to discuss first?",
+      "options": [
+        "WIP age — focus on the oldest in-flight items, the earliest warning an item will be late",
+        "Velocity — the team's story points completed last Sprint",
+        "Team utilization — who is least busy",
+        "The number of items not yet started"
+      ],
+      "answer": 0,
+      "explanation": "Walk the board right-to-left and attack blockers and the oldest items. WIP age past the typical cycle-time percentile is the earliest signal an item will miss its expected delivery."
+    },
+    {
+      "subtopic": "Replenishment",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In Kanban, what replaces Scrum's Sprint Planning for committing to new work?",
+      "options": [
+        "The replenishment (commitment) meeting, held on demand when capacity frees up",
+        "A fixed bi-weekly planning ceremony identical to Sprint Planning",
+        "Nothing — Kanban never commits to specific work",
+        "The Sprint Review"
+      ],
+      "answer": 0,
+      "explanation": "Kanban replenishes the committed queue on demand (when a slot frees) rather than batching commitment into a timeboxed Sprint Planning event."
+    },
+    {
+      "subtopic": "Scrumban migration",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Scrumban — keeping Scrum's cadence and roles while adding Kanban's WIP limits, pull-based replenishment, and flow metrics — is a common low-risk path from Scrum toward flow.",
+      "answer": true,
+      "explanation": "Scrumban is the usual evolutionary migration: preserve the existing roles/cadence, make the workflow visible, add WIP limits and flow metrics, and only later relax the Sprint boundary."
+    },
+    {
+      "subtopic": "Flow efficiency",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Flow efficiency is active (touch) time divided by total lead time, and is often only 5–25% in knowledge work. What does this primarily imply?",
+      "options": [
+        "Most lead time is waiting in queues, so cutting WIP beats working faster",
+        "Workers are idle 75–95% of the time and need closer supervision",
+        "The team should increase utilization to raise efficiency",
+        "Estimates are too generous and should be cut by 75%"
+      ],
+      "answer": 0,
+      "explanation": "Low flow efficiency means the item spends most of its life waiting in queues rather than being worked. Reducing WIP (and thus queueing) shortens lead time far more than asking people to work faster."
+    },
+    {
+      "subtopic": "When to move to Kanban",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which signals suggest a Scrum team should consider moving toward Kanban/flow? (Select all that apply.)",
+      "options": [
+        "Daily production incidents repeatedly blow up the Sprint Goal — the timebox can't be protected",
+        "Priorities change faster than the Sprint length, making the Sprint commitment fiction",
+        "Chronic carryover and over-commitment every Sprint",
+        "The team is doing new-product discovery that benefits from a focusing cadence and Sprint Goal"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Unprotectable Sprint Goals, churn faster than the Sprint, and chronic carryover all point toward continuous flow. Discovery work is the opposite case — there the cadence is the cure, so keep Scrum."
+    },
+    {
+      "subtopic": "Forecasting without points",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A stakeholder asks \"Will feature X be done by the 30th?\" The team uses Kanban with no story points. What is the best forecasting approach?",
+      "options": [
+        "Throughput-based forecasting (e.g. Monte Carlo over historical throughput) answered as a probability against a percentile",
+        "Refuse to forecast, since Kanban has no estimates",
+        "Convert the board to story points and run a velocity-based projection",
+        "Promise the 30th because the item is near the top of the queue"
+      ],
+      "answer": 0,
+      "explanation": "Forecast from historical throughput plus the item's queue position and answer probabilistically (\"85% likely by the 28th\"), tracking WIP age for slippage. Item counts make story points unnecessary."
+    },
+    {
+      "subtopic": "Per-person WIP anti-pattern",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team caps each person's WIP but never limits the board columns. Why does flow still suffer?",
+      "options": [
+        "Work piles up in the queues between people; you must cap the columns to expose and fix hand-offs",
+        "Per-person limits always solve flow, so something else must be wrong",
+        "Per-person WIP is identical to column WIP, so the cap is redundant",
+        "Capping people forces too much idle time, which is the real problem"
+      ],
+      "answer": 0,
+      "explanation": "Limiting only per-person WIP lets work accumulate in the queues between stages. Capping the columns is what surfaces and attacks the hand-off bottlenecks — the system-level constraint."
+    },
+    {
+      "subtopic": "Setting the first WIP limit",
+      "source": "agile-leadership/kanban-and-flow-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the recommended way to set a team's first WIP limit?",
+      "options": [
+        "Start near the team's current actual WIP so nothing breaks, then tighten gradually while watching lead time and throughput",
+        "Set it to exactly one item per column immediately to maximize flow",
+        "Set it as high as possible so no one is ever blocked",
+        "Calculate the theoretical optimum and impose it on day one"
+      ],
+      "answer": 0,
+      "explanation": "The limit is an experiment, not a doctrine. Start near current actual WIP (roughly 1–2 items per person is common), then ratchet it down while watching lead time and throughput until flow strains, then back off one."
+    }
+  ]
+}

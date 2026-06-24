@@ -1,0 +1,240 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/safe-and-scaling-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Agile Release Train",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is an Agile Release Train (ART) in SAFe?",
+      "options": [
+        "A long-lived, self-organizing team-of-teams (typically 5–12 teams, 50–125 people) aligned to a value stream on a shared cadence",
+        "A single Scrum team that releases software weekly",
+        "A temporary project team disbanded after each release",
+        "The portfolio-level funding mechanism for value streams"
+      ],
+      "answer": 0,
+      "explanation": "The ART is the central construct of SAFe (Essential level): a long-lived team-of-teams (5–12 teams, 50–125 people) aligned to a value stream, planning together every Planning Interval."
+    },
+    {
+      "subtopic": "Planning Interval rename",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In SAFe 6.0, what does the acronym \"PI\" now stand for?",
+      "options": ["Planning Interval", "Program Increment", "Product Iteration", "Portfolio Initiative"],
+      "answer": 0,
+      "explanation": "SAFe 6.0 (2023) renamed \"Program Increment\" to \"Planning Interval\" — the acronym PI stayed, but the words changed to emphasize a fixed planning cadence (typically 8–12 weeks). Saying \"Program Increment\" signals SAFe 5.x."
+    },
+    {
+      "subtopic": "ROAM",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "During PI Planning, risks are categorized with ROAM. What does ROAM stand for?",
+      "options": ["Resolved, Owned, Accepted, Mitigated", "Reviewed, Ordered, Assigned, Measured", "Raised, Observed, Analyzed, Managed", "Ranked, Owned, Accepted, Monitored"],
+      "answer": 0,
+      "explanation": "ROAM = Resolved (no longer a concern), Owned (someone takes responsibility), Accepted (live with it), Mitigated (a plan reduces it). Every risk is tagged so the ART leaves with no un-triaged risk."
+    },
+    {
+      "subtopic": "PI Planning",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "PI Planning is a two-day cadence event for the whole ART, held every Planning Interval.",
+      "answer": true,
+      "explanation": "PI Planning is the signature SAFe event — a two-day, whole-ART planning event held every PI, typically facilitated by the Release Train Engineer."
+    },
+    {
+      "subtopic": "Confidence vote",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the confidence-vote threshold for an ART to commit to its PI Objectives?",
+      "options": ["A fist-of-five average of 3 or more", "A unanimous vote of 5", "A simple majority of yes votes", "An average of 2 or more"],
+      "answer": 0,
+      "explanation": "Teams vote fist-of-five on confidence in their PI Objectives. An average of 3+ lets management accept the commitment; below 3 the team reworks the plan. Anyone voting 1 or 2 is invited to explain."
+    },
+    {
+      "subtopic": "Four configurations",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What are the four SAFe configurations, from smallest to most complete?",
+      "options": [
+        "Essential, Large Solution, Portfolio, Full",
+        "Team, Program, Portfolio, Enterprise",
+        "Basic, Standard, Advanced, Complete",
+        "Essential, Portfolio, Solution, Enterprise"
+      ],
+      "answer": 0,
+      "explanation": "Essential (Team + ART, the indispensable core), Large Solution (adds the Solution Train), Portfolio (adds Lean Portfolio Management), and Full (all levels). Start at Essential and add levels only as the problem demands."
+    },
+    {
+      "subtopic": "Core Values 6.0",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What are the four SAFe Core Values in 6.0?",
+      "options": [
+        "Alignment, Transparency, Respect for People, Relentless Improvement",
+        "Alignment, Built-in Quality, Transparency, Program Execution",
+        "Commitment, Focus, Openness, Respect",
+        "Trust, Commitment, Accountability, Results"
+      ],
+      "answer": 0,
+      "explanation": "In 6.0 the four Core Values are Alignment, Transparency, Respect for People, and Relentless Improvement. Built-in Quality and Program Execution (the 5.x values) were dropped — Built-in Quality is now a practice. (Option 3 is the Scrum values; option 4 is Lencioni.)"
+    },
+    {
+      "subtopic": "WSJF",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does SAFe define WSJF and Cost of Delay?",
+      "options": [
+        "WSJF = Cost of Delay / Job Size, where CoD = User-Business Value + Time Criticality + Risk Reduction/Opportunity Enablement",
+        "WSJF = Job Size / Cost of Delay, where CoD = Reach × Impact",
+        "WSJF = Value − Effort, with no Cost of Delay term",
+        "WSJF = User-Business Value × Time Criticality"
+      ],
+      "answer": 0,
+      "explanation": "WSJF = Cost of Delay ÷ Job Size, where CoD = User-Business Value + Time Criticality + Risk Reduction/Opportunity Enablement. It favors small jobs with high cost of delay."
+    },
+    {
+      "subtopic": "WSJF computation",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Feature X: Value 8, Time Criticality 5, RR/OE 8, Job Size 3. Feature Y: Value 13, Time Criticality 2, RR/OE 3, Job Size 13. Which goes first by WSJF?",
+      "code": "X: CoD = 8 + 5 + 8 = 21;  WSJF = 21 / 3  = 7.0\nY: CoD = 13 + 2 + 3 = 18; WSJF = 18 / 13 ≈ 1.4",
+      "lang": "text",
+      "options": [
+        "Feature X — its smaller job size and higher CoD give the far higher WSJF (7.0 vs 1.4)",
+        "Feature Y — it has the highest raw user-business value",
+        "They tie, so pick either",
+        "Feature Y — larger jobs always rank higher in WSJF"
+      ],
+      "answer": 0,
+      "explanation": "X scores WSJF 7.0 vs Y's 1.4. Despite Y's higher raw value, X's smaller job size and higher cost of delay win — exactly the point of WSJF: small, high-delay-cost jobs first."
+    },
+    {
+      "subtopic": "Product Management vs PO",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In SAFe, how do Product Management and the Product Owner differ?",
+      "options": [
+        "Product Management works at the ART level (ART Backlog, Features, Vision); the PO works at the team level (Team Backlog, Stories, accepts work)",
+        "They are the same role at different companies",
+        "Product Management owns Stories; the PO owns Features",
+        "The PO works at the portfolio level; Product Management at the team level"
+      ],
+      "answer": 0,
+      "explanation": "Product Management owns the ART Backlog and defines Features, Vision, and Roadmap (the \"what\" for the train). Product Owners own the Team Backlog and Stories (the \"what\" for one team). Features decompose into Stories."
+    },
+    {
+      "subtopic": "ART Sync",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In SAFe 6.0, the ART Sync umbrella event combines which two syncs?",
+      "options": [
+        "Coach Sync (Scrum Masters/Team Coaches + RTE) and PO Sync (POs + Product Management)",
+        "Daily Scrum and Sprint Review",
+        "Portfolio Sync and Solution Sync",
+        "System Demo and Inspect & Adapt"
+      ],
+      "answer": 0,
+      "explanation": "ART Sync = Coach Sync (coordinates dependencies, progress, impediments) + PO Sync (tracks progress to PI Objectives, scope, priorities)."
+    },
+    {
+      "subtopic": "House of Lean retired",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "SAFe 6.0 retired the \"House of Lean\" and now defines the Lean-Agile Mindset as the five principles of Lean Thinking plus the Agile Manifesto.",
+      "answer": true,
+      "explanation": "The House of Lean was retired in 6.0; the Lean-Agile Mindset is now Lean Thinking + the Agile Manifesto. This is a common \"are you on 5.x or 6.0?\" tell."
+    },
+    {
+      "subtopic": "Mitigated risk",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A PI Planning risk can't be eliminated, but the team puts a plan in place to reduce its probability and impact. Which ROAM category applies?",
+      "options": ["Mitigated", "Resolved", "Accepted", "Owned"],
+      "answer": 0,
+      "explanation": "Mitigated = a plan reduces the risk. Resolved = no longer a concern; Accepted = nothing more can be done, live with it; Owned = a person takes responsibility but it's still unresolved."
+    },
+    {
+      "subtopic": "Choosing a framework",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When is LeSS the better fit over SAFe?",
+      "options": [
+        "When you want to keep Scrum pure and descale with very few new roles — best at 2–8 teams sharing one PO, one backlog, one Sprint",
+        "When you need portfolio governance and lean budgets across many trains",
+        "When your dominant pain is cross-team integration at 3–9 teams",
+        "When you want a two-day PI Planning event for 100+ people"
+      ],
+      "answer": 0,
+      "explanation": "LeSS keeps Scrum pure and descales with minimal new roles (2–8 teams, one PO/backlog/Sprint). Cross-team integration at 3–9 teams points to Nexus; portfolio governance across many trains points to SAFe."
+    },
+    {
+      "subtopic": "Spotify model",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "The Spotify model (squads, tribes, chapters, guilds) is an official, off-the-shelf scaling framework.",
+      "answer": false,
+      "explanation": "It is a 2012 snapshot of how Spotify was organized at one moment — never a framework, and Spotify itself moved past it. Copying the org chart without the autonomy-with-alignment culture is a cargo-cult anti-pattern."
+    },
+    {
+      "subtopic": "Premature Full SAFe",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A lead wants to adopt \"Full SAFe\" on day one for a 60-person, single-train product with no portfolio-governance needs. What is the best advice?",
+      "options": [
+        "Start at Essential SAFe — a single ~60-person train needs only Team + ART; Full imports Large Solution and Portfolio weight with no matching problem",
+        "Adopt Full SAFe so all levels are ready in advance",
+        "Skip SAFe entirely and use only Scrum with no coordination",
+        "Adopt Portfolio SAFe to get lean budgets immediately"
+      ],
+      "answer": 0,
+      "explanation": "Use the smallest correct configuration: a single train with no multi-ART solution or portfolio funding problem needs only Essential (Team + ART). Full prematurely adds Large Solution and Portfolio roles/events with no problem to solve."
+    },
+    {
+      "subtopic": "Inspect and Adapt",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which event closes a Planning Interval and drives ART-level improvement?",
+      "options": [
+        "Inspect and Adapt — the PI System Demo, a measurement review, and a structured problem-solving workshop",
+        "The Sprint Retrospective",
+        "PI Planning Day 2",
+        "The Daily Coach Sync"
+      ],
+      "answer": 0,
+      "explanation": "Inspect and Adapt (I&A) is the ART's retrospective: the PI System Demo of the full integrated solution, a quantitative/qualitative measurement review, and a root-cause problem-solving workshop that produces improvement items for the next PI."
+    },
+    {
+      "subtopic": "Principle behind PI Planning",
+      "source": "agile-leadership/safe-and-scaling-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which SAFe Lean-Agile Principle most directly underpins PI Planning?",
+      "options": [
+        "Principle 7 — Apply cadence, synchronize with cross-domain planning",
+        "Principle 1 — Take an economic view",
+        "Principle 10 — Organize around value",
+        "Principle 6 — Make value flow without interruptions"
+      ],
+      "answer": 0,
+      "explanation": "Principle 7 (cadence + cross-domain synchronization) is exactly what PI Planning operationalizes. Principle 1 underpins WSJF; Principle 10 underpins value streams and ARTs."
+    }
+  ]
+}
