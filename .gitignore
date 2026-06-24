@@ -9,3 +9,5 @@ build-errors.log
 content/_filelist.json
 content/_rest-literal.txt
 scripts/kt-gen-rest.js
+scripts/kt-gen-agile.js
+scripts/kt-verify-existing.js
