@@ -1,0 +1,273 @@
+{
+  "topic": "typescript",
+  "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "keyof basics",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `keyof { a: 1; b: 2 }` evaluate to?",
+      "options": [
+        "`\"a\" | \"b\"`",
+        "`string`",
+        "`1 | 2`",
+        "`{ a: 1; b: 2 }`"
+      ],
+      "answer": 0,
+      "explanation": "`keyof` produces the union of an object type's property keys as literal types, here `\"a\" | \"b\"`. It returns the keys, not `string` and not the value types `1 | 2`."
+    },
+    {
+      "subtopic": "keyof of empty type",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is `keyof {}` (the keys of a type with no members)?",
+      "options": [
+        "`never`",
+        "`undefined`",
+        "`unknown`",
+        "`string | number | symbol`"
+      ],
+      "answer": 0,
+      "explanation": "A type with no members has no keys, so the key union is empty, which is `never`. `string | number | symbol` is `keyof any` (i.e. `PropertyKey`), not `keyof {}`."
+    },
+    {
+      "subtopic": "typeof type query vs JS typeof",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "TypeScript's `typeof` used in *type position* runs at runtime and returns a string like `\"object\"`, exactly like JavaScript's `typeof` operator.",
+      "answer": false,
+      "explanation": "In type position, `typeof value` lifts the value's static (compile-time) type into type space; it does not run and returns no string. JavaScript's `typeof` is the runtime operator that returns a string — same keyword, different namespaces."
+    },
+    {
+      "subtopic": "T[number] on arrays",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `const tags = [\"ts\", \"js\", \"node\"];`, what is `(typeof tags)[number]`?",
+      "options": [
+        "`string`",
+        "`\"ts\" | \"js\" | \"node\"`",
+        "`string[]`",
+        "`number`"
+      ],
+      "answer": 0,
+      "explanation": "`T[number]` is the element type of an array. `tags` is a plain (non-`const`-asserted) `string[]`, so its element type is the widened `string`, not the literal union `\"ts\" | \"js\" | \"node\"`."
+    },
+    {
+      "subtopic": "conditional type branch selection",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How does a conditional type `T extends U ? X : Y` decide which branch to take?",
+      "options": [
+        "By whether `T` is assignable to `U`; if so it picks `X`, otherwise `Y`",
+        "By whether `T` and `U` are the exact same type by name",
+        "By whether `U` is assignable to `T`",
+        "By comparing the runtime values of `T` and `U`"
+      ],
+      "answer": 0,
+      "explanation": "The conditional's test is assignability in the direction `T` assignable to `U`. It is structural (not name-based), purely type-level (no runtime values), and the direction matters: `U extends T` would invert the test."
+    },
+    {
+      "subtopic": "typeof + as const + indexed access",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is `T`?",
+      "code": "const obj = { a: 1, b: \"x\", c: true } as const;\ntype T = (typeof obj)[keyof typeof obj];",
+      "lang": "typescript",
+      "options": [
+        "`1 | \"x\" | true`",
+        "`number | string | boolean`",
+        "`\"a\" | \"b\" | \"c\"`",
+        "`{ readonly a: 1; readonly b: \"x\"; readonly c: true }`"
+      ],
+      "answer": 0,
+      "explanation": "`as const` keeps the literals narrow, so `keyof typeof obj` is `\"a\" | \"b\" | \"c\"` and indexing by that key union distributes to `obj[\"a\"] | obj[\"b\"] | obj[\"c\"]` = `1 | \"x\" | true`. Without `as const` the values would widen to `number | string | boolean`."
+    },
+    {
+      "subtopic": "indexed access by key union",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `interface Person { name: string; age: number; address: { city: string; zip: string } }`, what is `Person[keyof Person]`?",
+      "options": [
+        "`string | number | { city: string; zip: string }`",
+        "`\"name\" | \"age\" | \"address\"`",
+        "`string | number`",
+        "`{ city: string; zip: string }`"
+      ],
+      "answer": 0,
+      "explanation": "`keyof Person` is `\"name\" | \"age\" | \"address\"`, and indexing by that union distributes the lookup, unioning every value type: `string | number | { city: string; zip: string }`. That is the union of values, not the keys."
+    },
+    {
+      "subtopic": "infer in conditional types",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never;`, what is `MyReturnType<number>`?",
+      "options": [
+        "`never`",
+        "`number`",
+        "`unknown`",
+        "A compile error — `number` is not a function"
+      ],
+      "answer": 0,
+      "explanation": "`number` is not assignable to the function pattern, so the test fails and the false branch `never` is returned. It is not a compile error; the conditional simply takes the else branch."
+    },
+    {
+      "subtopic": "distributive conditional types",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which conditions are required for a conditional type to **distribute** over a union argument? Select all that apply.",
+      "options": [
+        "The checked type must be a *naked* type parameter (e.g. `T`, not `T[]` or `[T]` or `Promise<T>`)",
+        "The type argument supplied for that parameter must be a union",
+        "The checked type must be wrapped in a 1-tuple, as in `[T] extends [U]`",
+        "The conditional must be written with a concrete union inline on the left of `extends`",
+        "A naked parameter is enough — even a non-union argument distributes into multiple results"
+      ],
+      "answer": [0, 1],
+      "explanation": "Distribution happens only when the checked type is a naked type parameter AND the argument is a union; results are then unioned back. Wrapping as `[T] extends [U]` disables it, a concrete inline union does not trigger it, and a non-union argument has nothing to split."
+    },
+    {
+      "subtopic": "disabling distribution",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `type IsString<T> = [T] extends [string] ? true : false;`, what is `IsString<string | number>`?",
+      "options": [
+        "`false`",
+        "`true`",
+        "`true | false` (i.e. `boolean`)",
+        "`never`"
+      ],
+      "answer": 0,
+      "explanation": "Wrapping in a 1-tuple disables distribution, so the *whole* union `string | number` is tested against `string` at once. It is not assignable, so the result is the single value `false` (not the distributed `boolean`)."
+    },
+    {
+      "subtopic": "Exclude via distribution",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `type MyExclude<T, U> = T extends U ? never : T;`, what is `MyExclude<\"a\" | \"b\" | \"c\", \"b\">`?",
+      "options": [
+        "`\"a\" | \"c\"`",
+        "`\"b\"`",
+        "`never`",
+        "`\"a\" | \"b\" | \"c\"`"
+      ],
+      "answer": 0,
+      "explanation": "Distribution runs the conditional per member: `\"a\"` keeps, `\"b\"` becomes `never`, `\"c\"` keeps, giving `\"a\" | never | \"c\"`. `never` is absorbed by the union, leaving `\"a\" | \"c\"`."
+    },
+    {
+      "subtopic": "mapped type modifiers",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about mapped-type modifiers are correct? Select all that apply.",
+      "options": [
+        "`-?` removes the optional modifier from every key, making them required (the basis of `Required<T>`)",
+        "`-readonly` removes the `readonly` modifier from every key (the basis of `Mutable<T>`)",
+        "The default `+` prefix on `?` or `readonly` adds the modifier",
+        "`-?` removes only the properties whose value type includes `undefined`",
+        "Modifiers can only be added, never stripped, in a mapped type"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`-?` strips optionality (Required), `-readonly` strips readonly (Mutable), and the default `+` prefix adds a modifier. `-?` does not delete properties — it makes all keys required — and modifiers can be both added (`+`) and removed (`-`)."
+    },
+    {
+      "subtopic": "key remapping to never",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is `WidgetData`?",
+      "code": "type DataOnly<T> = {\n  [K in keyof T as T[K] extends Function ? never : K]: T[K];\n};\ninterface Widget { id: number; label: string; render(): void }\ntype WidgetData = DataOnly<Widget>;",
+      "lang": "typescript",
+      "options": [
+        "`{ id: number; label: string }`",
+        "`{ id: number; label: string; render(): void }`",
+        "`{ render(): void }`",
+        "`{ id: number; label: string; render: never }`"
+      ],
+      "answer": 0,
+      "explanation": "Remapping a key `as never` drops it from the result. `render` is function-typed, so its key becomes `never` and is removed; `id` and `label` survive, yielding `{ id: number; label: string }`."
+    },
+    {
+      "subtopic": "homomorphic mapped types",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "A mapped type written as `{ [K in keyof T]: T[K] }` (homomorphic) preserves the source type's `readonly` and optional (`?`) modifiers, whereas mapping over an arbitrary key union such as `[K in SomeUnion]` does not carry those modifiers across.",
+      "answer": true,
+      "explanation": "Homomorphic mapped types — those of the form `[K in keyof T]` — preserve the source's `readonly`/optional modifiers (and distribute over arrays/tuples). Mapping over an arbitrary key union is not homomorphic and loses those modifiers."
+    },
+    {
+      "subtopic": "template literal cross-product",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given `type Sign = \"+\" | \"-\"; type Axis = \"x\" | \"y\"; type Move = ` followed by the template literal `` `${Sign}${Axis}` ``, what is `Move`?",
+      "options": [
+        "`\"+x\" | \"+y\" | \"-x\" | \"-y\"`",
+        "`\"+x\" | \"-y\"`",
+        "`\"+\" | \"-\" | \"x\" | \"y\"`",
+        "`string`"
+      ],
+      "answer": 0,
+      "explanation": "Each interpolated union distributes, producing the full cross-product. Two 2-member unions yield 2 × 2 = 4 string literals: `\"+x\" | \"+y\" | \"-x\" | \"-y\"`. This combinatorial growth is the cross-product hazard with large unions."
+    },
+    {
+      "subtopic": "infer inside a template literal pattern",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is `P`?",
+      "code": "type Param<T extends string> = T extends `:${infer Name}` ? Name : never;\ntype P = Param<\":userId\">;",
+      "lang": "typescript",
+      "options": [
+        "`\"userId\"`",
+        "`\":userId\"`",
+        "`never`",
+        "`string`"
+      ],
+      "answer": 0,
+      "explanation": "The pattern `` `:${infer Name}` `` matches `\":userId\"` and binds `Name` to the substring after the colon. The test passes, so the true branch returns `Name` = `\"userId\"`. A string with no leading colon would yield `never`."
+    },
+    {
+      "subtopic": "recursion depth and ts2589",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A deeply recursive type triggers error **ts2589** (\"Type instantiation is excessively deep and possibly infinite\"). What is the recommended structural fix?",
+      "options": [
+        "Restructure to tail recursion (e.g. thread an accumulator tuple) so the compiler can apply its tail-recursion optimization, or cap the depth",
+        "Add `// @ts-ignore` above the type alias so the compiler skips it",
+        "Replace the recursive type with `any` to short-circuit evaluation",
+        "Increase the compiler's instantiation-depth cap via a `tsconfig.json` flag"
+      ],
+      "answer": 0,
+      "explanation": "Tail-recursive conditionals (typically with an accumulator) raise the practical recursion ceiling from ~50 to ~1000, avoiding ts2589; for unbounded depth you add a depth counter. Suppressing with `@ts-ignore`, falling back to `any`, or a (non-existent) depth-cap flag do not fix the underlying instantiation explosion."
+    },
+    {
+      "subtopic": "operator selection (multi)",
+      "source": "typescript/advanced-types-and-type-operators-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following statements about these type operators are correct?",
+      "options": [
+        "`T[keyof T]` produces the union of all value types in `T`",
+        "Distributing a naked conditional over `never` yields `never`, not the per-member result",
+        "`Object.keys(obj)` is typed `(keyof T)[]`, exactly mirroring `keyof T`",
+        "`keyof` of a type with a `string` index signature is `string | number`",
+        "Wrapping as `[T] extends [U]` enables distribution over a union"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "`T[keyof T]` unions all value types; distribution over the empty union `never` collapses to `never`; and a string index signature yields `string | number` (JS coerces numeric keys to strings). `Object.keys` is deliberately typed `string[]` (not `(keyof T)[]`) for soundness, and `[T] extends [U]` *disables* distribution rather than enabling it."
+    }
+  ]
+}

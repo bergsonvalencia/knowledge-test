@@ -1,0 +1,268 @@
+{
+  "topic": "react",
+  "source": "react/04-rendering-lists-and-events.md",
+  "questions": [
+    {
+      "subtopic": "Conditional rendering basics",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does JSX use plain JavaScript expressions like ternaries and `&&` for branching instead of an `if` statement inside the markup?",
+      "options": [
+        "JSX has no `if` statement, so branching must be done with expressions inside `{}`",
+        "`if` statements are slower than ternaries when React reconciles",
+        "React strips all `if` statements out of components at build time",
+        "`if` statements are only allowed inside hooks, not in the render body"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer states JSX has no `if` statement, so you branch with JavaScript expressions inside `{}` (early return, ternary, or `&&`). It is a syntactic fact about JSX, not a performance concern."
+    },
+    {
+      "subtopic": "Rendering nothing",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "When a component returns `null` to render nothing, the component still runs and its hooks still fire.",
+      "answer": true,
+      "explanation": "The reviewer notes returning `null` (or `false`/`undefined`) renders nothing, but the component body still executes and its hooks still run — which is why the guard must come after all hooks."
+    },
+    {
+      "subtopic": "The 0 trap with &&",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `count` is the number `0`, what does `{count && <Badge/>}` render to the DOM, and why?",
+      "code": "{count && <Badge n={count} />}",
+      "lang": "tsx",
+      "options": [
+        "The literal text `0`, because `&&` short-circuits and returns `0`, a falsy but renderable value",
+        "Nothing, because `0` is falsy and React always renders falsy values as nothing",
+        "The `<Badge/>` element, because `&&` coerces `0` to `true`",
+        "A runtime error, because `&&` cannot be used inside JSX braces"
+      ],
+      "answer": 0,
+      "explanation": "`&&` short-circuits and returns its left operand `0` when falsy. React renders `null`/`undefined`/booleans as nothing, but a falsy number like `0` is a renderable value and shows as text. Guard with `count > 0 && ...`."
+    },
+    {
+      "subtopic": "What React renders as nothing",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of these values does React render as **nothing** (no visible output)? Select all that apply.",
+      "options": [
+        "`true`",
+        "`null`",
+        "`0`",
+        "`undefined`",
+        "`\"hello\"`"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "React renders `true`, `false`, `null`, and `undefined` as nothing. A falsy number like `0` renders as the text `0`, and a non-empty string like `\"hello\"` renders as text."
+    },
+    {
+      "subtopic": "Guarding the 0 trap",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which expression safely renders `<Badge/>` only when `count` is positive, with no risk of leaking a stray `0` to the DOM?",
+      "options": [
+        "`{count > 0 && <Badge/>}`",
+        "`{count && <Badge/>}`",
+        "`{count ? <Badge/> : 0}`",
+        "`{count || <Badge/>}`"
+      ],
+      "answer": 0,
+      "explanation": "`count > 0` is a real boolean, so the left operand of `&&` can never be a renderable `0`. `{count && ...}` leaks `0`, and `{count || <Badge/>}` would render Badge precisely when count is 0."
+    },
+    {
+      "subtopic": "Keys are required on siblings",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the scope of uniqueness required for a `key` on elements returned from a `.map`?",
+      "options": [
+        "Unique among its siblings (the elements in that same list)",
+        "Globally unique across the entire application",
+        "Unique among all elements rendered by the same component",
+        "Unique per render, regenerated each time the list renders"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer states a key must be unique among its siblings, not globally. Keys are scoped to the list they belong to."
+    },
+    {
+      "subtopic": "key is not a prop",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Inside a child component rendered in a list, reading `props.key` returns the key value you passed from the parent.",
+      "answer": false,
+      "explanation": "`key` is not a prop — React consumes it for reconciliation. Reading `props.key` inside the child is `undefined` (and triggers a warning). Pass the id separately if the child needs it."
+    },
+    {
+      "subtopic": "Index-as-key failure mode",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A list of editable rows uses `key={i}` (the array index). A new item is inserted at the **top** of the list. What is the observed bug?",
+      "options": [
+        "The draft text and state stay attached to the slot/position, so the new top row shows the old first row's draft text",
+        "React throws a duplicate-key error and refuses to render the list",
+        "Every row unmounts and remounts, clearing all draft text across the whole list",
+        "The list renders correctly because indices are always stable and unique"
+      ],
+      "answer": 0,
+      "explanation": "Index keys tie identity to position. On insert at the top, indices shift, so React keeps `key 0` mounted and only swaps its props — input values, focus, and state stick to the slot, not the item. There is no duplicate-key error since indices are still unique."
+    },
+    {
+      "subtopic": "When index keys are acceptable",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "For which lists is using the array index as the `key` an acceptable choice? Select all that apply.",
+      "options": [
+        "A static, append-only list that is never reordered or filtered",
+        "A list the user can sort by column",
+        "A read-only list whose positions never change",
+        "A searchable/filterable list",
+        "A list with insertions and deletions in the middle"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explanation": "Index as key is safe only when positions never change: static, append-only, read-only. Sorting, filtering/searching, and mid-list insert/delete all shift positions, so identity must follow the item via a stable id."
+    },
+    {
+      "subtopic": "Changing key to reset state",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You want to deliberately reset a child component's internal state when a particular value changes. What does changing that component's `key` do, and why does it work?",
+      "options": [
+        "A changed key makes React unmount the old node and mount a fresh one, discarding the old state",
+        "A changed key forces React to re-run the child's render without touching its state",
+        "A changed key tells React to merge the new props into the existing state",
+        "A changed key has no effect on a single (non-list) element"
+      ],
+      "answer": 0,
+      "explanation": "Keys drive reconciliation: a matching key updates/moves the existing node and keeps state, while a changed key unmounts the old node and mounts a fresh one — a deliberate way to reset a component's state. This works on any element, not just lists."
+    },
+    {
+      "subtopic": "Passing a handler reference",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What happens when you write `onClick={handleClick()}` instead of `onClick={handleClick}`?",
+      "options": [
+        "`handleClick` is called during render and its return value is used as the handler",
+        "React debounces the handler so it only fires once per render",
+        "The handler is correctly bound and fires on click, just with extra parentheses",
+        "React throws a compile error because handlers must be arrow functions"
+      ],
+      "answer": 0,
+      "explanation": "`handleClick()` calls the function during render and passes its return value as the handler. This is a common cause of 'fires immediately / infinite re-render' bugs. You must pass the reference `handleClick`."
+    },
+    {
+      "subtopic": "Passing arguments to handlers",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the idiomatic way to pass an argument to an event handler, e.g. deleting a specific row by `id`?",
+      "options": [
+        "`onClick={() => deleteRow(id)}` — an inline arrow defers the call to click time",
+        "`onClick={deleteRow(id)}` — call it directly with the argument",
+        "`onClick={deleteRow.bind(id)}` — bind the argument as `this`",
+        "`onClick={deleteRow, id}` — pass the function and argument as a pair"
+      ],
+      "answer": 0,
+      "explanation": "An inline arrow `() => deleteRow(id)` defers the call until click time while letting you pass arguments. `deleteRow(id)` would call it during render; `bind(id)` passes id as `this`, not the first argument."
+    },
+    {
+      "subtopic": "Naming conventions",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "By the naming convention, a parent owns a play behavior and hands it to a child `Toolbar`. How should the prop and the parent's function be named?",
+      "options": [
+        "Child prop `onPlay`, parent function `handlePlay`",
+        "Child prop `handlePlay`, parent function `onPlay`",
+        "Child prop `playHandler`, parent function `onPlayClick`",
+        "Both named `onPlay` to keep them in sync"
+      ],
+      "answer": 0,
+      "explanation": "Built-in and custom event-exposing props use the `onX` prefix (`onPlay`), while your own handler functions use the `handleX` prefix (`handlePlay`). The parent passes `handlePlay` into the child's `onPlay` prop."
+    },
+    {
+      "subtopic": "SyntheticEvent and bubbling",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Like DOM events, React's synthetic events bubble: an event fires on the deepest element first, then travels up through each ancestor's handler of the same type.",
+      "answer": true,
+      "explanation": "React wraps native events in a SyntheticEvent and, like DOM events, they bubble from the target up through ancestor handlers of the same type."
+    },
+    {
+      "subtopic": "stopPropagation vs preventDefault",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `e.stopPropagation()` and `e.preventDefault()` are correct? Select all that apply.",
+      "options": [
+        "`e.stopPropagation()` stops the event from climbing to ancestor handlers",
+        "`e.preventDefault()` cancels the browser's default action (e.g. form submit, link navigation)",
+        "`e.stopPropagation()` also cancels the browser's default action",
+        "`e.preventDefault()` also stops the event from bubbling",
+        "The two are independent — one does not imply the other"
+      ],
+      "answer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "`stopPropagation` halts bubbling but not the default action; `preventDefault` cancels the default action but not bubbling. The two effects are independent, so the cross-claims (3 and 4) are wrong."
+    },
+    {
+      "subtopic": "Capture phase",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does `onClickCapture` differ from `onClick`, and what is it useful for?",
+      "options": [
+        "It runs top-down from the root toward the target, before the bubbling pass — useful for routers/analytics that must see every click first",
+        "It runs only after `onClick`, capturing clicks the bubble phase missed",
+        "It captures the click and prevents `onClick` from ever firing on that element",
+        "It runs bottom-up like `onClick` but on a separate, isolated event queue"
+      ],
+      "answer": 0,
+      "explanation": "Capture-phase handlers run top-down from the root toward the target, before the bubbling pass runs back up. This lets global intercepts like routers or analytics see every click first."
+    },
+    {
+      "subtopic": "Root listener and React 17",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Where does React attach its single delegated listener per event type, and what changed in React 17?",
+      "options": [
+        "At the root container passed to `createRoot`; before React 17 it attached to `document`",
+        "At the `document` node; React 17 moved it to `window`",
+        "Directly on each element with a handler; React 17 switched to one root listener",
+        "At the `body` element in all versions; React 17 only changed pooling"
+      ],
+      "answer": 0,
+      "explanation": "React attaches one listener per event type at the root container (the `createRoot` DOM node), then dispatches synthetic events. Before React 17 it attached to `document` — relevant when nesting multiple roots or mixing with non-React code."
+    },
+    {
+      "subtopic": "Event pooling removed",
+      "source": "react/04-rendering-lists-and-events.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "After React 17 removed event pooling, you can read properties off the synthetic event `e` in async code without calling `e.persist()`.",
+      "answer": true,
+      "explanation": "Pooling was removed in React 17, so the synthetic event is no longer reused. You can safely read `e` in async callbacks without `e.persist()`."
+    }
+  ]
+}

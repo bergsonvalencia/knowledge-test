@@ -1,0 +1,276 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "STAR acronym",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the **STAR** method, what do the four letters stand for?",
+      "options": [
+        "Situation, Task, Action, Result",
+        "Scenario, Target, Approach, Reflection",
+        "Setting, Theme, Activity, Recap",
+        "Story, Tactic, Achievement, Reward"
+      ],
+      "answer": 0,
+      "explanation": "STAR is Situation, Task, Action, Result — brief context, your specific goal, the first-person actions you took, and the measurable outcome. The other expansions are invented and not the canonical framework."
+    },
+    {
+      "subtopic": "Premise of behavioral interviews",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the core premise that behavioral interviewing rests on?",
+      "options": [
+        "Past behavior is the best predictor of future behavior",
+        "Stated intentions reveal a candidate's true character",
+        "Hypothetical answers expose how candidates think on their feet",
+        "Technical depth predicts leadership ability"
+      ],
+      "answer": 0,
+      "explanation": "Behavioral interviewing is built on the well-validated hypothesis that how a person behaved in a relevant past situation predicts future behavior better than stated intentions or hypotheticals. That is why prompts are phrased in the past tense."
+    },
+    {
+      "subtopic": "Airtime distribution",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which part of a STAR answer should consume the largest share of airtime (about 60%)?",
+      "options": [
+        "Action — the concrete first-person steps you took",
+        "Situation — the context and stakes",
+        "Result — the measurable outcome",
+        "Task — your specific responsibility"
+      ],
+      "answer": 0,
+      "explanation": "The Action is the story: roughly 60% of the answer should be the specific, sequenced things you personally did. The Situation and Task are scaffolding (~25% combined) and the Result is ~15%."
+    },
+    {
+      "subtopic": "Why past tense",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Behavioral prompts are deliberately phrased in the past tense (\"Tell me about a time you…\") rather than as hypotheticals (\"How would you…\") because hypotheticals invite rehearsed, idealized answers.",
+      "answer": true,
+      "explanation": "A hypothetical invites the polished textbook answer everyone gives, while a real recollection forces specifics and resists probing. That is exactly why behavioral interviews exclude hypothetical drift."
+    },
+    {
+      "subtopic": "STARL variant",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the extra **L** add in the STARL variant, and when is it most appropriate?",
+      "options": [
+        "Learning — an explicit beat, used for failure and growth questions",
+        "Leadership — a claim of authority, used for management roles",
+        "Logistics — operational detail, used for delivery stories",
+        "Length — extended context, used for complex situations"
+      ],
+      "answer": 0,
+      "explanation": "STARL makes Learning an explicit fifth beat rather than a tacked-on line, and it is the go-to shape for failure and growth prompts where the reflection is mandatory."
+    },
+    {
+      "subtopic": "SOAR variant",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does the **SOAR** variant differ from STAR, and when should you reach for it?",
+      "options": [
+        "It replaces Task with Obstacle, foregrounding adversity you overcame",
+        "It replaces Result with Outcome, foregrounding business value",
+        "It adds an Obstacle beat after Result to show resilience",
+        "It merges Situation and Task into one Obstacle to keep answers short"
+      ],
+      "answer": 0,
+      "explanation": "SOAR = Situation, Obstacle, Action, Result. It swaps Task for Obstacle so the challenge you overcame is foregrounded — ideal when the adversity is the point. Merging Situation+Task into one beat describes CAR, not SOAR."
+    },
+    {
+      "subtopic": "Use of 'we' vs 'I'",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An interviewer interrupts: \"You keep saying 'we' — what did *you* specifically do?\" What does this signal, and what is the right recovery?",
+      "options": [
+        "Your Action wasn't first-person; re-narrate your own moves and reserve 'we' for the shared outcome",
+        "You sounded arrogant; soften the claims and re-attribute credit to the team",
+        "You drifted into hypotheticals; anchor the answer in a specific date or sprint",
+        "Your Result lacked a metric; add a quantified before/after immediately"
+      ],
+      "answer": 0,
+      "explanation": "The pushback signals the interviewer can't isolate your contribution — a scoring problem from a non-first-person Action. Recover by re-narrating your specific moves, keeping 'we' only for the genuinely shared outcome."
+    },
+    {
+      "subtopic": "No matching story",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You're asked about a competency for which you have no perfect story. What is the recommended move?",
+      "options": [
+        "Pick the closest real story and explicitly state the parallel to the asked competency",
+        "Invent a plausible composite story that cleanly matches the competency",
+        "Decline the question and ask for a different prompt you can answer well",
+        "Switch to a hypothetical describing how you generally handle such situations"
+      ],
+      "answer": 0,
+      "explanation": "Bridge with the closest real story and name the parallel explicitly (\"It wasn't a production outage, but here's a tight-deadline situation that tested the same composure\"). Never fabricate — a probing follow-up exposes it; and a hypothetical stops being a real event."
+    },
+    {
+      "subtopic": "Quantifying without a metric",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "You never formally tracked a metric for a story's Result. Which approaches are recommended? (Select all that apply.)",
+      "options": [
+        "Reconstruct a credible before/after such as cycle time or team-health pulse",
+        "Cite a concrete proxy (e.g. two engineers who'd stopped talking were pairing within a week)",
+        "Give a clearly labeled estimate (e.g. 'roughly a 30% drop, by my rough count')",
+        "Invent a precise figure so the result sounds rigorous",
+        "Drop the Result entirely and end on the Action to avoid the issue"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "When no formal metric exists, use a reconstructed before/after, a proxy, or a labeled estimate — honesty plus a number beats vagueness. Never fabricate a precise figure (a prober will ask how you measured it), and never drop the Result, since an unmeasured outcome is unscoreable."
+    },
+    {
+      "subtopic": "STAR failure modes",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are named STAR failure modes in the reviewer? (Select all that apply.)",
+      "options": [
+        "No measurable Result (\"it went really well\")",
+        "\"We\" instead of \"I\", hiding your contribution",
+        "Hypothetical drift (\"I would usually…\")",
+        "Naming a framework like GROW or SBI in the Action",
+        "Citing a quantified before/after in the Result"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "No measurable Result, 'we' instead of 'I', and hypothetical drift are three of the listed failure modes (along with over-long Situation, no reflection, no stakes, and lone-hero framing). Naming a model and quantifying the Result are strengths the reviewer recommends, not failures."
+    },
+    {
+      "subtopic": "Tailoring SM vs manager",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When re-aiming the same story from a Scrum Master panel to an engineering-manager panel, what should change?",
+      "options": [
+        "The emphasis and metrics, while the underlying facts stay identical",
+        "The facts themselves, to claim the authority a manager would have had",
+        "The framework, switching from STAR to CAR for the manager audience",
+        "Nothing — a strong story lands the same way for both audiences"
+      ],
+      "answer": 0,
+      "explanation": "Shift the lens, not the facts: SM emphasizes process, facilitation, psychological safety, and influence without authority with team-health/flow metrics; manager emphasizes direction-setting, the call, and accountability with delivery/people metrics. Don't invent authority you didn't have."
+    },
+    {
+      "subtopic": "CAR variant",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the defining structural feature of the **CAR** variant, and where does it fit best?",
+      "options": [
+        "It collapses Situation and Task into one Context beat — leaner, for rapid-fire or resume bullets",
+        "It adds a Challenge beat before Action — heavier, for adversity stories",
+        "It replaces Result with a Conclusion beat — softer, for ambiguous outcomes",
+        "It expands Action into Cause-and-Action — deeper, for root-cause stories"
+      ],
+      "answer": 0,
+      "explanation": "CAR (Context, Action, Result) merges Situation+Task into a single Context beat, giving a leaner three-beat shape ideal for warm-ups, rapid-fire rounds, and resume-style answers. The adversity-focused swap belongs to SOAR."
+    },
+    {
+      "subtopic": "Failure-story arc",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the correct arc for answering \"Tell me about a time you failed\"?",
+      "options": [
+        "Own it → contain the damage → blameless root cause → durable system fix → prove it held → generalized lesson",
+        "Explain the circumstances → assign accountability across the team → apologize → promise to try harder",
+        "Describe the failure → highlight how it wasn't really your fault → pivot to a success story",
+        "State the lesson first → then the failure → then a precise dollar figure of the damage"
+      ],
+      "answer": 0,
+      "explanation": "The right shape is ownership → containment → blameless root cause → durable fix → proof it held (metric, e.g. recurrence = 0) → generalized lesson. Deflecting blame or promising to 'try harder' (versus a system change) are exactly the anti-patterns called out."
+    },
+    {
+      "subtopic": "Coaching stance / GROW",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For a \"helped someone grow\" prompt framed with the **GROW** model, why does the *coaching stance* matter specifically for a Scrum Master?",
+      "options": [
+        "Growing the team's self-management means developing capability through questions, not creating dependency by giving answers",
+        "It lets the Scrum Master make the final technical call faster than the team could",
+        "It demonstrates the Scrum Master's positional authority over the coachee's career",
+        "It shifts accountability for the outcome from the Scrum Master onto the coachee"
+      ],
+      "answer": 0,
+      "explanation": "A Scrum Master operates from a coaching stance: GROW means you ask at each stage and the coachee owns every answer, growing self-management (a core 2020 Scrum Guide shift) rather than creating dependency. A Scrum Master has no positional authority and doesn't make the team's call for them."
+    },
+    {
+      "subtopic": "Conflict-resolution accountability",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the worked API-contract conflict example, the Scrum Master deliberately stayed neutral on the technical merits. Why is this the correct framing for the **Task** beat?",
+      "options": [
+        "The SM is accountable for removing the impediment and restoring a safe process, not for choosing the technical answer",
+        "The SM lacked the technical knowledge to evaluate the API contract options",
+        "Staying neutral avoids the appearance of favoritism that could trigger an HR complaint",
+        "The SM was waiting for the Product Owner to make the technical decision instead"
+      ],
+      "answer": 0,
+      "explanation": "The Task names the SM's accountability precisely: remove the impediment to flow and restore a safe, collaborative environment — owning the process, not the content. Picking the technical answer was explicitly not the SM's call, regardless of any technical knowledge."
+    },
+    {
+      "subtopic": "Story bank coverage",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is it recommended to a story bank of ~6–10 stories rather than one story per competency?",
+      "options": [
+        "Most strong stories are reusable across two or three competencies, so high coverage beats one-per-question",
+        "Interviewers only ever ask about six to ten competencies, so more would be wasted",
+        "Fewer than six stories is too easy to memorize and sounds rehearsed to interviewers",
+        "Each competency requires exactly one dedicated story to avoid confusing the panel"
+      ],
+      "answer": 0,
+      "explanation": "A rich conflict story can serve conflict, leadership, and influence prompts with a shift in emphasis, so the goal is high coverage through reuse — not a one-to-one mapping. There are ten competencies in the map, so 6–10 stories cover them only because stories double up."
+    },
+    {
+      "subtopic": "Two most fatal failure modes",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "The reviewer identifies an over-long Situation and hypothetical drift as the two most common and most fatal STAR failure modes to fix first.",
+      "answer": false,
+      "explanation": "The two most common and most fatal failure modes are no measurable Result and 'we' instead of 'I' — the reviewer says to fix those first. Over-long Situation and hypothetical drift are real failure modes but not the pair singled out as most fatal."
+    },
+    {
+      "subtopic": "Reading a STAR answer",
+      "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An interviewer scores the candidate answer below against a competency rubric. Which failure mode does it most clearly exhibit?",
+      "code": "Q: \"Tell me about a time you resolved a conflict.\"\nA: \"On my last team there was tension. Generally, when two\n    people clash, I would usually meet them separately,\n    find common ground, and we'd move past it. We always\n    figured it out and things went well.\"",
+      "lang": "text",
+      "options": [
+        "Hypothetical drift — \"I would usually\" generalizes instead of recounting one real event",
+        "Over-long Situation — too many sentences are spent setting the scene",
+        "Lone-hero framing — the candidate takes sole credit for the resolution",
+        "No reflection — the answer omits a closing line of learning"
+      ],
+      "answer": 0,
+      "explanation": "\"Generally\" and \"I would usually\" are textbook hypothetical drift: the moment you generalize, it stops being a real past event — exactly what behavioral interviews exclude. The Situation is actually too short, and the answer says 'we' rather than claiming lone-hero credit."
+    }
+  ]
+}

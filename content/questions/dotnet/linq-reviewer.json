@@ -30,7 +30,11 @@
         "`Select`",
         "`First`"
       ],
-      "answer": [0, 2, 4],
+      "answer": [
+        0,
+        2,
+        4
+      ],
       "explanation": "`ToList`, `Count`, and `First` materialize the query immediately. `Where` and `Select` are deferred — they build the pipeline and only run when enumerated."
     },
     {
@@ -53,7 +57,7 @@
       "source": "dotnet/linq-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Why does the reviewer recommend `Any(predicate)` over `Count(predicate) > 0` for an existence check?",
+      "question": "Why is `Any(predicate)` preferred over `Count(predicate) > 0` for an existence check?",
       "options": [
         "`Any()` short-circuits on the first match, while `Count()` must examine every element",
         "`Any()` returns an `int` that is cheaper to compare than a `bool`",
@@ -187,7 +191,11 @@
         "Enumerating a deferred query twice is guaranteed to be free because results are cached",
         "An `OrderBy` chain only performs the sort when the query is enumerated"
       ],
-      "answer": [0, 1, 3],
+      "answer": [
+        0,
+        1,
+        3
+      ],
       "explanation": "Deferred queries re-run the whole pipeline on every enumeration, so materializing once with `ToList` avoids repeated work (and repeated DB hits with EF). Deferred queries are not cached, so the 'guaranteed free' claim is wrong; ordering only happens on enumeration."
     },
     {
@@ -233,7 +241,11 @@
         "`Select`",
         "`ToArray`"
       ],
-      "answer": [0, 2, 4],
+      "answer": [
+        0,
+        2,
+        4
+      ],
       "explanation": "`OrderBy`, `GroupBy`, and `ToArray` must consume the entire input before yielding results (you can't sort or group without seeing everything). `Where` and `Select` stream item-by-item."
     },
     {

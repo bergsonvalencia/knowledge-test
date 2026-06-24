@@ -1,0 +1,278 @@
+{
+  "topic": "react",
+  "source": "react/08-effects.md",
+  "questions": [
+    {
+      "subtopic": "When effects run",
+      "source": "react/08-effects.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When does a `useEffect` callback run relative to rendering?",
+      "options": [
+        "During render, synchronously, as part of producing the JSX",
+        "After the render is committed to the DOM (and after the browser paints)",
+        "Before render begins, so it can prepare data for the render pass",
+        "Only when the component first mounts, never on subsequent renders"
+      ],
+      "answer": 1,
+      "explanation": "An Effect runs after commit and paint, so it never blocks the browser from updating the screen. It does not run during render (render must stay pure) and can re-run on later renders depending on its dependencies."
+    },
+    {
+      "subtopic": "Purpose of effects",
+      "source": "react/08-effects.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the intended purpose of `useEffect`?",
+      "options": [
+        "A general-purpose 'run this whenever data changes' hook for any logic",
+        "To synchronize a component with a system outside React, as an escape hatch",
+        "To transform props and state into the values used for rendering",
+        "To replace event handlers so all interaction logic lives in one place"
+      ],
+      "answer": 1,
+      "explanation": "An Effect synchronizes your component with an external system (subscriptions, timers, network, manual DOM, third-party widgets). It is explicitly an escape hatch, not a general 'run on data change' hook, and not for derived data or user events."
+    },
+    {
+      "subtopic": "Dependency array semantics",
+      "source": "react/08-effects.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `useEffect(fn, [])` with an empty dependency array, when does `fn` run?",
+      "options": [
+        "After every render",
+        "After mount only",
+        "Only on unmount",
+        "Never, because the array is empty"
+      ],
+      "answer": 1,
+      "explanation": "An empty deps array runs the Effect after mount only. Omitting the array entirely is what runs it after every render; a populated array re-runs when listed values change."
+    },
+    {
+      "subtopic": "Cleanup function",
+      "source": "react/08-effects.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "React calls an Effect's returned cleanup function before re-running the Effect and again when the component unmounts.",
+      "answer": true,
+      "explanation": "Cleanup runs to undo the Effect (unsubscribe, clear timer, abort fetch) before each re-run with the old values and a final time on unmount."
+    },
+    {
+      "subtopic": "Dependency comparison",
+      "source": "react/08-effects.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How does React decide whether a dependency changed between renders to determine if an Effect should re-run?",
+      "options": [
+        "By deep structural equality of each dependency",
+        "By comparing each dependency with `Object.is`",
+        "By JSON-stringifying the dependency array and comparing strings",
+        "By reference identity using `===` for objects but value equality for primitives"
+      ],
+      "answer": 1,
+      "explanation": "React compares each dependency with `Object.is`. There is no deep comparison, so a new object or array reference each render counts as a change even if the contents are identical."
+    },
+    {
+      "subtopic": "Lifecycle mental model",
+      "source": "react/08-effects.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When a dependency of an Effect changes, what does React do?",
+      "options": [
+        "Runs the new setup first, then runs the previous cleanup",
+        "Runs the previous cleanup with the old values, then runs the new setup with the new values",
+        "Runs only the new setup; cleanup happens exclusively on unmount",
+        "Runs the previous cleanup but skips re-running setup until the next render"
+      ],
+      "answer": 1,
+      "explanation": "On a dependency change React first runs the previous Effect's cleanup using the old values, then runs the new setup with the new values. Cleanup is not limited to unmount."
+    },
+    {
+      "subtopic": "StrictMode dev behavior",
+      "source": "react/08-effects.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In development with StrictMode, what does React do to a freshly mounted component's Effect, and why?",
+      "options": [
+        "Runs setup twice in a row to warm caches; this also happens in production",
+        "Mounts, immediately runs cleanup, then re-runs setup once, to surface missing or incorrect cleanup; it does not happen in production",
+        "Delays the Effect until the second render to avoid double work in development",
+        "Skips the Effect entirely in development so cleanup bugs are easier to spot"
+      ],
+      "answer": 1,
+      "explanation": "StrictMode does a dev-only mount -> cleanup -> remount cycle to expose missing or wrong cleanup. It does not run in production, and a correct, idempotent Effect survives it unchanged."
+    },
+    {
+      "subtopic": "Effect doubles in StrictMode",
+      "source": "react/08-effects.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "If `mount -> cleanup -> mount` breaks your Effect in development StrictMode, the correct conclusion is that your cleanup is wrong, not that StrictMode is at fault.",
+      "answer": true,
+      "explanation": "A correct Effect is idempotent under remount. StrictMode only surfaces a pre-existing bug; the fix is to make cleanup fully reverse setup, not to disable the check."
+    },
+    {
+      "subtopic": "You might not need an effect",
+      "source": "react/08-effects.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A component stores `fullName` in state and sets it via an Effect: `useEffect(() => setFullName(first + ' ' + last), [first, last])`. What is the recommended fix?",
+      "options": [
+        "Wrap the assignment in `useMemo` to cache `fullName`",
+        "Move the `setFullName` call into the input's `onChange` handler",
+        "Compute `fullName` during render as a plain variable and remove the state and Effect",
+        "Keep the Effect but add `fullName` to the dependency array"
+      ],
+      "answer": 2,
+      "explanation": "Data transformed for rendering should be derived during render: `const fullName = first + ' ' + last`. The redundant state plus Effect causes an extra render pass; `useMemo` is only warranted for expensive derivations."
+    },
+    {
+      "subtopic": "Resetting state on prop change",
+      "source": "react/08-effects.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You want a component to reset all of its internal state when a particular prop (e.g. `userId`) changes. What is the recommended approach?",
+      "options": [
+        "Add an Effect on `[userId]` that calls each state setter back to its initial value",
+        "Pass a different `key` to the component so React remounts it and resets state",
+        "Store `userId` in a ref and compare it during render to decide whether to reset",
+        "Lift all the state to the parent and clear it from a `userId` Effect there"
+      ],
+      "answer": 1,
+      "explanation": "Passing a different `key` makes React treat it as a new component instance and reset all state automatically. The Effect-and-reset approach causes an extra render cascade and is the anti-pattern the reviewer warns against."
+    },
+    {
+      "subtopic": "Effects vs event handlers",
+      "source": "react/08-effects.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does the reviewer say logic for 'user clicked Buy' belongs in the event handler rather than in an Effect?",
+      "options": [
+        "Event handlers run after paint, so the purchase feels faster to the user",
+        "Effects cannot call state setters, so a purchase mutation must live in the handler",
+        "The event handler knows *why* it ran (the specific interaction); an Effect only sees that a value changed, not which interaction caused it",
+        "Effects are not allowed to perform network requests, only handlers are"
+      ],
+      "answer": 2,
+      "explanation": "An event handler knows the cause (the user clicked Buy), whereas an Effect can't tell which interaction triggered a value change. Effects can call setters and do network work, so those options are false."
+    },
+    {
+      "subtopic": "Decision: effect vs alternatives",
+      "source": "react/08-effects.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "According to the decision flow, which situations do NOT call for a `useEffect`? Select all that apply.",
+      "options": [
+        "Logic triggered by a specific user action such as a button click",
+        "A value cheaply computable from current props and state during render",
+        "An expensive derivation that can be computed from props and state",
+        "Subscribing to an external store that emits changes over time",
+        "Connecting to a chat server when a room id changes"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "User-action logic goes in the handler; cheap derivations are computed in render; expensive derivations use `useMemo`. Only synchronizing with external systems (a subscription, a chat connection) genuinely needs an Effect."
+    },
+    {
+      "subtopic": "Caching expensive derivations",
+      "source": "react/08-effects.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You have an expensive value derived from props/state and want to avoid recomputing it on every render. What is recommended?",
+      "options": [
+        "Store it in state and recompute it in an Effect when inputs change",
+        "Wrap the computation in `useMemo` keyed on its inputs",
+        "Store it in a ref and update the ref from an Effect",
+        "Move the computation into the parent and pass it down as a prop"
+      ],
+      "answer": 1,
+      "explanation": "An expensive derivation should be cached with `useMemo`, not mirrored into state written from an Effect. The Effect-plus-state approach is the redundant-state anti-pattern."
+    },
+    {
+      "subtopic": "Reactive values",
+      "source": "react/08-effects.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about reactive values and the reactivity of component logic are correct? Select all that apply.",
+      "options": [
+        "Props, state, and values derived from them are reactive",
+        "Effects are reactive: they re-run when a reactive value in their deps changes",
+        "Event handlers are non-reactive: they read current props/state at call time without subscribing to changes",
+        "A value imported as a module-level constant is reactive and must be in the deps array",
+        "Effect Events are reactive and therefore must be listed in the dependency array"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Reactive values are props, state, and things derived from them; Effects re-run on dep changes; handlers read latest values non-reactively. Module constants are not reactive, and Effect Events are non-reactive and must be omitted from deps."
+    },
+    {
+      "subtopic": "useEffectEvent purpose",
+      "source": "react/08-effects.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An Effect must read the current `theme` to show a notification when a chat connects, but must NOT reconnect when `theme` toggles. What is recommended?",
+      "options": [
+        "Add `theme` to the deps and accept the extra reconnects as correct behavior",
+        "Suppress the `exhaustive-deps` lint rule with a comment and omit `theme`",
+        "Wrap the notification logic in `useEffectEvent` and call it from the Effect, leaving `theme` out of deps",
+        "Store `theme` in a ref and read `ref.current` inside the Effect to dodge the linter"
+      ],
+      "answer": 2,
+      "explanation": "`useEffectEvent` extracts the non-reactive part: it always sees the latest `theme` but is omitted from deps, so theme changes never re-trigger the Effect. Suppressing the linter or ref-hacking are the discouraged 'lying about deps' patterns."
+    },
+    {
+      "subtopic": "useEffectEvent constraints",
+      "source": "react/08-effects.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which statement about the rules and status of `useEffectEvent` is correct?",
+      "options": [
+        "It must be added to the Effect's dependency array so the latest values are captured",
+        "It must not be listed in deps, should only be called from inside Effects, and is still experimental",
+        "It is a stable, production-ready replacement for all event handlers",
+        "It may be freely passed to child components so they can read the latest props"
+      ],
+      "answer": 1,
+      "explanation": "The Effect Event is omitted from deps (the linter omits it), should only be called from inside Effects and never passed to other components or Effects, and the API is experimental and not in a stable release."
+    },
+    {
+      "subtopic": "Cleanup correctness (code)",
+      "source": "react/08-effects.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Consider this Effect. What is the problem with it?",
+      "code": "useEffect(() => {\n  const id = setInterval(() => {\n    setCount(c => c + 1);\n  }, 1000);\n}, []);",
+      "lang": "tsx",
+      "options": [
+        "The updater `c => c + 1` causes a stale closure and the count freezes",
+        "There is no cleanup, so the interval is never cleared and leaks (and can duplicate under StrictMode remount)",
+        "`setCount` should not be called inside an Effect at all",
+        "The empty deps array means the interval never starts"
+      ],
+      "answer": 1,
+      "explanation": "The Effect starts an interval but returns no cleanup, so `clearInterval` is never called: the timer leaks and StrictMode's mount->cleanup->remount would leave a duplicate running. The functional updater is correct, and the empty deps array does start it once on mount."
+    },
+    {
+      "subtopic": "Effect Event in deps (code)",
+      "source": "react/08-effects.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In this `ChatRoom`, what is the effect of `theme` being intentionally absent from the dependency array?",
+      "code": "const onConnected = useEffectEvent(() => {\n  showNotification(\"Connected!\", theme);\n});\n\nuseEffect(() => {\n  const connection = createConnection(roomId);\n  connection.on(\"connected\", () => onConnected());\n  connection.connect();\n  return () => connection.disconnect();\n}, [roomId]);",
+      "lang": "tsx",
+      "options": [
+        "The notification will always show a stale, initial `theme` value",
+        "Toggling `theme` reconnects the chat, defeating the optimization",
+        "The connection re-syncs only when `roomId` changes, while `onConnected` still reads the latest `theme`",
+        "The code will throw because `onConnected` is read inside the Effect but not in deps"
+      ],
+      "answer": 2,
+      "explanation": "Because the notification is wrapped in an Effect Event, the Effect re-syncs only on `roomId` changes, yet `onConnected` always sees the latest `theme`. The Effect Event reads current values (not stale) and must be omitted from deps without error."
+    }
+  ]
+}

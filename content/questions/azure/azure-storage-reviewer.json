@@ -1,0 +1,270 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-storage-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Storage account and services",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which four independent data services does a single Azure storage account expose?",
+      "options": [
+        "Blob, Queue, Table, Files",
+        "Blob, Disk, Queue, Cosmos",
+        "Blob, Topic, Table, Files",
+        "Blob, Queue, Cosmos, Files"
+      ],
+      "answer": 0,
+      "explanation": "One storage account hosts Blob (object store), Queue (simple messaging), Table (key-value NoSQL), and Files (SMB/NFS shares). Cosmos DB and managed disks are separate services, and Topics belong to Service Bus."
+    },
+    {
+      "subtopic": "Performance tier vs access tier",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How do the performance tier (Standard/Premium) and the access tier (Hot/Cool/Cold/Archive) differ in scope?",
+      "options": [
+        "Performance tier is an account-level choice; access tier is set per blob",
+        "Both are account-level choices set at creation",
+        "Performance tier is per blob; access tier is account-level",
+        "Both are per-blob choices that can be changed any time"
+      ],
+      "answer": 0,
+      "explanation": "Performance (Standard HDD vs Premium SSD) is chosen at the account level, while access tiers (Hot/Cool/Cold/Archive) are a per-blob choice on Standard accounts (with an account default). They are orthogonal and must not be conflated."
+    },
+    {
+      "subtopic": "Blob types",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which blob type is optimized for append-only writes and is the natural fit for logging and audit trails?",
+      "options": [
+        "Append blob",
+        "Block blob",
+        "Page blob",
+        "Snapshot blob"
+      ],
+      "answer": 0,
+      "explanation": "An append blob lets you add blocks to the end but not modify existing ones, making it ideal for logs and audit trails. Block blobs are the default object store, and page blobs back managed disks."
+    },
+    {
+      "subtopic": "Encryption at rest",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Encryption at rest in Azure Storage can be disabled per account if you choose to manage encryption in your application instead.",
+      "answer": false,
+      "explanation": "Encryption at rest is always on and cannot be disabled; all four services encrypt with 256-bit AES (SSE), transparently and for free. You can only choose the key-management model (Microsoft-managed, customer-managed, or customer-provided)."
+    },
+    {
+      "subtopic": "Archive tier",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What must you do before you can read or modify a blob that is in the Archive access tier?",
+      "options": [
+        "Rehydrate it to an online tier (Hot/Cool/Cold) first",
+        "Nothing special — Archive reads are instant but charged a fee",
+        "Enable blob versioning on the account",
+        "Switch the account performance tier to Premium"
+      ],
+      "answer": 0,
+      "explanation": "Archive is offline; the data is not on instantly-readable media. You must rehydrate the blob to an online tier (up to ~15 hours at Standard priority, or expedited) before any read or modify. Cool/Cold reads are instant, but Archive is not."
+    },
+    {
+      "subtopic": "Redundancy selection",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A single-region production workload must survive the loss of an entire availability zone but has no regional-DR requirement. Which redundancy option is the most appropriate default?",
+      "options": [
+        "ZRS",
+        "LRS",
+        "GRS",
+        "RA-GRS"
+      ],
+      "answer": 0,
+      "explanation": "ZRS keeps 3 synchronous copies across 3 availability zones, surviving a full zone outage, and is the recommended default for single-region production. LRS survives only rack/disk failure, and GRS/RA-GRS add geo replication you don't need here (and are still LRS-based locally)."
+    },
+    {
+      "subtopic": "Control-plane vs data-plane RBAC",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An administrator with the `Owner` role on a storage account gets `403 AuthorizationFailure` when listing blob contents in the portal's data view. What is the correct fix?",
+      "options": [
+        "Assign a data-plane role such as `Storage Blob Data Reader` at account or container scope",
+        "Assign the `Contributor` role at the subscription scope",
+        "Regenerate both account keys to refresh the admin's access",
+        "Enable anonymous Container-level access on the container"
+      ],
+      "answer": 0,
+      "explanation": "`Owner`/`Contributor` are control-plane roles that manage the resource but do not grant access to blob content. Reading/writing data requires a `Storage Blob Data *` data-plane role. Subscription-scoped Contributor and key regeneration don't grant data access, and anonymous access is a security regression, not the fix."
+    },
+    {
+      "subtopic": "User-delegation SAS",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What distinguishes a user-delegation SAS from a service SAS or account SAS?",
+      "options": [
+        "It is signed with a Microsoft Entra ID key, never the account key",
+        "It can only ever grant read permission on a single blob",
+        "It never expires and must be revoked by deleting the blob",
+        "It is signed with one of the two account master keys"
+      ],
+      "answer": 0,
+      "explanation": "A user-delegation SAS is signed with a Microsoft Entra ID user-delegation key rather than the account key, so it never exposes the master key, inherits Entra identity/audit, and is revoked by revoking the delegation key. Service and account SAS are signed by the account key. It is time-limited and can grant various permissions, not just read."
+    },
+    {
+      "subtopic": "Versioning vs soft delete",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key functional difference between blob versioning and blob soft delete?",
+      "options": [
+        "Versioning preserves prior states on overwrite/delete as read-only versions; soft delete is a time-windowed recycle bin for recovering deletions",
+        "Versioning recovers deleted containers; soft delete preserves overwrites",
+        "Versioning requires a locked immutability policy; soft delete does not",
+        "They are two names for the same feature with different retention windows"
+      ],
+      "answer": 0,
+      "explanation": "Versioning automatically captures the prior state on every overwrite or delete as a read-only version, while soft delete is a recycle bin with a 1-365 day retention window that recovers deleted/overwritten blobs and containers. They are complementary; the reviewer recommends enabling both for serious data."
+    },
+    {
+      "subtopic": "Storage Queue vs Service Bus",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which requirement most clearly forces you to choose Service Bus queues over Storage Queues?",
+      "options": [
+        "Guaranteed FIFO ordering with sessions, transactions, and a built-in dead-letter queue",
+        "A dirt-cheap, high-throughput work queue with no ordering needs",
+        "Millions of messages stored up to the account's TB capacity",
+        "Simple REST-based access with visibility-timeout semantics"
+      ],
+      "answer": 0,
+      "explanation": "FIFO via sessions, transactions, and a built-in dead-letter queue are broker features only Service Bus provides; the moment you need any of them you outgrow Storage Queues. The other options describe exactly what Storage Queues already do well (cheap, high-throughput, REST, visibility timeouts)."
+    },
+    {
+      "subtopic": "Table storage vs Cosmos Table API",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In Azure Table storage, which fields are indexed, and what is the performance consequence of querying on other fields?",
+      "options": [
+        "Only PartitionKey and RowKey are indexed; querying other properties is a slow scan",
+        "All properties are automatically indexed, so any query is fast",
+        "Only RowKey is indexed; PartitionKey queries require a scan",
+        "Indexes must be defined manually per property at table creation"
+      ],
+      "answer": 0,
+      "explanation": "In Table storage only PartitionKey and RowKey are indexed (and together form the unique key); filtering on any other property forces a scan. Automatic secondary indexing of every property is a Cosmos DB Table API feature, not Table storage."
+    },
+    {
+      "subtopic": "ADLS Gen2 hierarchical namespace",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Azure Data Lake Storage (ADLS) Gen2 are correct? Select all that apply.",
+      "options": [
+        "It is Blob storage with the hierarchical namespace (HNS) feature enabled at account creation",
+        "HNS enables atomic directory operations like renaming a whole folder in one metadata operation",
+        "The hierarchical namespace can be toggled on or off at any time after account creation",
+        "It adds POSIX-style ACLs on files and directories on top of Azure RBAC",
+        "It is a completely separate Azure service with its own billing model unrelated to Blob storage"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "ADLS Gen2 is Blob storage with HNS enabled at creation, giving a true directory tree with atomic directory operations and POSIX-style ACLs on top of RBAC. HNS cannot be toggled later, and ADLS Gen2 is not a separate service."
+    },
+    {
+      "subtopic": "Container access and SDK defaults",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this setup, what anonymous access level does the newly created container have?",
+      "code": "var service = new BlobServiceClient(\n    new Uri(\"https://myaccount.blob.core.windows.net\"),\n    new DefaultAzureCredential());\n\nBlobContainerClient container = service.GetBlobContainerClient(\"uploads\");\nawait container.CreateIfNotExistsAsync();",
+      "lang": "csharp",
+      "options": [
+        "None — the container is private with no anonymous access by default",
+        "Blob — anonymous read of blobs is allowed but listing is not",
+        "Container — anonymous read and list are both allowed",
+        "It inherits whatever the account's default container ACL is set to"
+      ],
+      "answer": 0,
+      "explanation": "`CreateIfNotExistsAsync()` creates the container with `PublicAccessType.None` by default (private), and anonymous access is also disabled at the account level by default. Blob and Container levels must be explicitly requested, and production keeps containers Private behind CDN/Front Door."
+    },
+    {
+      "subtopic": "Geo-replication consistency",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Because geo-replication to the paired secondary region is asynchronous, an unplanned region loss can lose the last few writes that had not yet replicated (an RPO of minutes).",
+      "answer": true,
+      "explanation": "The geo copy (GRS/GZRS) is asynchronous, so an unplanned region failure can lose recently written data not yet replicated, giving an RPO typically measured in minutes. Only the local copies (LRS/ZRS) are synchronous."
+    },
+    {
+      "subtopic": "Reading the RA secondary",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A workload must survive a full region outage with read access to its data before any failover completes, and must also tolerate an availability-zone failure. Which single redundancy option satisfies all of this?",
+      "options": [
+        "RA-GZRS",
+        "GZRS",
+        "RA-GRS",
+        "ZRS"
+      ],
+      "answer": 0,
+      "explanation": "RA-GZRS uses ZRS in the primary (zone resilience) plus async geo-copy (regional DR) and exposes a read-only secondary endpoint so the app can read the secondary without waiting for a failover. GZRS lacks the read-access secondary, RA-GRS lacks zone resilience locally (it is LRS-based), and ZRS has no geo copy at all."
+    },
+    {
+      "subtopic": "Locked immutability policy",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Compliance requires audit logs to be immutable for 7 years such that not even the account owner can delete them early. Which feature delivers this?",
+      "options": [
+        "A locked time-based immutability (WORM) policy with a 7-year retention",
+        "Blob versioning with a lifecycle rule that expires versions after 7 years",
+        "Soft delete with the maximum 365-day retention window, renewed yearly",
+        "An account SAS scoped to deny delete permission for 7 years"
+      ],
+      "answer": 0,
+      "explanation": "A locked time-based immutability policy enforces true WORM: once locked, no principal — including the account owner/root — can shorten or remove it (the S3 Object Lock Compliance-mode analogue). Versioning and soft delete don't prevent privileged deletion, and a SAS only governs the holder, not the account owner."
+    },
+    {
+      "subtopic": "User-delegation SAS code",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In this snippet that mints a user-delegation SAS, what does `userDelegationKey` provide that makes the resulting SAS preferable to a service SAS?",
+      "code": "var userDelegationKey = await service.GetUserDelegationKeyAsync(\n    DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(15));\n\nvar sasBuilder = new BlobSasBuilder { /* scoped to one blob, Read, 15 min */ };\nvar sas = sasBuilder.ToSasQueryParameters(userDelegationKey.Value, \"myaccount\");",
+      "lang": "csharp",
+      "options": [
+        "An Entra-issued signing key, so the SAS is signed without ever using the account key",
+        "A cached copy of the account master key for faster signing",
+        "An anonymous public-access grant that bypasses RBAC entirely",
+        "A permanent token that does not need an expiry to be set"
+      ],
+      "answer": 0,
+      "explanation": "`GetUserDelegationKeyAsync` returns a key issued by Microsoft Entra ID (authorized via the caller's RBAC permission), so the SAS is signed with that key and never touches the account master key. It still inherits Entra audit, is time-limited, and is revoked by revoking the delegation key."
+    },
+    {
+      "subtopic": "Access-tier minimums and fees",
+      "source": "azure/azure-storage-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are correct about Azure Blob access tiers and their minimum-retention behavior? Select all that apply.",
+      "options": [
+        "Cool has a 30-day minimum and Cold has a 90-day minimum; both offer instant retrieval",
+        "Archive has a 180-day minimum and is offline, requiring rehydration to read",
+        "Moving Cool/Cold/Archive data before its minimum duration incurs a pro-rated early-deletion fee",
+        "Cold is an offline tier like Archive but with a shorter rehydration time",
+        "Hot has a 90-day minimum retention before data can be moved without a fee"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Cool (30-day min) and Cold (90-day min) are both online/instant; Archive (180-day min) is offline and needs rehydration; and early deletion before the minimum duration is charged pro-rated. Cold is online (not offline), and Hot has no minimum retention."
+    }
+  ]
+}

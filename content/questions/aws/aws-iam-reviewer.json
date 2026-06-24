@@ -1,0 +1,257 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-iam-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Two-phase request handling",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "On every request to an AWS API, IAM performs two phases in order. What are they?",
+      "options": [
+        "Authentication of the principal, then authorization against all applicable policies",
+        "Authorization against policies, then authentication of the principal",
+        "Encryption of the payload, then authentication of the principal",
+        "Quota enforcement, then authorization against policies"
+      ],
+      "answer": 0,
+      "explanation": "IAM first authenticates the principal (verifies who is making the signed call) and then authorizes by evaluating all applicable policies. Authorization cannot precede authentication, and encryption/quota are not the two IAM phases."
+    },
+    {
+      "subtopic": "Explicit deny precedence",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In IAM policy evaluation, what is the result when one policy contains an explicit `Deny` and another contains an explicit `Allow` for the same action?",
+      "options": [
+        "Denied — an explicit Deny always overrides any Allow",
+        "Allowed — the most specific statement wins",
+        "Allowed — Allow takes precedence over Deny by default",
+        "Indeterminate — the account is locked until an admin resolves the conflict"
+      ],
+      "answer": 0,
+      "explanation": "An explicit Deny anywhere in any applicable policy ends evaluation with a deny. There is no specificity ranking and Allow never overrides Deny."
+    },
+    {
+      "subtopic": "Identity vs resource-based policies",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes an identity-based policy from a resource-based policy?",
+      "options": [
+        "An identity-based policy has no `Principal` element; a resource-based policy requires a `Principal`",
+        "An identity-based policy requires a `Principal`; a resource-based policy omits it",
+        "Both require a `Principal` element to be valid",
+        "Neither may contain a `Principal` element"
+      ],
+      "answer": 0,
+      "explanation": "The identity an identity-based policy is attached to is the implicit principal, so the policy omits `Principal`. A resource-based policy must name the `Principal` it grants access to."
+    },
+    {
+      "subtopic": "Policy version",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The `Version` field of a modern IAM policy that uses `Condition` blocks and policy variables should be set to `\"2012-10-17\"`.",
+      "answer": true,
+      "explanation": "`\"2012-10-17\"` is the current policy language version that enables conditions and variables; it is the value the reviewer prescribes for modern policies."
+    },
+    {
+      "subtopic": "Groups are not principals",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "An IAM group can be named as the `Principal` of a resource-based policy and can itself be assumed like a role.",
+      "answer": false,
+      "explanation": "A group is a convenience container for attaching policies to its member users — it is not a principal. You cannot make a group a `Principal`, and groups cannot be assumed."
+    },
+    {
+      "subtopic": "Same-account vs cross-account grants",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A role in Account A must read an S3 bucket owned by Account B. Account A's identity policy already allows `s3:GetObject` on B's bucket, but calls are denied. What is the most likely fix?",
+      "options": [
+        "Add a bucket policy in Account B that allows A's role as `Principal` to `s3:GetObject`",
+        "Remove the identity policy in A since resource policies override identity policies cross-account",
+        "Attach a permissions boundary in A that allows `s3:GetObject`",
+        "Enable an SCP in A's organization that allows `s3:GetObject`"
+      ],
+      "answer": 0,
+      "explanation": "Cross-account access requires BOTH sides: A's identity policy AND B's resource (bucket) policy must allow it. Boundaries and SCPs only cap; they never grant, so they cannot supply the missing resource-side Allow."
+    },
+    {
+      "subtopic": "Guardrails never grant",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An SCP attached to an account contains a statement that `Allow`s `s3:*`. A role in that account has no identity-based or resource-based policy granting any S3 action. Can the role call `s3:GetObject`?",
+      "options": [
+        "No — guardrails only cap permissions; an identity- or resource-based Allow is still required",
+        "Yes — an SCP Allow grants the permission directly to all principals in the account",
+        "Yes — because the SCP allow merges with the implicit account permissions",
+        "Only if the role also has a permissions boundary that allows `s3:GetObject`"
+      ],
+      "answer": 0,
+      "explanation": "SCPs (and all guardrails) only set a ceiling; they never grant. Without an identity-based or resource-based Allow the request is an implicit deny regardless of what the SCP permits."
+    },
+    {
+      "subtopic": "Condition AND/OR semantics",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the `Condition` block below, what must be true for the statement to match?",
+      "code": "\"Condition\": {\n  \"StringEquals\": { \"aws:PrincipalTag/team\": [\"a\", \"b\"] },\n  \"Bool\": { \"aws:SecureTransport\": \"true\" }\n}",
+      "lang": "json",
+      "options": [
+        "The principal's `team` tag is `a` OR `b`, AND the request uses TLS",
+        "The principal's `team` tag is `a` AND `b`, AND the request uses TLS",
+        "The principal's `team` tag is `a` OR `b`, OR the request uses TLS",
+        "The principal's `team` tag is `a` AND `b`, OR the request uses TLS"
+      ],
+      "answer": 0,
+      "explanation": "Multiple condition keys in one block are AND'd, while multiple values for a single key are OR'd. So `team` must be a or b, and `aws:SecureTransport` must be true."
+    },
+    {
+      "subtopic": "STS temporary credentials",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What distinguishes a set of temporary STS credentials from long-lived IAM user access keys?",
+      "options": [
+        "Temporary credentials include a session token and expire; access keys have no session token and do not expire",
+        "Temporary credentials never include a secret access key, only a session token",
+        "Temporary credentials are region-scoped while access keys are global",
+        "Temporary credentials must be manually rotated, unlike access keys"
+      ],
+      "answer": 0,
+      "explanation": "Temporary credentials consist of an access key id, secret access key, AND a session token, and they expire and auto-rotate. The session token plus expiry is the marker of temporary credentials; long-lived access keys have neither."
+    },
+    {
+      "subtopic": "ECS task vs execution role",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In Amazon ECS, which role does your application container's code use when it calls `s3:GetObject` or `dynamodb:PutItem`?",
+      "options": [
+        "The task role",
+        "The task execution role",
+        "The instance profile of the underlying EC2 host",
+        "The service-linked role for ECS"
+      ],
+      "answer": 0,
+      "explanation": "The task role is the identity your application code uses to call AWS services. The task execution role is for the ECS agent to pull the image from ECR and ship logs to CloudWatch — a classic trap to keep distinct."
+    },
+    {
+      "subtopic": "Default credential provider chain",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On an EC2 instance with an attached instance profile (and no env vars or shared profile configured), what happens when application code runs `new AmazonS3Client()` with no explicit credentials?",
+      "code": "var s3 = new AmazonS3Client();\nvar obj = await s3.GetObjectAsync(new GetObjectRequest {\n    BucketName = \"acme-reports\", Key = \"team-a/summary.csv\"\n});",
+      "lang": "csharp",
+      "options": [
+        "The SDK resolves temporary credentials from the instance role via the default credential provider chain",
+        "The call throws immediately because no access key id or secret was supplied",
+        "The SDK falls back to anonymous (unauthenticated) requests",
+        "The SDK prompts for credentials interactively at runtime"
+      ],
+      "answer": 0,
+      "explanation": "The default credential provider chain resolves automatically (env vars, shared profile, SSO, then the container/instance role). With a role attached, the SDK fetches auto-rotating temporary credentials from the instance metadata service — no credential code needed."
+    },
+    {
+      "subtopic": "Permissions boundary for delegation",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You grant a developer `iam:CreateRole` and `iam:AttachRolePolicy` so they can self-serve roles, but you must guarantee any role they create can never exceed read-only S3. Which mechanism enforces this?",
+      "options": [
+        "Require a permissions boundary on the roles they create, capping the effective permissions",
+        "Attach a session policy at each `AssumeRole` of the new roles",
+        "Add a resource-based policy on every S3 bucket allowing only the developer",
+        "Rely on an explicit Deny in the developer's own identity policy"
+      ],
+      "answer": 0,
+      "explanation": "A permissions boundary caps the maximum permissions a created role can have regardless of the attached policies; you condition role creation on setting that boundary. A session policy only caps a single assume call, not roles the developer authors and others assume."
+    },
+    {
+      "subtopic": "Policy types selection",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following IAM policy types can GRANT permissions (as opposed to only capping them)? Select all that apply.",
+      "options": [
+        "Identity-based policy",
+        "Resource-based policy",
+        "Service Control Policy (SCP)",
+        "Permissions boundary",
+        "Session policy"
+      ],
+      "answer": [0, 1],
+      "explanation": "Only identity-based and resource-based policies grant access. SCPs, permissions boundaries, and session policies only set ceilings (intersection/AND) — they never widen access."
+    },
+    {
+      "subtopic": "Confused deputy and ExternalId",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A third-party SaaS assumes a role in many customers' accounts on behalf of those customers. Its trust policies check only the vendor's AWS account id. Why is `sts:ExternalId` needed, and what attack does it prevent?",
+      "options": [
+        "It is a per-relationship secret that binds the assume to your tenancy, preventing one vendor customer from tricking the vendor into accessing another customer's role (confused deputy)",
+        "It encrypts the session token so the vendor cannot read the temporary credentials it receives",
+        "It extends the maximum session duration beyond 12 hours for trusted vendors",
+        "It replaces the need for the vendor's identity policy to allow `sts:AssumeRole`"
+      ],
+      "answer": 0,
+      "explanation": "If trust checks only the vendor account, a malicious customer could trick the vendor (the deputy) into assuming a different customer's role. The `ExternalId` is a shared per-relationship secret the trust policy requires, so customers cannot impersonate one another. It does not encrypt tokens or change durations."
+    },
+    {
+      "subtopic": "GitHub Actions OIDC trust",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In this GitHub Actions trust policy, what exactly is allowed to assume the role?",
+      "code": "\"Principal\": { \"Federated\": \"...:oidc-provider/token.actions.githubusercontent.com\" },\n\"Action\": \"sts:AssumeRoleWithWebIdentity\",\n\"Condition\": {\n  \"StringEquals\": { \"token.actions.githubusercontent.com:aud\": \"sts.amazonaws.com\" },\n  \"StringLike\": { \"token.actions.githubusercontent.com:sub\": \"repo:acme/web-app:ref:refs/heads/main\" }\n}",
+      "lang": "json",
+      "options": [
+        "Only workflow runs on the `main` branch of the `acme/web-app` repo, exchanging an OIDC token for temporary creds — no stored AWS key",
+        "Any workflow in any repo in the `acme` organization, using a stored `AWS_ACCESS_KEY_ID`",
+        "Any GitHub user who authenticates to github.com, regardless of repository",
+        "Only pull requests targeting `main`, but not pushes to `main`"
+      ],
+      "answer": 0,
+      "explanation": "The `sub` condition pins the trust to `repo:acme/web-app:ref:refs/heads/main`, so only main-branch runs of that one repo can assume the role via `AssumeRoleWithWebIdentity`. This is keyless CI — no long-lived AWS secret is stored."
+    },
+    {
+      "subtopic": "Cross-account requires both Allows",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about IAM evaluation are TRUE? Select all that apply.",
+      "options": [
+        "Within a single account, an identity-based Allow OR a resource-based Allow is sufficient",
+        "A cross-account call by an IAM principal requires both the caller's identity policy and the resource policy to allow it",
+        "Effective permissions are the union of identity and resource grants intersected with every guardrail, minus any explicit Deny",
+        "A guardrail that allows an action can substitute for a missing identity-based Allow",
+        "An explicit Deny in a session policy can be overridden by an Allow in an identity policy"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Same-account grants are OR'd; cross-account principal calls need both sides; and effective access is (identity ∪ resource) ∩ all guardrails minus explicit Deny. Guardrails never substitute for a grant, and no Allow overrides an explicit Deny anywhere."
+    },
+    {
+      "subtopic": "SCP vs RCP scope",
+      "source": "aws/aws-iam-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Your org wants to block all access to company S3 buckets from any principal outside the organization, across every account, without editing each bucket policy. Which Organizations guardrail is designed for this?",
+      "options": [
+        "A Resource Control Policy (RCP) that denies access unless `aws:PrincipalOrgID` matches",
+        "A Service Control Policy (SCP) denying `s3:*` for all principals",
+        "A permissions boundary applied to every role in the org",
+        "A session policy attached at each cross-account `AssumeRole`"
+      ],
+      "answer": 0,
+      "explanation": "RCPs (GA Nov 2024) cap the maximum permissions ON resources org-wide and apply to supported services like S3. An SCP caps principals (and would block legitimate in-org access too); boundaries and session policies are per-identity/per-session, not org-wide resource guardrails."
+    }
+  ]
+}

@@ -1,0 +1,262 @@
+{
+  "topic": "ai",
+  "source": "ai/nlp-and-embeddings-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "One-hot encoding",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Under one-hot encoding, what is the cosine similarity (and dot product) between the vectors for two **distinct** words such as `cat` and `kitten`?",
+      "options": [
+        "Always 0, because every distinct word is an orthogonal unit vector",
+        "Close to 1, because the words are semantically related",
+        "Exactly -1, because they occupy opposite indices",
+        "It depends on how frequently each word appears in the corpus"
+      ],
+      "answer": 0,
+      "explanation": "One-hot vectors each have a single 1 at a unique index, so any two distinct words are orthogonal: dot product and cosine similarity are exactly 0. The encoding captures identity, not meaning, so `cat` is no closer to `kitten` than to `xylophone`. Frequency is irrelevant since one-hot encodes a single word, not counts."
+    },
+    {
+      "subtopic": "Stemming vs lemmatization",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes **stemming** from **lemmatization**?",
+      "options": [
+        "Stemming chops suffixes by crude rules and may emit non-words; lemmatization uses morphology and part-of-speech to return a real dictionary base form",
+        "Stemming always returns a valid dictionary word; lemmatization produces truncated stems",
+        "Lemmatization is faster and language-light; stemming is slower but linguistically correct",
+        "Both require the same linguistic resources and always produce identical output"
+      ],
+      "answer": 0,
+      "explanation": "Stemming (e.g., Porter) crudely chops suffixes and can yield non-words like `studies → studi`, while lemmatization maps to a real base form using morphology and POS (`studies → study`, `better → good`). The other options invert speed/correctness or wrongly claim identical output."
+    },
+    {
+      "subtopic": "Distributional hypothesis",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "The **distributional hypothesis** — the basis for word embeddings — is best summarized as:",
+      "options": [
+        "You shall know a word by the company it keeps: words in similar contexts tend to have similar meanings",
+        "Every word should map to a unique orthogonal axis so distinct words stay separable",
+        "A word's meaning is fixed by its dictionary definition, independent of usage",
+        "Word frequency in a corpus is inversely proportional to its semantic importance"
+      ],
+      "answer": 0,
+      "explanation": "The distributional hypothesis (Firth) says context predicts meaning: words appearing in similar contexts get similar vectors. The orthogonal-axis idea describes one-hot encoding (the opposite of embeddings), and the other options describe unrelated ideas (dictionary semantics, IDF intuition)."
+    },
+    {
+      "subtopic": "Cosine similarity range",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Cosine similarity between two vectors ranges from -1 (opposite direction) through 0 (orthogonal / unrelated) to 1 (same direction).",
+      "answer": true,
+      "explanation": "Cosine similarity is cos(theta) = (A·B)/(‖A‖‖B‖), bounded in [-1, 1]: 1 is same direction, 0 is orthogonal/unrelated, -1 is opposite. It measures direction, not magnitude."
+    },
+    {
+      "subtopic": "Words vs tokens",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Under a subword tokenizer, one word can become several tokens, so 1000 words is not the same as 1000 tokens — and LLM cost and context limits are measured in tokens.",
+      "answer": true,
+      "explanation": "Subword tokenizers split rare/long words into multiple pieces, so a single word can be several tokens. Because pricing and the context window are counted in tokens, equating words with tokens underestimates budget usage."
+    },
+    {
+      "subtopic": "TF-IDF computation",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A corpus has N = 4 documents. The term `neural` appears in 2 of them. In a 10-word document, `neural` occurs twice. Using IDF(t) = ln(N / df(t)), what is the TF-IDF of `neural` in that document?",
+      "options": [
+        "≈ 0.139",
+        "≈ 0.693",
+        "≈ 1.386",
+        "≈ 0.200"
+      ],
+      "answer": 0,
+      "explanation": "IDF = ln(4/2) = ln(2) ≈ 0.693; TF = 2/10 = 0.2; TF-IDF = 0.2 × 0.693 ≈ 0.139. 0.693 is just the IDF, 0.2 is just the TF, and 1.386 mistakenly doubles the IDF."
+    },
+    {
+      "subtopic": "IDF behavior",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Using IDF(t) = ln(N / df(t)), why does a word like `the` that appears in **every** document in the corpus end up with a TF-IDF near 0?",
+      "options": [
+        "Its IDF is ln(N/N) = ln(1) = 0, which drives the TF × IDF product to 0 regardless of its term frequency",
+        "Its term frequency is forced to 0 because stopwords are always removed first",
+        "Its IDF becomes negative, and TF-IDF clamps negatives to 0",
+        "The logarithm of a frequent term is undefined, so the formula defaults to 0"
+      ],
+      "answer": 0,
+      "explanation": "If a term is in all N documents, df = N, so IDF = ln(N/N) = ln(1) = 0; multiplying any TF by 0 gives 0. The other options misattribute the effect to stopword removal, negative clamping, or an undefined log — none of which apply here."
+    },
+    {
+      "subtopic": "Cosine similarity calculation",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `A = [3, 0, 4]` and `B = [0, 5, 0]`, what is the cosine similarity of A and B?",
+      "options": [
+        "0, because the dot product is 0 (the vectors are orthogonal)",
+        "≈ 0.6, similar to the body's worked example",
+        "1, because both vectors have magnitude 5",
+        "≈ 0.48, scaling the dot product by the magnitudes"
+      ],
+      "answer": 0,
+      "explanation": "A·B = (3×0)+(0×5)+(4×0) = 0, so cosine = 0/(‖A‖‖B‖) = 0 no matter the magnitudes — the vectors are orthogonal. Equal magnitudes do not imply similarity; only the zero numerator matters here."
+    },
+    {
+      "subtopic": "Cosine vs Euclidean",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is **cosine similarity** generally preferred over raw Euclidean distance for comparing word/document embeddings?",
+      "options": [
+        "It normalizes away vector length, so a frequent word's longer vector is not judged different from a rare synonym's shorter one — meaning lives in direction, not magnitude",
+        "It is the only metric that can produce negative similarity scores for embeddings",
+        "It guarantees the triangle inequality, which Euclidean distance violates",
+        "It is faster to compute because it skips the dot product entirely"
+      ],
+      "answer": 0,
+      "explanation": "Cosine compares direction and ignores magnitude, so frequency-inflated vector length doesn't distort similarity — meaning in embedding spaces is carried by direction. The distractors are false: cosine relies on the dot product, doesn't 'guarantee' the triangle inequality over Euclidean, and negative scores aren't the reason it's chosen."
+    },
+    {
+      "subtopic": "word2vec skip-gram vs CBOW",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In word2vec, what is the difference between the **skip-gram** and **CBOW** training objectives?",
+      "options": [
+        "Skip-gram predicts the surrounding context words from the center word; CBOW predicts the center word from its context words",
+        "Skip-gram predicts the center word from context; CBOW predicts context from the center word",
+        "Skip-gram factorizes a global co-occurrence matrix; CBOW scans local windows",
+        "Skip-gram produces contextual vectors; CBOW produces static vectors"
+      ],
+      "answer": 0,
+      "explanation": "Skip-gram goes center → context (better for rare words, slower); CBOW goes context → center (faster, smooths frequent words). Option 2 reverses them, matrix factorization describes GloVe, and both word2vec modes produce static (not contextual) vectors."
+    },
+    {
+      "subtopic": "BPE subword tokenization",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does **Byte-Pair Encoding (BPE)** build its subword vocabulary?",
+      "options": [
+        "Start from characters and repeatedly merge the most frequent adjacent pair until the target vocabulary size is reached",
+        "Start from whole words and recursively split each into halves until pieces are unique",
+        "Merge the pair that most increases corpus likelihood, marking word-internal pieces with `##`",
+        "Assign each word a one-hot index and prune the least frequent indices"
+      ],
+      "answer": 0,
+      "explanation": "BPE works bottom-up from characters, greedily merging the most frequent adjacent pair (es → est → ...) until the vocabulary size is reached. The likelihood-based merge with `##` markers describes WordPiece, not BPE; the other options are not how either method works."
+    },
+    {
+      "subtopic": "Negation and stopwords",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A sentiment classifier using lowercasing + stopword removal + bag-of-words labels \"this movie was **not good**\" as positive. What is the most likely cause?",
+      "options": [
+        "Stopword removal deletes `not`, turning \"not good\" into \"good\", and bag-of-words discards order so the negation can't be recovered",
+        "Lowercasing merged the company `Apple` with the fruit `apple`, corrupting the features",
+        "TF-IDF gave `good` an IDF of 0, so it was dropped from the vector",
+        "The vectorizer was fit on the test set, causing data leakage that inflated negatives"
+      ],
+      "answer": 0,
+      "explanation": "Dropping `not` as a stopword flips the sentiment, and bag-of-words' order-blindness means the negation can't be reconstructed. The casing, IDF, and leakage explanations are unrelated to this specific failure; the fix is to keep negation words and/or add bigrams."
+    },
+    {
+      "subtopic": "Static embeddings and polysemy",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "A trained word2vec model can produce different vectors for `bank` in \"river bank\" versus \"savings bank\", correctly disambiguating the two senses.",
+      "answer": false,
+      "explanation": "word2vec is a static embedding: one vector per word type, fixed after training, so both sentences use the identical `bank` vector — it averages the senses rather than separating them. Sense-specific vectors require contextual embeddings (ELMo, BERT)."
+    },
+    {
+      "subtopic": "Representation properties",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "According to the representation cheat-sheet, which statements are TRUE? (Select all that apply.)",
+      "options": [
+        "Bag-of-words is sparse, does not capture word order, and does not capture meaning",
+        "word2vec / GloVe vectors are dense and capture meaning, but are not context-aware",
+        "Contextual (BERT) embeddings are dense and capture both meaning and order",
+        "TF-IDF is a dense, low-dimensional representation that captures word order",
+        "One-hot vectors are dense and encode semantic similarity between words"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Per the cheat-sheet: BoW is sparse, order-blind, meaning-blind; word2vec/GloVe are dense, capture static meaning, no context; contextual BERT is dense and captures meaning + order + context. TF-IDF is sparse, vocabulary-sized, and order-blind (not dense/low-dim/ordered), and one-hot is sparse with no semantics."
+    },
+    {
+      "subtopic": "Over-cleaning for neural models",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about preprocessing trade-offs between classical and modern neural NLP pipelines are correct? (Select all that apply.)",
+      "options": [
+        "Aggressive stemming and lowercasing that help TF-IDF can actually hurt a transformer, which wants raw casing and morphology",
+        "Stemming and lemmatization mainly benefit sparse count-based models rather than contextual embeddings",
+        "Preprocessing must be applied identically at training and inference; a mismatch silently degrades quality",
+        "Subword tokenizers require heavier hand-cleaning than word-level tokenizers to avoid OOV",
+        "Lowercasing is always safe because it never merges words with different meanings"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Modern pipelines clean less: heavy cleaning that helped TF-IDF can hurt transformers, stemming/lemmatization mostly help sparse models, and train/inference preprocessing must match. Subword tokenizers feed near-raw text (less cleaning, not more), and lowercasing is lossy — it merges `Apple` (company) with `apple` (fruit)."
+    },
+    {
+      "subtopic": "Subword token count (code)",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer estimates LLM cost by counting whitespace-separated words. Reading the code below, what is the key flaw in `estimate_cost`?",
+      "code": "def estimate_cost(text, price_per_unit):\n    words = text.split()\n    return len(words) * price_per_unit  # 1 word == 1 token?\n\n# text = \"Antidisestablishmentarianism rocks!\"\n# words -> ['Antidisestablishmentarianism', 'rocks!']  (len 2)",
+      "lang": "python",
+      "options": [
+        "It assumes 1 word = 1 token, but a subword tokenizer splits rare long words into several tokens (and punctuation adds more), so it underestimates the real token count and cost",
+        "It will crash because `text.split()` cannot handle punctuation attached to words",
+        "It overestimates cost because each word always maps to multiple words but a single token",
+        "It is correct: subword tokenizers guarantee exactly one token per whitespace-separated word"
+      ],
+      "answer": 0,
+      "explanation": "A long rare word like `Antidisestablishmentarianism` decomposes into multiple subword tokens and `rocks!` splits further, so the true token count exceeds the word count — the estimate is too low. The code doesn't crash, and subword tokenizers never guarantee one token per word."
+    },
+    {
+      "subtopic": "Semantic search vs keyword",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In a semantic search system, the query \"how do I reset my password\" successfully retrieves a document titled \"account recovery steps\" that shares **zero** keywords with the query. What makes this possible?",
+      "options": [
+        "Both query and documents are embedded into the same dense space, and retrieval returns the nearest vectors by cosine similarity, matching by meaning rather than exact words",
+        "An inverted index expands the query with every synonym in a thesaurus before matching exact tokens",
+        "TF-IDF assigns the document a high weight because `password` is rare across the corpus",
+        "Stopword removal stripped the query down to tokens that exactly match the document title"
+      ],
+      "answer": 0,
+      "explanation": "Semantic search embeds query and documents into a shared space and returns nearest neighbors by cosine, so semantically related text matches despite no shared keywords. Inverted indexes/TF-IDF/stopword removal are all keyword-based and would fail when there are zero shared terms."
+    },
+    {
+      "subtopic": "Analogy arithmetic",
+      "source": "ai/nlp-and-embeddings-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How should a senior engineer interpret the famous result `vec(king) - vec(man) + vec(woman) ≈ vec(queen)`?",
+      "options": [
+        "As evidence that embedding spaces encode relationships as consistent linear directions — a noisy, corpus-dependent tendency, not an exact lookup",
+        "As a guaranteed identity that always returns `queen` exactly for any well-trained embedding model",
+        "As proof that one embedding dimension is explicitly labelled 'gender' and another 'royalty'",
+        "As a property unique to contextual embeddings like BERT, absent from static word2vec/GloVe"
+      ],
+      "answer": 0,
+      "explanation": "The analogy shows meaning is stored as consistent directional offsets, but the result is approximate, noisy, and corpus-dependent — not a reliable exact lookup. Dimensions are latent (not labelled), and the analogy property is a hallmark of static embeddings like word2vec/GloVe, not exclusive to contextual models."
+    }
+  ]
+}

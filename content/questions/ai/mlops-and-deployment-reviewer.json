@@ -1,0 +1,280 @@
+{
+  "topic": "ai",
+  "source": "ai/mlops-and-deployment-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Notebook-to-production gap",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to the Google 'technical debt' framing in the reviewer, what is the trained model relative to a real production ML system?",
+      "options": [
+        "The bulk of the system, with monitoring and serving as minor add-ons",
+        "A tiny box; configuration, data collection, feature extraction, serving infrastructure, and monitoring dwarf it",
+        "Roughly half the system, balanced against the data pipeline",
+        "Irrelevant once the system is in production"
+      ],
+      "answer": 1,
+      "explanation": "The reviewer stresses that ML code is a tiny sliver of a real system; the surrounding plumbing (data, features, serving, monitoring) is the bulk and where most failures originate. The model is not the majority of the work."
+    },
+    {
+      "subtopic": "MLOps as a loop",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What single feature most distinguishes the MLOps lifecycle from classic software delivery?",
+      "options": [
+        "It uses containers to package the application",
+        "It runs unit tests in continuous integration",
+        "The return edge from production monitoring back to data, so the system is designed to be retrained rather than shipped once",
+        "It deploys behind a load balancer with multiple replicas"
+      ],
+      "answer": 2,
+      "explanation": "The defining feature of MLOps is the closed loop: monitoring detects drift/decay and feeds fresh data back to retraining. Containers, unit tests, and load balancers are shared with ordinary DevOps and do not make it a loop."
+    },
+    {
+      "subtopic": "Reproducibility inputs",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "To reproduce an exact model, the reviewer says a model is a function of which inputs?",
+      "options": [
+        "Code only — version control of the source is sufficient",
+        "Code and data only — config is incidental",
+        "Code, data, configuration (hyperparameters), and the random seed",
+        "Data and hyperparameters only — code is regenerated from them"
+      ],
+      "answer": 2,
+      "explanation": "The reviewer states a model is a function of (code + data + config + random seed), so reproducibility requires capturing every one. Versioning code alone leaves the data and hyperparameters unpinned."
+    },
+    {
+      "subtopic": "Pickle security",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Loading (unpickling) a model file from an untrusted source is safe because pickle only deserializes data, not executable code.",
+      "answer": false,
+      "explanation": "False. Loading a pickle executes arbitrary code, so you must never unpickle a model from an untrusted source; the reviewer says to treat untrusted artifacts as code and prefer ONNX/SavedModel or a signed, provenance-checked artifact."
+    },
+    {
+      "subtopic": "Serving regimes",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement best captures the main trade-off of batch (offline) serving?",
+      "options": [
+        "Low per-request latency but predictions can become stale",
+        "High throughput and simple, but predictions can be stale (hours old)",
+        "Always-on, per-request freshness at the cost of a scalable service to operate",
+        "Near-real-time per-event reaction without a synchronous request"
+      ],
+      "answer": 1,
+      "explanation": "Batch serving runs inference on a schedule over a large dataset and stores results: simple and high-throughput with no latency pressure, but the cost is staleness. Per-request freshness and always-on operation describe online serving; per-event reaction describes streaming."
+    },
+    {
+      "subtopic": "Training/serving skew",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "code": "-- training pipeline (nightly batch)\nSELECT AVG(amount) AS avg_purchase\nFROM purchases\nWHERE user_id = :uid AND ts >= NOW() - INTERVAL '30 days';\n\n# serving path (application code, Python)\nrows = recent_purchases(uid, days=7)   # note: 7-day window\navg_purchase = mean(r.amount for r in rows) if rows else 0.0",
+      "lang": "sql",
+      "question": "A model has excellent offline accuracy on its test set but degraded live accuracy. The feature `avg_purchase` is computed by the training SQL and the serving code shown below. Why does offline evaluation fail to catch the problem?",
+      "options": [
+        "Offline evaluation uses too small a test set to detect the difference",
+        "Offline evaluation uses the training-side feature computation, so it never exercises the divergent serving-side code",
+        "The model overfits the test set, masking the serving bug",
+        "Concept drift has changed P(y|x) since the test set was created"
+      ],
+      "answer": 1,
+      "explanation": "This is training/serving skew. Offline evaluation uses the training-side computation, so it cannot see a divergence that only exists in the serving path. It is not overfitting, test-set size, or concept drift — the input→output relationship is unchanged; only the feature computation differs."
+    },
+    {
+      "subtopic": "Feature store",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does a feature store eliminate training/serving skew?",
+      "options": [
+        "It retrains the model more frequently so serving values stay current",
+        "It computes each feature from a single definition and serves it to both the offline store (training) and the online store (serving)",
+        "It caches serving predictions so repeated inputs return identical answers",
+        "It converts all features to ONNX so they are framework-independent"
+      ],
+      "answer": 1,
+      "explanation": "A feature store derives both training and serving values from one definition, so train and serve see identical values. Frequent retraining, prediction caching, and ONNX conversion do nothing to unify how a feature is computed across the two paths."
+    },
+    {
+      "subtopic": "Data vs concept drift",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A six-month-old churn model still passes its original offline test set, and its input features are statistically unchanged, yet live predictions are clearly worse. What is the most likely cause?",
+      "options": [
+        "Data drift — the input distribution P(x) has shifted",
+        "Concept drift — the relationship P(y|x) has changed while inputs look the same",
+        "Training/serving skew in the feature pipeline",
+        "A data-quality bug such as a surge of nulls"
+      ],
+      "answer": 1,
+      "explanation": "Unchanged inputs but worse predictions point to concept drift: P(y|x) has shifted, so the same profiles now imply a different outcome and the stale test set cannot reveal it. Data drift would show a changed input distribution; skew and null surges would also alter inputs or feature values."
+    },
+    {
+      "subtopic": "PSI computation",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Using the Population Stability Index, a feature has reference proportions [0.50, 0.30, 0.15, 0.05] and live proportions [0.40, 0.35, 0.20, 0.05] across four buckets. What is the approximate PSI and the verdict, given PSI per bucket = (live − ref)·ln(live/ref)?",
+      "options": [
+        "≈0.044 — stable, no significant drift",
+        "≈0.150 — moderate shift, watch the feature",
+        "≈0.245 — major shift, raise a drift alert",
+        "≈0.000 — identical distributions"
+      ],
+      "answer": 0,
+      "explanation": "The per-bucket terms are 0.0223 + 0.0077 + 0.0144 + 0 ≈ 0.0444, which is below the 0.1 threshold, so the feature is stable. The distributions are clearly not identical (so not 0), and the value does not reach the moderate (0.1–0.25) or major (>0.25) bands."
+    },
+    {
+      "subtopic": "Monitoring with delayed labels",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Ground-truth labels for a loan-default model arrive months after each prediction. Which signals can you monitor in the meantime as early proxies for trouble? (Select all that apply.)",
+      "options": [
+        "Input feature drift via PSI or the Kolmogorov–Smirnov test",
+        "Live AUC/F1 computed against same-day ground-truth labels",
+        "Prediction (output) distribution shift",
+        "Data-quality checks: nulls, out-of-range values, schema changes"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "With delayed labels you rely on label-free proxies: input drift, prediction-distribution shift, and data-quality checks. Computing live AUC/F1 requires ground-truth labels, which by assumption do not exist yet, so that option is impossible here."
+    },
+    {
+      "subtopic": "REST vs gRPC",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "For a high-throughput **internal** model service where latency and payload size matter, gRPC (HTTP/2 + binary Protobuf) is generally preferred over REST/JSON, while REST/JSON's strengths are universality and easy debugging.",
+      "answer": true,
+      "explanation": "True. gRPC's HTTP/2 and binary Protobuf give lower latency and smaller payloads, preferred for high-throughput internal services; REST/JSON wins on universality and debuggability, not raw performance."
+    },
+    {
+      "subtopic": "Continuous training gate",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A nightly CT pipeline retrained a model and auto-deployed it, but the new model was significantly worse than the previous one. What is missing from the pipeline?",
+      "options": [
+        "A larger training dataset to improve the retrain",
+        "An evaluation gate that promotes a model only if it beats the current production model (and baseline) by a meaningful margin",
+        "A faster GPU so retraining completes before deployment",
+        "More frequent retraining to overwrite the bad model sooner"
+      ],
+      "answer": 1,
+      "explanation": "CT must re-run the full offline evaluation and promote only if the new model beats production and the baseline; 'training finished' is not 'model is good.' Bigger data, faster hardware, or more frequent retrains do not stop a worse model from shipping without a gate."
+    },
+    {
+      "subtopic": "Safe rollout strategies",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about safe-rollout strategies are accurate per the reviewer? (Select all that apply.)",
+      "options": [
+        "Shadow deployment sends mirrored traffic to the new model but does not use its output, giving zero user risk",
+        "A/B testing is primarily for comparing a business outcome (e.g. click-through) with statistical significance",
+        "Blue-green deployment exposes the new model gradually to a slowly ramping slice of traffic",
+        "Canary release routes a small slice of real traffic and ramps up if the model stays healthy"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Shadow ignores outputs (zero risk), A/B compares a business metric with significance, and canary routes a small ramping slice. Blue-green is an all-at-once full switch with instant rollback — not a gradual ramp; that description belongs to canary."
+    },
+    {
+      "subtopic": "Shadow deployment",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team shadow-deploys a new ranking model: it receives a mirror of live traffic and its predictions are logged but never served. Which limitation is inherent to this strategy?",
+      "options": [
+        "It exposes a small percentage of users to a potentially bad model",
+        "It produces no business-metric signal, since its outputs never affect users",
+        "It cannot validate the new model's latency under real traffic",
+        "It requires an instant all-or-nothing traffic switch"
+      ],
+      "answer": 1,
+      "explanation": "Because shadow outputs are never used, you get real-world behavior and latency validation at zero user risk but no business signal (no clicks/conversions attributable to it). It does exercise latency, exposes no users, and is not an all-or-nothing switch (that is blue-green)."
+    },
+    {
+      "subtopic": "Feedback loops",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A recommender's own predictions shape what users see, and those interactions become the next training set. What risk does the reviewer call out, and what is the suggested mitigation?",
+      "options": [
+        "Training/serving skew; fix it with a feature store",
+        "Self-reinforcing bias, where the model amplifies its own predictions; mitigate by logging enough to detect it and injecting exploration/randomization",
+        "Concept drift; mitigate by retraining on a fixed schedule",
+        "Data leakage; mitigate by removing the target column from features"
+      ],
+      "answer": 1,
+      "explanation": "When a model's predictions influence its future training data, it can reinforce its own biases; the reviewer advises logging to detect this and injecting exploration/randomization. Skew, concept drift, and leakage are distinct problems with different causes and fixes."
+    },
+    {
+      "subtopic": "Latency budget and scaling",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which claims about scaling and latency for an online model service are correct? (Select all that apply.)",
+      "options": [
+        "Tail latency (p95/p99) matters more than the average for user experience",
+        "Replicas must hold per-request state so the load balancer can route correctly",
+        "Request batching raises throughput by amortizing GPU overhead but adds a little latency",
+        "The latency budget should cover the whole path — feature lookups, network hops, and cold starts — not just model compute"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "The reviewer emphasizes p95/p99 over the mean, batching as a throughput-for-latency trade, and measuring the entire path. Statelessness — not per-request state — is exactly what makes replicas interchangeable behind a load balancer, so that option is wrong."
+    },
+    {
+      "subtopic": "Drift detection code reading",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given this PSI helper and the thresholds (<0.1 stable, 0.1–0.25 moderate, >0.25 major), what does the function return for the inputs shown in the comment, and is it correct?",
+      "code": "def psi(ref, live):  # ref/live: lists of bucket proportions\n    total = 0.0\n    for r, l in zip(ref, live):\n        total += (l - r) * math.log(l / r)\n    return total\n\n# ref  = [0.40, 0.32, 0.20, 0.08]\n# live = [0.24, 0.26, 0.30, 0.20]\nverdict = psi(ref, live)",
+      "lang": "python",
+      "options": [
+        "≈0.245, correctly flagging a moderate-to-major shift",
+        "≈0.044, indicating the feature is stable",
+        "It raises a ZeroDivisionError because one bucket proportion is 0",
+        "≈0.10, exactly on the stable/moderate boundary"
+      ],
+      "answer": 0,
+      "explanation": "Summing (live−ref)·ln(live/ref) over the four buckets gives 0.0818 + 0.0125 + 0.0405 + 0.1100 ≈ 0.245, which crosses the moderate line and triggers an alert. No bucket proportion is 0, so there is no division error, and the value is far above 0.044/0.10."
+    },
+    {
+      "subtopic": "LLMOps vs classic MLOps",
+      "source": "ai/mlops-and-deployment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When an LLM-powered system is built on a hosted model API you do not train, which operational shift does the reviewer identify as the key change to how you version and deploy?",
+      "options": [
+        "The model weights become the primary versioned artifact and must be re-pushed on each change",
+        "The prompt template becomes the artifact that changes behavior, so it must be versioned, tested, and rollback-able like code",
+        "Versioning becomes unnecessary because the API provider guarantees deterministic outputs",
+        "The feature store replaces the prompt as the unit of deployment"
+      ],
+      "answer": 1,
+      "explanation": "With a fixed hosted model, the prompt template is what changes behavior, so the reviewer treats a prompt edit as a deployment to be versioned, tested, and rolled back. You do not control the provider's weights, outputs are nondeterministic (not deterministic), and feature stores are not the LLM deployment unit."
+    }
+  ]
+}

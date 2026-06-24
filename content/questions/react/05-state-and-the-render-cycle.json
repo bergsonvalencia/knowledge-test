@@ -1,0 +1,268 @@
+{
+  "topic": "react",
+  "source": "react/05-state-and-the-render-cycle.md",
+  "questions": [
+    {
+      "subtopic": "useState basics",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In `const [v, setV] = useState(initial)`, what does `v` represent during a given render?",
+      "options": [
+        "The current value of the state for *this* render, frozen until the next render",
+        "A live reference that updates the instant `setV` is called",
+        "A getter function that recomputes the value each time it is read",
+        "The initial value, which never changes after the first render"
+      ],
+      "answer": 0,
+      "explanation": "`v` is the current value for this particular render and stays fixed for its duration; `setV` only schedules a future update. It is not a live reference, not a getter, and it does change across renders (so it is not stuck at the initial value)."
+    },
+    {
+      "subtopic": "lazy initializer",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the difference between `useState(() => expensive())` and `useState(expensive())`?",
+      "options": [
+        "The arrow form runs `expensive()` only on the first render; the call form runs it on every render and discards the result after the first",
+        "Both run `expensive()` only once; the arrow form is just stylistic sugar",
+        "The arrow form runs `expensive()` on every render; the call form runs it once",
+        "The arrow form memoizes the result with `Object.is`; the call form does not"
+      ],
+      "answer": 0,
+      "explanation": "A lazy initializer (a function) runs only on the first render. Passing `expensive()` directly computes the value on every render and throws away all but the first result. The two forms are not equivalent."
+    },
+    {
+      "subtopic": "render and commit",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are React's three steps, in order, before the browser paints?",
+      "options": [
+        "Trigger → Render → Commit",
+        "Render → Commit → Trigger",
+        "Commit → Render → Paint",
+        "Mount → Diff → Reconcile"
+      ],
+      "answer": 0,
+      "explanation": "A render is requested (Trigger: mount or setState), React calls your components (Render), then applies the result to the DOM (Commit). Only after commit does the browser paint."
+    },
+    {
+      "subtopic": "render purity",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "During the render step, React applies its changes directly to the DOM.",
+      "answer": false,
+      "explanation": "React never touches the DOM during render; render is a pure calculation. DOM mutations happen only in the commit step, which keeps render restartable and concurrent-safe."
+    },
+    {
+      "subtopic": "immutable updates",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which expression correctly adds `x` to the end of an array in state without mutating it?",
+      "options": [
+        "`[...arr, x]`",
+        "`arr.push(x)`",
+        "`arr.splice(arr.length, 0, x)`",
+        "`arr[arr.length] = x`"
+      ],
+      "answer": 0,
+      "explanation": "`[...arr, x]` produces a new array reference so React detects the change. `push`, `splice`, and index assignment all mutate the existing array in place, leaving the same reference and causing React to bail out."
+    },
+    {
+      "subtopic": "state as a snapshot",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this handler, what does the `console.log` print on the first click?",
+      "code": "function Counter() {\n  const [count, setCount] = useState(0);\n  return (\n    <button onClick={() => {\n      setCount(count + 1);\n      console.log(count);\n    }}>{count}</button>\n  );\n}",
+      "lang": "typescript",
+      "options": [
+        "`0`",
+        "`1`",
+        "`undefined`",
+        "It logs `1` after the component re-renders"
+      ],
+      "answer": 0,
+      "explanation": "`count` is frozen at `0` for this render's snapshot. `setCount` only schedules a new render with `1`; it does not change the `count` variable currently in scope, so the log prints `0`."
+    },
+    {
+      "subtopic": "stale closures",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A render runs `setCount(count + 1)` and also schedules `setTimeout(() => alert(count), 2000)`, with `count` currently `0`. The user does not click again. What does the alert show when it fires?",
+      "options": [
+        "`0`, because the timeout captured this render's frozen snapshot",
+        "`1`, because the state has updated by the time it fires",
+        "`undefined`, because the closure variable is gone",
+        "It throws, because reading state outside a render is not allowed"
+      ],
+      "answer": 0,
+      "explanation": "The callback closes over the `count` value from the render that scheduled it, which was `0`. The state update produces a new render with its own snapshot, but the already-captured closure still sees the old value. To read fresh state, use a functional updater or a ref."
+    },
+    {
+      "subtopic": "batching and value updates",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Inside one click handler, with `count` at `0`, you call `setCount(count + 1)` three times. After the resulting render, what is `count`?",
+      "options": [
+        "1, because all three calls read the same frozen `0` and each queues 'replace with 1'",
+        "3, because the three updates accumulate",
+        "0, because the calls cancel out",
+        "1, but only after three separate re-renders"
+      ],
+      "answer": 0,
+      "explanation": "Each `setCount(count + 1)` reads the same snapshot where `count` is `0`, so all three queue 'replace with 1'. React batches them into one render and the net result is `+1`. Accumulation requires the functional updater form."
+    },
+    {
+      "subtopic": "functional updaters",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With `count` at `0`, calling `setCount(c => c + 1)` three times in one handler produces what value, and why?",
+      "options": [
+        "3, because React feeds each updater the result of the previous one, applied in order",
+        "1, because they all read the same snapshot like the value form",
+        "3, but only because React re-renders three times",
+        "0, because functional updaters are pure and have no effect on the queue"
+      ],
+      "answer": 0,
+      "explanation": "Functional updaters queue functions that React applies in sequence, each receiving the previous result: 0→1→2→3. This is why you use the updater form whenever the next value depends on the previous."
+    },
+    {
+      "subtopic": "nested object updates",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "To change only `user.address.city` immutably, which updater is correct?",
+      "options": [
+        "`setUser(u => ({ ...u, address: { ...u.address, city } }))`",
+        "`setUser(u => ({ ...u, city }))`",
+        "`setUser(u => { u.address.city = city; return u; })`",
+        "`setUser(u => ({ ...u, address: { city } }))`"
+      ],
+      "answer": 0,
+      "explanation": "Spread is shallow, so you must copy every level you change. The first option copies the user and the address. Option 2 misplaces `city` at the top level, option 3 mutates and returns the same reference, and option 4 drops the other address fields."
+    },
+    {
+      "subtopic": "automatic batching",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Since React 18, state updates inside timeouts, promises, and native event handlers are batched automatically, just like updates inside React event handlers.",
+      "answer": true,
+      "explanation": "React 18 introduced automatic batching, extending batching beyond React event handlers to timeouts, promises, and native handlers so they too are queued and flushed as a single render."
+    },
+    {
+      "subtopic": "ES2023 array methods",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of these array methods return a NEW array (and are therefore safe to use directly in a state updater) rather than mutating in place? (Select all that apply.)",
+      "options": [
+        "`toSorted`",
+        "`with`",
+        "`sort`",
+        "`splice`",
+        "`toReversed`"
+      ],
+      "answer": [0, 1, 4],
+      "explanation": "`toSorted`, `toReversed`, `toSpliced`, and `with` are the ES2023 non-mutating methods that return new arrays. `sort` and `splice` mutate in place, so they must not be applied to state without copying first."
+    },
+    {
+      "subtopic": "mutation bail-out",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You do `todos.push(newTodo); setTodos(todos);`. The UI does not update. What is the precise reason?",
+      "options": [
+        "`setTodos` received the same array reference, so `Object.is(prev, next)` is true and React bails out",
+        "`push` returns the new length, so `setTodos` was called with a number",
+        "React deep-compares the array contents and sees the same items",
+        "The setter must always be called with a function, never a value"
+      ],
+      "answer": 0,
+      "explanation": "React compares the next value to the current one by reference with `Object.is`. Mutating in place and passing the same array makes that comparison true, so React bails out and the change never appears. Setters accept values too; React does not deep-compare contents."
+    },
+    {
+      "subtopic": "set same value bail-out",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Calling a setter with a value `Object.is`-equal to the current state causes which behavior?",
+      "options": [
+        "React may call the component once more, but skips re-rendering its children and committing",
+        "React always skips calling the component entirely",
+        "React throws an error for a redundant update",
+        "React forces a full re-render of the subtree anyway"
+      ],
+      "answer": 0,
+      "explanation": "When the new value equals the current one by `Object.is`, React can bail out: it may still invoke the component once, but it skips re-rendering children and skips the commit. It neither guarantees skipping the component call nor throws."
+    },
+    {
+      "subtopic": "flushSync",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why would a senior developer reach for `flushSync(() => setState(...))` from `react-dom`, despite its performance cost?",
+      "options": [
+        "To force React to render and commit synchronously so the updated DOM can be read on the very next line, e.g. to measure layout then scroll",
+        "To batch multiple updates that React would otherwise render separately",
+        "To make a functional updater accumulate instead of collapse",
+        "To opt a component out of StrictMode's double invocation"
+      ],
+      "answer": 0,
+      "explanation": "`flushSync` forces a synchronous render and commit so the DOM reflects the update immediately, useful for measuring layout before a follow-up action like scrolling. It defeats batching (the opposite of batching them) and is a last resort, unrelated to updater accumulation or StrictMode."
+    },
+    {
+      "subtopic": "hooks call order",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "State survives re-renders even though plain local variables do not. What mechanism makes this work, and what rule does it impose?",
+      "options": [
+        "React stores state outside the function, keyed by call order, so hooks must run unconditionally in the same order every render",
+        "React stores state on the component's `this`, so components must be class instances",
+        "React caches state by variable name, so each `useState` variable must have a unique name",
+        "React stores state in the JSX it returns, so components must always return an element"
+      ],
+      "answer": 0,
+      "explanation": "React keeps state outside the function and associates each piece by the order in which hooks are called. That ordering is why hooks must run unconditionally and in a stable order on every render. It is not keyed by `this`, by variable name, or by the returned JSX."
+    },
+    {
+      "subtopic": "memoization and references",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Why does mutating state in place (keeping the same reference) break memoization? (Select all that apply.)",
+      "options": [
+        "`React.memo` compares props by reference, so a same-reference value looks unchanged and the memoized child skips the update, showing stale UI",
+        "`useMemo`/`useCallback` dependency checks rely on reference identity, so a mutated-but-same-reference dep won't trigger recomputation",
+        "After an unrelated re-render, the mutated data can suddenly appear, showing changes that were never intentionally committed",
+        "Mutation forces React to deep-clone the entire tree, making every memo miss",
+        "Mutation disables `Object.is` comparisons globally for that component"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`React.memo`, `useMemo`/`useCallback` deps, and `===` checks all hinge on reference identity, so a same-reference mutation looks unchanged (stale UI) yet can surface later on an unrelated re-render. React does not deep-clone the tree on mutation, and mutation does not globally disable `Object.is`."
+    },
+    {
+      "subtopic": "Immer",
+      "source": "react/05-state-and-the-render-cycle.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does Immer's `useImmer` / `produce` let you do, and what does it actually deliver under the hood?",
+      "options": [
+        "Write apparently-mutating code against a draft, while it produces a correct immutable copy underneath — ideal for deep nesting",
+        "Mutate React state directly and skip the setter entirely",
+        "Mutate the real state object in place but still notify React via a proxy listener",
+        "Deep-freeze state so any accidental mutation throws at runtime in production"
+      ],
+      "answer": 0,
+      "explanation": "Immer lets you write mutating-looking code on a draft and returns a correctly produced immutable copy, which is especially convenient for deeply nested state. It does not mutate the real state in place, nor does it replace the setter or deep-freeze production state."
+    }
+  ]
+}

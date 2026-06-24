@@ -1,0 +1,263 @@
+{
+  "topic": "system-design",
+  "source": "system-design/caching-and-redis-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Why cache",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What single metric best indicates whether a cache is doing its job?",
+      "options": [
+        "Hit ratio — `hits / (hits + misses)`",
+        "Total memory consumed by the cache",
+        "Number of keys currently stored",
+        "Average TTL across all entries"
+      ],
+      "answer": 0,
+      "explanation": "The hit ratio is the master metric: a 95% hit ratio means the origin only handles 5% of reads. Memory used and key count say nothing about how often the cache actually serves requests."
+    },
+    {
+      "subtopic": "When caching pays off",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For which workload does caching pay off the most?",
+      "options": [
+        "Reads that are expensive and repeatedly requested for the same keys (good locality)",
+        "Unique-per-request data that is never read twice",
+        "A write-heavy workload where every request mutates state",
+        "Data that must always reflect the latest committed value with zero staleness"
+      ],
+      "answer": 0,
+      "explanation": "Caching helps when reads greatly exceed writes and the same keys recur (temporal/spatial locality). Unique-per-request and write-heavy workloads gain little, and zero-staleness requirements fight the very nature of a cache."
+    },
+    {
+      "subtopic": "Cache-aside resilience",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "With the cache-aside pattern, if the cache is completely down, reads still work (just slower) by falling through to the database.",
+      "answer": true,
+      "explanation": "Cache-aside has the app own the read logic, so a cache outage degrades to direct DB reads rather than a hard failure. That resilience is a key reason it is the default pattern."
+    },
+    {
+      "subtopic": "TTL vs eviction",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the difference between TTL and eviction in a cache like Redis?",
+      "options": [
+        "TTL is a per-key expiry that fires on time; eviction only fires under memory pressure when the cache is full",
+        "They are two names for the same mechanism",
+        "TTL fires only under memory pressure; eviction is a per-key timer",
+        "TTL applies only to strings; eviction applies only to collections"
+      ],
+      "answer": 0,
+      "explanation": "TTL bounds staleness per key and triggers based on time regardless of memory. Eviction (per `maxmemory-policy`) only kicks in when the cache is full and must make room — they are distinct mechanisms."
+    },
+    {
+      "subtopic": "Redis sorted set use case",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which Redis data type is the natural fit for a leaderboard and for a sliding-window rate limiter?",
+      "options": [
+        "Sorted set (ZSet)",
+        "List",
+        "Hash",
+        "Set"
+      ],
+      "answer": 0,
+      "explanation": "A sorted set keeps unique members ordered by score with O(log N) inserts, ideal for leaderboards and for sliding-window rate limiters (score = timestamp). A plain set is unordered and a list has no score-based ordering."
+    },
+    {
+      "subtopic": "Write-then-invalidate",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On a database write in a cache-aside design, why is **deleting** the cache key preferred over **updating** it with the new value?",
+      "options": [
+        "Two concurrent writers updating the cache can interleave and leave a stale value; deleting forces a clean repopulate on the next read",
+        "Deleting is faster than writing because Redis deletes are always O(1)",
+        "Updating the key would violate Redis single-threaded atomicity guarantees",
+        "Deleting guarantees the next read is served from L1 memory instead of L2"
+      ],
+      "answer": 0,
+      "explanation": "Update-on-write lets concurrent writers (or a slow read that loaded an old value) interleave so the stale write lands last. Deleting the key avoids that race by letting the next read repopulate from the source of truth."
+    },
+    {
+      "subtopic": "Stampede mitigations",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are valid mitigations for a cache stampede on a hot key? (Select all that apply.)",
+      "options": [
+        "Single-flight / request coalescing so only one caller recomputes while others wait or serve stale",
+        "TTL jitter so keys created together don't all expire at the same instant",
+        "Probabilistic early expiration (XFetch) that refreshes shortly before TTL",
+        "Negative caching of 'not found' results",
+        "Running `KEYS *` periodically to pre-scan the keyspace"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Single-flight, TTL jitter, and probabilistic early refresh all target stampede (an expired hot key). Negative caching defends against penetration (missing keys), a different problem, and `KEYS` is an O(N) blocking command that helps nothing."
+    },
+    {
+      "subtopic": "Stampede vs penetration",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What distinguishes cache **penetration** from a cache **stampede**?",
+      "options": [
+        "Penetration is many requests for a key that has no value (often malicious); stampede is many requests for a key that just expired",
+        "Penetration is a hot key saturating one shard; stampede is a value too large to fetch",
+        "Penetration is many requests for an expired key; stampede is requests for a nonexistent key",
+        "Penetration only affects write-through caches; stampede only affects write-behind caches"
+      ],
+      "answer": 0,
+      "explanation": "Penetration = repeated misses for keys with no value (defend with negative caching or a Bloom filter). Stampede = a herd of concurrent misses after a hot key expires. Option 3 swaps the two definitions."
+    },
+    {
+      "subtopic": "Redis threading model",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which statement about Redis's threading model (Redis 6+) is precisely correct?",
+      "options": [
+        "Command execution is single-threaded (so commands are atomic), but I/O reading/writing the network can be threaded",
+        "Redis is fully single-threaded for everything including network I/O and there is no exception",
+        "Redis executes commands across many threads using fine-grained per-key locks",
+        "Command execution is multi-threaded but network I/O is single-threaded"
+      ],
+      "answer": 0,
+      "explanation": "Redis 6+ uses threaded I/O for reading/parsing and writing responses, but command execution stays on one thread — which is why commands are atomic and a single slow O(N) command blocks everyone. Claiming it is 'fully single-threaded' is imprecise."
+    },
+    {
+      "subtopic": "IMemoryCache behind a load balancer",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Two ASP.NET Core API instances sit behind a load balancer using `IMemoryCache`. Users occasionally see a value they just updated appear stale. What is the root cause and the right fix?",
+      "options": [
+        "`IMemoryCache` is per-instance, so an update on instance A leaves instance B's copy stale; move to a shared `IDistributedCache` (or `HybridCache` with invalidation broadcast)",
+        "`IMemoryCache` serializes to `byte[]` too slowly; raise the serialization buffer size",
+        "The TTL is too short, causing premature eviction; increase the absolute expiration",
+        "Redis async replication lost the write; enable `WAIT` on every set"
+      ],
+      "answer": 0,
+      "explanation": "`IMemoryCache` is in-process, so each server has its own copy and instances diverge after a write. A shared `IDistributedCache` (Redis) or `HybridCache` with cross-instance invalidation fixes it. Redis isn't even involved in a pure `IMemoryCache` setup."
+    },
+    {
+      "subtopic": "Redis Cluster hash slots and hash tags",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A multi-key command on Redis Cluster fails with `CROSSSLOT`. Without disabling clustering, how do you make `order:1001:items` and `order:1001:total` usable in one multi-key operation?",
+      "options": [
+        "Use hash tags so only the shared substring is hashed: `order:{1001}:items` and `order:{1001}:total`",
+        "Increase the number of hash slots beyond 16384 so the keys collide",
+        "Wrap both keys in a `MULTI`/`EXEC` transaction, which ignores slot boundaries",
+        "Prefix both keys with the same node IP so they target one server"
+      ],
+      "answer": 0,
+      "explanation": "Cluster maps keys to one of 16384 slots via CRC16, and multi-key commands require all keys in the same slot. A hash tag `{1001}` hashes only that substring, co-locating both keys. The slot count is fixed; `MULTI` does not bypass the cross-slot rule."
+    },
+    {
+      "subtopic": "RDB vs AOF",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Redis persistence are correct? (Select all that apply.)",
+      "options": [
+        "RDB is a point-in-time binary snapshot that gives fast restarts but can lose data since the last snapshot",
+        "AOF logs write commands and, with `appendfsync everysec`, loses at most about one second of writes",
+        "You can run both RDB and AOF together, and Redis prefers AOF on restart when enabled",
+        "A pure cache always requires AOF enabled to function correctly",
+        "RDB produces a larger file than AOF and restarts more slowly"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "RDB = compact snapshot (fast restart, possible loss); AOF everysec = ~1s max loss; running both is recommended and Redis prefers AOF on restart. A pure cache may need no persistence at all, and RDB is the compact/fast-restart option, not the larger/slower one."
+    },
+    {
+      "subtopic": "Redis Pub/Sub semantics",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Redis Pub/Sub guarantees that a subscriber which was briefly offline will receive any messages published during its disconnection once it reconnects.",
+      "answer": false,
+      "explanation": "Pub/Sub is fire-and-forget, at-most-once: messages go only to currently connected subscribers, with no storage, ack, or replay. A disconnected subscriber misses them — use Redis Streams for durability and replay."
+    },
+    {
+      "subtopic": "Cache-aside code reading",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In this cache-aside method, what is the consequence of the very first request for a given `id`?",
+      "code": "var cached = await _cache.GetStringAsync(key, ct);\nif (cached is not null)\n    return JsonSerializer.Deserialize<Product>(cached);\nvar product = await _db.Products.FindAsync([id], ct);\nif (product is null)\n    return null;\nawait _cache.SetStringAsync(key, JsonSerializer.Serialize(product),\n    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) }, ct);\nreturn product;",
+      "lang": "csharp",
+      "options": [
+        "It is always a cache miss (cold start) that loads from the DB and then populates the cache",
+        "It throws because the key does not yet exist in the cache",
+        "It returns null because the cache is empty even though the row exists",
+        "It writes the key to the cache before checking the database"
+      ],
+      "answer": 0,
+      "explanation": "Cache-aside populates lazily, so the first request per key always misses, loads from the DB, then caches with a TTL. A miss returns a `null` string (not an exception), and a non-null DB row is returned, not null."
+    },
+    {
+      "subtopic": "The resurrection race",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A read misses and loads the old value from the DB; concurrently a write updates the DB and deletes the cache key. The system still ends up serving the old value. What happened, and which mitigation directly addresses it?",
+      "options": [
+        "The slow read wrote its stale value back after the delete, resurrecting it; mitigate with versioned keys, short TTL, or delete-after-delay / read-through locking",
+        "The delete failed silently; mitigate by switching the eviction policy to `allkeys-lfu`",
+        "The write-through path skipped the cache; mitigate by enabling AOF persistence",
+        "The cache and DB are on different slots; mitigate with a hash tag"
+      ],
+      "answer": 0,
+      "explanation": "The classic resurrection race: a read that loaded the old value populates the cache after the concurrent write deleted the key. Versioned/immutable keys, short TTLs, or delete-after-delay / read-through locking address it. Eviction policy, AOF, and hash tags are unrelated."
+    },
+    {
+      "subtopic": "LFU vs LRU under scan",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A nightly batch job does a one-time scan over millions of rarely-used keys, and afterward your genuinely hot keys keep getting evicted. Which `maxmemory-policy` best protects the warm set, and why?",
+      "options": [
+        "`allkeys-lfu`, because it evicts by access frequency (a decaying counter), so a burst of one-time reads won't displace frequently-used keys",
+        "`allkeys-lru`, because recency tracking inherently protects keys touched long ago",
+        "`volatile-ttl`, because it evicts whatever has the longest remaining TTL first",
+        "`noeviction`, because it keeps every key including the cold scan keys"
+      ],
+      "answer": 0,
+      "explanation": "LFU tracks frequency with a decaying counter, so one-time scan reads don't accumulate enough frequency to evict the warm set — exactly the cache-pollution case LRU suffers from. `volatile-ttl` evicts the shortest remaining TTL, and `noeviction` errors writes once full."
+    },
+    {
+      "subtopic": "Redis consistency under failover",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Because Redis replication is asynchronous by default, a primary can acknowledge a write to the client and then crash before that write reaches any replica, so a failover may lose acknowledged writes.",
+      "answer": true,
+      "explanation": "Default async replication means an acked write may not yet be replicated when the primary fails, so promoting a replica can lose it. This is why Redis is AP-leaning, not strongly consistent — `WAIT` adds bounded sync but not true strong consistency."
+    },
+    {
+      "subtopic": "Hot key in Redis Cluster",
+      "source": "system-design/caching-and-redis-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A single 'celebrity' key receives a disproportionate share of traffic and saturates one shard in Redis Cluster. Which mitigations directly address this hot-key problem? (Select all that apply.)",
+      "options": [
+        "Put a client-side / local L1 cache in front of Redis for the hottest keys",
+        "Replicate the value across N suffixed keys (`key:{0..n}`) and read a random one",
+        "Serve some reads from replicas instead of only the primary",
+        "Switch the value's data type from string to sorted set",
+        "Increase the cluster's hash-slot count above 16384"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Because Cluster routes all traffic for one key to one shard, you spread load with an L1 cache, suffixed replicated keys read at random, or replica reads. The data type doesn't change where the key lands, and the slot count is fixed at 16384."
+    }
+  ]
+}

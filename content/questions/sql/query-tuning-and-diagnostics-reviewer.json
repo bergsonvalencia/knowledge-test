@@ -1,0 +1,270 @@
+{
+  "topic": "sql",
+  "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "tuning metric choice",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When measuring a query before and after a change, why is **logical reads** generally preferred over wall-clock elapsed time as the primary yardstick?",
+      "options": [
+        "Logical reads are cache-independent and reproducible, while elapsed time is polluted by cache state, blocking, and other load",
+        "Logical reads always equal the number of rows returned, making them easy to predict",
+        "Elapsed time cannot be captured by `SET STATISTICS IO, TIME ON`, so logical reads are the only option",
+        "Logical reads include physical disk-read latency, giving a more realistic end-to-end picture"
+      ],
+      "answer": 0,
+      "explanation": "Logical reads count pages touched in the buffer pool, so they are cache-independent and reproducible run to run; elapsed time varies with cache warmth, concurrency, and blocking. Logical reads do not equal rows returned, and `STATISTICS IO, TIME` does report elapsed."
+    },
+    {
+      "subtopic": "the tuning loop",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In the diagnose → isolate → fix → verify tuning loop, you should change exactly one thing per pass so any improvement or regression is attributable to that change.",
+      "answer": true,
+      "explanation": "The reviewer's mantra is one change per pass with a before/after measurement, so the effect can be attributed. Stacking multiple changes at once makes it impossible to know which one helped or hurt."
+    },
+    {
+      "subtopic": "estimated vs actual plan",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For diagnosing a slow query, why do you almost always want the **actual** execution plan rather than the estimated plan?",
+      "options": [
+        "The actual plan annotates the operator tree with real row counts, spills, and the actual memory grant, exposing estimate-vs-actual skew",
+        "The estimated plan cannot be captured without running the query, so it is unavailable during diagnosis",
+        "The actual plan uses a simpler cost model that the optimizer trusts more than the estimated one",
+        "The estimated plan omits join operators, showing only seeks and scans"
+      ],
+      "answer": 0,
+      "explanation": "The actual plan adds real runtime row counts, spills, and the granted memory, so the gap between estimated and actual rows (the richest diagnostic signal) becomes visible. The estimated plan compiles without running and still shows full operator trees."
+    },
+    {
+      "subtopic": "reading plan direction",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a graphical execution plan, which operator should you investigate first, and what does arrow thickness represent?",
+      "options": [
+        "The highest cost-% operator; arrow thickness is proportional to the number of rows flowing between operators",
+        "The left-most SELECT operator; arrow thickness is proportional to the CPU time of each operator",
+        "The right-most seek/scan; arrow thickness is proportional to the estimated cost percentage",
+        "Any operator showing a yellow warning; arrow thickness is proportional to the memory grant size"
+      ],
+      "answer": 0,
+      "explanation": "Tuning leverage lives at the costliest operator (highest estimated cost %), so start there. Arrow width is proportional to row count, which is why a fat arrow feeding a thin estimate flags cardinality skew."
+    },
+    {
+      "subtopic": "Query Store availability",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the key capability Query Store provides that the plan cache alone does not?",
+      "options": [
+        "Persistence and history: it keeps query text, every plan a query has used, and runtime stats over time, surviving restarts and cache eviction",
+        "It compiles queries faster by skipping the optimizer's cost-based search entirely",
+        "It automatically rewrites non-SARGable predicates into seekable ones",
+        "It guarantees a query always parameterizes, eliminating ad-hoc plan bloat"
+      ],
+      "answer": 0,
+      "explanation": "Query Store is a flight recorder that persists text, all historical plans, and runtime stats across restarts and cache eviction, so you can answer 'what regressed yesterday?' The plan cache is volatile and holds only the current plan. It does not rewrite predicates or speed up compilation."
+    },
+    {
+      "subtopic": "cardinality misestimate diagnosis",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An actual plan shows a Nested Loops join (cost 78%) whose outer input was estimated at 800 rows but actually produced 1,200,000 rows, driving 1.2M per-row inner Index Seeks. What is the *root-cause* bug, and the right fix?",
+      "options": [
+        "A cardinality misestimate (e.g. stale stats); refresh statistics so the optimizer predicts ~1.2M rows and flips to a Hash Join",
+        "The Nested Loops operator itself is buggy; force `OPTION (MERGE JOIN)` to replace it permanently",
+        "Insufficient memory grant on the seek; increase the query's `MAX_GRANT_PERCENT` so the loop runs faster",
+        "Too many indexes on the inner table; drop the inner index so the optimizer stops doing per-row seeks"
+      ],
+      "answer": 0,
+      "explanation": "The misestimate, not the operator, is the real bug: the optimizer picked Nested Loops because it expected only 800 rows. Fixing the estimate (refresh stats) lets it choose a Hash Join that builds once and probes in bulk. Forcing a join hint or dropping the inner index treats symptoms, and grant size is irrelevant to a Nested Loops seek."
+    },
+    {
+      "subtopic": "implicit conversion",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The `Sku` column is `VARCHAR(20)` and indexed. Given the code below, what does the plan show and why?",
+      "code": "DECLARE @code NVARCHAR(20) = N'A1000';\nSELECT * FROM dbo.Products WHERE Sku = @code;",
+      "lang": "sql",
+      "options": [
+        "An implicit-conversion warning and a scan, because the `NVARCHAR` parameter forces a CONVERT on the `VARCHAR` column, defeating the seek",
+        "A clean Index Seek, because SQL Server converts the parameter to `VARCHAR` and keeps the column seekable",
+        "An error at parse time, because `VARCHAR` and `NVARCHAR` cannot be compared in a predicate",
+        "A Key Lookup warning, because the index does not cover `SELECT *`"
+      ],
+      "answer": 0,
+      "explanation": "Data-type precedence makes `VARCHAR` lower than `NVARCHAR`, so SQL Server converts the *column* side, wrapping `Sku` in CONVERT and killing the seek into a scan plus a yellow-triangle warning. Matching the parameter type to `VARCHAR` keeps the column bare and seekable."
+    },
+    {
+      "subtopic": "tempdb spill root cause",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A Sort operator spills to tempdb (orange warning in the actual plan). What is the most common root cause, and the correct fix?",
+      "options": [
+        "The memory grant was too small because the row estimate was too low; fix the estimate (e.g. update statistics)",
+        "The tempdb data files are too small; pre-grow tempdb so the sort has room",
+        "The query went parallel; force `MAXDOP 1` so the sort runs on one thread without spilling",
+        "The Sort is blocking; replace `ORDER BY` with `DISTINCT` to avoid the spill"
+      ],
+      "answer": 0,
+      "explanation": "A spill means the granted memory was too small, and the grant is sized from the row estimate, so the underlying cause is a low estimate. Fixing the estimate (stats) lets the optimizer grant enough memory. Growing tempdb or forcing MAXDOP treats symptoms, and DISTINCT does not eliminate a sort."
+    },
+    {
+      "subtopic": "OPTION RECOMPILE trade-off",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "`OPTION (RECOMPILE)` is an effective stabilizer for which scenario, and why is it dangerous elsewhere?",
+      "options": [
+        "Good for a skewed, volatile, low-frequency query; dangerous on a hot OLTP path because it recompiles on every call, potentially thousands of times per second",
+        "Good for a hot OLTP path because it caches a perfect plan; dangerous on rare queries because they never benefit from the cache",
+        "Good for any query because it removes parameter sniffing permanently; dangerous only when statistics are disabled",
+        "Good for read-only reporting because it skips the optimizer; dangerous on writes because it ignores triggers"
+      ],
+      "answer": 0,
+      "explanation": "RECOMPILE builds a fresh plan for each call's actual values, ideal for skewed/volatile low-frequency queries, but it trades compile CPU and on a hot OLTP path can compile thousands of times per second. It does not cache a plan, and it does not 'permanently' remove sniffing."
+    },
+    {
+      "subtopic": "wait stats triage",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "`sys.dm_os_wait_stats` shows `PAGEIOLATCH_SH` dominating by `wait_time_ms`. What class of problem is this, and what is the right next step?",
+      "options": [
+        "I/O: sessions wait to read data pages from disk; find high-logical-read queries and reduce pages read via covering indexes/SARGability",
+        "Locking: a transaction holds a lock; trace `blocking_session_id` to the head blocker",
+        "Memory grants: a query over-estimated a sort; reduce its grant percent",
+        "CPU pressure: queries are scheduler-bound; lower MAXDOP across the server"
+      ],
+      "answer": 0,
+      "explanation": "PAGEIOLATCH waits mean threads are waiting to read data pages from disk into the buffer pool, an I/O signal (often a missing/covering index or memory pressure). The next step is to find the high-logical-read queries and reduce pages read, not chase locks, grants, or CPU."
+    },
+    {
+      "subtopic": "blocking chain head",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Using `sys.dm_exec_requests`, how do you identify the **head blocker** in a blocking chain?",
+      "options": [
+        "It is the session that others reference via `blocking_session_id` but whose own `blocking_session_id` is 0",
+        "It is the session with the highest `session_id` value among all waiting requests",
+        "It is whichever session has an `LCK_M_*` wait type and the longest `wait_time`",
+        "It is the session whose `blocking_session_id` points back to `@@SPID`"
+      ],
+      "answer": 0,
+      "explanation": "Victims point at their blocker through `blocking_session_id`; the head of the chain is the session blocking others while itself being blocked by no one, i.e. its `blocking_session_id = 0`. The victims (not the head) carry the `LCK_M_*` waits, and a high session_id is meaningless."
+    },
+    {
+      "subtopic": "ascending-key problem",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "After a nightly ETL load, a 'today's orders' query suddenly picks a tiny Nested Loops plan and stays slow until stats refresh. What phenomenon is this?",
+      "code": "SELECT * FROM dbo.Orders WHERE OrderDate >= CAST(GETDATE() AS date);",
+      "lang": "sql",
+      "options": [
+        "The ascending-key problem: newly loaded rows fall beyond the histogram's last step, so the optimizer estimates almost no rows for 'today'",
+        "Implicit conversion: `GETDATE()` returns `datetime`, forcing a CONVERT on `OrderDate`",
+        "A Halloween-protection rewrite that inserts an eager spool before the load",
+        "Plan-cache bloat: each nightly run inserts a new ad-hoc plan that crowds out the good one"
+      ],
+      "answer": 0,
+      "explanation": "Freshly inserted rows lie beyond the statistics histogram's last boundary, so the optimizer under-estimates 'recent' predicates and chooses a small Nested Loops plan, the classic ascending-key problem. Fixes are updating stats after load, the ascending-key handling, or `OPTION (RECOMPILE)`."
+    },
+    {
+      "subtopic": "missing-index hint",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The green 'missing index' hint shown in an execution plan should be applied as-is, because the optimizer has already accounted for existing indexes and write cost when generating it.",
+      "answer": false,
+      "explanation": "The missing-index hint is a suggestion from a single query: it ignores existing indexes, over-includes columns, double-counts overlapping recommendations, and weighs nothing about write cost. Treat it as one data point and design the index deliberately."
+    },
+    {
+      "subtopic": "DMV selection",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about these diagnostic DMVs are correct? (Select all that apply.)",
+      "options": [
+        "`sys.dm_exec_requests` shows in-flight requests including `wait_type` and `blocking_session_id`",
+        "`sys.dm_exec_query_stats` aggregates per-plan totals like logical reads and worker time across executions",
+        "`sys.dm_db_index_usage_stats` counters reset on service restart",
+        "`sys.dm_os_wait_stats` reports the live execution plan XML for the currently running query",
+        "`sys.dm_exec_query_stats` only contains queries currently executing this instant"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "dm_exec_requests is live in-flight state (wait type, blocker), dm_exec_query_stats aggregates per-plan historical totals, and index-usage counters reset on restart. dm_os_wait_stats holds aggregated wait counters, not plan XML; and query_stats spans cached plans over time, not just currently-running statements."
+    },
+    {
+      "subtopic": "FREEPROCCACHE trap",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "One stored procedure has a bad cached plan on a busy production server. Why is `DBCC FREEPROCCACHE` (no argument) the wrong response, and what is preferable?",
+      "options": [
+        "It evicts every cached plan, forcing the whole server to recompile and causing a CPU spike; instead target the one `plan_handle` or force a good plan in Query Store",
+        "It only clears ad-hoc plans, leaving the bad proc plan in place, so it does nothing useful",
+        "It permanently disables the plan cache until restart, so all queries compile forever after",
+        "It rolls back in-flight transactions using the bad plan, risking data loss; instead kill the offending session"
+      ],
+      "answer": 0,
+      "explanation": "Argument-less FREEPROCCACHE clears the entire cache, so everything recompiles at once, a self-inflicted CPU spike on a busy server. Target the single `plan_handle`, or better, force a known-good plan in Query Store. It does not disable the cache or roll back transactions."
+    },
+    {
+      "subtopic": "parameter sniffing in the plan",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In a plan's XML, you compare `ParameterCompiledValue` and `ParameterRuntimeValue`. What does a large divergence between them, combined with estimate-vs-actual row skew, indicate?",
+      "options": [
+        "Parameter sniffing: the plan was compiled and cached for the compile-time value, but the current runtime value implies a very different row count, so the cached plan is wrong for this call",
+        "An implicit conversion: the parameter's declared type differs from the runtime literal's type",
+        "A statistics corruption that must be repaired with `DBCC CHECKDB`",
+        "A deadlock: two sessions compiled conflicting plans for the same parameter"
+      ],
+      "answer": 0,
+      "explanation": "The plan caches the row estimate from the compile-time parameter values (`ParameterCompiledValue`); if the live value (`ParameterRuntimeValue`) implies a wildly different cardinality, the reused plan misfits this call, which surfaces as estimate-vs-actual skew. That is parameter sniffing, not type conversion, corruption, or a deadlock."
+    },
+    {
+      "subtopic": "deadlock diagnosis",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Two sessions repeatedly fail with error 1205. Which statements are correct about diagnosing and handling this? (Select all that apply.)",
+      "options": [
+        "Error 1205 is a deadlock victim: a cycle where each transaction waits on a lock the other holds, and the engine kills one",
+        "The deadlock graph is captured automatically in the `system_health` Extended Events session via the `xml_deadlock_report` event",
+        "Query Store stores deadlock graphs, so it is the first place to read them",
+        "Durable fixes (consistent lock ordering, shorter transactions, isolation/RCSI) are application-design changes, not tuning knobs",
+        "A deadlock is automatically resolved with no error returned, so no application handling is needed"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "1205 marks the deadlock victim in a lock cycle; the graph is captured by default in `system_health` (`xml_deadlock_report`); and durable fixes are application-design changes. Query Store does NOT store deadlock graphs, and the victim's transaction is rolled back with error 1205 that the app must handle (e.g. retry)."
+    },
+    {
+      "subtopic": "physical join selection",
+      "source": "sql/query-tuning-and-diagnostics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The optimizer chose a **Merge Join** for two large inputs, but the plan contains an expensive blocking **Sort** feeding one side. Considering when each physical join is appropriate, which conclusion is best supported?",
+      "options": [
+        "Merge needs both inputs sorted on the join key; if an index already supplied that order the Sort would vanish, otherwise a Hash Join (no sort, build/probe) may be cheaper for large unsorted inputs",
+        "Merge is always optimal for large inputs, so the Sort is unavoidable and the plan cannot be improved",
+        "The Sort proves a Nested Loops join would be faster, since loops never require sorting",
+        "The Sort indicates a missing memory grant; raising the grant removes the Sort operator"
+      ],
+      "answer": 0,
+      "explanation": "Merge Join is a single linear pass only when both inputs are already sorted on the join key; paying for a Sort first erodes its advantage. If no index provides the order, a Hash Join (which sorts nothing and builds from the smaller input) is often cheaper for large unsorted inputs. A larger grant does not remove a sort, and Nested Loops would be poor for two large inputs."
+    }
+  ]
+}

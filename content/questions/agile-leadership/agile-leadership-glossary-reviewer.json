@@ -1,0 +1,214 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Empiricism pillars",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Scrum's empirical process control rests on three pillars. Which set names them?",
+      "options": [
+        "Transparency, Inspection, Adaptation",
+        "Commitment, Focus, Courage",
+        "Planning, Execution, Review",
+        "Predictability, Stability, Control"
+      ],
+      "answer": 0,
+      "explanation": "Empiricism rests on Transparency, Inspection, and Adaptation. Commitment, Focus, and Courage are three of the five Scrum Values, not the empirical pillars."
+    },
+    {
+      "subtopic": "Definition of Done vs acceptance criteria",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A story fully satisfies its acceptance criteria but is not yet deployed and has no automated tests, both of which the team's Definition of Done requires. What is the correct status of this story?",
+      "options": [
+        "Not Done; it is not part of the Increment until it also meets the Definition of Done",
+        "Done, because meeting acceptance criteria proves correct behavior",
+        "Done, because the Definition of Done only applies at release, not per story",
+        "Partially Done; it counts toward velocity at 50%"
+      ],
+      "answer": 0,
+      "explanation": "Acceptance criteria prove the story does the right thing, but the team-wide Definition of Done is the quality bar every item must meet to be part of the Increment. Both must pass; until the DoD is met the story is not Done."
+    },
+    {
+      "subtopic": "Sprint as container event",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Under the 2020 Scrum Guide, the Sprint is itself an event that contains the other four Scrum events, and once started its length is fixed (it cannot be shortened or extended mid-flight), though only the Product Owner may cancel it.",
+      "answer": true,
+      "explanation": "The 2020 Guide frames the Sprint as the container event holding Planning, Daily Scrum, Review, and Retrospective. Its length is fixed mid-Sprint while scope is negotiable, and only the Product Owner can cancel a Sprint."
+    },
+    {
+      "subtopic": "Daily Scrum purpose",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement best reflects the 2020 Scrum Guide's view of the Daily Scrum?",
+      "options": [
+        "A 15-minute event for the Developers to inspect progress toward the Sprint Goal and replan; the three classic questions are no longer mandatory",
+        "A 15-minute status report from the Developers to the Scrum Master and manager",
+        "An event whose mandatory format is the three questions: what I did, what I'll do, blockers",
+        "A planning event timeboxed to one hour where the Sprint Backlog is created"
+      ],
+      "answer": 0,
+      "explanation": "The Daily Scrum is a Developer-owned 15-minute planning event to inspect progress toward the Sprint Goal; the 2020 Guide dropped the three mandatory questions. It is not a status report to the Scrum Master or a manager."
+    },
+    {
+      "subtopic": "Lead time vs cycle time",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A ticket is accepted into the system, waits 4 days in a queue, then takes 5 days of active work before it ships. What are its cycle time and lead time?",
+      "options": [
+        "Cycle time about 5 days; lead time about 9 days",
+        "Cycle time about 9 days; lead time about 5 days",
+        "Cycle time about 4 days; lead time about 5 days",
+        "Cycle time and lead time are both about 9 days"
+      ],
+      "answer": 0,
+      "explanation": "Cycle time is the active-work clock (5 days), while lead time runs from acceptance to delivery and includes the 4-day queue wait (4 + 5 = 9 days). Cycle time always sits inside lead time."
+    },
+    {
+      "subtopic": "Little's Law",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A flow system has 20 items in progress and a throughput of 5 items per week. Using Little's Law (Lead Time = WIP / Throughput), what is the approximate average lead time, and what happens if WIP is halved to 10 while throughput stays the same?",
+      "options": [
+        "About 4 weeks; halving WIP roughly halves lead time to about 2 weeks",
+        "About 4 weeks; lead time is unaffected because throughput is unchanged",
+        "About 100 weeks; halving WIP has no effect on lead time",
+        "About 0.25 weeks; halving WIP doubles lead time to about 0.5 weeks"
+      ],
+      "answer": 0,
+      "explanation": "Lead Time = WIP / Throughput = 20 / 5 = 4 weeks. Because lead time is proportional to WIP at constant throughput, halving WIP to 10 roughly halves lead time to about 2 weeks; this is the mathematical case for WIP limits."
+    },
+    {
+      "subtopic": "Reading a Cumulative Flow Diagram",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "On a Cumulative Flow Diagram, the 'In Test' band steadily widens over several weeks while the other bands stay thin. Per the bottleneck guidance (Theory of Constraints), what is the correct response?",
+      "options": [
+        "Attack the constraint at Test (e.g., add test capacity or swarm it), since work is arriving faster than it departs there",
+        "Raise the WIP limit on the upstream Dev column so more work flows downstream",
+        "Increase overall throughput by starting more items in the Backlog",
+        "Do nothing; a widening band is the normal sign of healthy flow"
+      ],
+      "answer": 0,
+      "explanation": "A widening band marks a bottleneck where arrivals outpace departures (here, Test). Theory of Constraints says only improving the constraint speeds delivery; raising upstream WIP or starting more work just grows the queue in front of the bottleneck."
+    },
+    {
+      "subtopic": "WSJF formula and behavior",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In SAFe, WSJF = Cost of Delay / Job Size. Which job tends to be sequenced first, and why?",
+      "options": [
+        "A small job with high time-criticality, because dividing a high Cost of Delay by a small size yields a high WSJF",
+        "A large job with high business value, because larger jobs deliver more total value",
+        "Whichever job has the lowest Cost of Delay, to minimize economic risk",
+        "Whichever job has the largest job size, because it frees the most capacity"
+      ],
+      "answer": 0,
+      "explanation": "WSJF deliberately penalizes large jobs by dividing Cost of Delay by job size. A small, high-time-criticality job gets a high score and is sequenced first; favoring small, high-value, time-critical work is the point of WSJF."
+    },
+    {
+      "subtopic": "SAFe 6.0 terminology currency",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following correctly describe SAFe 6.0 terminology changes from the 5.x era? Select all that apply.",
+      "options": [
+        "'Program Increment' was renamed 'Planning Interval' while the PI acronym was kept",
+        "The Core Values are Alignment, Transparency, Respect for People, and Relentless Improvement, with Built-in Quality moved to a practice",
+        "The 'House of Lean' was retired; the Lean-Agile Mindset now equals the five Lean Thinking principles plus the Agile Manifesto",
+        "'Program Increment' was renamed but the acronym changed from PI to PInt",
+        "WSJF was replaced by MoSCoW as the primary backlog-prioritization model"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "SAFe 6.0 renamed Program Increment to Planning Interval (keeping 'PI'), reset the four Core Values with Built-in Quality demoted to a practice, and retired the House of Lean. The acronym did not change to 'PInt', and WSJF remains SAFe's signature prioritization model."
+    },
+    {
+      "subtopic": "Velocity, Goodhart's Law, and cross-team comparison",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A director wants to rank three teams by their story-point velocity to allocate bonuses. What is the principled objection grounded in the reviewer?",
+      "options": [
+        "Velocity is a team-internal forecasting tool in each team's own relative points, so it is not comparable across teams, and making it a target invites Goodhart's Law gaming such as estimate inflation",
+        "Velocity is comparable across teams but should be averaged over more Sprints before ranking",
+        "Velocity measures items per unit time, so it should be converted to throughput before comparison",
+        "Velocity is fine as a bonus target as long as all teams use the same Fibonacci scale"
+      ],
+      "answer": 0,
+      "explanation": "Velocity is measured in each team's own relative points and is meant only as that team's planning aid, so cross-team comparison is meaningless. Turning it into a reward target triggers Goodhart's Law: teams inflate estimates and the number rises without more value delivered."
+    },
+    {
+      "subtopic": "Definition of Ready vs Definition of Done",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The Definition of Ready is an entry gate that is part of official Scrum, just like the Definition of Done.",
+      "answer": false,
+      "explanation": "The Definition of Ready is a useful but optional team convention and is NOT in the Scrum Guide. Only the Definition of Done is canonical; it is the commitment attached to the Increment."
+    },
+    {
+      "subtopic": "Coaching vs mentoring stance",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A developer has the capacity and domain knowledge to solve a problem but is stuck on clarity and direction. Which stance does the reviewer say best builds their self-sufficiency here?",
+      "options": [
+        "Coaching: ask powerful questions so they reach their own answer",
+        "Mentoring: tell them the route you took on a similar problem",
+        "Consulting: give them the expert answer directly",
+        "Directing (S1): give step-by-step instructions to follow"
+      ],
+      "answer": 0,
+      "explanation": "Coaching (asking, acting as a thinking partner) builds the most self-sufficiency and fits someone who has capacity but needs clarity. Mentoring and consulting both tell rather than ask, and the coach needs no expertise in the other's domain."
+    },
+    {
+      "subtopic": "Psychological safety attribution and meaning",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about psychological safety, as presented in the reviewer, are correct? Select all that apply.",
+      "options": [
+        "It was coined and researched by Amy Edmondson",
+        "Google's Project Aristotle found it the top factor in effective teams",
+        "It pairs high safety with high accountability, not comfort with lowered standards",
+        "It means making the team comfortable by relaxing quality standards",
+        "Project Aristotle found team composition (who is on the team) mattered more than how the team interacts"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Edmondson coined the concept; Project Aristotle ranked it the top of five factors and found how a team interacts mattered more than who was on it. Psychological safety pairs high safety with high accountability, so 'comfortable' and 'lowered standards' (and the composition-over-interaction claim) are wrong."
+    },
+    {
+      "subtopic": "Herzberg's two-factor theory",
+      "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team's pay was below market; after a raise that brings pay to market rate, engagement stops declining but does not actually rise. Which reading of Herzberg's two-factor theory best explains this?",
+      "options": [
+        "Pay is a hygiene factor on a separate scale from motivators; fixing it removes dissatisfaction but cannot by itself create satisfaction",
+        "Pay is a motivator, so the raise should have increased satisfaction; the team is simply ungrateful",
+        "Hygiene and motivators are opposite ends of one scale, so improving hygiene automatically increases motivation",
+        "Pay is a Delighter under the Kano Model, so its effect decays into a Basic over time"
+      ],
+      "answer": 0,
+      "explanation": "Herzberg places hygiene factors (pay, conditions, policy) and motivators (achievement, recognition, growth) on separate scales. Removing a dissatisfier like low pay stops people quitting in anger but does not create satisfaction; only motivators do that. Kano's Delighter is a different model entirely."
+    }
+  ]
+}

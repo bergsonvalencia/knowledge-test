@@ -1,0 +1,277 @@
+{
+  "topic": "angular",
+  "source": "angular/01-foundations.md",
+  "questions": [
+    {
+      "subtopic": "Framework vs library",
+      "source": "angular/01-foundations.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement best captures why Angular is described as a **framework** rather than a view library like React?",
+      "options": [
+        "It is opinionated and end-to-end, using inversion of control to call into your code via DI, lifecycle hooks, and the router",
+        "It renders components and manages local state, leaving routing and data fetching as bring-your-own choices",
+        "It is written in JavaScript first and adds TypeScript support as an optional layer",
+        "It ships only a rendering engine and relies on third-party packages for the router and HTTP"
+      ],
+      "answer": 0,
+      "explanation": "Angular is an opinionated, batteries-included framework using inversion of control. The other options describe React (a focused view library that is JS-first and leaves routing/HTTP to you)."
+    },
+    {
+      "subtopic": "Angular vs AngularJS",
+      "source": "angular/01-foundations.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "\"Angular\" (v2 and up) and \"AngularJS\" (1.x) are the same framework, with v2+ being an incremental upgrade of the 1.x codebase.",
+      "answer": false,
+      "explanation": "They are completely separate frameworks. Angular (v2+) was a full rewrite; AngularJS (1.x) uses `$scope`/`ng-*` directives and is end-of-life."
+    },
+    {
+      "subtopic": "Release cadence and support",
+      "source": "angular/01-foundations.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is Angular's major-version release cadence and per-major support window?",
+      "options": [
+        "Majors every 6 months; 18 months of support (6 active + 12 LTS)",
+        "Majors every 12 months; 24 months of support (12 active + 12 LTS)",
+        "Majors every 6 months; 12 months of support (6 active + 6 LTS)",
+        "Majors every 3 months; 18 months of support, all active"
+      ],
+      "answer": 0,
+      "explanation": "Angular ships majors on a 6-month cadence and each major gets 18 months of support: 6 months active plus 12 months LTS."
+    },
+    {
+      "subtopic": "Building blocks",
+      "source": "angular/01-foundations.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Angular's architecture, what is the primary role of a **service**?",
+      "options": [
+        "Hold reusable logic and state, delivered to consumers through dependency injection",
+        "Pair a TypeScript class with a template to render a unit of UI",
+        "Transform a value purely for display within a template",
+        "Attach behavior or shape the DOM on an existing element"
+      ],
+      "answer": 0,
+      "explanation": "A service is a plain `@Injectable()` class holding shared logic/state, injected via DI. The distractors describe a component, a pipe, and a directive respectively."
+    },
+    {
+      "subtopic": "Standalone default",
+      "source": "angular/01-foundations.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "As of Angular v19, what does writing `standalone: false` on a component's decorator indicate?",
+      "options": [
+        "The component is declared inside an NgModule (legacy), opting out of the standalone default",
+        "The component is standalone but cannot be lazy-loaded",
+        "The component must be bootstrapped with `bootstrapApplication`",
+        "The component disables AOT compilation for its template"
+      ],
+      "answer": 0,
+      "explanation": "Since v19 components are standalone by default, so you no longer write `standalone: true`; `standalone: false` explicitly marks an NgModule-declared (legacy) component, directive, or pipe."
+    },
+    {
+      "subtopic": "Bootstrapping flow",
+      "source": "angular/01-foundations.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A modern standalone app boots from `main.ts`. What are the two arguments passed to `bootstrapApplication(...)`?",
+      "options": [
+        "The root standalone component and an `ApplicationConfig` object",
+        "The `AppModule` and a platform reference",
+        "An array of routes and an `HttpClient` instance",
+        "The root NgModule and a `providers` array"
+      ],
+      "answer": 0,
+      "explanation": "`bootstrapApplication(App, appConfig)` takes the root standalone component first and an `ApplicationConfig` (an object with a `providers` array) second. There is no root NgModule in the modern flow."
+    },
+    {
+      "subtopic": "NgModule responsibilities mapping",
+      "source": "angular/01-foundations.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Standalone components redistribute the three jobs NgModules used to do. Which mappings are correct? (Select all that apply.)",
+      "options": [
+        "`declarations: [...]` is replaced by the component declaring itself (standalone)",
+        "`imports: [...]` for templates moves onto the component's own decorator",
+        "App-wide `providers: [...]` move to `providers` in `ApplicationConfig`",
+        "`bootstrap: [AppModule]` is replaced by re-exporting the component from a barrel file",
+        "`exports: [...]` is replaced by a mandatory `public` keyword on the component class"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Standalone splits declare/import/provide: the component declares itself, lists template deps in `imports`, and app-wide providers move to `ApplicationConfig`. Bootstrapping uses `bootstrapApplication(App, appConfig)`, not a barrel re-export, and there is no `public`-keyword requirement."
+    },
+    {
+      "subtopic": "Injector tree resolution",
+      "source": "angular/01-foundations.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When a component requests a dependency, how does Angular's hierarchical injector resolve it?",
+      "options": [
+        "Lookups bubble upward through the injector hierarchy (element injectors up to root/environment) until a provider is found",
+        "Lookups search downward from the root injector into each child element injector",
+        "Each component always receives a brand-new instance scoped only to itself",
+        "Resolution is global and flat, so injector hierarchy has no effect on the instance returned"
+      ],
+      "answer": 0,
+      "explanation": "The injector tree is hierarchical and lookups bubble upward from element injectors toward root/environment. It is not a downward search, not always per-component, and not flat/global."
+    },
+    {
+      "subtopic": "Application config providers",
+      "source": "angular/01-foundations.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which `provideX()` function installs the router and its routes in the modern `ApplicationConfig`?",
+      "options": [
+        "`provideRouter(routes)`",
+        "`provideHttpClient(withInterceptors([...]))`",
+        "`provideClientHydration(withEventReplay())`",
+        "`provideBrowserGlobalErrorListeners()`"
+      ],
+      "answer": 0,
+      "explanation": "`provideRouter(routes)` installs the router and routes. `provideHttpClient` installs `HttpClient`, `provideClientHydration` enables hydration, and `provideBrowserGlobalErrorListeners` wires global error events to the `ErrorHandler`."
+    },
+    {
+      "subtopic": "Code reading: standalone imports",
+      "source": "angular/01-foundations.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this standalone component, which dependency does **not** need to be listed in `imports` for the template to work?",
+      "code": "@Component({\n  selector: 'app-users',\n  imports: [RouterLink, UserCard],\n  template: `\n    <a routerLink=\"/new\">Add</a>\n    @for (u of users; track u.id) {\n      <app-user-card [user]=\"u\" />\n    }\n  `,\n})\nexport class Users { users = [/* ... */]; }",
+      "lang": "typescript",
+      "options": [
+        "The built-in `@for` block — it is part of the template language and needs no import",
+        "`RouterLink` — it is provided globally once `provideRouter` is called",
+        "`UserCard` — child components are auto-discovered by selector",
+        "All three are unnecessary because standalone components import everything automatically"
+      ],
+      "answer": 0,
+      "explanation": "Built-in control flow like `@for` is part of the template language and needs no import. `RouterLink` (a directive) and `UserCard` (a component) must still be listed in `imports`."
+    },
+    {
+      "subtopic": "Compilation model",
+      "source": "angular/01-foundations.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does Angular's **AOT compiler** do by default, and why does it matter?",
+      "options": [
+        "It compiles declarative templates into optimized JavaScript ahead of time, producing tree-shaken output",
+        "It interprets templates in the browser at runtime, recompiling on every change detection cycle",
+        "It converts TypeScript to JavaScript but leaves templates as uncompiled HTML strings",
+        "It only runs in development to enable hot reload and is stripped from production builds"
+      ],
+      "answer": 0,
+      "explanation": "AOT (ahead-of-time, the default) compiles templates into optimized, tree-shaken JavaScript at build time. It is not a runtime interpreter, it does compile templates, and it is the production default rather than a dev-only tool."
+    },
+    {
+      "subtopic": "Hydration and event replay",
+      "source": "angular/01-foundations.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In `provideClientHydration(withEventReplay())`, what specific problem does `withEventReplay()` solve?",
+      "options": [
+        "It replays user events that fire before hydration completes, so early clicks are not lost",
+        "It re-runs all HTTP requests the server made so the client has fresh data",
+        "It replays change detection cycles that were skipped during server rendering",
+        "It records and re-emits router navigations that occurred during SSR"
+      ],
+      "answer": 0,
+      "explanation": "`withEventReplay()` captures and replays user events (like clicks) that occur before hydration finishes, so interactions during that window are not dropped. It has nothing to do with HTTP, change detection, or router navigation replay."
+    },
+    {
+      "subtopic": "Batteries-included scope",
+      "source": "angular/01-foundations.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following ship as official, first-party Angular packages (as opposed to third-party picks in the React ecosystem)? (Select all that apply.)",
+      "options": [
+        "The router (`@angular/router`)",
+        "`HttpClient` with interceptors",
+        "Built-in hierarchical dependency injection",
+        "Redux Toolkit for global state management",
+        "TanStack Query for data fetching and caching"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The router, `HttpClient`, and hierarchical DI are first-party Angular. Redux Toolkit and TanStack Query are React-ecosystem 'bring your own' choices, not Angular packages."
+    },
+    {
+      "subtopic": "Zoneless default and history",
+      "source": "angular/01-foundations.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Regarding change detection in current Angular, which statement is accurate?",
+      "options": [
+        "`provideZonelessChangeDetection()` is the default in v21+; you can opt back into Zone.js with `provideZoneChangeDetection()`",
+        "Zone.js remains mandatory; zoneless mode is still an unreleased experiment",
+        "`provideZonelessChangeDetection()` removes change detection entirely, so you must call `detectChanges()` manually everywhere",
+        "Zoneless mode forces you to abandon RxJS and use only signals throughout the app"
+      ],
+      "answer": 0,
+      "explanation": "Zoneless is the default in v21+ (dev preview in v20.0, stable since v20.2); you opt back into Zone.js with `provideZoneChangeDetection()`. Zoneless does not remove change detection nor ban RxJS."
+    },
+    {
+      "subtopic": "Animations deprecation",
+      "source": "angular/01-foundations.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the current recommended approach to animations in modern Angular, and what is the status of `@angular/animations`?",
+      "options": [
+        "Use native CSS via the `animate.enter`/`animate.leave` template APIs; `@angular/animations` and `provideAnimationsAsync()` are deprecated (removal targeted v23)",
+        "Use `@angular/animations` as the supported standard; the native CSS APIs are an experimental fallback",
+        "Animations are now built into every component decorator, so no package or API is needed at all",
+        "Use `provideAnimationsAsync()` for all new code; native CSS animations are not supported by Angular"
+      ],
+      "answer": 0,
+      "explanation": "Modern Angular uses native CSS via `animate.enter`/`animate.leave`; the `@angular/animations` package and `provideAnimationsAsync()` are deprecated (removal targeted v23) and kept only for legacy code or libraries that still need the engine."
+    },
+    {
+      "subtopic": "EnvironmentProviders bundling",
+      "source": "angular/01-foundations.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A library author wants to expose all of their feature's providers as a single `provideMyFeature()` function consumers can drop into `ApplicationConfig`. Which API supports this?",
+      "options": [
+        "`makeEnvironmentProviders([...])`, which wraps providers into an `EnvironmentProviders` bundle",
+        "`bootstrapApplication([...])`, which mounts the providers as a root component",
+        "`provideZonelessChangeDetection([...])`, which registers arbitrary providers zonelessly",
+        "`withInterceptors([...])`, which packages providers for HTTP-only features"
+      ],
+      "answer": 0,
+      "explanation": "`makeEnvironmentProviders([...])` wraps providers into an `EnvironmentProviders` bundle a library can export as one `provideX()` function. `bootstrapApplication` mounts an app, `provideZonelessChangeDetection` configures change detection, and `withInterceptors` is an HTTP-client feature only."
+    },
+    {
+      "subtopic": "Code reading: app.config composition",
+      "source": "angular/01-foundations.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In the `app.config.ts` below, `provideZonelessChangeDetection()` and `provideZoneChangeDetection()` could both be listed together to give the app both behaviors at once.",
+      "code": "export const appConfig: ApplicationConfig = {\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZonelessChangeDetection(),\n    provideRouter(routes),\n    provideHttpClient(withInterceptors([authInterceptor])),\n    provideClientHydration(withEventReplay()),\n  ],\n};",
+      "answer": false,
+      "explanation": "Zoneless and Zone-based change detection are mutually exclusive strategies: an app is either zoneless or runs Zone.js. You choose one — `provideZoneChangeDetection()` is how you opt back into Zone.js instead of the zoneless default, not an addition to it."
+    },
+    {
+      "subtopic": "Trade-off reasoning",
+      "source": "angular/01-foundations.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A large enterprise wants one sanctioned, versioned stack with guaranteed cross-version interoperability and fewer architectural decisions for many teams. Per the framing, which choice best fits and why?",
+      "options": [
+        "Angular, because it trades flexibility for cohesion — shipping an interoperable, versioned stack with fewer decisions",
+        "React alone, because its small swappable core guarantees long-term consistency across teams",
+        "Angular, because it forbids any third-party libraries, eliminating dependency conflicts entirely",
+        "React with Next.js, because meta-frameworks are the only way to get dependency injection"
+      ],
+      "answer": 0,
+      "explanation": "Angular trades flexibility for cohesion: a consistent, versioned stack with guaranteed interop and fewer decisions — exactly the enterprise fit. React's strength is flexibility (not enforced consistency), Angular does not forbid third-party libraries, and meta-frameworks are not how you get DI."
+    }
+  ]
+}

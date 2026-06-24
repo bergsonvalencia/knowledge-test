@@ -1,0 +1,263 @@
+{
+  "topic": "ai",
+  "source": "ai/gradient-descent-and-optimization-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Update rule",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the gradient-descent update rule `θ := θ − η·∇J(θ)` do at each step?",
+      "options": [
+        "Steps the parameters in the direction opposite the gradient, scaled by the learning rate η",
+        "Steps the parameters in the direction of the gradient to increase the loss fastest",
+        "Replaces θ with the closed-form solution that sets the gradient to zero",
+        "Multiplies every parameter by the learning rate η to shrink it toward zero"
+      ],
+      "answer": 0,
+      "explanation": "The gradient points uphill (steepest increase), so the minus sign moves opposite it for the steepest local decrease in J, and η scales how far. Adding the gradient would increase loss; there is generally no closed form for the parameters being searched."
+    },
+    {
+      "subtopic": "Gradient direction",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The gradient ∇J(θ) points in the direction of steepest **increase** of the loss, which is why gradient descent steps in the opposite direction.",
+      "answer": true,
+      "explanation": "Each component of ∇J says how fast cost rises when that parameter is nudged up, so stacked together they point uphill; −∇J is the steepest local decrease, hence the minus sign in the update."
+    },
+    {
+      "subtopic": "Regression losses",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly contrasts MSE and MAE as regression losses?",
+      "options": [
+        "MSE is sensitive to outliers because squaring magnifies large errors; MAE is robust to outliers but has a non-smooth kink at zero",
+        "MAE is sensitive to outliers because it grows linearly; MSE is robust because squaring caps large errors",
+        "Both are equally sensitive to outliers, but only MAE is convex",
+        "MSE is non-differentiable everywhere, while MAE is smooth everywhere"
+      ],
+      "answer": 0,
+      "explanation": "Squaring in MSE punishes big misses far harder, so one wild point can dominate the gradient; MAE penalizes linearly (robust) but its absolute value has a kink at zero where the gradient is undefined. MSE is smooth and convex, not non-differentiable."
+    },
+    {
+      "subtopic": "Epoch vs step",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "With N = 50,000 training examples and a mini-batch size B = 256, how many parameter-update steps make up one epoch?",
+      "options": [
+        "196 steps (⌈N/B⌉)",
+        "50,000 steps (one per example)",
+        "256 steps (one per batch element)",
+        "1 step (an epoch is a single full-batch update)"
+      ],
+      "answer": 0,
+      "explanation": "An epoch is one full pass over the data, which is ⌈N/B⌉ = ⌈50000/256⌉ = ⌈195.3⌉ = 196 steps, where each step is one batch update. One step per example would describe pure SGD, not mini-batch."
+    },
+    {
+      "subtopic": "Dropout at inference",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Dropout randomly zeroes a fraction of neurons during training, and it is turned **off** at inference (with activations scaled accordingly).",
+      "answer": true,
+      "explanation": "During training dropout forces redundant, robust features by zeroing units each step; at inference no neurons are dropped and activations are scaled so the expected output matches training."
+    },
+    {
+      "subtopic": "Cross-entropy vs MSE for classification",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is cross-entropy preferred over MSE for a logistic-regression classifier?",
+      "options": [
+        "With sigmoid/softmax outputs, cross-entropy stays convex and gives strong gradients when the model is confidently wrong, whereas MSE on probabilities is non-convex with weak/vanishing gradients",
+        "MSE cannot be computed on probability outputs because they lie in (0,1)",
+        "Cross-entropy is robust to outliers while MSE is not, which only matters in classification",
+        "Cross-entropy requires no derivative, so it trains faster than the differentiable MSE"
+      ],
+      "answer": 0,
+      "explanation": "Cross-entropy explodes toward +∞ when confidently wrong, producing well-behaved gradients, and stays convex for logistic regression; MSE on probabilities yields weak, sometimes vanishing gradients and a non-convex surface. MSE is computable on probabilities and cross-entropy still needs derivatives."
+    },
+    {
+      "subtopic": "Learning rate failure modes",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A training run shows: epoch 1 loss = 2.3, epoch 2 loss = 19.7, epoch 3 loss = NaN, using plain SGD. What is the most likely cause?",
+      "options": [
+        "The learning rate is far too high, so steps overshoot the minimum and the loss diverges to NaN",
+        "The learning rate is far too low, so the loss is stuck and rounds to NaN",
+        "The dataset is too small to compute a valid gradient",
+        "Dropout was left on at inference, corrupting the loss"
+      ],
+      "answer": 0,
+      "explanation": "A loss that grows each epoch and blows up to NaN is the signature of an η that is too large: steps overshoot and land higher on the far wall. A too-small η would crawl downward, not diverge."
+    },
+    {
+      "subtopic": "Momentum and Adam",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does momentum fix that plain SGD struggles with, and what does Adam add on top of momentum?",
+      "options": [
+        "Momentum damps zig-zagging across a ravine's walls; Adam adds RMSProp-style per-parameter step scaling plus bias correction",
+        "Momentum guarantees convergence to the global minimum; Adam removes the need for a loss function",
+        "Momentum adds per-parameter adaptive step sizes; Adam adds a velocity term",
+        "Momentum normalizes layer inputs per batch; Adam adds dropout automatically"
+      ],
+      "answer": 0,
+      "explanation": "Momentum accumulates a velocity of past gradients (v := β·v + ∇J) to cancel sideways oscillation in ravines; Adam = Momentum + RMSProp, adding a per-parameter scale from a running average of squared gradients plus bias correction. Per-parameter scaling is RMSProp's contribution, not momentum's."
+    },
+    {
+      "subtopic": "L1 vs L2",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You suspect many of your input features are useless and want the model to discard them automatically. Which regularizer best fits, and why?",
+      "options": [
+        "L1 (λ·Σ|θ|), because its constant-magnitude gradient drives many weights exactly to zero, giving a sparse model",
+        "L2 (λ·Σθ²), because it drives many weights exactly to zero, giving a sparse model",
+        "L2 (λ·Σθ²), because it removes features by setting their weights to exactly zero faster than L1",
+        "Dropout, because it permanently deletes useless input features before training"
+      ],
+      "answer": 0,
+      "explanation": "L1 drives many weights exactly to zero, yielding sparsity and automatic feature selection. L2 shrinks weights smoothly toward (but rarely to) zero, so it tames features rather than eliminating them; dropout zeroes neurons stochastically per step, not permanently."
+    },
+    {
+      "subtopic": "Batch size trade-offs",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Select all statements that are TRUE about batch size and gradient-descent variants.",
+      "options": [
+        "Larger batches give smoother, more accurate gradients and use hardware better, but need more memory",
+        "Pure SGD (one example per update) is fast per step but follows a jittery path that never fully settles",
+        "Smaller batches add regularizing noise but are slower per example processed",
+        "Full-batch gradient descent computes a noisy, stochastic gradient ideal for escaping saddle points",
+        "Mini-batches of 32–512 are rare in deep learning because GPUs prefer single examples"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Larger batches are smoother/more accurate but memory-hungry; SGD is fast but jittery; smaller batches add helpful noise yet are slower per example. Full-batch gives an exact (not noisy) gradient, and mini-batches of 32–512 are the GPU-friendly default, not rare."
+    },
+    {
+      "subtopic": "Worked descent step",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the update rule below for J(w) = (w − 3)², starting at w = 1, what are w after step 1 and step 2?",
+      "code": "grad(w) = 2*(w - 3)\nw := w - 0.1*grad(w)   # eta = 0.1",
+      "lang": "text",
+      "options": [
+        "1.4 then 1.72",
+        "0.6 then 0.36",
+        "1.2 then 1.4",
+        "1.4 then 2.04"
+      ],
+      "answer": 0,
+      "explanation": "Step 1: grad = 2·(1−3) = −4, so w := 1 − 0.1·(−4) = 1.4. Step 2: grad = 2·(1.4−3) = −3.2, so w := 1.4 − 0.1·(−3.2) = 1.72, moving toward the minimum w* = 3."
+    },
+    {
+      "subtopic": "Categorical cross-entropy",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A 5-class softmax outputs probabilities `[0.1, 0.6, 0.1, 0.1, 0.1]` and the one-hot true class is index 1. What is the categorical cross-entropy loss (natural log)?",
+      "options": [
+        "−log(0.6) ≈ 0.51",
+        "−log(0.1) ≈ 2.30",
+        "−(log 0.1 + log 0.6 + log 0.1 + log 0.1 + log 0.1) ≈ 9.7",
+        "1 − 0.6 = 0.40"
+      ],
+      "answer": 0,
+      "explanation": "With one-hot labels only the true class's term survives in −Σ y_c·log ŷ_c, so the loss is −log(ŷ_true) = −log(0.6) ≈ 0.51. The other class probabilities matter only through the softmax normalization, not as additional log terms."
+    },
+    {
+      "subtopic": "Tuning on validation",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Hyperparameters such as η, λ, and dropout rate should be chosen using the test set, since it is the most representative measure of real-world performance.",
+      "answer": false,
+      "explanation": "Hyperparameters must be tuned on the validation set (or via cross-validation); the test set is touched once at the very end. Tuning against the test set is data leakage that inflates the reported score and breaks in production."
+    },
+    {
+      "subtopic": "Convex vs non-convex landscape",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Select all statements that are TRUE about why deep neural networks train well despite a non-convex loss.",
+      "options": [
+        "In very high dimensions, most critical points are saddle points rather than bad local minima",
+        "The many local minima that exist tend to have similar, low loss",
+        "Mini-batch noise and momentum help the optimizer slide off saddle points",
+        "Gradient descent on a non-convex net loss is guaranteed to reach the global minimum from any start",
+        "Linear regression with MSE is non-convex, which is why neural nets inherit good behavior from it"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "High-dimensional critical points are mostly saddles, good minima are abundant and similar in loss, and SGD noise plus momentum escape saddles — so a 'good enough' minimum is reached. There is no global-minimum guarantee for non-convex nets, and linear regression with MSE is convex, not non-convex."
+    },
+    {
+      "subtopic": "Convergence geometry",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For J(w) = (w − 3)² the distance-to-minimum is multiplied by (1 − 2η) each step. With η = 0.3 this factor is 0.4, giving smooth convergence. What happens to this factor, and to the iterate, as η increases past a critical value?",
+      "options": [
+        "For η > 1 the factor's magnitude exceeds 1, so w moves farther from 3 every step and diverges",
+        "For any η > 0 the factor stays in (0,1), so larger η always converges faster with no risk",
+        "For η > 0.5 the factor becomes exactly 0, so w jumps to the minimum in one step regardless of start",
+        "The factor is independent of η, so η only changes speed, never whether it converges"
+      ],
+      "answer": 0,
+      "explanation": "The per-step factor is (1 − 2η); for η > 1 it is below −1 in magnitude, so |factor| > 1 and each step overshoots farther from w* = 3, causing divergence. At η = 0.5 the factor is exactly 0 (one-step landing), but beyond that it grows negative; η does control whether it converges, not just speed."
+    },
+    {
+      "subtopic": "Random vs grid search",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You have one hyperparameter that strongly affects the score (η) and one that barely matters (a minor λ), with a fixed budget of 16 trials. Which search is better and why?",
+      "options": [
+        "Random search, because 16 random trials explore up to 16 distinct η values, whereas a 4×4 grid samples only 4 distinct η values",
+        "Grid search, because exhaustively covering both axes guarantees the optimum within the budget",
+        "Grid search, because random sampling wastes trials by ignoring the η axis entirely",
+        "It makes no difference; both explore the same number of distinct η values for a fixed budget"
+      ],
+      "answer": 0,
+      "explanation": "A 4×4 grid spends 4 trials at each of only 4 η values, wasting resolution on the λ axis that barely moves the score; 16 random trials give up to 16 distinct η values along the axis that matters. Grid search does not guarantee the optimum on continuous ranges with a small budget."
+    },
+    {
+      "subtopic": "Overfitting diagnosis and fixes",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A model reaches 99% training accuracy but only 70% validation accuracy. Select all that are valid characterizations or fixes.",
+      "options": [
+        "This is overfitting (high variance), signaled by the large train-vs-validation gap",
+        "Adding L2/weight decay or L1 regularization is an appropriate fix",
+        "Early stopping on the validation loss is an appropriate fix",
+        "Increasing model capacity (more layers/parameters) is the recommended fix",
+        "Raising the learning rate to a very high value is the recommended fix"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The wide train/validation gap is classic overfitting (low bias, high variance); regularization (L1/L2), dropout, early stopping, more/augmented data, or reducing capacity all help. Increasing capacity worsens overfitting, and a very high learning rate causes divergence, not better generalization."
+    },
+    {
+      "subtopic": "Backprop vs gradient descent",
+      "source": "ai/gradient-descent-and-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In a neural network, how do backpropagation and gradient descent relate?",
+      "options": [
+        "Backpropagation computes the gradients (∂J/∂θ via the chain rule); gradient descent is the optimizer that uses those gradients to update parameters",
+        "Backpropagation updates the parameters while gradient descent only computes the loss value",
+        "They are two names for the same algorithm and are fully interchangeable",
+        "Gradient descent computes per-layer gradients while backpropagation chooses the learning rate"
+      ],
+      "answer": 0,
+      "explanation": "Backpropagation is the chain-rule algorithm that computes every ∂J/∂θ in one efficient backward pass; gradient descent is the optimizer that consumes those gradients to update θ. They are distinct roles, not synonyms, and neither one chooses the learning rate."
+    }
+  ]
+}

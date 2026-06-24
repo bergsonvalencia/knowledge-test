@@ -1,0 +1,190 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-application-insights-and-observability-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Three pillars",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which observability signal is best described as numeric measurements aggregated over time (counts, averages, percentiles) that is cheap, low cardinality, and ideal for dashboards and alerts?",
+      "options": ["Logs", "Metrics", "Traces", "Spans"],
+      "answer": 1,
+      "explanation": "Metrics are aggregated numeric measurements over time, cheap and low-cardinality, answering 'how is the system behaving overall.' Logs are discrete high-cardinality events, and traces are the causal request path across services."
+    },
+    {
+      "subtopic": "Telemetry tables",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "An outbound HTTP, SQL, or Service Bus call your service makes is recorded in App Insights as which telemetry type, landing in which KQL table?",
+      "options": ["Request, in the `requests` table", "Dependency, in the `dependencies` table", "Trace, in the `traces` table", "Event, in the `customEvents` table"],
+      "answer": 1,
+      "explanation": "Outbound calls are Dependency telemetry in the `dependencies` table. The `requests` table holds inbound server-side calls (request vs dependency is the inbound/outbound distinction)."
+    },
+    {
+      "subtopic": "trace naming trap",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In Application Insights vocabulary, the `traces` table stores distributed traces (the correlated call tree of a request across services).",
+      "answer": false,
+      "explanation": "The `traces` table holds log messages (typically `ILogger` output) with severity and properties — NOT distributed traces. A distributed trace is reconstructed from correlated `requests` and `dependencies` joined by `operation_Id`."
+    },
+    {
+      "subtopic": "Correlation ids",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which App Insights field corresponds to the W3C/OTel TraceId — the single id for the whole end-to-end operation, propagated to every service?",
+      "options": ["`operation_ParentId`", "`id`", "`operation_Id`", "`cloud_RoleInstance`"],
+      "answer": 2,
+      "explanation": "`operation_Id` equals the W3C/OTel TraceId, the single id for the entire end-to-end operation. `operation_ParentId`/`id` map to parent/SpanId (this span and its caller), not the whole-operation id."
+    },
+    {
+      "subtopic": "Connection string vs key",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the required and recommended way to configure App Insights ingestion in a modern .NET app?",
+      "options": ["Instrumentation-key-only configuration via `InstrumentationKey`", "The connection string (`APPLICATIONINSIGHTS_CONNECTION_STRING`)", "A storage account SAS token", "An OTLP endpoint URL with no credentials"],
+      "answer": 1,
+      "explanation": "The connection string is mandatory and carries the ingestion endpoint plus instrumentation key. Instrumentation-key-only configuration is deprecated/retired."
+    },
+    {
+      "subtopic": "Structured logging",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the two log calls below, which statement is correct about how App Insights captures `orderId`?",
+      "code": "logger.LogInformation($\"Order {orderId} shipped\");        // A\nlogger.LogInformation(\"Order {OrderId} shipped\", orderId); // B",
+      "lang": "csharp",
+      "options": ["A captures `orderId` as a queryable `customDimensions.OrderId`; B flattens it into one string", "B captures `orderId` as a queryable `customDimensions.OrderId`; A flattens it into one opaque string", "Both capture `orderId` as a queryable property identically", "Neither captures `orderId` as a queryable property"],
+      "answer": 1,
+      "explanation": "B uses a named message-template placeholder, so `OrderId` becomes a queryable `customDimensions` property. A is string interpolation, which App Insights sees as one opaque flattened message string, losing the structure."
+    },
+    {
+      "subtopic": "Default log level",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A developer's `logger.LogInformation(...)` calls never appear in App Insights, while their warnings and errors do. What is the most likely cause?",
+      "options": ["Adaptive sampling is dropping all Information logs", "The default App Insights logger capture level is `Warning`, so `Information` is dropped until you lower it", "Information logs go only to Live Metrics and are never stored", "The connection string is missing so only severe logs are sent"],
+      "answer": 1,
+      "explanation": "The default capture level for the App Insights logger category is `Warning`; `Information` is silently dropped until you lower the level in configuration (e.g. `Logging:ApplicationInsights:LogLevel`). Sampling keeps whole operations together rather than dropping by severity, and a missing connection string would drop everything."
+    },
+    {
+      "subtopic": "GetMetric vs TrackMetric",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On a hot path you need accurate per-minute counts of a custom measurement without inflating ingestion cost or risking throttling. Which API and why?",
+      "options": ["`TrackMetric` — it samples high-volume metrics automatically", "`GetMetric().TrackValue()` — it pre-aggregates in-process (count/sum/min/max per minute), emitting far fewer items", "`TrackEvent` — events are cheaper than metrics", "`TrackMetric` — it pre-aggregates per minute before sending"],
+      "answer": 1,
+      "explanation": "`GetMetric` pre-aggregates in-process per minute, so it emits far fewer telemetry items and is cheap. `TrackMetric` sends one item per call with no pre-aggregation — high ingestion volume and possible throttling; neither API is subject to sampling."
+    },
+    {
+      "subtopic": "traceparent format",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the W3C `traceparent` value `00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01`, what does the trailing `01` indicate?",
+      "options": ["The protocol version is 1", "There is 1 child span", "The trace-flags byte whose low bit marks the operation as sampled/recorded", "The parent-id occupies 1 byte"],
+      "answer": 2,
+      "explanation": "The final field is trace-flags; bit 0 (low bit) is the sampled flag, so `01` means recorded/sampled and `00` means not sampled. The version is the leading `00` field, not the trailing byte."
+    },
+    {
+      "subtopic": "KQL sampling-aware counts",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With 5% fixed-rate sampling enabled, the query below reports roughly 1/20th of the real failures. What is the correct fix?",
+      "code": "requests\n| where success == false and timestamp > ago(1h)\n| summarize failures = count() by name",
+      "lang": "sql",
+      "options": ["Replace `count()` with `sum(itemCount)` to re-weight by how many originals each item represents", "Add `| extend failures = failures * 5` after the summarize", "Replace `requests` with the `traces` table", "Remove the `where` clause so no rows are filtered out"],
+      "answer": 0,
+      "explanation": "Each retained item records `itemCount` (how many originals it represents); `sum(itemCount)` re-weights counts to stay approximately correct under sampling, while `count()` undercounts. Multiplying by a hardcoded factor or switching tables does not correctly account for per-item weights."
+    },
+    {
+      "subtopic": "Live Metrics",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Live Metrics Stream data is unsampled, streamed with ~1-second latency over a dedicated channel, and is not stored or retained for later KQL querying.",
+      "answer": true,
+      "explanation": "Live Metrics uses a separate dedicated channel that is not sampled and not retained — data streams to the portal while you watch and is then discarded, so it does not count against ingestion/retention cost. KQL queries the stored workspace instead, with ingestion latency."
+    },
+    {
+      "subtopic": "OTel to App Insights mapping",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following OpenTelemetry-to-Application-Insights mappings are correct? (Select all that apply.)",
+      "options": ["OTel Span with kind=Server maps to Request telemetry (`requests`)", "OTel Span with kind=Client maps to Dependency telemetry (`dependencies`)", "OTel span attributes map to `customDimensions`", "OTel resource attribute `service.name` maps to `operation_Id`", "OTel TraceId maps to `cloud_RoleName`"],
+      "answer": [0, 1, 2],
+      "explanation": "Server spans become requests, client spans become dependencies, and span attributes become `customDimensions`. `service.name` maps to `cloud_RoleName`/`cloud_RoleInstance` (not `operation_Id`), and TraceId maps to `operation_Id` (not `cloud_RoleName`)."
+    },
+    {
+      "subtopic": "Sampling modes",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Across a fleet of microservices participating in one distributed trace, which sampling approach best preserves complete end-to-end transactions?",
+      "options": ["Adaptive sampling tuned independently per instance to a target items/sec", "The same fixed-rate sampling with a traceid-based hash across all services", "Ingestion (server-side) sampling configured differently per service", "Disabling sampling on some services and enabling adaptive on others"],
+      "answer": 1,
+      "explanation": "A consistent fixed rate plus a traceid-based hash keeps (or drops) an entire trace end-to-end, so transactions aren't half-kept. Per-instance adaptive tuning or mismatched/differing rates across services break end-to-end transactions because the sampled decision diverges."
+    },
+    {
+      "subtopic": "Adaptive sampling default",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the classic ASP.NET Core SDK, what must you do before configuring pure fixed-rate sampling?",
+      "code": "builder.Services.AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions\n{\n    EnableAdaptiveSampling = false\n});",
+      "lang": "csharp",
+      "options": ["Nothing — fixed-rate is the SDK default", "Disable adaptive sampling first, because `AddApplicationInsightsTelemetry()` turns on adaptive sampling by default", "Switch the connection string to an OTLP endpoint", "Set the default log level to `Information`"],
+      "answer": 1,
+      "explanation": "`AddApplicationInsightsTelemetry()` enables adaptive sampling by default, so to get pure fixed-rate behavior you must disable adaptive sampling first (e.g. `EnableAdaptiveSampling = false`) and then add the fixed-rate processor."
+    },
+    {
+      "subtopic": "Head-based sampling limits",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team wants to keep only the slow or failing traces and discard fast successful ones. Why can't the in-process App Insights SDK do this, and what can?",
+      "options": ["The SDK already does this; just enable adaptive sampling", "SDK sampling is head-based (decides at the start of an operation), so it can't selectively keep slow/failing traces; tail sampling in the OTel Collector can", "Fixed-rate sampling automatically keeps the slowest 5% of traces", "Ingestion sampling keeps only failed operations by default"],
+      "answer": 1,
+      "explanation": "App Insights SDK sampling is head-based: it decides at the start of an operation, before duration or outcome is known, so it cannot preferentially keep slow/failing traces. Tail sampling, which decides after the trace completes, requires the OpenTelemetry Collector — the in-process SDK cannot do it."
+    },
+    {
+      "subtopic": "Exception logging mechanics",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "To ensure a caught exception's full stack trace and type land in the `exceptions` table with proper correlation, how should you log it?",
+      "options": ["Concatenate `ex.ToString()` into the message string: `logger.LogError(\"Failed: \" + ex)`", "Pass the exception object as the first argument: `logger.LogError(ex, \"Payment failed for order {OrderId}\", orderId)`", "Use `logger.LogInformation` so it isn't filtered by the default level", "Call `TrackEvent(\"Exception\")` with the message as a property"],
+      "answer": 1,
+      "explanation": "Passing the exception as the first argument captures its type and stack trace and routes it to the `exceptions` table, while named placeholders remain queryable. Stuffing the exception into the message string loses the structured stack/type, and `TrackEvent` is for business events, not exceptions."
+    },
+    {
+      "subtopic": "Cross-process correlation",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Two services handle one request, but the portal shows them as separate, unjoined transactions over a normal `HttpClient` call. Which actions plausibly address the root cause? (Select all that apply.)",
+      "options": ["Ensure both services use W3C format (`Activity.DefaultIdFormat = W3C`) so `traceparent` propagates", "Use the same sampling configuration on both services so the operation isn't kept on one side and dropped on the other", "Set the App Insights default log level to `Information` on both services", "Confirm `HttpClient` instrumentation is injecting the `traceparent` header on the outbound call", "Replace the connection string with an instrumentation-key-only configuration"],
+      "answer": [0, 1, 3],
+      "explanation": "Broken correlation is typically a propagation/format mismatch or a sampling mismatch: align on W3C, ensure `traceparent` is injected (auto via HttpClient instrumentation), and use the same sampling config so one side doesn't keep an operation the other drops. Log level affects what logs appear, not trace joining, and key-only config is retired and unrelated."
+    },
+    {
+      "subtopic": "Metric vs log alerts",
+      "source": "azure/azure-application-insights-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You need a low-latency, cheap SLO threshold alert on server response time with ML-tuned baselines. Which alert type fits best, and why not the alternative?",
+      "options": ["A log (search) alert, because KQL queries run continuously with sub-second latency", "A metric alert on pre-aggregated metrics, because it is low-latency and cheap and supports dynamic thresholds; log alerts run KQL on a schedule with more latency and per-evaluation cost", "A log (search) alert, because only KQL alerts support dynamic thresholds", "A metric alert, because metric alerts can express any arbitrary KQL condition"],
+      "answer": 1,
+      "explanation": "Metric alerts fire on pre-aggregated metrics with low latency and low cost and support dynamic (ML-tuned) thresholds, ideal for SLO-style thresholds. Log alerts run a KQL query on a schedule — more flexible but higher latency and per-evaluation cost — so they're not the best fit here."
+    }
+  ]
+}

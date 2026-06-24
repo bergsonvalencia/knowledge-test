@@ -1,0 +1,268 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-cloudfront-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Cache behaviors & path matching",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A distribution has cache behaviors for `*.jpg`, `/api/*`, and the default `*`. How does CloudFront decide which behavior handles an incoming request?",
+      "options": [
+        "Behaviors are evaluated in order and the first matching path pattern wins; `*` is the fallback",
+        "The most specific (longest) pattern always wins regardless of order",
+        "All matching behaviors are merged, with later ones overriding earlier ones",
+        "The default `*` behavior is always evaluated first, then more specific ones"
+      ],
+      "answer": 0,
+      "explanation": "Behaviors are evaluated in order and the first matching pattern wins, with `*` as the fallback default — which is why you place the most specific patterns first. CloudFront does not compute specificity or merge behaviors."
+    },
+    {
+      "subtopic": "The modern policies",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which CloudFront policy defines the **cache key** (the query strings, headers, and cookies that make a response unique) plus the Min/Default/Max TTLs?",
+      "options": [
+        "Origin request policy",
+        "Response headers policy",
+        "Cache policy",
+        "Legacy forwarded-values policy"
+      ],
+      "answer": 2,
+      "explanation": "The cache policy IS the cache key plus TTLs and the compression dimension. The origin request policy controls what is forwarded to the origin beyond the key, and the response headers policy only adds headers to the viewer response."
+    },
+    {
+      "subtopic": "TLS, ACM, and SNI",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In which Region must the ACM certificate for a CloudFront custom domain (HTTPS on an alternate domain name) reside?",
+      "options": [
+        "The Region where the origin lives",
+        "us-east-1, always",
+        "Any Region, as long as DNS validation succeeds",
+        "The Region geographically closest to most viewers"
+      ],
+      "answer": 1,
+      "explanation": "CloudFront's control plane is in us-east-1, so its ACM cert must be in us-east-1 regardless of where the origin or other resources live. Regional services like ALB use a cert in their own Region, but CloudFront is the exception."
+    },
+    {
+      "subtopic": "Invalidations vs versioned keys",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "For routine cache-busting on each deploy, creating CloudFront invalidations against stable URLs is the preferred pattern over publishing versioned, immutable object keys.",
+      "answer": false,
+      "explanation": "It is the reverse: versioned immutable keys (e.g. `/css/app.7f3a9c.css` with a long `max-age, immutable`) are preferred because each deploy is a new key — instantly fresh, free, and non-breaking. Invalidations are eventually consistent, only ~1,000 paths/month are free, and they are reserved for emergencies."
+    },
+    {
+      "subtopic": "Origin security: OAC",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the modern, recommended mechanism to lock an S3 origin so it is reachable **only via CloudFront** and never by a direct S3 URL?",
+      "options": [
+        "Origin Access Identity (OAI)",
+        "Origin Access Control (OAC)",
+        "Signed cookies on the bucket",
+        "A public bucket policy restricted by IP"
+      ],
+      "answer": 1,
+      "explanation": "OAC is the modern replacement for the deprecated OAI: CloudFront signs origin requests with SigV4 and the bucket policy grants access to the distribution. OAI is deprecated; signed cookies secure viewer-to-CloudFront, not CloudFront-to-S3."
+    },
+    {
+      "subtopic": "Origin request policy",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Your origin must see the `Authorization` header to authorize requests, but you want all authorized viewers to share **one** cached response. What is the correct configuration?",
+      "options": [
+        "Add `Authorization` to the cache policy so it is part of the cache key",
+        "Add `Authorization` to the origin request policy but NOT to the cache policy",
+        "Add `Authorization` to the response headers policy",
+        "Disable caching entirely for the path"
+      ],
+      "answer": 1,
+      "explanation": "Forwarding `Authorization` via the origin request policy lets the origin see and authorize it without joining the cache key, so all authorized viewers collapse to one cached object. Putting it in the cache policy would fragment the cache per token."
+    },
+    {
+      "subtopic": "TTL precedence",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A cache policy has `MinTTL=60`, `DefaultTTL=3600`, `MaxTTL=86400`. The origin returns `Cache-Control: max-age=10` on an object. How long does CloudFront cache it?",
+      "options": [
+        "10 seconds",
+        "60 seconds",
+        "3600 seconds",
+        "It is not cached at all"
+      ],
+      "answer": 1,
+      "explanation": "The origin's `max-age=10` is honored but clamped to the `[MinTTL, MaxTTL]` window, so it is raised to the `MinTTL` floor of 60s. `DefaultTTL` would apply only if the origin sent no caching headers."
+    },
+    {
+      "subtopic": "Two-tier caching & Origin Shield",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about CloudFront's two-tier caching and Origin Shield are correct? (Select all that apply.)",
+      "options": [
+        "On an edge miss, the edge location queries its regional edge cache (REC) before reaching the origin",
+        "Origin Shield is a single designated REC that all other caches funnel through for maximum offload",
+        "Proxy methods like PUT/POST/PATCH/DELETE and very large objects can bypass the REC and go edge-to-origin",
+        "Regional edge caches are smaller and have shorter TTLs than individual edge locations",
+        "Origin Shield is enabled globally for the whole distribution rather than per origin"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The edge asks the REC first, Origin Shield is a single funnel REC for highest offload, and dynamic/large/proxy-method content bypasses the REC. RECs are larger with longer TTLs (not shorter), and Origin Shield is enabled per origin with a chosen Region."
+    },
+    {
+      "subtopic": "Edge compute selection",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need to enrich an **origin response** by calling DynamoDB and rewriting the body before it is cached. Which edge-compute option is appropriate?",
+      "options": [
+        "CloudFront Functions, because they run on all four trigger events",
+        "CloudFront Functions reading KeyValueStore, since no origin call is needed",
+        "Lambda@Edge, because it runs on origin events and can make network calls",
+        "Geo-restriction with a custom error response"
+      ],
+      "answer": 2,
+      "explanation": "Lambda@Edge runs at all four events (including origin response), can make network calls to DynamoDB, and can access bodies. CloudFront Functions run only at viewer request/response, have no network access (only KeyValueStore reads), and no body access."
+    },
+    {
+      "subtopic": "WAF attachment points",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team fronts a workload with an internet-facing **NLB** and wants AWS WAF SQLi and rate-limiting rules applied. What is the correct guidance?",
+      "options": [
+        "Attach the web ACL directly to the NLB with REGIONAL scope",
+        "WAF cannot attach to an NLB; front the workload with CloudFront (or an ALB) that hosts the web ACL",
+        "Enable WAF inside the NLB target group health checks",
+        "Move the web ACL to us-west-2 so it can bind to the NLB"
+      ],
+      "answer": 1,
+      "explanation": "WAF cannot attach to an NLB (L4). It attaches to CloudFront, ALB, API Gateway, App Runner, AppSync, and Cognito. To get edge WAF + DDoS, front the workload with CloudFront (web ACL in us-east-1, CLOUDFRONT scope) or terminate at an ALB."
+    },
+    {
+      "subtopic": "Signed URLs vs signed cookies",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You must grant a viewer time-limited access to **many** files under a path (e.g. an entire HLS playlist) without rewriting every object URL. Which mechanism fits best?",
+      "options": [
+        "Signed URLs, one per file",
+        "Signed cookies",
+        "OAC on the S3 bucket",
+        "A response headers policy with CORS"
+      ],
+      "answer": 1,
+      "explanation": "Signed cookies grant access to many files or a whole path without changing URLs, whereas a signed URL covers one file. OAC secures CloudFront-to-origin (not viewer access), and a CORS header policy is unrelated to authorization."
+    },
+    {
+      "subtopic": "Origin groups & failover",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "A CloudFront origin group can be used as a general-purpose load balancer that distributes live traffic across a primary and secondary origin simultaneously.",
+      "answer": false,
+      "explanation": "An origin group provides failover, not load balancing: it retries the secondary only when the primary returns a configured failover status (e.g. 5xx) or connection error, and it relies on cacheable GET/HEAD semantics. It is not a general load balancer."
+    },
+    {
+      "subtopic": "CloudFront Functions code reading",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this CloudFront Function on **viewer request**, what URI does a request to `/blog` (no trailing slash, no dot) get rewritten to?",
+      "code": "function handler(event) {\n  var request = event.request;\n  var uri = request.uri;\n  if (uri.endsWith('/')) request.uri += 'index.html';\n  else if (!uri.includes('.')) request.uri += '/index.html';\n  return request;\n}",
+      "lang": "javascript",
+      "options": [
+        "/blogindex.html",
+        "/blog/index.html",
+        "/blog (unchanged)",
+        "/index.html"
+      ],
+      "answer": 1,
+      "explanation": "`/blog` does not end with `/` and contains no `.`, so the `else if` branch runs and appends `/index.html`, giving `/blog/index.html`. The first branch (append `index.html`) only fires for URIs already ending in `/`."
+    },
+    {
+      "subtopic": "OAC capabilities",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are advantages OAC has over the deprecated OAI? (Select all that apply.)",
+      "options": [
+        "Signs origin requests with SigV4",
+        "Supports SSE-KMS-encrypted S3 objects",
+        "Works in all Regions, including those launched after December 2022",
+        "Eliminates the need for any S3 bucket policy",
+        "Replaces the need for signed URLs on private viewer content"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "OAC signs with SigV4, supports SSE-KMS, and works in all Regions (including post-2022 ones), plus dynamic methods OAI couldn't. It still requires a bucket policy scoped to the distribution, and it secures CloudFront-to-origin — it does not replace signed URLs/cookies, which secure viewer-to-CloudFront."
+    },
+    {
+      "subtopic": "Cache key & hit ratio",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Requests like `/p?id=42&utm_source=a` and `/p?id=42&utm_source=c` return identical content but both miss the cache. The cache policy includes **all** query strings, and the origin genuinely needs the `utm_*` params for analytics. What is the senior fix?",
+      "options": [
+        "Add a CloudFront Function to strip `utm_*` before the request reaches the origin",
+        "Put only `id` in the cache policy key, and forward `utm_*` to the origin via an origin request policy",
+        "Set `MinTTL` higher so the entries live longer despite being separate",
+        "Create an invalidation for `/p*` after each marketing campaign"
+      ],
+      "answer": 1,
+      "explanation": "Narrowing the cache key to `id` collapses all `id=42` variants to one entry (raising hit ratio), while an origin request policy still forwards `utm_*` to the origin without joining the key. Stripping the params would deprive the origin of the analytics data it needs."
+    },
+    {
+      "subtopic": "Cache-Control directives",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An origin returns both `Cache-Control: max-age=600, s-maxage=86400` on a cacheable object, within a policy whose `MaxTTL` is 31536000. How long does CloudFront retain the object at the edge?",
+      "options": [
+        "600 seconds, because `max-age` always governs",
+        "86400 seconds, because `s-maxage` wins for the shared/CDN cache",
+        "0 seconds, because the two directives conflict and disable caching",
+        "31536000 seconds, the policy MaxTTL"
+      ],
+      "answer": 1,
+      "explanation": "`s-maxage` is the shared-cache (CDN) directive and overrides `max-age` for CloudFront, giving 86400s (within the MaxTTL ceiling). The directives do not conflict — `s-maxage` simply takes precedence for the shared cache."
+    },
+    {
+      "subtopic": "Field-level encryption",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does CloudFront **field-level encryption** accomplish for a sensitive form field such as a credit-card number?",
+      "options": [
+        "It encrypts the entire request body with the viewer's TLS session key",
+        "It encrypts specific fields with your public key at the edge so only the private-key holder deep in your stack can decrypt them",
+        "It tokenizes the field and stores the plaintext in CloudFront KeyValueStore",
+        "It blocks the field from being forwarded to the origin at all"
+      ],
+      "answer": 1,
+      "explanation": "Field-level encryption encrypts designated fields with your public key at the edge, so the origin and intermediate services never see plaintext — only the component holding the private key can decrypt. It targets specific fields, not the whole body, and does not store plaintext anywhere."
+    },
+    {
+      "subtopic": "Logging transport",
+      "source": "aws/aws-cloudfront-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You need CloudFront request logs delivered within seconds for a live anomaly-detection dashboard, with configurable fields and a sampling rate. Which logging option fits?",
+      "options": [
+        "Standard access logs delivered to S3",
+        "Real-time logs streamed via Kinesis Data Streams",
+        "CloudWatch metrics (requests, cache hit rate)",
+        "Origin Shield access logs"
+      ],
+      "answer": 1,
+      "explanation": "Real-time logs stream via Kinesis Data Streams within seconds with configurable fields and sampling — ideal for live dashboards. Standard logs to S3 are batched and delayed, and CloudWatch metrics are aggregate counters, not per-request log records."
+    }
+  ]
+}

@@ -1,0 +1,268 @@
+{
+  "topic": "typescript",
+  "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "interface vs type alias",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which of these can be named **only** with a `type` alias, never with an `interface`?",
+      "options": [
+        "A union like `string | number`",
+        "An object shape with a `readonly` property",
+        "A callable object via a call signature",
+        "An object that extends another object type"
+      ],
+      "answer": 0,
+      "explanation": "An `interface` can only describe an object (or callable/constructable object) type; only a `type` alias can name a union, tuple, primitive, mapped, conditional, or template-literal type. Object shapes, readonly members, call signatures, and extending are all expressible with interfaces."
+    },
+    {
+      "subtopic": "declaration merging",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Declaring two `type` aliases with the same name in the same scope merges them into one alias, the same way two same-name interfaces merge.",
+      "answer": false,
+      "explanation": "Only interfaces participate in declaration merging. Redeclaring a `type` alias with the same name is a `Duplicate identifier` error; same-name interfaces merge their members into one."
+    },
+    {
+      "subtopic": "readonly modifier",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `interface Config { readonly tags: string[]; }` and `const c: Config = { tags: [\"a\"] };`, which statement is true?",
+      "code": "interface Config { readonly tags: string[]; }\nconst c: Config = { tags: [\"a\"] };",
+      "lang": "typescript",
+      "options": [
+        "`c.tags.push(\"b\")` is allowed, but `c.tags = []` is a compile error",
+        "Both `c.tags.push(\"b\")` and `c.tags = []` are compile errors",
+        "Both `c.tags.push(\"b\")` and `c.tags = []` are allowed",
+        "`c.tags.push(\"b\")` is a compile error, but `c.tags = []` is allowed"
+      ],
+      "answer": 0,
+      "explanation": "`readonly` is shallow: it blocks reassigning the property binding (`c.tags = []` fails) but does not make the referenced array immutable, so `c.tags.push(\"b\")` is permitted."
+    },
+    {
+      "subtopic": "width subtyping",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A `Point3D` value (with `x`, `y`, `z`) can be assigned to a `Point2D` variable (requiring only `x`, `y`), because a wider object is a subtype of a narrower one.",
+      "answer": true,
+      "explanation": "Width subtyping: an object with more properties is a subtype of one with fewer required members, so the wider shape is assignable where the narrower is expected (the extra `z` is ignored for a non-fresh value). The reverse fails because the required `z` would be missing."
+    },
+    {
+      "subtopic": "structural typing",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Two interfaces `Dog` and `Robot` each declare exactly `legs: number` and `bark(): void`. A `Dog` value is assigned to a `Robot`-typed variable. What happens?",
+      "options": [
+        "It compiles — TypeScript is structural, so identical shapes are mutually assignable regardless of name",
+        "It fails — the interfaces have different names, which makes them distinct nominal types",
+        "It fails — assignment between unrelated named interfaces requires an explicit `implements`",
+        "It compiles only if `Robot` is declared with `extends Dog`"
+      ],
+      "answer": 0,
+      "explanation": "TypeScript uses structural typing: compatibility is decided by shape, not name. Two structurally identical interfaces with different names are mutually assignable; no `implements` or `extends` relationship is needed."
+    },
+    {
+      "subtopic": "method vs property function variance",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does method-syntax `deposit(amount: number): void` differ from property-with-function-type `onChange: (balance: number) => void` in how their parameters are checked?",
+      "options": [
+        "The method form is checked with parameter bivariance; the arrow-property form is checked contravariantly under `strictFunctionTypes`",
+        "The method form is checked contravariantly; the arrow-property form is checked with parameter bivariance",
+        "Both are always checked bivariantly regardless of `strictFunctionTypes`",
+        "Both are always checked contravariantly when `strict` is on"
+      ],
+      "answer": 0,
+      "explanation": "Method-syntax members are checked with parameter bivariance (an unsound but convenient legacy behavior), whereas an arrow-typed property is checked contravariantly once `strictFunctionTypes` is enabled. This is why the two forms are 'almost' the same but not identical."
+    },
+    {
+      "subtopic": "index signature constraints",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does declaring `name: string` alongside `[key: string]: number` in the same interface produce an error?",
+      "code": "interface Bad {\n  [key: string]: number;\n  name: string;\n}",
+      "lang": "typescript",
+      "options": [
+        "A string index signature constrains every named property, and `string` is not assignable to the index value type `number`",
+        "An interface may not contain both a named property and an index signature at the same time",
+        "Index signatures must be declared after all named properties, not before them",
+        "`name` collides with a reserved key that index signatures implicitly reserve"
+      ],
+      "answer": 0,
+      "explanation": "A string index signature requires every declared property's type to be assignable to its value type. Here `name: string` is not assignable to `number`, so it errors. Mixing named properties with an index signature is otherwise perfectly legal."
+    },
+    {
+      "subtopic": "Record vs index signature",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With `type Permissions = Record<\"admin\" | \"user\" | \"guest\", boolean>`, how is reading `perms.admin` typed, and what happens for `perms.gues`?",
+      "options": [
+        "`perms.admin` is `boolean`; `perms.gues` is a compile error because the key set is closed",
+        "`perms.admin` is `boolean | undefined`; `perms.gues` is `boolean | undefined`",
+        "`perms.admin` is `boolean | undefined`; `perms.gues` is a compile error",
+        "`perms.admin` is `boolean`; `perms.gues` is also `boolean` since all values share the type"
+      ],
+      "answer": 0,
+      "explanation": "`Record<K, V>` enumerates an exact, closed key set, so `perms.admin` is simply `boolean` (no `undefined`), and a misspelled key like `gues` does not exist on the type and is a compile error. An open index signature would behave differently."
+    },
+    {
+      "subtopic": "noUncheckedIndexedAccess",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `interface Dict { [key: string]: number; }` and `const d: Dict = { a: 1 };`, what is the type of `d[\"zzz\"]` with `noUncheckedIndexedAccess` **enabled**, and what is the runtime value?",
+      "code": "interface Dict { [key: string]: number; }\nconst d: Dict = { a: 1 };\nconst v = d[\"zzz\"];",
+      "lang": "typescript",
+      "options": [
+        "Type `number | undefined`; runtime value `undefined`",
+        "Type `number`; runtime value `undefined`",
+        "Type `number | undefined`; runtime value `0`",
+        "Type `never`; runtime value `undefined`"
+      ],
+      "answer": 0,
+      "explanation": "`noUncheckedIndexedAccess` adds `undefined` to values read through an index signature, so the static type becomes `number | undefined`, matching the actual runtime value `undefined`. Without the flag the type would be a misleading `number`."
+    },
+    {
+      "subtopic": "extends vs intersection conflict",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "`interface A { kind: string }` and `interface B { kind: number }`. How do `interface C extends A, B {}` and `type D = A & B` differ on the conflicting `kind`?",
+      "options": [
+        "`C` errors at its declaration; `D` declares fine but `D[\"kind\"]` is `never`",
+        "Both error at their declaration with the same message",
+        "Neither errors; both resolve `kind` to `string | number`",
+        "`C` resolves `kind` to `never`; `D` errors at its declaration"
+      ],
+      "answer": 0,
+      "explanation": "`extends` is checked eagerly and errors at the declaration on an incompatible inherited member. `&` is lazy: it intersects `kind` to `string & number`, which collapses to `never`, so the type declares fine and the impossibility only surfaces when you try to build a value."
+    },
+    {
+      "subtopic": "excess property checks",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Given `interface Options { width?: number; color: string; }`, which of these make `{ color: \"red\", widht: 10 }` (note the typo) compile against `Options`? Select all that apply.",
+      "options": [
+        "Assigning the literal to a variable first, then assigning that variable to an `Options` target",
+        "Using a type assertion: `{ color: \"red\", widht: 10 } as Options`",
+        "Adding `[extra: string]: unknown` to the `Options` type",
+        "Passing the literal directly as a fresh argument to a function taking `Options`",
+        "Renaming `width?` to a required `width: number`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Excess property checks fire only on fresh literals passed/assigned directly. Losing freshness via an intermediate variable, silencing with `as`, or adding a matching index signature all permit the extra key. Passing the literal directly still triggers the check, and making `width` required changes nothing about the unknown `widht` key."
+    },
+    {
+      "subtopic": "weak type check",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "For a weak type like `interface Prefs { theme?: string; lang?: string; }` (all-optional members), assigning `{ notAPref: true }` is rejected because the source shares no property with `Prefs`.",
+      "answer": true,
+      "explanation": "A weak type (all properties optional) gets an additional compatibility check that rejects a source object with zero overlapping properties, catching mistakes that pure width subtyping would otherwise allow."
+    },
+    {
+      "subtopic": "optional vs required direction",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With `interface HasName { name: string }` and `interface MaybeName { name?: string }`, which assignment direction compiles?",
+      "options": [
+        "`const a: MaybeName = must` (where `must: HasName`) compiles; `const b: HasName = maybe` (where `maybe: MaybeName`) does not",
+        "`const b: HasName = maybe` compiles; `const a: MaybeName = must` does not",
+        "Both directions compile because the property name matches",
+        "Neither direction compiles because the modifiers differ"
+      ],
+      "answer": 0,
+      "explanation": "A required source property satisfies an optional target (required → optional is fine). The reverse fails: an optional source `name?` may be `undefined`, which cannot satisfy a required target `name: string`."
+    },
+    {
+      "subtopic": "intersection of disjoint discriminants",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the type of `K`?",
+      "code": "interface A { kind: \"x\"; data: string; }\ninterface B { kind: \"y\"; data: number; }\ntype AB = A & B;\ntype K = AB[\"kind\"];",
+      "lang": "typescript",
+      "options": [
+        "`never`, because `\"x\" & \"y\"` has no common value",
+        "`\"x\" | \"y\"`, because intersection unions the literal members",
+        "`\"x\"`, because the first interface wins the conflict",
+        "`string`, because both literals widen to their base type"
+      ],
+      "answer": 0,
+      "explanation": "`AB[\"kind\"]` is `\"x\" & \"y\"`; two distinct string literals share no value, so the intersection reduces to `never`. This is exactly why you model mutually exclusive alternatives with a union, not an intersection."
+    },
+    {
+      "subtopic": "readonly and assignability",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "`interface ReadName { readonly name: string }`, `interface MutName { name: string }`. Considering `const x: MutName = r` (where `r: ReadName`) and `const y: ReadName = m` (where `m: MutName`), which is correct?",
+      "options": [
+        "Both compile — `readonly` is ignored for assignability, which is a known, intentional unsoundness",
+        "Only `const y: ReadName = m` compiles; mutable-to-readonly is the only safe direction",
+        "Only `const x: MutName = r` compiles; readonly-to-mutable is the only safe direction",
+        "Neither compiles — `readonly`-ness must match exactly for assignment"
+      ],
+      "answer": 0,
+      "explanation": "`readonly`-ness is not considered during assignability in either direction, so both compile. This is a deliberate unsoundness: after `const x: MutName = r` you could mutate via `x.name`, defeating the read-only intent of `r`. `readonly` only blocks reassignment through the binding that declares it."
+    },
+    {
+      "subtopic": "declaration merging of methods",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When two same-name interfaces each declare a method `f` with different signatures, what is the result of the merge?",
+      "options": [
+        "The two method declarations merge into overloads",
+        "It is an error, because non-compatible members cannot merge",
+        "The later declaration's `f` replaces the earlier one",
+        "Their parameter types are intersected into a single signature"
+      ],
+      "answer": 0,
+      "explanation": "Merged function members (methods and call signatures) become overloads rather than conflicting. The 'conflict is an error' rule applies to non-function members; functions are combined into an overload set."
+    },
+    {
+      "subtopic": "freshness and excess property checks",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about freshness and excess property checks are correct? Select all that apply.",
+      "options": [
+        "Excess property checks apply only to fresh object literals assigned or passed directly to a typed target",
+        "The check fires recursively into nested fresh literals and through array literals of fresh objects",
+        "A matching index signature on the target legitimizes otherwise-excess keys",
+        "Once a literal is stored in a variable, the excess property check still applies when that variable is passed",
+        "Width subtyping, not the excess property check, governs a non-fresh value"
+      ],
+      "answer": [0, 1, 2, 4],
+      "explanation": "Excess property checks target fresh literals only, fire recursively into nested/array literals, and are satisfied by a matching index signature; non-fresh values fall back to width subtyping. Storing a literal in a variable loses freshness, so the check no longer applies when that variable is passed — making the fourth option false."
+    },
+    {
+      "subtopic": "interface extending a type alias",
+      "source": "typescript/interfaces-types-and-object-shapes-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which statement about an `interface` extending a `type` alias is correct?",
+      "options": [
+        "An interface can `extends` a type alias only if that alias resolves to an object shape, not a union",
+        "An interface can never `extends` a type alias; only another interface",
+        "An interface can `extends` any type alias, including a union, by distributing over its members",
+        "An interface can `extends` a type alias only if the alias was declared with `&`"
+      ],
+      "answer": 0,
+      "explanation": "An interface may extend a type alias when the alias resolves to an object shape, but it cannot extend a union alias (`extends` builds object/interface types only). The `&` mechanism, by contrast, can intersect anything including unions."
+    }
+  ]
+}

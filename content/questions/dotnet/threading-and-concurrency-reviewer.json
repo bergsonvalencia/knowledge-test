@@ -77,7 +77,11 @@
         "It is the recommended tool for I/O-bound iterations that each do an async download",
         "Early exit is done with a plain `break`/`return` inside the body"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "`Parallel.*` is synchronous data parallelism that blocks the caller, honors `MaxDegreeOfParallelism`, and aggregates body exceptions into an `AggregateException`. It is for CPU-bound work, not I/O (use `Parallel.ForEachAsync`/async), and early exit uses `ParallelLoopState` (`Stop()`/`Break()`), not `break`/`return`."
     },
     {
@@ -85,7 +89,7 @@
       "source": "dotnet/threading-and-concurrency-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Using the reviewer's four-part test, which situation is a race condition?",
+      "question": "Using the four-part test, which situation is a race condition?",
       "options": [
         "Shared mutable state touched by two or more threads where at least one writes, with no synchronization",
         "Multiple threads reading the same immutable object concurrently",
@@ -179,7 +183,11 @@
         "It is reentrant like `Monitor`, so the same logical flow can re-acquire it safely",
         "Only the thread that called `Wait` is permitted to call `Release`"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "`SemaphoreSlim(1,1)` + `WaitAsync` is the async mutex, `Release` belongs in a `finally`, and unlike `Monitor` it is neither reentrant nor thread-affine — any thread may release it. Because it is not reentrant, re-acquiring on the same logical flow deadlocks, and there is no owning-thread restriction on `Release`."
     },
     {
@@ -320,7 +328,11 @@
         "Always acquire both locks but in whichever order is convenient at each call site",
         "Block on the second lock indefinitely until it becomes free"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "A global lock-ordering breaks the circular-wait condition, timeouts let a thread back off instead of waiting forever, and not calling unknown code while holding a lock avoids surprise re-entrancy/deadlock. Acquiring locks in inconsistent order or blocking indefinitely are exactly what cause deadlocks."
     },
     {

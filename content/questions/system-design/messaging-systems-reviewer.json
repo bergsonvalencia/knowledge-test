@@ -1,0 +1,270 @@
+{
+  "topic": "system-design",
+  "source": "system-design/messaging-systems-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Why a broker",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A message broker sits between producers and consumers so they never call each other directly. Which benefit specifically describes the broker holding a backlog while the consumer is down or slow?",
+      "options": [
+        "Temporal decoupling",
+        "Independent scaling",
+        "Routing flexibility",
+        "Strong consistency"
+      ],
+      "answer": 0,
+      "explanation": "Temporal decoupling means sender and receiver need not be up at the same time; the broker holds the backlog while the consumer is down. Independent scaling is about adding consumers to drain faster, not about absorbing downtime."
+    },
+    {
+      "subtopic": "P2P vs pub/sub",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In point-to-point (queue) versus publish/subscribe (topic), how many consumers receive a single given message in each model?",
+      "options": [
+        "Queue: exactly one consumer; topic: every interested subscriber",
+        "Queue: every consumer; topic: exactly one subscriber",
+        "Queue: exactly one consumer; topic: exactly one subscriber",
+        "Queue: every consumer; topic: every subscriber"
+      ],
+      "answer": 0,
+      "explanation": "A queue delivers each message to exactly one consumer (competing consumers share the load), while a topic delivers a copy to every interested subscriber (fan-out / broadcast)."
+    },
+    {
+      "subtopic": "The 'topic' trap",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The word **topic** means different things across brokers. Which statement is correct?",
+      "options": [
+        "In RabbitMQ a topic exchange is a routing strategy (wildcard match on a routing key) and is still queue-based, not inherent pub/sub",
+        "In Kafka a topic alone provides fan-out, so no consumer groups are needed",
+        "In Service Bus a topic is just a named log that consumers position into via offsets",
+        "In RabbitMQ a topic is the pub/sub primitive where one topic maps to many subscriptions"
+      ],
+      "answer": 0,
+      "explanation": "A RabbitMQ topic exchange is a wildcard routing strategy on routing keys and remains queue-based. Kafka fan-out comes from multiple consumer groups (not the topic itself), and the 'topic = subscriptions' primitive is Service Bus, not RabbitMQ."
+    },
+    {
+      "subtopic": "Competing consumers",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Adding competing consumers to a single queue scales throughput but, by default, sacrifices message ordering because parallel consumers finish out of order.",
+      "answer": true,
+      "explanation": "Competing consumers process concurrently and finish out of order, so ordering is lost by default; preserving order requires partitioning/sessions, which limits parallelism to one consumer per key."
+    },
+    {
+      "subtopic": "Prefetch / in-flight tuning",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With competing consumers, what is the risk of setting **prefetch / max-concurrent-calls** too high?",
+      "options": [
+        "One consumer hoards in-flight messages, starving others and risking redelivery storms",
+        "The broker stops delivering until acks arrive, halving throughput",
+        "Messages are silently dropped before reaching any consumer",
+        "Ordering is automatically enforced, eliminating parallelism"
+      ],
+      "answer": 0,
+      "explanation": "Too-high prefetch lets one consumer hold many in-flight messages, starving other consumers and risking redelivery storms if it falls behind; too-low underutilizes consumers. Messages are not dropped and ordering is not enforced by prefetch."
+    },
+    {
+      "subtopic": "RabbitMQ exchange types",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In RabbitMQ, which exchange type ignores the routing key entirely and copies the message to every bound queue?",
+      "options": [
+        "fanout",
+        "direct",
+        "topic",
+        "headers"
+      ],
+      "answer": 0,
+      "explanation": "A fanout exchange ignores the routing key and broadcasts a copy to every bound queue. Direct does exact routing-key matching, topic does wildcard matching, and headers routes on header attributes."
+    },
+    {
+      "subtopic": "RabbitMQ topic wildcards",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a RabbitMQ topic exchange, what do the wildcards `*` and `#` match in a dotted routing key?",
+      "options": [
+        "`*` matches exactly one word; `#` matches zero or more words",
+        "`*` matches zero or more words; `#` matches exactly one word",
+        "`*` matches one or more words; `#` matches exactly one word",
+        "Both match exactly one word, differing only in case sensitivity"
+      ],
+      "answer": 0,
+      "explanation": "In a topic exchange `*` matches exactly one word and `#` matches zero or more words (e.g. `order.*.created`, `logs.#`)."
+    },
+    {
+      "subtopic": "RabbitMQ durability",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "To guarantee a RabbitMQ message survives a broker restart, which conditions must ALL hold? (Select all that apply.)",
+      "options": [
+        "The queue is declared durable",
+        "The message is published as persistent",
+        "Publishes are confirmed via publisher confirms",
+        "Consumers use auto-ack so messages settle immediately",
+        "The exchange is a fanout exchange"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Survival requires all three: durable queue, persistent message, and publisher confirms — miss any one and you can still lose messages on restart. Auto-ack actually causes loss on consumer crash, and the exchange type is irrelevant to durability."
+    },
+    {
+      "subtopic": "RabbitMQ acks code",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this RabbitMQ consumer, what delivery guarantee does it provide and what happens to a message whose `Handle` throws?",
+      "code": "channel.BasicConsume(queue: \"orders\", autoAck: false, consumer);\nconsumer.Received += (_, ea) =>\n{\n    try {\n        Handle(ea.Body.ToArray());\n        channel.BasicAck(ea.DeliveryTag, multiple: false);\n    } catch {\n        channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: false);\n    }\n};",
+      "lang": "csharp",
+      "options": [
+        "At-least-once; a throwing message is nacked with requeue=false and dead-lettered",
+        "At-most-once; a throwing message is silently discarded with no DLQ",
+        "Exactly-once; the broker deduplicates the failed message automatically",
+        "At-least-once; a throwing message is requeued to the same queue and retried forever"
+      ],
+      "answer": 0,
+      "explanation": "`autoAck:false` with ack-after-processing is at-least-once. On failure `BasicNack` with `requeue:false` sends the message to the dead-letter exchange rather than requeuing it. There is no broker-side exactly-once dedup here."
+    },
+    {
+      "subtopic": "Service Bus receive modes",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On Azure Service Bus, why is **Peek-Lock** the at-least-once mode while **Receive-and-Delete** is at-most-once?",
+      "options": [
+        "Peek-Lock locks the message until you Complete; a crash before Complete lets the lock expire and the message is redelivered, whereas Receive-and-Delete removes on receive so a crash loses it",
+        "Peek-Lock writes the message to three replicas before delivery; Receive-and-Delete writes to only one",
+        "Peek-Lock deduplicates on MessageId automatically; Receive-and-Delete disables duplicate detection",
+        "Peek-Lock commits offsets after processing; Receive-and-Delete commits offsets before processing"
+      ],
+      "answer": 0,
+      "explanation": "Peek-Lock holds a lock until you Complete; a crash before Complete lets the lock expire and the message is redelivered (at-least-once). Receive-and-Delete removes the message on receive, so a crash loses it (at-most-once). Offsets are a Kafka concept, not Service Bus."
+    },
+    {
+      "subtopic": "Service Bus sessions",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need strict FIFO ordering per customer on Azure Service Bus while still processing thousands of customers concurrently. Which feature achieves this?",
+      "options": [
+        "Sessions: all messages sharing a SessionId go in order to one consumer, while different sessions process in parallel",
+        "Duplicate detection: the broker drops repeated MessageIds within a window, enforcing order",
+        "Receive-and-Delete mode: removing on receive guarantees ordered processing",
+        "A single fanout exchange that copies messages to every subscription in order"
+      ],
+      "answer": 0,
+      "explanation": "Sessions tie all messages with the same SessionId to one consumer in order, while different sessions run in parallel — ordered per key, scalable across keys. Duplicate detection prevents dups, not ordering, and exchanges are a RabbitMQ concept."
+    },
+    {
+      "subtopic": "Service Bus DLQ",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "On Azure Service Bus, messages that exceed **MaxDeliveryCount** or expire (TTL) are automatically moved to the entity's built-in dead-letter queue.",
+      "answer": true,
+      "explanation": "Service Bus has a built-in DLQ: messages exceeding MaxDeliveryCount or expiring via TTL land in the entity's $DeadLetterQueue automatically, unlike Kafka which requires DIY poison-message handling."
+    },
+    {
+      "subtopic": "Kafka partitioning & ordering",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You must process payments per customer strictly in order while handling thousands of customers concurrently on Kafka. What is the correct design and its parallelism ceiling?",
+      "options": [
+        "Use `customerId` as the partition key; ordering holds per partition and parallelism is capped by partition count",
+        "Use a random partition key; ordering holds globally and parallelism is capped by customer count",
+        "Use one partition for all customers; ordering holds globally and parallelism is capped by consumer count",
+        "Disable keys and rely on a single consumer group to reorder messages by timestamp"
+      ],
+      "answer": 0,
+      "explanation": "Keying by `customerId` sends each customer's events to the same partition (ordered) while different customers spread across partitions for parallelism. Parallelism in a group is capped by partition count (at most one consumer per partition), never by customer count."
+    },
+    {
+      "subtopic": "Kafka consumer parallelism",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A Kafka topic has 4 partitions and one consumer group with 6 consumers. What happens?",
+      "options": [
+        "4 consumers each own one partition; the other 2 sit idle",
+        "All 6 consumers share each partition's load round-robin",
+        "Each partition is read by 2 consumers for redundancy",
+        "Kafka rejects the group because consumers outnumber partitions"
+      ],
+      "answer": 0,
+      "explanation": "Within a consumer group there is at most one consumer per partition, so with 4 partitions only 4 consumers get work and the remaining 2 sit idle. Partition count caps parallelism for a group."
+    },
+    {
+      "subtopic": "Kafka retention & replay",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why can Kafka replay already-consumed history while RabbitMQ and Service Bus cannot?",
+      "options": [
+        "Kafka retains records for a time/size window regardless of consumption and consumers track offsets, so a group can seek backward; the queues delete a message once acked/completed",
+        "Kafka writes every message to a backup DLQ that the others lack, enabling re-reads",
+        "Kafka consumers acknowledge messages so the broker keeps a per-consumer copy until all groups ack",
+        "RabbitMQ and Service Bus retain messages forever but lack a seek API to reach them"
+      ],
+      "answer": 0,
+      "explanation": "Kafka's broker is 'dumb': it retains records for the retention window regardless of who read them, and consumers track their own offsets, so you can seek to an earlier offset. RabbitMQ/Service Bus delete a message once it is acked/completed, leaving nothing to replay."
+    },
+    {
+      "subtopic": "Exactly-once illusion",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A teammate says their pipeline is 'exactly-once' because they enabled Kafka idempotent producers and transactions — but it also writes rows to SQL Server. Is the end-to-end claim valid, and why?",
+      "options": [
+        "No — Kafka EOS is exactly-once only within Kafka; the external SQL write is outside the Kafka transaction, so end-to-end it is at-least-once and the SQL write must be made idempotent",
+        "Yes — idempotent producers extend exactly-once to any sink the producer writes to, including SQL Server",
+        "Yes — `isolation.level=read_committed` on the consumer guarantees the SQL write commits exactly once",
+        "No — but the fix is to disable idempotent producers, which restores exactly-once across the database boundary"
+      ],
+      "answer": 0,
+      "explanation": "Kafka EOS (idempotence + transactions + read_committed) is exactly-once within Kafka only. An external SQL write is outside that transaction, so end-to-end you have at-least-once and must make the SQL write idempotent (e.g. dedup/upsert by message id). Disabling idempotence would make things worse, not better."
+    },
+    {
+      "subtopic": "Delivery guarantees",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A consumer acks/commits **before** processing the message. Which guarantee is this, and what is its failure mode?",
+      "options": [
+        "At-most-once; a crash after the ack but before processing completes loses the message",
+        "At-least-once; a crash causes the message to be redelivered as a duplicate",
+        "Exactly-once; the early ack plus broker dedup prevents both loss and duplication",
+        "At-least-once; the early ack forces the broker to retain the message until processing finishes"
+      ],
+      "answer": 0,
+      "explanation": "Acking before processing is at-most-once: if the consumer crashes after the ack but before finishing, the message is gone (lost) with no redelivery. At-least-once requires acking after processing; broker dedup does not turn an early ack into exactly-once."
+    },
+    {
+      "subtopic": "Idempotency / inbox dedup",
+      "source": "system-design/messaging-systems-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Consider this inbox-dedup pattern. Which statements about it are correct? (Select all that apply.)",
+      "code": "BEGIN TRANSACTION;\n    INSERT INTO ProcessedMessages (MessageId) VALUES (@MessageId);\n    UPDATE Orders SET Status = 'Paid' WHERE Id = @OrderId;\nCOMMIT;",
+      "lang": "sql",
+      "options": [
+        "Inserting the MessageId and applying the effect in the SAME transaction is what makes the dedup atomic with the side effect",
+        "On a duplicate, the primary-key violation on ProcessedMessages aborts the transaction before the UPDATE takes effect",
+        "This makes an at-least-once consumer effectively-once for this effect",
+        "Broker-side duplicate detection (e.g. Service Bus dedup) alone removes the need for this inbox table end-to-end",
+        "The UPDATE must run before the INSERT for the dedup to short-circuit duplicates"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Recording the MessageId in the same transaction as the effect makes them atomic; a PK collision on a duplicate aborts the whole transaction before any effect, giving effectively-once. Broker-side dedup covers producer-side dups only, not consumer reprocessing, so the inbox is still needed; and the INSERT must precede/accompany the effect to short-circuit, not follow it."
+    }
+  ]
+}

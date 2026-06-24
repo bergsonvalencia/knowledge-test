@@ -1,0 +1,266 @@
+{
+  "topic": "system-design",
+  "source": "system-design/api-design-at-scale-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Rate limiting status code",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A client has exceeded its per-minute request quota. Which HTTP status code should the API return?",
+      "options": [
+        "`429 Too Many Requests`",
+        "`503 Service Unavailable`",
+        "`403 Forbidden`",
+        "`409 Conflict`"
+      ],
+      "answer": 0,
+      "explanation": "`429 Too Many Requests` (RFC 6585) is the correct status for a rate-limited client. `503` is reserved for server overload / load shedding, not for a client exceeding its allowance."
+    },
+    {
+      "subtopic": "Token bucket vs leaky bucket",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which rate-limiting algorithm permits short bursts (up to a configured capacity) while still bounding the long-run average rate?",
+      "options": [
+        "Token bucket",
+        "Leaky bucket",
+        "Fixed window",
+        "Sliding window log"
+      ],
+      "answer": 0,
+      "explanation": "Token bucket lets a client spend accumulated tokens to burst up to capacity B, with refill rate R bounding the average. Leaky bucket drains a queue at a constant rate and cannot burst — its output is perfectly smooth."
+    },
+    {
+      "subtopic": "Conditional GET",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A client sends `If-None-Match: \"v23\"` on a GET and the server's current ETag is still `\"v23\"`. What does the server return?",
+      "options": [
+        "`304 Not Modified` with an empty body",
+        "`200 OK` with the full representation",
+        "`412 Precondition Failed`",
+        "`204 No Content` with the new ETag"
+      ],
+      "answer": 0,
+      "explanation": "When the echoed `If-None-Match` validator still matches, the resource is unchanged, so the server returns `304 Not Modified` with no body — saving bandwidth and render cost. `412` is the response to a failed `If-Match` on a conditional write, not a conditional GET."
+    },
+    {
+      "subtopic": "Idempotent methods",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Among the standard HTTP methods, which one is NOT idempotent by definition and therefore the dangerous case for retries?",
+      "options": [
+        "`POST`",
+        "`PUT`",
+        "`DELETE`",
+        "`GET`"
+      ],
+      "answer": 0,
+      "explanation": "`GET`, `PUT`, and `DELETE` are idempotent by definition, so retrying them is safe. `POST` is not idempotent — retrying after a timeout can run the operation twice (double charge, duplicate order), which is exactly why idempotency keys exist."
+    },
+    {
+      "subtopic": "Partial-failure batch status",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A batch endpoint processes items independently and some succeed while others fail. Which status best expresses a per-item result body?",
+      "options": [
+        "`207 Multi-Status`",
+        "`200 OK`",
+        "`202 Accepted`",
+        "`409 Conflict`"
+      ],
+      "answer": 0,
+      "explanation": "`207 Multi-Status` returns a per-item status so the client can retry only the failures. `202 Accepted` is for accepting a long-running batch asynchronously with a status URL to poll, not for reporting per-item partial success."
+    },
+    {
+      "subtopic": "Fixed-window boundary problem",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With a fixed-window limiter of 100 req/min, why can a client effectively push roughly 200 requests through in about one second?",
+      "options": [
+        "It can send its full 100-request quota just before the window boundary and another full 100 just after, because the counter resets at the boundary",
+        "The counter is shared across windows, so two windows' quotas always overlap",
+        "Fixed-window limiters double the limit during traffic spikes by design",
+        "The limiter counts only every other request, so the effective limit is doubled"
+      ],
+      "answer": 0,
+      "explanation": "The fixed-window boundary problem: a client sends its full quota at 11:59:59 and again at 12:00:00 after the counter resets, squeezing ~2× the limit into ~1 second. Sliding-window variants weight the previous window to fix this."
+    },
+    {
+      "subtopic": "Keyset total order",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A keyset paginator orders only by `created_at`, a non-unique column. What goes wrong and what is the fix?",
+      "options": [
+        "Rows sharing the same `created_at` straddle the page boundary and get skipped or repeated; add a unique tie-breaker (e.g. the primary key) so the order is total",
+        "The query becomes O(offset) again; switch to offset pagination for those pages",
+        "The cursor token grows unbounded; compress it with base64 to bound its size",
+        "The index is ignored, forcing a full scan; add `WITH (FORCESEEK)` to the query"
+      ],
+      "answer": 0,
+      "explanation": "Paginating on a non-unique column lets rows with the same value straddle the boundary, causing skips or duplicates. The fix is a composite key (sort column plus a unique tie-breaker like the primary key) so the sort is a total order."
+    },
+    {
+      "subtopic": "Idempotency atomicity",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why must the idempotency key be inserted with a unique constraint in the **same transaction** as the write it guards?",
+      "options": [
+        "So two concurrent retries cannot both pass a separate \"does the key exist?\" check and both execute the write — the DB enforces exactly-once via the unique constraint",
+        "So the key can be reused across different endpoints without collision",
+        "So the stored response can be returned faster on replay by skipping a join",
+        "So the key automatically expires when the transaction's TTL elapses"
+      ],
+      "answer": 0,
+      "explanation": "A separate check-then-act (\"does the key exist?\" then write) is a race: two concurrent retries can both see no key and both execute. Inserting the key under a unique constraint in the same transaction makes the database enforce exactly-once execution."
+    },
+    {
+      "subtopic": "Cache-Control directives",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `Cache-Control: no-cache` actually instruct a cache to do?",
+      "options": [
+        "Store the response, but always revalidate with the origin before reusing it",
+        "Never store the response anywhere, for sensitive data",
+        "Cache the response and serve it for `max-age` seconds without revalidating",
+        "Allow only private (browser) caches to store it, never shared caches"
+      ],
+      "answer": 0,
+      "explanation": "`no-cache` means \"you may store it, but revalidate before reusing\" — it does not mean don't store. `no-store` is the directive that forbids persisting the response at all (for sensitive data)."
+    },
+    {
+      "subtopic": "Distributed rate limiting",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A token-bucket limiter implemented with a per-instance in-memory counter runs behind a load balancer across 4 nodes. What is the consequence and the standard fix?",
+      "options": [
+        "Each node sees only its share of traffic so the global limit is under-counted (allowing up to ~4× the intended rate); use a shared store such as Redis with an atomic script",
+        "Each node double-counts requests, rejecting legitimate traffic; disable replenishment to compensate",
+        "The limiter becomes exact only if every node uses the same seed; synchronize seeds at startup",
+        "The load balancer must be switched to round-robin so each node sees an identical count"
+      ],
+      "answer": 0,
+      "explanation": "A per-node in-memory counter only sees the fraction of traffic routed to that node, so the effective global limit is multiplied by the node count (under-counting). The fix is a shared store like Redis with an atomic `INCR`/Lua script so the limit is global, trading a small latency cost."
+    },
+    {
+      "subtopic": "Optimistic concurrency",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A client sends `PUT /articles/42` with `If-Match: \"v23\"`, but the server's current ETag is now `\"v25\"`. What should the server return, and what does it prevent?",
+      "options": [
+        "`412 Precondition Failed` — preventing a lost update because the resource changed under the client",
+        "`409 Conflict` — preventing a duplicate write because the same key is in flight",
+        "`304 Not Modified` — preventing an unnecessary full transfer because the resource is unchanged",
+        "`428 Precondition Required` — forcing the client to add a missing conditional header"
+      ],
+      "answer": 0,
+      "explanation": "An `If-Match` whose validator no longer matches the server's current ETag yields `412 Precondition Failed`, the HTTP form of optimistic concurrency that prevents a lost update. `304` is for a conditional GET, not a conditional write."
+    },
+    {
+      "subtopic": "Gateway vs mesh vs LB",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about an API gateway are correct? (Select all that apply.)",
+      "options": [
+        "It centralizes cross-cutting concerns such as auth, routing, rate limiting, and aggregation so services don't each reimplement them",
+        "It handles north-south (client↔system) edge traffic, whereas a service mesh handles east-west (service↔service) traffic",
+        "Pushing business logic into the gateway is a recommended way to reduce service count",
+        "It is application-aware (knows routes, auth, payloads), unlike a plain L4/L7 load balancer that just distributes traffic"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "The gateway centralizes cross-cutting concerns, sits on the north-south edge (mesh handles east-west), and is application-aware unlike a plain load balancer. Pushing business logic into the gateway is the overloaded-gateway anti-pattern — it becomes a bottleneck and coupling point."
+    },
+    {
+      "subtopic": "Offset vs keyset trade-offs",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about offset vs keyset pagination are true? (Select all that apply.)",
+      "options": [
+        "Offset/limit cost is O(offset) because the database scans and discards every skipped row",
+        "Keyset pagination is stable under concurrent inserts and deletes",
+        "Keyset pagination supports jumping directly to an arbitrary page number like `page=500`",
+        "Offset pagination is acceptable for small, bounded result sets such as admin grids"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Offset is O(offset) and drifts; keyset is O(limit) and stable, and offset is fine for small bounded sets. Keyset cannot jump to an arbitrary page — it is sequential (seek-from-last-key) only, which is its main trade-off."
+    },
+    {
+      "subtopic": "Token bucket config behavior",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "options.AddTokenBucketLimiter(\"per-user\", limiter =>\n{\n    limiter.TokenLimit = 100;\n    limiter.TokensPerPeriod = 100;\n    limiter.ReplenishmentPeriod = TimeSpan.FromMinutes(1);\n    limiter.QueueLimit = 0;\n    limiter.AutoReplenishment = true;\n});",
+      "lang": "csharp",
+      "question": "A client's bucket is full (100 tokens) and it instantly fires 130 requests. With this ASP.NET Core configuration, what happens?",
+      "options": [
+        "100 requests are admitted immediately and the remaining 30 are rejected with `429` (no queuing), and the bucket refills 100 tokens after one minute",
+        "All 130 are admitted because `AutoReplenishment` tops the bucket up on demand",
+        "100 are admitted, 30 are queued and served as tokens replenish over the next minute",
+        "The first request is admitted and the other 129 are queued until the next replenishment period"
+      ],
+      "answer": 0,
+      "explanation": "`TokenLimit = 100` caps the burst, so 100 are admitted at once. `QueueLimit = 0` means overflow is rejected immediately (429) rather than queued. `TokensPerPeriod = 100` with a one-minute `ReplenishmentPeriod` refills 100 tokens after a minute — it does not top up on demand."
+    },
+    {
+      "subtopic": "Bounded queue under overload",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Under sustained overload, why is setting a concurrency limiter's `QueueLimit` to 0 often the right choice rather than allowing a large or unbounded queue?",
+      "options": [
+        "An unbounded queue converts overload into unbounded latency — requests sit so long the client has already timed out, so the work is wasted; a zero queue turns that into an explicit fast `503`",
+        "A zero queue increases throughput because the CPU spends no cycles managing the queue data structure",
+        "A large queue causes the limiter to under-count concurrency and admit more requests than `PermitLimit`",
+        "A zero queue lets the server retry shed requests internally instead of returning an error"
+      ],
+      "answer": 0,
+      "explanation": "An unbounded (or very large) queue defers collapse: requests wait so long that clients have already timed out, making the eventual work wasted. Bounding the queue to 0 turns silent latency blow-up into an explicit, fast `503` + `Retry-After` — a fast rejection beats a slow failure."
+    },
+    {
+      "subtopic": "Idempotency key fingerprint binding",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A server stores idempotency keys with their results. A new request arrives with a previously-seen `Idempotency-Key` but a **different request body**. What is the correct behavior?",
+      "options": [
+        "Reject it (e.g. `422`/`400`) because a same key with a different body signals a client bug, not a legitimate retry",
+        "Execute it as a new operation, since a different body means it is genuinely a different request",
+        "Replay the stored response, since the key match alone guarantees it is a safe retry",
+        "Return `409 Conflict` and merge the two bodies into a single combined operation"
+      ],
+      "answer": 0,
+      "explanation": "An idempotency key should be bound to the request fingerprint. A legitimate retry repeats the same body; a different body under the same key indicates a client bug, so it is rejected (`422`/`400`) rather than blindly replayed or executed."
+    },
+    {
+      "subtopic": "Idempotency vs dedup vs locking",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Idempotency, deduplication, and locking are three distinct concerns: idempotency makes a *repeat* safe, deduplication drops duplicate *events*, and locking serializes *concurrent* access.",
+      "answer": true,
+      "explanation": "The reviewer explicitly distinguishes the three: idempotency makes a repeat safe, deduplication drops duplicate events, and locking serializes concurrent access. They solve different problems and are not interchangeable."
+    },
+    {
+      "subtopic": "no-cache semantics",
+      "source": "system-design/api-design-at-scale-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "`Cache-Control: no-cache` instructs caches to never store the response at all.",
+      "answer": false,
+      "explanation": "False. `no-cache` permits storing the response but requires revalidation with the origin before each reuse. The directive that forbids storing entirely is `no-store`."
+    }
+  ]
+}

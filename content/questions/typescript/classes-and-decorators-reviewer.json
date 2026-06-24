@@ -1,0 +1,264 @@
+{
+  "topic": "typescript",
+  "source": "typescript/classes-and-decorators-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "access modifiers are erased",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "At runtime, what happens to a TypeScript `private` field after the code is compiled to JavaScript?",
+      "options": [
+        "It becomes an ordinary, fully reachable property because the modifier is erased",
+        "It is renamed to a `#`-prefixed field that throws when accessed outside the class",
+        "It is wrapped in a closure that the runtime enforces as private",
+        "It is removed entirely from the emitted object"
+      ],
+      "answer": 0,
+      "explanation": "TS `public`/`private`/`protected`/`readonly` are compile-time only and erased on emit, leaving a normal property that `(obj as any).field` can read. Only `#`-fields are real runtime privacy, and TS `private` is never rewritten into a `#`-field."
+    },
+    {
+      "subtopic": "definite assignment assertion",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Under `strictPropertyInitialization`, when is the definite assignment assertion `name!: string` the appropriate tool?",
+      "options": [
+        "When a field is genuinely assigned by a mechanism the checker cannot see, such as DI or an async loader",
+        "When a field should be typed as `string | undefined` because it may legitimately be absent",
+        "Whenever you want to emit a runtime check that the field was assigned",
+        "Whenever a field has a literal initializer in the class body"
+      ],
+      "answer": 0,
+      "explanation": "`!` tells the checker the field is assigned before use through indirection it can't follow (DI, init method, async load), suppressing the error and emitting no runtime check. Marking the field optional (`?`) is the honest choice when it can truly be absent; that is a different intent."
+    },
+    {
+      "subtopic": "parameter properties",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the constructor parameter property `constructor(private http: HttpClient) {}` do?",
+      "options": [
+        "Declares a `private http` field and assigns `this.http = http` in one step",
+        "Declares the field but you must still assign it manually in the constructor body",
+        "Creates a runtime-private `#http` field automatically",
+        "Only adds a compile-time annotation with no emitted assignment"
+      ],
+      "answer": 0,
+      "explanation": "A parameter property prefixed with an access modifier or `readonly` declares the field and assigns it. It is a TS emit feature, so the generated JS contains the assignment (not pure erasure), and it produces a TS `private` field, not a `#`-field."
+    },
+    {
+      "subtopic": "class is type and value",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `class Point { static dim = 2; constructor(public x: number) {} }`, what does the type `typeof Point` describe?",
+      "options": [
+        "The constructor type — the static side (including `dim`) plus the construct signature",
+        "The instance type — what `new Point(1)` yields",
+        "Only the static member `dim`, excluding the constructor",
+        "A union of the instance type and the static type"
+      ],
+      "answer": 0,
+      "explanation": "`Point` in a type position is the instance type; `typeof Point` is the constructor type (static side plus the `new` signature). `InstanceType<typeof Point>` converts the constructor type back to the instance type."
+    },
+    {
+      "subtopic": "decorator systems count",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "TypeScript has two incompatible decorator systems: the standard ECMAScript decorators (TS 5.0, default in 6.0) and the legacy `experimentalDecorators` decorators, and a single file uses one or the other based on that flag.",
+      "answer": true,
+      "explanation": "Standard decorators use `(value, context)` and are on by default in TS 6.0; legacy ones use `(target, key, descriptor/index)` and are gated behind `experimentalDecorators`. They cannot be mixed in shape, so a file is either-or based on the flag."
+    },
+    {
+      "subtopic": "private vs #private observable differences",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Select all statements that are TRUE about ECMAScript `#private` fields versus TypeScript `private` fields.",
+      "options": [
+        "`#`-fields do not appear in `JSON.stringify`, `Object.keys`, or `for...in`",
+        "`#field in obj` is a runtime brand check that is true only for instances that actually have that private field",
+        "`(obj as any)['#field']` is a valid escape hatch that reaches a `#`-field from outside the class",
+        "TS `private` fields serialize because they are ordinary properties",
+        "A class can declare `private x` and `#x` so they refer to the same storage slot"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "`#`-fields are hidden from serialization/keys, enable the `#field in obj` brand check, and TS `private` fields do serialize. There is no string key for a `#`-field so the cast escape fails, and `private x` and `#x` are separate worlds that cannot share a slot."
+    },
+    {
+      "subtopic": "TS private leaks via cast",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does this print?",
+      "code": "class Box {\n  private soft = 1;\n  #hard = 2;\n}\nconst b = new Box();\nconsole.log(JSON.stringify(b));\nconsole.log((b as any).soft, (b as any).hard);",
+      "lang": "typescript",
+      "options": [
+        "`{\"soft\":1}` then `1 undefined`",
+        "`{\"soft\":1,\"hard\":2}` then `1 2`",
+        "`{}` then `undefined undefined`",
+        "`{\"soft\":1}` then `1 2`"
+      ],
+      "answer": 0,
+      "explanation": "`soft` is a TS `private` field erased to an ordinary property, so it serializes and `(b as any).soft` reads `1`. `#hard` is a real private field invisible to `JSON.stringify`, and there is no string key `\"hard\"`, so `(b as any).hard` is `undefined`."
+    },
+    {
+      "subtopic": "abstract construct signature",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does `build(Shape)` fail to compile when `function build<T>(Ctor: new () => T): T { return new Ctor(); }` and `Shape` is an abstract class?",
+      "options": [
+        "An abstract class has an abstract construct signature, which is not assignable to a plain `new () => T`",
+        "Abstract classes do not exist as values, so `Shape` cannot be passed at all",
+        "`build` requires a zero-argument constructor and `Shape` always has parameters",
+        "Generic functions cannot accept class constructors as arguments"
+      ],
+      "answer": 0,
+      "explanation": "A reference to an abstract class has an `abstract new (...) => T` signature, which is intentionally not assignable to a concrete `new (...) => T`, so factories that `new` their argument reject abstract classes. Abstract classes do exist as values; they just can't be instantiated."
+    },
+    {
+      "subtopic": "implements is structural and check-only",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about the `implements` clause are correct?",
+      "options": [
+        "It is a compile-time conformance check that adds no runtime behavior",
+        "It does not inherit or copy members — you must still declare every member yourself",
+        "Because typing is structural, a class need not say `implements I` to be usable where `I` is expected",
+        "It infers parameter types onto the class's methods so unannotated parameters get the interface's types",
+        "It brings in default implementations from the interface like `extends` does"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`implements` is purely a structural compile-time check that copies nothing; conformance is by shape so the clause is not required. It does not infer parameter types — an unannotated parameter stays implicit `any` — and interfaces have no implementations to inherit."
+    },
+    {
+      "subtopic": "static members and class type parameters",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does `class Cache<T> { static defaultValue: T; }` produce an error?",
+      "options": [
+        "A `static` member belongs to the single class object shared across all instantiations, so it cannot depend on the per-instance `T`",
+        "Static fields cannot have type annotations in a generic class",
+        "`T` is out of scope because type parameters are only visible inside the constructor",
+        "Static members must be initialized, and `T` provides no default value"
+      ],
+      "answer": 0,
+      "explanation": "`Cache<number>` and `Cache<string>` share the same static storage, so a static cannot reference the per-instance `T` (\"Static members cannot reference class type parameters\"). Type parameters are in scope for instance members generally, not just the constructor."
+    },
+    {
+      "subtopic": "decorator evaluation vs application order",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Predict the console output.",
+      "code": "function f(tag: string) {\n  console.log(`eval ${tag}`);\n  return (_: unknown, __: unknown) => console.log(`apply ${tag}`);\n}\nclass C {\n  @f(\"X\") @f(\"Y\") m() {}\n}",
+      "lang": "typescript",
+      "options": [
+        "`eval X`, `eval Y`, `apply Y`, `apply X`",
+        "`eval X`, `eval Y`, `apply X`, `apply Y`",
+        "`eval Y`, `eval X`, `apply Y`, `apply X`",
+        "`apply Y`, `apply X`, `eval X`, `eval Y`"
+      ],
+      "answer": 0,
+      "explanation": "Decorator factory expressions evaluate top-to-bottom (`eval X`, then `eval Y`), but the resulting decorators apply bottom-to-top: the nearest to the member (`Y`) wraps first, then `X` wraps the result — like `X(Y(m))`. Mnemonic: evaluate down, apply up."
+    },
+    {
+      "subtopic": "standard field decorator shape",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the standard ECMAScript decorator system, what does a **field** decorator receive as its `value`, and what may it return?",
+      "options": [
+        "It receives `undefined` as the value and may return an initializer transformer `(initialValue) => newValue`",
+        "It receives the field's current value and may return a replacement value directly",
+        "It receives `{ get, set }` and may return `{ get?, set?, init? }`",
+        "It receives the constructor and may return a new constructor"
+      ],
+      "answer": 0,
+      "explanation": "A standard field decorator gets `undefined` for value and may return an initializer transformer that runs per instance at init. `{ get, set }` describes an auto-accessor decorator, and receiving/returning a constructor describes a class decorator."
+    },
+    {
+      "subtopic": "decorator metadata shared object",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is true of `context.metadata` introduced by standard decorator metadata (TS 5.2)?",
+      "options": [
+        "It is the same shared object for every decorator on a given class, surfaced later as `Class[Symbol.metadata]`",
+        "It automatically captures design-time types like `design:paramtypes`",
+        "It is a distinct object per decorator, so decorators cannot share state",
+        "It is only available on class decorators, not member decorators"
+      ],
+      "answer": 0,
+      "explanation": "Every decorator on a class sees the same `context.metadata` object, readable afterward via `Class[Symbol.metadata]`. Unlike legacy `emitDecoratorMetadata`, it does not auto-capture design-time types; it stores only what decorators choose to write."
+    },
+    {
+      "subtopic": "getter/setter differing types",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Since TypeScript 5.1, a `get`/`set` pair for the same property may have completely unrelated getter-return and setter-parameter types.",
+      "answer": true,
+      "explanation": "Modern TS allows the getter return type to be narrower than the setter parameter type (the setter can accept a wider input), and since TS 5.1 the two types need not be related at all."
+    },
+    {
+      "subtopic": "why Angular/NestJS need legacy decorators",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A teammate wants `constructor(@inject repo: Repository)` to wire DI by reading the parameter's type using **standard** ECMAScript decorators. Why can this not work?",
+      "options": [
+        "Standard decorators have no parameter decorators and emit no design-time type metadata, so they can neither attach to the parameter nor learn its type",
+        "Standard decorators support parameter decorators but cannot return a replacement, so DI wiring is impossible",
+        "Standard decorators run too late in construction to influence the constructor's parameters",
+        "Standard `context.metadata` overwrites `design:paramtypes`, corrupting the type information"
+      ],
+      "answer": 0,
+      "explanation": "The standard system has no parameter decorators and emits no `design:type` metadata. Reflective type-based DI is exclusive to the legacy system, where `emitDecoratorMetadata` emits `design:paramtypes` that a `reflect-metadata` injector reads — which is why Angular and NestJS stay on legacy decorators."
+    },
+    {
+      "subtopic": "noImplicitOverride semantics",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With `noImplicitOverride` enabled, what error does a method that shadows a base-class method but omits the `override` keyword produce, and is this flag part of the `strict` family?",
+      "options": [
+        "It errors that the member must have an `override` modifier; the flag is opted into separately, not part of `strict`",
+        "It errors that the member cannot have an `override` modifier; the flag is included in `strict`",
+        "It silently creates a new unrelated method; the flag is part of `strict`",
+        "It errors that the base method does not exist; the flag is opted into separately"
+      ],
+      "answer": 0,
+      "explanation": "`noImplicitOverride` makes omitting `override` on a method that does override an error (\"must have an 'override' modifier\"), making refactors safe. It is not part of the `strict` meta-flag; you enable it separately."
+    },
+    {
+      "subtopic": "useDefineForClassFields and field semantics",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With `useDefineForClassFields` on (the TS 6.0 default for modern targets), how are declared class fields created, and where do methods versus arrow-function 'methods' live?",
+      "options": [
+        "Fields are created with `[[Define]]` semantics as own instance properties; methods live on the prototype while arrow-function fields live on the instance",
+        "Fields are created with assignment semantics; both methods and arrow-function fields live on the prototype",
+        "Fields are created with `[[Define]]` semantics; all methods including normal methods live on each instance",
+        "Fields are created lazily on first read; methods and arrow functions both live on the instance"
+      ],
+      "answer": 0,
+      "explanation": "With `useDefineForClassFields` on, field declarations are real ECMAScript class fields defined via `[[Define]]` (not assignment) as own properties. Normal methods live on the shared prototype, while fields and arrow-function 'methods' are instance members."
+    },
+    {
+      "subtopic": "static block and private static access",
+      "source": "typescript/classes-and-decorators-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "A `static { ... }` block runs once when the class is defined and can access private static members such as `static #count`, making it suitable for multi-statement or `try`/`catch` static initialization.",
+      "answer": true,
+      "explanation": "A static block executes a single time at class definition with access to private static members, which is why it is the idiom for static setup that needs multiple statements or error handling beyond a simple field initializer."
+    }
+  ]
+}

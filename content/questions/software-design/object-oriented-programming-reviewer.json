@@ -1,0 +1,284 @@
+{
+  "topic": "software-design",
+  "source": "software-design/object-oriented-programming-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Four pillars",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which pillar of OOP is concerned with hiding the internal implementation details of a class from other objects, typically achieved using access modifiers?",
+      "options": [
+        "Encapsulation",
+        "Abstraction",
+        "Polymorphism",
+        "Inheritance"
+      ],
+      "answer": 0,
+      "explanation": "Encapsulation hides properties/implementation details from other objects and is achieved with access modifiers. Abstraction is about modeling only the essential features (the 'what'), which is a distinct concern that encapsulation helps enforce."
+    },
+    {
+      "subtopic": "Polymorphism",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Polymorphism in OOP primarily allows you to do which of the following?",
+      "options": [
+        "Invoke a derived-class method through a base-class reference, sharing one interface across different behaviors",
+        "Create a new class by reusing the code of an existing class",
+        "Hide the data and operations of an object behind access modifiers",
+        "Model only the essential features of a thing while ignoring background details"
+      ],
+      "answer": 0,
+      "explanation": "Polymorphism lets classes share the same interface while providing different functionality, invoking derived-class methods through a base-class reference. The other options describe inheritance, encapsulation, and abstraction respectively."
+    },
+    {
+      "subtopic": "Composition lifetime",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In composition, what is the defining constraint on the lifetime of the contained ('part') object relative to its container ('whole')?",
+      "options": [
+        "The part cannot exist without the whole; it dies with the container",
+        "The part can outlive the whole and be shared elsewhere",
+        "The part and whole always have completely independent lifetimes",
+        "The part must be created before the whole and destroyed after it"
+      ],
+      "answer": 0,
+      "explanation": "Composition is a restricted aggregation in which the contained object cannot exist without the container (e.g., House owns Rooms). Aggregation, by contrast, allows the part to outlive the whole."
+    },
+    {
+      "subtopic": "Diamond problem solution",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "The recommended solution to the diamond problem is best summarized as which principle?",
+      "options": [
+        "Favor composition over inheritance ('Contain and Delegate')",
+        "Use deeper inheritance hierarchies to disambiguate the base",
+        "Always make the shared base class abstract",
+        "Override every inherited method to remove ambiguity"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer's solution is 'Contain and Delegate' — favor composition over inheritance — to sidestep the ambiguity multiple class inheritance creates. Deeper hierarchies or forcing abstract bases do not resolve the ambiguity of which inherited member to use."
+    },
+    {
+      "subtopic": "Program to types",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Programming to types (interfaces) rather than to concrete classes helps maintain flexibility.",
+      "answer": true,
+      "explanation": "The reviewer states that 'Type is equivalent to the interface of a class' and that 'Programming to types, not classes, maintains flexibility.'"
+    },
+    {
+      "subtopic": "Aggregation vs composition",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `Team` holds a list of `Player` objects. When a `Team` is dissolved, its players continue to exist and can join other teams. Which relationship does this model?",
+      "options": [
+        "Aggregation",
+        "Composition",
+        "Plain association with no directionality",
+        "Inheritance"
+      ],
+      "answer": 0,
+      "explanation": "Because the part (Player) can outlive the whole (Team), this is aggregation — a directional 'has-a' where the contained object can exist independently. Composition would require the players to be destroyed with the team."
+    },
+    {
+      "subtopic": "Relationship hierarchy",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement correctly orders the generality of the three object relationships?",
+      "options": [
+        "Association is the most general; aggregation is a special form of association; composition is a special form of aggregation",
+        "Composition is the most general; aggregation is a special form of composition; association is a special form of aggregation",
+        "Aggregation is the most general; association and composition are independent special cases of it",
+        "All three are unrelated relationship kinds with no containment among them"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer states the containment as Association ⊃ Aggregation ⊃ Composition: aggregation is a special case of association, and composition is a restricted (special) form of aggregation."
+    },
+    {
+      "subtopic": "Abstraction vs encapsulation",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How do abstraction and encapsulation relate to each other ?",
+      "options": [
+        "Encapsulation enables a programmer to implement the desired level of abstraction by hiding implementation details",
+        "Abstraction is achieved through access modifiers, while encapsulation models essential features",
+        "They are synonyms describing the same mechanism of inheriting from a base class",
+        "Abstraction hides data while encapsulation exposes the public interface"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer says encapsulation 'enables a programmer to implement the desired level of abstraction.' Access modifiers belong to encapsulation, and abstraction is about modeling essential features — so the distractor swapping those is wrong."
+    },
+    {
+      "subtopic": "Messaging",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are parts of a message in an OO system? (Select all that apply.)",
+      "options": [
+        "A receiver object",
+        "A method name",
+        "Optional method arguments",
+        "An optional return value",
+        "The sender's call stack depth"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "The reviewer defines a message as having four parts: a receiver object, a method name, optional method arguments, and an optional return value. The sender's call stack depth is not part of that definition."
+    },
+    {
+      "subtopic": "Polymorphism code reading",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the C# below, what does `Console.WriteLine(s.Speak())` print?",
+      "code": "class Animal { public virtual string Speak() => \"...\"; }\nclass Dog : Animal { public override string Speak() => \"Woof\"; }\nAnimal s = new Dog();",
+      "lang": "csharp",
+      "options": [
+        "Woof — the overriding derived method runs through the base reference",
+        "... — the static type Animal determines which method runs",
+        "A compile error, because a base reference cannot point to a derived object",
+        "Both '...' and 'Woof', because both implementations are invoked"
+      ],
+      "answer": 0,
+      "explanation": "This is polymorphism: invoking a derived-class method through a base-class reference. Because Speak is virtual and overridden, dynamic dispatch selects Dog.Speak, printing 'Woof'. The static type does not govern which override runs for virtual members."
+    },
+    {
+      "subtopic": "Abstract class purpose",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The reviewer ties abstraction to abstract classes by noting that an abstract class is used when you need to inherit from a class but do not need to instantiate an object of that class.",
+      "answer": true,
+      "explanation": "The reviewer states abstraction is 'done when we only need to inherit from a class (abstract class), but do not need to instantiate the object of that class.'"
+    },
+    {
+      "subtopic": "Inheritance purpose",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which design goal does inheritance most directly serve ?",
+      "options": [
+        "Code reuse and managing generalization/specialization by extending an existing class",
+        "Hiding the implementation details of a class behind access modifiers",
+        "Allowing one interface to be backed by many different behaviors at runtime",
+        "Reducing a complex reality to only its essential, problem-relevant features"
+      ],
+      "answer": 0,
+      "explanation": "Inheritance creates a new class from an existing one for code reuse and managing generalization and specialization. Hiding details is encapsulation, one-interface-many-behaviors is polymorphism, and reducing to essentials is abstraction."
+    },
+    {
+      "subtopic": "Association multiplicity",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about association are correct per the reviewer? (Select all that apply.)",
+      "options": [
+        "Association defines the multiplicity between objects (e.g., one-to-one, one-to-many, many-to-many)",
+        "Aggregation is a special form of association",
+        "In a plain association, the related objects typically have independent lifetimes",
+        "Association requires that one object cannot exist without the other",
+        "Composition is a more general relationship than association"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Association defines multiplicity, aggregation is a special form of association, and associated objects have independent lifetimes. Requiring one object cannot exist without the other describes composition, and composition is more restricted (not more general) than association."
+    },
+    {
+      "subtopic": "Composition over inheritance",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team needs behavior from two unrelated base classes in a language that forbids multiple class inheritance. Following the guidance, what is the soundest approach?",
+      "options": [
+        "Hold instances of both as fields and delegate to them (contain and delegate)",
+        "Create an intermediate class that inherits from both to merge their behavior",
+        "Copy the needed methods from both classes into the new class to avoid any references",
+        "Make the new class inherit from one base and re-declare the other's methods as abstract"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer's prescribed answer to the multiple-inheritance/diamond limitation is to contain and delegate — favor composition over inheritance. Inheriting from both is exactly the forbidden multiple inheritance, and copying methods duplicates code and breaks reuse."
+    },
+    {
+      "subtopic": "Type vs class",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The reviewer distinguishes 'type' from 'class.' Which statement best captures that distinction and its practical implication?",
+      "options": [
+        "Type is equivalent to the interface (capabilities/behavior) of a class, so coding against types rather than concrete classes preserves flexibility",
+        "Type and class are interchangeable, so depending on either has the same coupling effect",
+        "Type refers to a concrete implementation, while class refers only to its public contract",
+        "Type determines memory layout, while class determines behavior, so neither affects flexibility"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer says type is equivalent to the interface of a class and determines capabilities/behavior, and that programming to types (not classes) maintains flexibility. The distractor that reverses type and class (type = concrete) inverts the definition."
+    },
+    {
+      "subtopic": "Diamond problem reasoning",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does multiple class inheritance give rise to the diamond problem?",
+      "options": [
+        "A class inheriting from two classes that share a common base can inherit conflicting/ambiguous versions of the same member, leaving the resolution ambiguous",
+        "Two base classes always allocate the derived object's memory twice, doubling its size unpredictably",
+        "Virtual methods cannot be dispatched when more than one base class is present",
+        "Constructors of multiple base classes cannot run, so the object is never initialized"
+      ],
+      "answer": 0,
+      "explanation": "The diamond problem is the ambiguity (the 'diamond') created when a class inherits from two classes sharing a common base, so it is unclear which inherited member applies. The other options describe failures that are not the defining cause of the diamond ambiguity."
+    },
+    {
+      "subtopic": "Composition code reading",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the C# below, which object relationship between `House` and `Room` does the code most accurately model, and why?",
+      "code": "class Room { }\nclass House {\n    private readonly List<Room> _rooms = new();\n    public House(int count) {\n        for (int i = 0; i < count; i++) _rooms.Add(new Room());\n    }\n}",
+      "lang": "csharp",
+      "options": [
+        "Composition — the House creates and exclusively owns the Rooms, which are not shared and effectively cease to exist when the House does",
+        "Aggregation — the Rooms are passed in from outside and can be reused by other Houses",
+        "Plain association — House merely references externally managed Rooms with independent lifetimes",
+        "Inheritance — House specializes Room to reuse its behavior"
+      ],
+      "answer": 0,
+      "explanation": "The House constructs its own Rooms in a private field and never exposes or shares them, so the parts cannot exist independently of the whole — composition. Aggregation would inject the Rooms from outside so they could outlive and be shared across Houses."
+    },
+    {
+      "subtopic": "Pillars selection",
+      "source": "software-design/object-oriented-programming-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are among the four pillars of OOP as listed in the reviewer? (Select all that apply.)",
+      "options": [
+        "Abstraction",
+        "Encapsulation",
+        "Polymorphism",
+        "Composition",
+        "Delegation"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The four pillars are Abstraction, Encapsulation, Inheritance, and Polymorphism. Composition is an object relationship (and a design preference over inheritance), and delegation is a technique — neither is a pillar."
+    }
+  ]
+}

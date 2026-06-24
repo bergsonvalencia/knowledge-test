@@ -1,0 +1,276 @@
+{
+  "topic": "angular",
+  "source": "angular/09-ssr-state-and-performance.md",
+  "questions": [
+    {
+      "subtopic": "Hydration basics",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does non-destructive hydration (the default since v16) do with the server-rendered DOM?",
+      "options": [
+        "Reuses the existing server DOM, attaching listeners and wiring state in place",
+        "Throws away the server markup and re-renders the whole app from scratch in the browser",
+        "Renders a second copy of the app into a hidden node and swaps it in",
+        "Keeps the server DOM but disables all event handling until a full reload"
+      ],
+      "answer": 0,
+      "explanation": "Non-destructive hydration reuses the server-rendered DOM and attaches listeners in place. The destructive re-render that discarded the markup was the pre-v16 behavior."
+    },
+    {
+      "subtopic": "Enabling hydration",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which provider call enables non-destructive client hydration in `app.config.ts`?",
+      "options": [
+        "`provideClientHydration()`",
+        "`provideServerRendering()`",
+        "`provideHydration()`",
+        "`provideHttpClient(withHydration())`"
+      ],
+      "answer": 0,
+      "explanation": "`provideClientHydration()` turns on non-destructive hydration (DOM reconciliation, transfer-state caching, and incremental hydration). `provideServerRendering()` is the server-side provider, not the hydration one."
+    },
+    {
+      "subtopic": "Render modes",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which `RenderMode` renders a route to static HTML files at build time (SSG)?",
+      "options": [
+        "`RenderMode.Prerender`",
+        "`RenderMode.Server`",
+        "`RenderMode.Client`",
+        "`RenderMode.Static`"
+      ],
+      "answer": 0,
+      "explanation": "`RenderMode.Prerender` is SSG: rendered once at build time to static HTML. `RenderMode.Server` renders fresh HTML per request, and `RenderMode.Client` renders in the browser."
+    },
+    {
+      "subtopic": "Event replay",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What problem does `withEventReplay()` solve?",
+      "options": [
+        "User events (e.g. clicks) that fire before hydration finishes would otherwise be lost",
+        "Server-fetched data would be requested a second time on the client",
+        "`@defer` blocks would all hydrate at once instead of lazily",
+        "Invalid HTML would force a destructive re-render of the page"
+      ],
+      "answer": 0,
+      "explanation": "`withEventReplay()` captures early user events that fire before listeners are attached and replays them once hydration completes. Avoiding a duplicate fetch is transfer state's job, not event replay's."
+    },
+    {
+      "subtopic": "State escalation",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to the escalation ladder, what is the recommended starting point for state in a component before promoting it anywhere else?",
+      "options": [
+        "A `signal` owned locally by the component",
+        "An `@Injectable({ providedIn: 'root' })` signal service",
+        "NgRx SignalStore",
+        "A classic NgRx Store with actions and reducers"
+      ],
+      "answer": 0,
+      "explanation": "The ladder starts with local component state (a signal owned by the component), promoting to a shared root service only when more than one component needs the same source of truth."
+    },
+    {
+      "subtopic": "Incremental hydration",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In Angular v22 with a plain `provideClientHydration()`, what is the state of incremental hydration for `@defer` blocks?",
+      "options": [
+        "On by default; the old `withIncrementalHydration()` opt-in is no longer required",
+        "Off until you add `withIncrementalHydration()`",
+        "Off until you add `withEventReplay()` separately",
+        "Unavailable — incremental hydration was removed in v22"
+      ],
+      "answer": 0,
+      "explanation": "Since v22 incremental hydration is on by default with `provideClientHydration()`; the earlier `withIncrementalHydration()` opt-in is no longer needed (and you disable it with `withNoIncrementalHydration()`)."
+    },
+    {
+      "subtopic": "Transfer state",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Transfer state serializes data the server fetched via `HttpClient` into the HTML so the client does not re-issue the same request during hydration.",
+      "answer": true,
+      "explanation": "That is exactly what transfer state does; it can be disabled per need with `withNoHttpTransferCache()`."
+    },
+    {
+      "subtopic": "Hydration mismatches",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following can cause a hydration mismatch? (Select all that apply.)",
+      "options": [
+        "Direct DOM manipulation such as setting `innerHTML` or calling `appendChild`",
+        "Invalid HTML the browser auto-corrects, like a `<table>` without `<tbody>`",
+        "Third-party scripts mutating the DOM before hydration runs",
+        "Reading a `computed` signal inside the template",
+        "Using `OnPush` change detection on a component"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Direct DOM manipulation, invalid auto-corrected HTML, and third-party DOM mutation before hydration all cause mismatches (along with whitespace/comment-node differences). Reading a computed signal and using OnPush are normal and do not cause mismatches."
+    },
+    {
+      "subtopic": "Mismatch failure mode",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When Angular detects a hydration mismatch in a subtree, what happens?",
+      "options": [
+        "It falls back to a full client re-render for that subtree and logs a warning",
+        "It throws a fatal error and stops bootstrapping the application",
+        "It silently keeps the server DOM and never attaches listeners there",
+        "It re-runs the server render for that route on the next request"
+      ],
+      "answer": 0,
+      "explanation": "A mismatch makes Angular discard and re-render that subtree on the client and log a warning — it degrades gracefully rather than crashing or silently dropping interactivity."
+    },
+    {
+      "subtopic": "Hybrid rendering API",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the v20+ API, which call wires per-route render modes for hybrid rendering on the server?",
+      "options": [
+        "`provideServerRendering(withRoutes(serverRoutes))` from `@angular/ssr`",
+        "`provideServerRouting(serverRoutes)` from `@angular/platform-server`",
+        "`provideClientHydration(withRoutes(serverRoutes))`",
+        "`provideRouter(serverRoutes)` from `@angular/router`"
+      ],
+      "answer": 0,
+      "explanation": "The v20+ API is `provideServerRendering(withRoutes(serverRoutes))`, with `provideServerRendering` now exported from `@angular/ssr`. The older `provideServerRouting` was replaced/removed in v20."
+    },
+    {
+      "subtopic": "Shared signal service",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the `CartStore` below, why is `items` kept private while `lines`, `count`, and `total` are exposed?",
+      "code": "@Injectable({ providedIn: 'root' })\nexport class CartStore {\n  private readonly items = signal<CartItem[]>([]);\n  readonly lines = this.items.asReadonly();\n  readonly count = computed(() => this.items().reduce((n, i) => n + i.qty, 0));\n  add(item: CartItem) {\n    this.items.update((list) => [...list, item]);\n  }\n}",
+      "lang": "typescript",
+      "options": [
+        "So consumers can read state and derived values but cannot mutate the source — mutations only happen through the service's methods",
+        "Because `computed` signals cannot be created from a public writable signal",
+        "Because `providedIn: 'root'` services forbid public writable fields",
+        "So that change detection skips the component reading `count`"
+      ],
+      "answer": 0,
+      "explanation": "Keeping the writable signal private and exposing read-only views (`asReadonly()`/`computed`) enforces one source of truth: only the service's `add`/`clear` methods may mutate state. The other claims are not real Angular constraints."
+    },
+    {
+      "subtopic": "Immutable updates",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does `add()` use `this.items.update(list => [...list, item])` instead of `this.items().push(item)`?",
+      "options": [
+        "Replacing the array gives a new reference so the signal notifies its dependents",
+        "`push` is not available on signal-wrapped arrays at runtime",
+        "Spreading is required to keep the array sorted",
+        "`update` runs the mutation off the main thread"
+      ],
+      "answer": 0,
+      "explanation": "Signals detect change by reference; replacing the array with a new one triggers notification. Mutating in place with `push` would not change the reference, so dependents (computed/effects) would not react."
+    },
+    {
+      "subtopic": "@for track",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the consequence of omitting a stable `track` on a `@for` loop that reorders its items?",
+      "options": [
+        "Angular re-creates the DOM and component state for the rows instead of reusing the existing nodes",
+        "Angular throws a compile-time error and the template fails to build",
+        "The list renders correctly but `OnPush` is silently disabled for that component",
+        "Angular keeps the old DOM and refuses to apply the new ordering"
+      ],
+      "answer": 0,
+      "explanation": "Without a stable identity, Angular re-creates DOM and state on reorder; with `track x.id` it reuses nodes. `track` is required syntactically for `@for`, but supplying an unstable key (rather than omitting it) is what produces the re-create cost — the reviewer frames the harm as needless DOM/state recreation."
+    },
+    {
+      "subtopic": "NgOptimizedImage",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `NgOptimizedImage` (`ngSrc`) are correct? (Select all that apply.)",
+      "options": [
+        "It requires `width`/`height` (or `fill`) to prevent layout shift (CLS)",
+        "It lazy-loads non-priority images by default",
+        "You mark the LCP image with `priority` so it is not lazy-loaded",
+        "It defers image rendering until the user hovers the element",
+        "It disables `srcset` generation to keep the HTML small"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "`NgOptimizedImage` requires dimensions (or `fill`) to avoid CLS, lazy-loads non-priority images, auto-generates `srcset`, and lets you flag the LCP image `priority`. It does not hover-defer images, and it generates `srcset` rather than disabling it."
+    },
+    {
+      "subtopic": "OnPush + signals",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With `ChangeDetectionStrategy.OnPush` and signal reads in the template, when is the component re-checked?",
+      "options": [
+        "When an input reference changes, an event fires in it, or a signal it reads changes",
+        "On every change-detection cycle, exactly as with default strategy",
+        "Only when you call `markForCheck()` manually after each mutation",
+        "Only when a parent component is re-checked, regardless of signals"
+      ],
+      "answer": 0,
+      "explanation": "OnPush re-checks on an input reference change, an event in the component, or a change to a signal it reads. Signals make OnPush correct without manual `markForCheck()`, which is the trap in the third option."
+    },
+    {
+      "subtopic": "Template method calls",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "A binding like `{{ formatTotal() }}` that calls a component method runs on every change-detection cycle, whereas a pure pipe with the same logic recomputes only when its input changes.",
+      "answer": true,
+      "explanation": "Template method calls re-run every CD cycle; pure pipes are memoized and recompute only when their input changes — which is why the reviewer recommends moving formatting/filtering into pure pipes (or `computed`)."
+    },
+    {
+      "subtopic": "OnPush reference checks",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why should you avoid allocating new arrays or objects inline in template bindings (e.g. `[data]=\"[a, b]\"`)?",
+      "options": [
+        "A fresh reference every cycle defeats `OnPush` input reference checks, forcing needless re-checks downstream",
+        "Inline literals are a syntax error inside Angular templates",
+        "It prevents the AOT compiler from tree-shaking the component",
+        "It causes a hydration mismatch on the server-rendered HTML"
+      ],
+      "answer": 0,
+      "explanation": "An inline literal creates a new reference on every CD cycle, so a child relying on `OnPush` reference equality always sees a 'changed' input and re-checks unnecessarily. Precompute with `computed` or a pure pipe instead."
+    },
+    {
+      "subtopic": "Zoneless change detection",
+      "source": "angular/09-ssr-state-and-performance.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which statement accurately describes zoneless change detection as presented in the reviewer?",
+      "options": [
+        "It drops Zone.js so CD is driven by signals/events directly; stable since v20.2 and the default in v21+",
+        "It keeps Zone.js but throttles change-detection cycles to once per frame",
+        "It requires every component to use the default (non-OnPush) strategy",
+        "It disables change detection entirely, so views must be updated manually"
+      ],
+      "answer": 0,
+      "explanation": "Zoneless CD (`provideZonelessChangeDetection()`) removes Zone.js and drives CD via signals/events directly — smaller bundle, fewer spurious cycles — stable since v20.2 and the default from v21. It does not keep Zone.js or disable CD."
+    }
+  ]
+}

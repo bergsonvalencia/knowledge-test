@@ -1,0 +1,278 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Object types",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which three object types does Azure Key Vault store?",
+      "options": [
+        "Secrets, keys, and certificates",
+        "Secrets, blobs, and tables",
+        "Passwords, tokens, and certificates",
+        "Keys, queues, and connection strings"
+      ],
+      "answer": 0,
+      "explanation": "Key Vault stores three object types — secrets (arbitrary strings), keys (cryptographic operations), and certificates (X.509 with lifecycle). Blobs/tables/queues belong to Storage, not Key Vault."
+    },
+    {
+      "subtopic": "Least-privilege role",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Under the Azure RBAC model, which built-in role gives a typical app the least privilege needed to **read secret values**?",
+      "options": [
+        "Key Vault Reader",
+        "Key Vault Secrets User",
+        "Key Vault Secrets Officer",
+        "Key Vault Contributor"
+      ],
+      "answer": 1,
+      "explanation": "Key Vault Secrets User grants read access to secret values. Key Vault Reader sees metadata only, Secrets Officer can manage (write/delete) secrets, and Contributor is a management-plane role that under RBAC does not grant data-plane read."
+    },
+    {
+      "subtopic": "DefaultAzureCredential parity",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the main reason teams use `DefaultAzureCredential` from `Azure.Identity`?",
+      "options": [
+        "It encrypts secrets at rest with a customer-managed key",
+        "It lets the same code authenticate locally and in Azure with no code change",
+        "It eliminates the need for any managed identity in Azure",
+        "It caches secret values so the app never calls Key Vault twice"
+      ],
+      "answer": 1,
+      "explanation": "DefaultAzureCredential walks an ordered chain and uses the first source that yields a token — managed identity in Azure, the developer's az login/Visual Studio identity locally — giving dev/prod parity with no code change. It still relies on a managed identity in Azure, and it authenticates rather than encrypting or caching secret values."
+    },
+    {
+      "subtopic": "Name mapping",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "With the .NET Key Vault configuration provider, the secret named `Database--ConnectionString` becomes which configuration key?",
+      "options": [
+        "Database/ConnectionString",
+        "Database.ConnectionString",
+        "Database:ConnectionString",
+        "Database__ConnectionString"
+      ],
+      "answer": 2,
+      "explanation": "Secret names allow only `[A-Za-z0-9-]`, so the provider maps a double dash `--` to the colon `:` used for nested config. `Database--ConnectionString` becomes `Database:ConnectionString`, which binds via the Options pattern."
+    },
+    {
+      "subtopic": "Soft-delete defaults",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Soft-delete on Azure Key Vault is always on and cannot be disabled.",
+      "answer": true,
+      "explanation": "Soft-delete is now always on and cannot be disabled. Deleting a vault or object moves it to a recoverable state for a retention period of 7–90 days (default 90)."
+    },
+    {
+      "subtopic": "Management vs data plane",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On a vault configured for the Azure RBAC model, a user holds the **Owner** role on the vault but no Key Vault data-plane role. What can they do?",
+      "options": [
+        "Read and write secret values, because Owner implies all permissions",
+        "Manage the vault (delete it, change its firewall) but not read secret values",
+        "Nothing — Owner alone does not allow even management-plane operations",
+        "Read secret values but not modify the vault configuration"
+      ],
+      "answer": 1,
+      "explanation": "Management-plane RBAC (Owner/Contributor) lets you manage the vault but, under the RBAC model, does not grant data-plane access to read secret values — that requires a role like Key Vault Secrets User. (Under access policies, Contributor could self-grant a policy, which is why RBAC is preferred.)"
+    },
+    {
+      "subtopic": "System vs user-assigned identity",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team needs to grant Key Vault access **before** the App Service that will use it has been deployed, and the same identity must survive blue/green slot swaps. Which managed identity fits, and why?",
+      "options": [
+        "System-assigned, because it is automatically created with the app",
+        "User-assigned, because it is a standalone resource you can pre-provision and share",
+        "System-assigned, because it is cheaper than user-assigned",
+        "User-assigned, because system-assigned identities cannot access Key Vault"
+      ],
+      "answer": 1,
+      "explanation": "A user-assigned identity is a standalone resource created independently, so you can grant it access before the app exists (breaking the chicken-and-egg) and reuse it across slots. System-assigned identities don't exist until the resource does; both flavors are free and both can access Key Vault."
+    },
+    {
+      "subtopic": "Token endpoint flow",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When an app with a managed identity reads a secret, what scope does the SDK request the access token for, against Key Vault?",
+      "options": [
+        "`https://management.azure.com/.default`",
+        "`https://graph.microsoft.com/.default`",
+        "`https://vault.azure.net/.default`",
+        "`https://storage.azure.com/.default`"
+      ],
+      "answer": 2,
+      "explanation": "The SDK requests a token scoped to `https://vault.azure.net/.default`; Key Vault then validates the token's audience/issuer and the principal's RBAC role before serving the secret. The management.azure.com scope is for ARM/management-plane calls, not data-plane secret reads."
+    },
+    {
+      "subtopic": "Pinned reference rotation",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An App Service setting is `@Microsoft.KeyVault(SecretUri=https://kv.vault.azure.net/secrets/Db--ConnStr/abc123)`. You rotate the secret (new version), but the app keeps using the old value. What is the minimal fix?",
+      "options": [
+        "Grant the identity the Key Vault Secrets Officer role",
+        "Drop the version segment so the reference resolves to latest, or update the version and restart the app",
+        "Enable purge protection on the vault",
+        "Switch the vault from RBAC to access policies"
+      ],
+      "answer": 1,
+      "explanation": "The reference pins version `abc123`; references resolve at startup and a pinned version never advances. Drop the version to reference latest (refreshes on the ~24h cadence) or update the setting to the new version and restart. Roles, purge protection, and the access model are unrelated to which version is served."
+    },
+    {
+      "subtopic": "Provider precedence",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "To make Key Vault values override matching keys in `appsettings.json`, you should add the Key Vault configuration provider **after** the appsettings provider.",
+      "answer": true,
+      "explanation": "Configuration precedence is last-wins: later providers override earlier ones. Adding Key Vault after appsettings makes vault values take precedence over file values."
+    },
+    {
+      "subtopic": "Reload behavior",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Using the .NET Key Vault configuration provider, you register it without setting `ReloadInterval`. After a secret is rotated, when does the running app see the new value?",
+      "options": [
+        "Immediately, because the provider subscribes to Event Grid",
+        "Within ~24 hours, on the platform's periodic refresh",
+        "On the next request, because the provider re-reads per request",
+        "Not until the app restarts, because secrets are read once at startup"
+      ],
+      "answer": 3,
+      "explanation": "Without a `ReloadInterval`, the provider reads secrets once at startup, so a rotated value is only picked up on restart. The ~24h periodic refresh applies to unpinned App Service Key Vault references, not the .NET provider; the provider does not poll per request or subscribe to Event Grid by itself."
+    },
+    {
+      "subtopic": "Code reading: disambiguation",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An App Service has both a system-assigned identity and two user-assigned identities. The code below runs in that App Service. What is the most likely problem?",
+      "code": "var cred = new DefaultAzureCredential();\nbuilder.Configuration.AddAzureKeyVault(\n    new Uri(\"https://contoso-kv.vault.azure.net/\"),\n    cred);",
+      "lang": "csharp",
+      "options": [
+        "It always uses the system-assigned identity, which may lack the role",
+        "Token acquisition is ambiguous because multiple managed identities are attached and none is specified",
+        "DefaultAzureCredential cannot be used inside App Service at all",
+        "The vault URI must end in `/secrets/` or the provider throws"
+      ],
+      "answer": 1,
+      "explanation": "When a resource has multiple managed identities, you must disambiguate by setting `ManagedIdentityClientId` (or use an explicit `ManagedIdentityCredential`); otherwise token acquisition is ambiguous. DefaultAzureCredential works fine in App Service, and the URI need not end in `/secrets/`."
+    },
+    {
+      "subtopic": "Code reading: local 403",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The code below works when deployed to Azure but returns `403 Forbidden` when run on a developer's laptop. What is the most likely cause?",
+      "code": "builder.Configuration.AddAzureKeyVault(\n    new Uri(\"https://contoso-kv.vault.azure.net/\"),\n    new DefaultAzureCredential());",
+      "lang": "csharp",
+      "options": [
+        "The vault firewall blocks the laptop, so no fix exists in code or RBAC",
+        "Locally the chain resolves to the developer's az login/VS identity, which lacks a Key Vault data-plane role",
+        "DefaultAzureCredential is not supported outside Azure",
+        "The secret name uses `--` which is invalid on Windows"
+      ],
+      "answer": 1,
+      "explanation": "In Azure the chain resolves to the managed identity (which has the role); locally it falls through to the developer's az login/Visual Studio identity, which lacks a Key Vault data-plane role. The fix is to grant that user Key Vault Secrets User on the dev vault — no code change. DefaultAzureCredential is designed for exactly this local scenario."
+    },
+    {
+      "subtopic": "Access models selection",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Azure RBAC vs vault access policies for the Key Vault data plane are correct? (Select all that apply.)",
+      "options": [
+        "A single vault can use both RBAC and access policies simultaneously for the same operations",
+        "Azure RBAC can scope permissions down to an individual secret",
+        "Vault access policies are a per-vault list capped at roughly 1024 entries",
+        "Under access policies, a Contributor could grant itself a policy to read secrets",
+        "RBAC role assignments take effect instantly with zero propagation delay"
+      ],
+      "answer": [
+        1,
+        2,
+        3
+      ],
+      "explanation": "A vault uses one model or the other (chosen by `enableRbacAuthorization`), not both. RBAC scopes down to a single secret; access policies are a per-vault list (~1024 entries) and a Contributor could self-grant a policy. RBAC role propagation can take a few minutes, so option 5 is wrong."
+    },
+    {
+      "subtopic": "Soft-delete redeploy trap",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An IaC pipeline deletes and recreates a vault with the same name each run. After **purge protection** is enabled, redeploys fail with a name conflict. What is the correct fix?",
+      "options": [
+        "Purge the soft-deleted vault first, then recreate it with the same name",
+        "Change the pipeline to `recover` the soft-deleted vault instead of delete-then-create",
+        "Disable soft-delete so the name is freed immediately",
+        "Give the pipeline identity the Owner role so it can force-delete the vault"
+      ],
+      "answer": 1,
+      "explanation": "Soft-delete reserves the name during retention; with purge protection on you cannot purge early, even as an admin, so delete-then-create is impossible. The pipeline must `recover` the soft-deleted vault and update idempotently. Purging is blocked, soft-delete cannot be disabled, and no role overrides purge protection."
+    },
+    {
+      "subtopic": "Secret expiry behavior",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A secret has an `exp` (expiry) date that has already passed, but `enabled` is still true. What does the reviewer say happens when an app requests that secret's value?",
+      "options": [
+        "Key Vault refuses to return the value because it is past expiry",
+        "Key Vault returns the value; expiry is metadata your app and monitoring must honor",
+        "Key Vault automatically rotates to a new version and returns that",
+        "Key Vault returns the value only if purge protection is disabled"
+      ],
+      "answer": 1,
+      "explanation": "Key Vault does not block secret retrieval based on expiry the way you might expect — `exp` is metadata, so the value is still returned and your app/monitoring must honor and alert on it. There is no automatic rotation on expiry, and purge protection is unrelated."
+    },
+    {
+      "subtopic": "DefaultAzureCredential trade-offs",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are valid reasons a production team might prefer an explicit `ManagedIdentityCredential` over `DefaultAzureCredential`? (Select all that apply.)",
+      "options": [
+        "The chain's probing of multiple sources adds startup latency",
+        "A single explicit source gives faster, clearer failures that are easier to diagnose",
+        "ManagedIdentityCredential encrypts the token at rest, which DefaultAzureCredential cannot",
+        "It avoids ambiguity by binding to one well-defined credential source",
+        "DefaultAzureCredential cannot acquire a managed-identity token in Azure at all"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "DefaultAzureCredential's ordered probing adds startup latency and makes failures harder to diagnose; an explicit ManagedIdentityCredential is a single, fast, unambiguous source. Neither credential encrypts tokens at rest, and DefaultAzureCredential does resolve to the managed identity in Azure — so options 3 and 5 are false."
+    },
+    {
+      "subtopic": "Event-driven rotation",
+      "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You want automated, event-driven secret rotation: when a secret nears expiry, regenerate the credential at the source and write a new version. Which mechanism does the reviewer describe for triggering the rotation logic?",
+      "options": [
+        "Key Vault polls the source system directly and rewrites the secret itself",
+        "Key Vault emits Event Grid events like `SecretNearExpiry` that trigger a Function/Logic App",
+        "The .NET config provider's `ReloadInterval` regenerates the source credential",
+        "Purge protection fires a webhook when the secret expires"
+      ],
+      "answer": 1,
+      "explanation": "Key Vault emits near-expiry/rotation events (`SecretNearExpiry`, `SecretExpired`, `SecretNewVersionCreated`) via Event Grid, which trigger a Function or Logic App to regenerate at the source and write a new version. `ReloadInterval` only refreshes consumers; Key Vault does not poll sources itself, and purge protection has nothing to do with rotation events."
+    }
+  ]
+}

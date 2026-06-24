@@ -1,0 +1,279 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/agile-foundations-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Manifesto nuance",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "The Agile Manifesto's value statement \"Working software **over** comprehensive documentation\" is best read as which of the following?",
+      "options": [
+        "When the two are in tension, prefer working software, but documentation still has real value",
+        "Documentation is wasteful and should be eliminated from agile projects",
+        "Both items are equally important and the wording is just stylistic",
+        "Documentation should be written only after the software is fully complete"
+      ],
+      "answer": 0,
+      "explanation": "The Manifesto's closing line is \"while there is value in the items on the right, we value the items on the left more\" — it is a statement of priority under tension, not a deletion. The reviewer stresses the Manifesto does NOT say documentation is bad."
+    },
+    {
+      "subtopic": "Empiricism pillars",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are the three pillars of empirical process control that Scrum inherits?",
+      "options": [
+        "Transparency, Inspection, Adaptation",
+        "Planning, Execution, Review",
+        "Commitment, Focus, Courage",
+        "Visualize, Limit WIP, Manage flow"
+      ],
+      "answer": 0,
+      "explanation": "Empiricism stands on Transparency, Inspection, and Adaptation. Commitment/Focus/Courage are Scrum values (not the empirical pillars), and Visualize/Limit-WIP/Manage-flow are Kanban practices."
+    },
+    {
+      "subtopic": "Manifesto facts",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How many values and principles does the Agile Manifesto contain?",
+      "options": [
+        "4 values and 12 principles",
+        "12 values and 4 principles",
+        "5 values and 14 principles",
+        "3 values and 9 principles"
+      ],
+      "answer": 0,
+      "explanation": "The Manifesto, written in 2001 at Snowbird, Utah by 17 practitioners, contains four short value statements and twelve principles."
+    },
+    {
+      "subtopic": "Working software as progress",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to principle 7, what is the **primary measure of progress** in agile?",
+      "options": [
+        "Working software",
+        "Lines of code produced",
+        "Hours logged against the plan",
+        "Number of documents signed off"
+      ],
+      "answer": 0,
+      "explanation": "Principle 7 states working software is the primary measure of progress — explicitly not lines of code, hours logged, or documents produced."
+    },
+    {
+      "subtopic": "Agile is not Scrum",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "\"Agile equals Scrum\" — Scrum is the only framework that genuinely implements the agile mindset.",
+      "answer": false,
+      "explanation": "This is a myth. Scrum is one popular framework that implements agile; Kanban, XP, and others are equally agile. Agile is the mindset; Scrum is one way to practice it."
+    },
+    {
+      "subtopic": "Iron-triangle flip",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A stakeholder demands fixed scope, fixed date, and fixed budget on a year-long, high-uncertainty product. Using the iron-triangle framing, what is the standard agile counter-position?",
+      "options": [
+        "Fix time and cost (a cadence and a stable team) and let scope flex, delivering highest-value increments first",
+        "Fix scope and budget, and let the delivery date slip as needed",
+        "Refuse to give any date or estimate because agile forbids commitments",
+        "Fix scope and date, and add people late to absorb any budget overrun"
+      ],
+      "answer": 0,
+      "explanation": "Agile flips the iron triangle: it fixes time and cost and flexes scope, sequencing the most valuable work first so the date can still be honored. All three corners cannot be fixed on uncertain work without padding or failure; and \"no date\" is itself a myth."
+    },
+    {
+      "subtopic": "Transparency dependency",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is **transparency** described as the load-bearing pillar that the other two empirical pillars depend on?",
+      "options": [
+        "You cannot meaningfully inspect work that is hidden or misrepresented, and you cannot adapt from an inspection that never honestly happened",
+        "Transparency is the fastest pillar to implement, so teams start there for convenience",
+        "Transparency replaces the need for inspection once the work is fully visible",
+        "Adaptation produces transparency automatically, so it must be done first"
+      ],
+      "answer": 0,
+      "explanation": "The pillars are ordered and dependent: a sugar-coated status report poisons every later decision. Without transparency you cannot inspect, and without a real inspection you cannot adapt — the loop becomes theater."
+    },
+    {
+      "subtopic": "Defined vs empirical",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which kind of work is **defined (predictive)** process control best suited for?",
+      "options": [
+        "Well-understood, repeatable work where a given input reliably produces the same output",
+        "Novel software where requirements and technology shift unpredictably",
+        "Any work where the team prefers a feedback loop over a fixed plan",
+        "Work that is so chaotic that no plan can be made at all"
+      ],
+      "answer": 0,
+      "explanation": "Defined process control assumes a repeatable input-to-output mapping you can plan once and execute — good for assembling a known product or running a fixed reaction. Complex, novel software is empirical, not defined."
+    },
+    {
+      "subtopic": "Being vs doing agile",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team has two-week sprints, daily stand-ups, and a board, yet ships late, resists change, and never alters how it works. What is the most accurate diagnosis and remedy?",
+      "options": [
+        "Doing agile without being agile (cargo cult); the fix is restoring empiricism, not adding more ceremony",
+        "Not enough ceremonies; add more meetings and a longer stand-up to tighten control",
+        "The sprints are too long; halving them to one week will fix the mindset",
+        "The team needs a defined process instead, since agile clearly does not work here"
+      ],
+      "answer": 0,
+      "explanation": "Rituals without the mindset is cargo-cult agile. The reviewer is emphatic: the fix is never more ceremony — it is the mindset shift (genuine transparency, retrospectives that change behavior, an empowered PO, and engineering practices enabling small frequent delivery)."
+    },
+    {
+      "subtopic": "Iterative vs incremental",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the distinction between **iterative** and **incremental** development, and where does agile sit?",
+      "options": [
+        "Iterative refines the same thing each pass; incremental delivers usable pieces; agile is both",
+        "Iterative delivers usable pieces; incremental refines the same thing; agile is only iterative",
+        "Iterative and incremental are synonyms; agile uses the terms interchangeably",
+        "Iterative means short sprints; incremental means long releases; agile is incremental only"
+      ],
+      "answer": 0,
+      "explanation": "Iterative = repeat and refine the same thing (a rough portrait improved each pass); incremental = build and deliver in usable pieces. Agile is both: each iteration adds an increment and refines what already exists."
+    },
+    {
+      "subtopic": "Lean wastes",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are among the classic seven Lean wastes (manufacturing terms) as mapped to software in the reviewer? Select all that apply.",
+      "options": [
+        "Inventory (work in progress, half-done features)",
+        "Defects (bugs, rework, escaped errors)",
+        "Waiting (blocked tasks, approvals, handoffs)",
+        "Velocity (story points completed per sprint)",
+        "Refactoring (improving code without changing behavior)"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The seven wastes are overproduction, inventory, waiting, motion, transportation/handoffs, over-processing, and defects. Velocity is an agile metric and refactoring is an XP engineering practice — neither is a Lean waste."
+    },
+    {
+      "subtopic": "When not to use agile",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "In which situations does the reviewer say agile is a **poor fit**? Select all that apply.",
+      "options": [
+        "The problem is well understood and stable with a fixed, fully-specified scope",
+        "Change is irreversible or extremely expensive (long-fabrication hardware)",
+        "Safety-critical / heavily regulated work that legally requires exhaustive up-front specification and traceability",
+        "A complex, novel software product with shifting requirements and frequent releases",
+        "A team that can release frequently and has an engaged, empowered Product Owner"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Agile is a poor fit for well-understood/stable, irreversible/expensive-to-change, and safety-critical/regulated work. The complex novel product with frequent releases and the team with an engaged PO are precisely where agile shines, not where it fails."
+    },
+    {
+      "subtopic": "Cynefin matching",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Using Cynefin as the mental sorter, in which domain does agile **shine** (cause and effect clear only in hindsight — probe, sense, respond)?",
+      "options": [
+        "Complex",
+        "Clear / Obvious",
+        "Complicated",
+        "Chaotic"
+      ],
+      "answer": 0,
+      "explanation": "Agile shines in the Complex domain (probe, sense, respond). In Clear/Obvious a defined process is fine, Complicated is where expertise finds the answer, and in Chaotic you act first to stabilize."
+    },
+    {
+      "subtopic": "Self-organization and accountability",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Because agile teams are self-organizing, the \"agile means no manager / no accountability\" claim is correct: there is no clear owner of value and priority.",
+      "answer": false,
+      "explanation": "This is a debunked myth. Self-organizing is not leaderless: accountability is clearer — the team owns the *how*, the Product Owner owns value/priority, and a working increment makes progress undeniable."
+    },
+    {
+      "subtopic": "SAFe 6.0 Lean-Agile Mindset",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Under SAFe 6.0, how is the **Lean-Agile Mindset** now defined, and what changed regarding the \"House of Lean\"?",
+      "options": [
+        "The House of Lean has been retired; the mindset is the five principles of Lean Thinking plus the Agile Manifesto, taken together",
+        "The House of Lean is the centerpiece; the Agile Manifesto was deprecated in 6.0",
+        "The mindset is defined solely by the four Manifesto values, with Lean removed entirely",
+        "The House of Lean was expanded into seven pillars and replaces the Agile Manifesto"
+      ],
+      "answer": 0,
+      "explanation": "In SAFe 6.0 the House of Lean was retired, and the Lean-Agile Mindset is now framed as the five principles of Lean Thinking plus the values and principles of the Agile Manifesto together — Lean and agile as one mindset, not two."
+    },
+    {
+      "subtopic": "Self-reinforcing principle violations",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The reviewer argues that principles 8 (sustainable pace) and 9 (technical excellence) are the first casualties under deadline pressure, and that abandoning them is self-defeating. Why?",
+      "options": [
+        "Skipping tests and crunching people creates defects and burnout, which slow you down, creating more pressure — agility *is* the ability to change cheaply",
+        "They are optional principles, so dropping them simply makes the team more efficient under pressure",
+        "Sustainable pace and technical excellence only matter for safety-critical work, not ordinary products",
+        "Deadlines automatically restore both principles once the release ships, so the loss is temporary"
+      ],
+      "answer": 0,
+      "explanation": "The two are self-reinforcing: sloppy code and burnout produce defects and slowness, which create more pressure — a vicious cycle. Agility is the ability to change cheaply, which you only keep with a clean codebase and a rested team."
+    },
+    {
+      "subtopic": "Agile vs waterfall trade-offs",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Comparing waterfall (predictive) and agile (empirical) as in the side-by-side table, which statements are accurate? Select all that apply.",
+      "options": [
+        "Waterfall fixes scope and lets time/cost flex; agile fixes time/cost and lets scope flex",
+        "In waterfall, risk accumulates and surfaces late at integration; in agile, risk is retired early, iteration by iteration",
+        "Waterfall delivers one big release at the end; agile delivers frequent, small working increments",
+        "Waterfall welcomes change as a competitive advantage; agile uses a change-control board to resist it",
+        "Agile measures progress by phase completion and signed-off documents"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Options 1-3 match the table (iron-triangle flip, risk timing, delivery cadence). The last two invert reality: it is waterfall that uses a change-control board and measures progress by phase/document completion, while agile welcomes change and measures by working software."
+    },
+    {
+      "subtopic": "Defects as costliest waste",
+      "source": "agile-leadership/agile-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Among the seven Lean wastes mapped to a software pipeline, the reviewer singles out **defects** as typically the most expensive. What is the underlying reason, and the Lean prescription?",
+      "options": [
+        "The cost-of-change curve means a defect found late (UAT/production) can cost orders of magnitude more and force cross-module rework; the fix is to *build quality in* at the source",
+        "Defects waste the most raw developer hours per occurrence, so the fix is to add a dedicated end-of-cycle QA gate",
+        "Defects are most expensive because they always violate a contract; the fix is stricter change-control boards",
+        "Defects tie up the most work-in-progress inventory; the fix is to raise WIP limits so blocked work keeps moving"
+      ],
+      "answer": 0,
+      "explanation": "Defects are costliest because of the cost-of-change curve: caught late they multiply and force rework across modules. Lean's answer is to build quality in at the source (CI, automated tests) rather than inspect quality at the end — the opposite of an end-of-cycle gate."
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+{
+  "topic": "system-design",
+  "source": "system-design/system-design-interview-exercises-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Requirements",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the design-interview framework, what is the difference between **functional** and **non-functional** requirements?",
+      "options": [
+        "Functional = what the system does; non-functional = how well it must do it (scale, latency, availability, consistency, durability)",
+        "Functional = the database schema; non-functional = the API contract",
+        "Functional = the parts you implement; non-functional = the parts you defer to later",
+        "Functional = read paths; non-functional = write paths"
+      ],
+      "answer": 0,
+      "explanation": "Functional requirements are the use cases/actors (what it does), while non-functional requirements describe quality attributes like scale, latency, availability, consistency, and durability. The reviewer stresses that NFRs drive the architecture more than features do."
+    },
+    {
+      "subtopic": "Back-of-envelope estimates",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Using the rule of thumb, roughly what average QPS does **1 million requests per day** work out to?",
+      "options": [
+        "~12 req/s",
+        "~120 req/s",
+        "~1.2 req/s",
+        "~1,200 req/s"
+      ],
+      "answer": 0,
+      "explanation": "1,000,000 / 86,400 seconds ≈ 12 req/s — the reviewer's handy constant '1 million/day ≈ 12 req/s'. A peak factor of 2–10x is then applied separately for the hot path."
+    },
+    {
+      "subtopic": "Stateless tier",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Keeping the application tier **stateless** (pushing session/state to the DB, cache, or session store) is what lets you scale it out horizontally behind a load balancer.",
+      "answer": true,
+      "explanation": "Because a stateless app holds no per-request state locally, any instance can serve any request, so you can add instances freely behind the load balancer. State is pushed to the DB, cache, and session store."
+    },
+    {
+      "subtopic": "Scaling levers",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which lever is recommended as the primary response to a **read-heavy** workload bottlenecking the database?",
+      "options": [
+        "Caching plus read replicas",
+        "Sharding writes across a high-cardinality key",
+        "A message queue with async workers",
+        "Two-phase commit across services"
+      ],
+      "answer": 0,
+      "explanation": "Read-heavy load is addressed with caching (cache-aside in Redis) and read replicas, accepting replication lag/eventual consistency. Sharding targets write load; queues target slow/bursty work; 2PC is unrelated and discouraged."
+    },
+    {
+      "subtopic": "URL shortener base62",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "With base62 codes, approximately how many distinct codes does a **7-character** code space provide?",
+      "options": [
+        "~3.5 trillion (62⁷)",
+        "~56 billion (62⁶)",
+        "~3.5 billion (62⁵)",
+        "~218 trillion (62⁸)"
+      ],
+      "answer": 0,
+      "explanation": "62⁷ ≈ 3.5 trillion codes, which the reviewer cites as plenty for a URL shortener. 62⁶ ≈ 56 billion is the 6-character capacity; moving from 6 to 7 chars multiplies capacity by 62."
+    },
+    {
+      "subtopic": "Idempotency",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does an `Idempotency-Key` make order placement safe under client retries?",
+      "options": [
+        "The server stores the key with its result under a unique constraint, so a replay returns the **same** orderId instead of creating a second order",
+        "The server hashes the request body and rejects any request whose hash it has seen before",
+        "The client and server negotiate a sequence number so retries are dropped by TCP",
+        "The load balancer detects duplicate requests and discards all but the first"
+      ],
+      "answer": 0,
+      "explanation": "The server records the idempotency key alongside the stored result (with a unique constraint so concurrent duplicates collide at the DB); a replay short-circuits and returns the same orderId. It is not body-hashing, a transport-level trick, or LB deduplication."
+    },
+    {
+      "subtopic": "Outbox pattern",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What core problem does the **outbox pattern** solve in the order system?",
+      "options": [
+        "The dual-write problem — making the DB state change and the event publish atomic without a distributed transaction",
+        "Hot-partition skew caused by a low-cardinality shard key",
+        "Cache invalidation when the source record changes",
+        "Provider rate-limit exhaustion during retry storms"
+      ],
+      "answer": 0,
+      "explanation": "The outbox writes the event row in the SAME local transaction as the state change; a relay later publishes it, guaranteeing 'committed ⇒ eventually published' without a distributed transaction. The other options are addressed by sharding, cache TTL/invalidation, and token-bucket rate limiting respectively."
+    },
+    {
+      "subtopic": "Saga vs 2PC",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "A **saga** replaces a single distributed (two-phase-commit) transaction across order/inventory/payment with a sequence of local transactions plus compensating actions on failure.",
+      "answer": true,
+      "explanation": "The reviewer recommends a saga precisely because 2PC across services is brittle and locks resources; a saga uses local transactions with compensations (cancel order / release reservation / refund), trading strict atomicity for availability and resilience."
+    },
+    {
+      "subtopic": "Notification dedupe",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why must the dedupe gate use Redis `SET key val NX EX` rather than a `GET` followed by a separate `SET`?",
+      "options": [
+        "`SET … NX` is atomic, so under concurrent retries exactly one caller wins; a GET-then-SET has a race where two workers both see the key absent and both send",
+        "`SET … NX` is faster because it skips the network round trip entirely",
+        "`GET` cannot read keys that have a TTL, so it would always miss",
+        "`SET … NX` automatically retries the provider call if delivery fails"
+      ],
+      "answer": 0,
+      "explanation": "The atomic set-if-absent guarantees only the first writer proceeds, eliminating the check-then-act race that GET-then-SET would have under concurrency. It does not change network round trips, TTL readability, or perform provider retries."
+    },
+    {
+      "subtopic": "URL shortener 301 vs 302",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the senior-level trade-off between returning **301** versus **302** for a short-link redirect?",
+      "options": [
+        "301 is permanent and cacheable by browsers/CDNs (fewer hits but you lose analytics on cached hits); 302 is temporary so every hit reaches you (better analytics, higher load)",
+        "301 always reaches your service while 302 is cached, so 302 is better for analytics",
+        "301 is faster because it uses a smaller response body than 302",
+        "301 requires HTTPS while 302 works over plain HTTP, so 301 is more secure"
+      ],
+      "answer": 0,
+      "explanation": "301 (permanent) lets browsers and CDNs cache the redirect — fewer requests and lower cost, but cached hits never reach you, so you lose analytics. 302 (temporary) routes every hit to you for accurate analytics at higher load. The caching direction in the other options is reversed or irrelevant."
+    },
+    {
+      "subtopic": "Shard key choice",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which properties make a **good** shard/partition key? (Select all that apply.)",
+      "options": [
+        "High cardinality",
+        "Even/uniform access distribution",
+        "Aligned with the dominant query so it can target one shard",
+        "Low cardinality like an order `status` field",
+        "Monotonically increasing like a timestamp"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "A good shard key has high cardinality, distributes access evenly, and aligns with the dominant query so reads hit one shard. Low-cardinality keys (status) and monotonic keys (timestamp) create hot partitions and are explicitly called out as bad choices."
+    },
+    {
+      "subtopic": "Notification platform",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which design choices does the reviewer prescribe for the multi-channel notification platform? (Select all that apply.)",
+      "options": [
+        "Accept fast and return `202 Accepted`, doing slow provider calls in async workers",
+        "Per-provider rate limiting (token bucket) enforced at the worker",
+        "Retries with exponential backoff and jitter, capped, then a dead-letter queue",
+        "Make the synchronous API loop over all recipients before returning",
+        "Drop the dedupe key because providers are always idempotent"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The platform accepts fast (202) and delivers async, rate-limits per provider at the worker, and uses capped backoff-with-jitter retries plus a DLQ for poison messages. A synchronous per-recipient loop would not scale for high fan-out, and dedupe keys are required precisely because delivery is at-least-once and not all providers are idempotent."
+    },
+    {
+      "subtopic": "Estimation QPS",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A service handles **200M reads/day** and **2M writes/day**. Roughly what is the average read QPS and the read:write ratio?",
+      "options": [
+        "~2,315 read req/s, ratio ≈ 100:1 (read-heavy)",
+        "~23,000 read req/s, ratio ≈ 10:1",
+        "~231 read req/s, ratio ≈ 1,000:1",
+        "~2,315 read req/s, ratio ≈ 10:1"
+      ],
+      "answer": 0,
+      "explanation": "200,000,000 / 86,400 ≈ 2,315 read req/s, and 200M reads vs 2M writes is a 100:1 ratio — read-heavy, so caching and read replicas apply. The other options miscompute either the QPS or the ratio."
+    },
+    {
+      "subtopic": "Idempotent placement code",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In this order-placement code, why are the order, the outbox message, and the idempotency record all added before a single `SaveChangesAsync`?",
+      "code": "var existing = await _idempotency.TryGetAsync(idempotencyKey, ct);\nif (existing is not null) return existing.Result;\nawait using var tx = await _db.Database.BeginTransactionAsync(ct);\nvar order = Order.Create(cmd.CustomerId, cmd.Lines);\n_db.Orders.Add(order);\n_db.Outbox.Add(OutboxMessage.For(new OrderPlaced(order.Id, cmd.Lines)));\n_db.IdempotencyKeys.Add(new IdempotencyRecord(idempotencyKey, order.Id));\nawait _db.SaveChangesAsync(ct);\nawait tx.CommitAsync(ct);",
+      "lang": "csharp",
+      "options": [
+        "So the order, its outbound event, and the dedupe key commit atomically in one local transaction — either all persist or none do",
+        "So EF Core can parallelize the three inserts across connections for speed",
+        "So the outbox message is published to the bus before the order is committed",
+        "So the idempotency key is written first and rolled back if the order fails"
+      ],
+      "answer": 0,
+      "explanation": "Adding all three and saving once inside the transaction makes order + outbox + key atomic — solving the dual-write problem (the event row commits with the state change). EF does not parallelize these, the relay publishes the outbox row later (not before commit), and the key commits with the order rather than separately."
+    },
+    {
+      "subtopic": "Hot key handling",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A single short code goes viral and one Redis node serving it is overloaded (a hot key). Which mitigations does the reviewer list for hot keys/partitions?",
+      "options": [
+        "Consistent hashing with replication of the hot item, plus a small in-process cache in front of Redis for the very hottest entries",
+        "Switch the redirect from 301 to 302 so fewer requests reach the cache",
+        "Lower the cache TTL to zero so the hot key is never cached",
+        "Move the hot key to a relational database with a transaction per read"
+      ],
+      "answer": 0,
+      "explanation": "For hot keys the reviewer prescribes consistent hashing plus replicating the hot item, and adding a tiny in-process (local) cache in front of Redis for the hottest entries. Disabling caching, flipping the redirect type, or routing reads through a transactional SQL store would all worsen the hot-read problem."
+    },
+    {
+      "subtopic": "Cache-aside staleness",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You add cache-aside (Redis) to a CPU-bound redirect service. What is the key trade-off the reviewer says this introduces?",
+      "options": [
+        "Cache invalidation/staleness — if a long URL is changed or deleted, cached entries can serve stale data until they expire or are evicted",
+        "Strong consistency is now guaranteed on every read, eliminating the need for the DB",
+        "Write throughput drops because every write must synchronously update both the cache and the DB",
+        "The redirect can no longer return 301 because cached responses are immutable"
+      ],
+      "answer": 0,
+      "explanation": "Cache-aside trades freshness for speed: a changed or deleted long URL can be served stale from cache until TTL expiry or explicit invalidation. It does not make reads strongly consistent, does not force synchronous dual writes (cache-aside backfills on miss), and does not constrain the redirect status code."
+    },
+    {
+      "subtopic": "Latency numbers",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The reviewer says main memory is roughly **100,000x faster** than a disk seek, and uses this to justify caching. Which pair of figures supports that ratio?",
+      "options": [
+        "Main memory ≈ 100 ns vs disk seek ≈ 2–10 ms",
+        "Main memory ≈ 100 ns vs SSD random read ≈ 16 µs",
+        "L1 cache ≈ 1 ns vs network round trip within a DC ≈ 0.5 ms",
+        "SSD random read ≈ 16 µs vs cross-continent round trip ≈ 150 ms"
+      ],
+      "answer": 0,
+      "explanation": "Main memory ≈ 100 ns and a disk seek ≈ 2–10 ms (≈ 10,000,000 ns) differ by roughly 100,000x — the reviewer's stated reason caching works. The other pairs compare different layers (memory vs SSD, L1 vs network, SSD vs WAN) and don't yield the ~100,000x memory-vs-disk-seek ratio."
+    },
+    {
+      "subtopic": "base62 encode code",
+      "source": "system-design/system-design-interview-exercises-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "This counter-based base62 generator produces short codes. What is its main downside as a key-generation strategy?",
+      "code": "private const string Alphabet = \"0123...XYZabc...xyz\"; // 62 symbols\npublic static string Encode(long id) {\n    if (id == 0) return \"0\";\n    var sb = new StringBuilder();\n    while (id > 0) {\n        sb.Insert(0, Alphabet[(int)(id % 62)]);\n        id /= 62;\n    }\n    return sb.ToString();\n}",
+      "lang": "csharp",
+      "options": [
+        "Because it encodes a monotonic counter, the resulting codes are sequential and therefore guessable/enumerable",
+        "It can produce duplicate codes for different ids, so it needs a collision-retry loop",
+        "It cannot encode ids larger than 62, so it overflows almost immediately",
+        "It produces variable-length output, which makes the codes non-unique"
+      ],
+      "answer": 0,
+      "explanation": "Counter + base62 gives guaranteed-unique, collision-free codes, but because the underlying id is monotonic the codes are sequential and thus enumerable/guessable — the reviewer's stated downside (use random base62 if guessability matters). It does not produce duplicates, handles large ids fine, and variable length does not break uniqueness."
+    }
+  ]
+}

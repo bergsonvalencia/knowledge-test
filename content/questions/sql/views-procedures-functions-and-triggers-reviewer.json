@@ -1,0 +1,268 @@
+{
+  "topic": "sql",
+  "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Views storage",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Does a regular (non-indexed) view physically store its result set?",
+      "options": [
+        "No — it stores a `SELECT` definition that is expanded into the referencing query at run time",
+        "Yes — its rows are cached on first query and refreshed periodically",
+        "Yes — it always materializes its rows in tempdb",
+        "Only if it is created `WITH SCHEMABINDING`"
+      ],
+      "answer": 0,
+      "explanation": "A regular view stores no data — just a saved `SELECT` that the optimizer expands into the calling statement. Only an indexed view (with a unique clustered index) physically stores its result set; `SCHEMABINDING` alone does not materialize anything."
+    },
+    {
+      "subtopic": "WITH CHECK OPTION",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `WITH CHECK OPTION` on an updatable view enforce?",
+      "options": [
+        "It rejects any `INSERT`/`UPDATE` through the view that would produce a row not matching the view's `WHERE` predicate",
+        "It verifies referential integrity against foreign-key constraints before the write",
+        "It forces the view to refresh its cached rows after every write",
+        "It blocks all writes through the view, making it read-only"
+      ],
+      "answer": 0,
+      "explanation": "`WITH CHECK OPTION` forces rows modified through the view to still satisfy the view's filter, preventing a write that would immediately fall out of the view. It does not handle FK integrity, caching, or make the view read-only."
+    },
+    {
+      "subtopic": "Stored procedure RETURN",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a stored procedure, what is the `RETURN` statement's integer value intended for?",
+      "options": [
+        "A status/flow code (0 = success by convention), not data",
+        "Returning a single scalar data value to the caller",
+        "Returning the number of rows affected by the last statement",
+        "Returning a result set to the caller"
+      ],
+      "answer": 0,
+      "explanation": "`RETURN` codes are integers meant only for status/flow signaling (0 = success by convention). Scalar data is returned via `OUTPUT` parameters, and tabular data via result sets — not the `RETURN` code."
+    },
+    {
+      "subtopic": "Inserted/deleted pseudo-tables",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "During an `UPDATE`, what do the `inserted` and `deleted` pseudo-tables contain inside a trigger?",
+      "options": [
+        "`deleted` holds the old row images and `inserted` holds the new images, matched by key",
+        "`inserted` holds the old images and `deleted` holds the new images",
+        "Only `inserted` is populated; `deleted` is empty for an `UPDATE`",
+        "Both are empty because `UPDATE` is not an insert or a delete"
+      ],
+      "answer": 0,
+      "explanation": "An `UPDATE` populates both pseudo-tables: `deleted` = old image, `inserted` = new image, joined by key. `INSERT` populates only `inserted`, `DELETE` only `deleted`, but `UPDATE` fills both."
+    },
+    {
+      "subtopic": "SQL injection identification",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Passing user input as a bound parameter via `sp_executesql` (rather than concatenating it into the SQL string) prevents that input from being parsed as executable SQL.",
+      "answer": true,
+      "explanation": "Binding a value as a parameter keeps it as inert data — it can only ever be a literal value, never parsed as SQL — which is exactly why parameterization defends against injection, while string concatenation does not."
+    },
+    {
+      "subtopic": "Updatable views constraints",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following make a view NOT directly updatable through a simple `INSERT`/`UPDATE`/`DELETE` (i.e., would require an `INSTEAD OF` trigger)? Select all that apply.",
+      "options": [
+        "The view aggregates with `GROUP BY`",
+        "The DML would span columns from two joined base tables",
+        "The view uses `DISTINCT`",
+        "The view selects a subset of columns from a single base table with direct column mapping"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A view is directly updatable only when the DML targets one base table with directly mapped columns and no aggregates, `DISTINCT`, `GROUP BY`, `UNION`, `TOP`, computed columns, or `JOIN`-spanning writes. A simple column-subset projection from one table (option D) remains updatable."
+    },
+    {
+      "subtopic": "Indexed view requirements",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `GROUP BY` indexed view with `SUM(Amount)` fails to create. Which requirement is most likely missing?",
+      "options": [
+        "It is missing `COUNT_BIG(*)`, which is mandatory for a `GROUP BY` indexed view with aggregates",
+        "It is missing a non-clustered index, which must be created before the clustered one",
+        "It uses `SUM`, which is not allowed in indexed views; only `COUNT` is permitted",
+        "It is missing an `ORDER BY` clause to define the stored row order"
+      ],
+      "answer": 0,
+      "explanation": "A `GROUP BY` indexed view with aggregates must include `COUNT_BIG(*)`. `SUM` is permitted, the first index must be a unique clustered index (not non-clustered), and `ORDER BY` is not part of an indexed view definition."
+    },
+    {
+      "subtopic": "NOEXPAND hint",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On a non-Enterprise edition of SQL Server, why must you add `WITH (NOEXPAND)` when querying an indexed view?",
+      "options": [
+        "Without it the optimizer expands the view definition rather than reading the materialized data, so `NOEXPAND` forces use of the stored result",
+        "Without it the indexed view's clustered index is not maintained on base-table writes",
+        "Without it the query returns stale data because the view is not auto-refreshed",
+        "Without it the view cannot be created at all on non-Enterprise editions"
+      ],
+      "answer": 0,
+      "explanation": "Outside Enterprise/Developer editions the optimizer does not automatically match an indexed view; `NOEXPAND` forces it to read the materialized result instead of expanding the definition. The index is still auto-maintained regardless, and the data is never stale."
+    },
+    {
+      "subtopic": "Scalar UDF performance",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is a scalar UDF in the `WHERE` clause of a `SELECT` over millions of rows a performance red flag (absent inlining)?",
+      "options": [
+        "It is historically invoked once per row with context-switch overhead and can force the whole query to run single-threaded",
+        "It locks the entire base table for the duration of the query",
+        "It bypasses the plan cache, forcing a full recompile on every row",
+        "It silently converts the query into a cursor that commits per row"
+      ],
+      "answer": 0,
+      "explanation": "A non-inlined scalar UDF runs row by row with per-row context-switching cost and can block parallelism, serializing the query. It does not lock the whole table, force per-row recompiles, or create an implicit cursor."
+    },
+    {
+      "subtopic": "Inline vs multi-statement TVF",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key estimation pitfall of a multi-statement table-valued function (mTVF) compared to an inline TVF?",
+      "options": [
+        "It uses a fixed-cardinality estimate regardless of actual row count, which can mislead the optimizer's join choices on large results",
+        "It cannot be referenced in a `FROM` clause, only in a `SELECT` list",
+        "It always returns at most one row because of its `@table` return variable",
+        "It cannot accept parameters, unlike an inline TVF"
+      ],
+      "answer": 0,
+      "explanation": "An mTVF carries a fixed-cardinality estimate (historically 1, later 100) regardless of actual size, leading to bad join plans on large results. An inline TVF is inlined like a parameterized view with accurate cardinality. Both can be used in `FROM` and take parameters."
+    },
+    {
+      "subtopic": "Function vs procedure",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements correctly distinguish a user-defined function from a stored procedure? Select all that apply.",
+      "options": [
+        "A function can be used inside a `SELECT`/`WHERE`/`JOIN`; a procedure must be `EXEC`-ed",
+        "A function cannot perform base-table DML or control transactions; a procedure can",
+        "A procedure can run dynamic SQL and use temp tables; a function cannot",
+        "A function may return multiple result sets plus an integer status code, like a procedure"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Functions are query-embeddable, read-only/side-effect-free, and cannot run dynamic SQL or use temp tables — all true. The last option is wrong: a function returns a single value or a table, not multiple result sets plus a status code (that is the procedure's return shape)."
+    },
+    {
+      "subtopic": "Why functions are query-safe",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which property of a UDF is what actually permits it to be used inside a `SELECT`/`WHERE`, rather than a procedure?",
+      "options": [
+        "It is read-only / side-effect-free (no base-table DML, no transaction control)",
+        "It is deterministic — it always returns the same output for the same input",
+        "It is precompiled into a cached parameterized plan",
+        "It always returns a scalar value rather than a table"
+      ],
+      "answer": 0,
+      "explanation": "It is the read-only, side-effect-free property — not determinism — that allows functions in `SELECT`/`WHERE`. A scalar UDF can still wrap a non-deterministic call like `GETDATE()` and remain usable in a query; functions also can return tables, not only scalars."
+    },
+    {
+      "subtopic": "INSTEAD OF triggers",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "An `INSTEAD OF` trigger replaces the triggering DML, so the original statement does not execute unless the trigger explicitly re-issues it.",
+      "answer": true,
+      "explanation": "`INSTEAD OF` runs in place of the DML; the original statement never runs unless the trigger body re-issues it against the base table(s). This is the mechanism that makes otherwise non-updatable (e.g. multi-table) views updatable."
+    },
+    {
+      "subtopic": "The per-row trigger bug",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A multi-row `UPDATE` touching 500 accounts fires this audit trigger but only one audit row is written. What is the root cause?",
+      "code": "CREATE TRIGGER dbo.trg_Audit ON dbo.Accounts AFTER UPDATE AS\nBEGIN\n    DECLARE @id INT, @bal DECIMAL(18,2);\n    SELECT @id = AccountId, @bal = Balance FROM inserted;\n    INSERT INTO dbo.AccountAudit (AccountId, NewBalance, ChangedAtUtc)\n    VALUES (@id, @bal, SYSUTCDATETIME());\nEND;",
+      "lang": "sql",
+      "options": [
+        "The trigger fires once per statement and `inserted` holds all 500 rows, but `SELECT @id = ... FROM inserted` captures only one arbitrary row",
+        "The trigger fires once per row, so only the last row's values survive in the variables",
+        "`inserted` is not populated during an `UPDATE`, so the variables stay NULL except for one default row",
+        "`AFTER UPDATE` triggers can only see a single row by design; you must use `INSTEAD OF`"
+      ],
+      "answer": 0,
+      "explanation": "Triggers fire once per statement and `inserted` holds all affected rows; assigning `@id`/`@bal` from a multi-row `inserted` grabs one arbitrary row and drops the rest. The fix is set-based: `INSERT ... SELECT AccountId, Balance, SYSUTCDATETIME() FROM inserted;`. Triggers do not fire per row, and `inserted` is populated on `UPDATE`."
+    },
+    {
+      "subtopic": "QUOTENAME for identifiers",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You must inject a table name (chosen at run time) into dynamic SQL. Why can't you just pass it as an `sp_executesql` parameter, and what is the correct safeguard?",
+      "options": [
+        "Identifiers (table/column names) cannot be bound as parameters; wrap the name in `QUOTENAME()` (and ideally whitelist it against `sys.tables`)",
+        "Identifiers can be bound, but only if declared as `SYSNAME`; no extra escaping is needed",
+        "You should concatenate the name directly — table names cannot carry an injection payload",
+        "You must cast the name to `NVARCHAR(MAX)` first, after which it is safe to bind as a value parameter"
+      ],
+      "answer": 0,
+      "explanation": "Only values can be bound as parameters — an identifier (table or column name) cannot. The safe approach is `QUOTENAME()`, which bracket-quotes and doubles any embedded `]`, closing the common identifier-injection hole; whitelisting against `sys.tables` adds defense in depth. Concatenating a raw name is unsafe."
+    },
+    {
+      "subtopic": "EXEC vs sp_executesql",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Compared with `EXEC(@sql)` on a concatenated string (shown below), what advantages does the parameterized `sp_executesql` form provide? Select all that apply.",
+      "code": "-- concatenated (EXEC):\nSET @sql = N'SELECT * FROM dbo.Users WHERE Name = ''' + @name + N'''';\nEXEC (@sql);\n\n-- parameterized (sp_executesql):\nEXEC sys.sp_executesql\n     N'SELECT * FROM dbo.Users WHERE Name = @name',\n     N'@name NVARCHAR(100)', @name = @name;",
+      "lang": "sql",
+      "options": [
+        "Bound values cannot break out of the string, defending against injection through those values",
+        "The cached plan can be reused across calls with different parameter values",
+        "It allows table and column names to be passed as bound parameters",
+        "It eliminates the need for `TRY/CATCH` because parameter binding cannot raise errors"
+      ],
+      "answer": [0, 1],
+      "explanation": "`sp_executesql` binds values as real parameters (injection-safe) and lets SQL Server reuse one cached plan across differing values. It still cannot bind identifiers (names), and it provides no error-handling guarantee — `TRY/CATCH` is still warranted."
+    },
+    {
+      "subtopic": "Ownership chaining",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A role is granted `SELECT` on a view but has no rights on the underlying base table, yet it can read through the view. What makes this work, and when does it break?",
+      "options": [
+        "Ownership chaining: when the view and base table share the same owner, SQL Server skips the permission check on the table — but the chain breaks across different owners or inside dynamic SQL",
+        "Row-level security policies automatically grant transitive table access through any view",
+        "The view runs under `EXECUTE AS OWNER` by default, which is unaffected by dynamic SQL",
+        "`WITH SCHEMABINDING` grants implicit `SELECT` on referenced tables to anyone who can read the view"
+      ],
+      "answer": 0,
+      "explanation": "Ownership chaining lets access through a same-owner module skip the underlying table's permission check, so granting `SELECT` on the view suffices. The chain breaks across different owners and inside dynamic SQL, where permissions are re-checked against the caller. `SCHEMABINDING` protects schema, not permissions; views don't default to `EXECUTE AS OWNER`."
+    },
+    {
+      "subtopic": "Determinism and materialization",
+      "source": "sql/views-procedures-functions-and-triggers-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why can a deterministic scalar function back a persisted computed column or an indexed view, while a function using `NEWID()` or `GETDATE()` cannot?",
+      "options": [
+        "Materialized values must be reproducible for the same input/state; non-deterministic expressions can vary, so they cannot be safely stored and kept consistent",
+        "Non-deterministic functions cannot be created `WITH SCHEMABINDING`, which materialization requires",
+        "Non-deterministic functions run faster, so the engine refuses to cache their output",
+        "Persisted columns only accept integer-returning functions, which exclude `GETDATE()`"
+      ],
+      "answer": 0,
+      "explanation": "Only deterministic expressions (same input/state → same output) can be safely materialized and kept consistent on writes; `GETDATE`, `NEWID`, `RAND` vary per evaluation, so they cannot be persisted or indexed. The restriction is determinism itself, not `SCHEMABINDING` syntax or return type."
+    }
+  ]
+}

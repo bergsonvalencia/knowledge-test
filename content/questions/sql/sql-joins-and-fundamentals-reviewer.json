@@ -1,0 +1,253 @@
+{
+  "topic": "sql",
+  "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Logical query processing order",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In which clause can you reference a column alias that was defined in the `SELECT` list?",
+      "options": ["`WHERE`", "`GROUP BY`", "`HAVING`", "`ORDER BY`"],
+      "answer": 3,
+      "explanation": "`SELECT` is logically evaluated at step 5, and `ORDER BY` (step 7) is the only clause that runs after it, so the alias exists there. `WHERE`, `GROUP BY`, and `HAVING` all run before `SELECT`, so the alias does not yet exist."
+    },
+    {
+      "subtopic": "Join semantics",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What distinguishes a `LEFT OUTER JOIN` from an `INNER JOIN`?",
+      "options": [
+        "`LEFT JOIN` keeps all left rows, NULL-padding the right side when there is no match; `INNER JOIN` drops unmatched rows from both sides",
+        "`LEFT JOIN` returns only the rows where the left key is NULL; `INNER JOIN` returns the rest",
+        "`LEFT JOIN` removes duplicate rows automatically; `INNER JOIN` keeps duplicates",
+        "`LEFT JOIN` keeps all right rows; `INNER JOIN` keeps all left rows"
+      ],
+      "answer": 0,
+      "explanation": "A `LEFT JOIN` preserves every left row and fills the right columns with NULL where no match exists, whereas an `INNER JOIN` keeps only matching pairs. The other options confuse left/right preservation or invent dedup behavior joins do not have."
+    },
+    {
+      "subtopic": "NULL comparison",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does `WHERE col = NULL` return no rows even for rows where `col` is NULL?",
+      "options": [
+        "Because `col = NULL` evaluates to `UNKNOWN`, and `WHERE` keeps only rows that evaluate to `TRUE`",
+        "Because `=` is not a valid operator for the NULL data type and is silently ignored",
+        "Because SQL Server automatically rewrites `= NULL` to `<> NULL`",
+        "Because NULL columns are excluded from the table scan before `WHERE` runs"
+      ],
+      "answer": 0,
+      "explanation": "Under three-valued logic any comparison with NULL using `=` yields `UNKNOWN`, and `WHERE` discards both `FALSE` and `UNKNOWN` rows. You must use `IS NULL`. The other options describe behaviors SQL Server does not have."
+    },
+    {
+      "subtopic": "Set operators",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which set operator is cheaper because it does no duplicate removal and no implicit sort?",
+      "options": ["`UNION ALL`", "`UNION`", "`INTERSECT`", "`EXCEPT`"],
+      "answer": 0,
+      "explanation": "`UNION ALL` simply concatenates rows with no dedup or sort, so it is the cheapest. `UNION`, `INTERSECT`, and `EXCEPT` all perform an implicit DISTINCT (a sort/hash) to remove duplicates."
+    },
+    {
+      "subtopic": "ORDER BY guarantees",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Without an `ORDER BY` clause, the result-set order is undefined — you cannot rely on insertion order or clustered-index order.",
+      "answer": true,
+      "explanation": "`ORDER BY` is the only construct that guarantees row order. Without it, order is undefined regardless of clustered index or insertion sequence; the engine may return rows in any order that yields a correct result."
+    },
+    {
+      "subtopic": "ON vs WHERE in outer joins",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Consider this query. What is the effect of placing `o.Status = 'Shipped'` in the `WHERE` clause instead of in `ON`?",
+      "code": "SELECT c.Name, o.Id, o.Status\nFROM dbo.Customers AS c\nLEFT JOIN dbo.Orders AS o ON o.CustomerId = c.Id\nWHERE o.Status = 'Shipped';",
+      "lang": "sql",
+      "options": [
+        "Customers with no shipped order are dropped, effectively turning the `LEFT JOIN` into an `INNER JOIN`",
+        "All customers are kept; only their non-shipped orders are NULL-padded",
+        "It produces a syntax error because `WHERE` cannot reference a NULL-able outer column",
+        "It produces a Cartesian product between customers and orders"
+      ],
+      "answer": 0,
+      "explanation": "The join NULL-pads unmatched customers, then `WHERE o.Status = 'Shipped'` evaluates `NULL = 'Shipped'` as `UNKNOWN` and drops those rows — collapsing the LEFT JOIN into an effective INNER JOIN. Putting the predicate in `ON` would preserve those customers."
+    },
+    {
+      "subtopic": "Anti-join row counting",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given Customers `(1,'A'),(2,'B'),(3,'C')` and Orders `(10,CustomerId=1),(11,CustomerId=1),(12,CustomerId=2)`, how many rows does `SELECT c.Id FROM Customers c LEFT JOIN Orders o ON o.CustomerId = c.Id` return?",
+      "code": "SELECT c.Id\nFROM Customers c\nLEFT JOIN Orders o ON o.CustomerId = c.Id;",
+      "lang": "sql",
+      "options": ["4", "3", "5", "6"],
+      "answer": 0,
+      "explanation": "Customer A matches two orders (appears twice), B matches one order, and C has no order so it is NULL-padded into one row: 2 + 1 + 1 = 4. The row multiplication from A's two orders is the key insight."
+    },
+    {
+      "subtopic": "NOT IN with NULL",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An employees table has `DeptId` values `{1, 2, 3}`. The query `WHERE DeptId NOT IN (SELECT DeptId FROM Departments)` runs, and the subquery returns `{1, NULL}`. How many employee rows are returned?",
+      "code": "SELECT Name FROM Employees\nWHERE DeptId NOT IN (SELECT DeptId FROM Departments);",
+      "lang": "sql",
+      "options": ["0", "2", "1", "3"],
+      "answer": 0,
+      "explanation": "`NOT IN (1, NULL)` expands to `NOT (DeptId = 1 OR DeptId = NULL)`; the `= NULL` term is `UNKNOWN`, which poisons the OR for every candidate, so even DeptId 2 and 3 evaluate to `UNKNOWN` (not TRUE) and are dropped. `NOT EXISTS` would correctly return 2."
+    },
+    {
+      "subtopic": "AVG and NULLs",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `Score` column contains the values `10, 20, NULL, NULL`. What does `SELECT AVG(Score)` return?",
+      "code": "SELECT AVG(Score) AS AvgScore FROM T;",
+      "lang": "sql",
+      "options": [
+        "15 — NULLs are ignored, so it averages only the two non-NULL values",
+        "7.5 — it divides the sum by all four rows",
+        "7 — it divides by all four rows using integer division",
+        "30 — it sums the non-NULL values without dividing"
+      ],
+      "answer": 0,
+      "explanation": "`AVG` ignores NULLs, dividing the sum by the count of non-NULL values: `(10 + 20) / 2 = 15`. To treat NULLs as zero (and average over all four rows) you would use `AVG(COALESCE(Score, 0))`."
+    },
+    {
+      "subtopic": "WHERE vs HAVING",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need to keep only rows where `IsActive = 1` before grouping, and then keep only groups with `COUNT(*) >= 5`. Where does each predicate belong?",
+      "options": [
+        "`IsActive = 1` in `WHERE`, `COUNT(*) >= 5` in `HAVING`",
+        "Both predicates in `HAVING`",
+        "`IsActive = 1` in `HAVING`, `COUNT(*) >= 5` in `WHERE`",
+        "Both predicates in `WHERE`"
+      ],
+      "answer": 0,
+      "explanation": "Non-aggregate row filters belong in `WHERE` (cheap, pre-group); aggregate filters like `COUNT(*) >= 5` must go in `HAVING` (post-aggregate). Putting `COUNT(*)` in `WHERE` is illegal, and pushing the row filter into `HAVING` is slower and misleading."
+    },
+    {
+      "subtopic": "EXISTS vs join",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You want a list of customers who have at least one order, with no customer appearing more than once. Which approach avoids the row multiplication a join can cause?",
+      "options": [
+        "`WHERE EXISTS (SELECT 1 FROM Orders o WHERE o.CustomerId = c.Id)`",
+        "`INNER JOIN Orders o ON o.CustomerId = c.Id`",
+        "`LEFT JOIN Orders o ON o.CustomerId = c.Id`",
+        "`CROSS JOIN Orders o`"
+      ],
+      "answer": 0,
+      "explanation": "`EXISTS` is a semi-join that short-circuits on the first match, so a customer with five orders appears once. An `INNER JOIN` would emit that customer five times (one row per matching order), and `CROSS JOIN` produces a Cartesian product."
+    },
+    {
+      "subtopic": "Aggregate over empty set",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Over an empty table, what do `SELECT COUNT(*)` and `SELECT SUM(x)` (a bare aggregate, no `GROUP BY`) each return?",
+      "options": [
+        "`COUNT(*)` returns `0` and `SUM(x)` returns `NULL`, both as a single row",
+        "Both return `0` as a single row",
+        "Both return zero rows (no result)",
+        "`COUNT(*)` returns `NULL` and `SUM(x)` returns `0`"
+      ],
+      "answer": 0,
+      "explanation": "A bare aggregate with no `GROUP BY` always returns exactly one row: `COUNT(*)` of an empty set is `0`, but `SUM` over an empty set is `NULL` (wrap with `COALESCE(SUM(x), 0)` for zero). A `GROUP BY` over zero rows, by contrast, returns no groups."
+    },
+    {
+      "subtopic": "ISNULL vs COALESCE",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `ISNULL` and `COALESCE` in T-SQL are correct? (Select all that apply.)",
+      "options": [
+        "`ISNULL` takes exactly two arguments",
+        "`COALESCE` is ANSI-standard and accepts N arguments, returning the first non-NULL",
+        "`ISNULL` returns the data type of its first argument",
+        "`COALESCE` always returns the data type of its last argument",
+        "`ISNULL` accepts any number of arguments like `COALESCE`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`ISNULL` is T-SQL-specific, takes exactly two args, and returns the type of the first argument. `COALESCE` is ANSI, takes N args, and returns the first non-NULL with type determined by precedence — not always the last argument's type."
+    },
+    {
+      "subtopic": "Set operator NULL handling",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Unlike the `=` operator, `INTERSECT` and `EXCEPT` treat two NULL values as equal to each other when comparing rows.",
+      "answer": true,
+      "explanation": "`INTERSECT` and `EXCEPT` compare entire rows and treat two NULLs as equal, which makes them useful for diffing tables — distinct from `=`, where `NULL = NULL` is `UNKNOWN`."
+    },
+    {
+      "subtopic": "TOP without ORDER BY",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer writes `SELECT TOP (10) * FROM dbo.Events` with no `ORDER BY` and assumes it returns the 10 most recent rows. Why is this assumption unsafe?",
+      "options": [
+        "`TOP` is applied after `ORDER BY` logically, so with no `ORDER BY` the 10 rows returned are an arbitrary, non-deterministic set",
+        "`TOP (10)` always returns the 10 rows with the smallest clustered-index keys, which may not be the most recent",
+        "`TOP` requires a `WHERE` clause and silently returns zero rows otherwise",
+        "`TOP` returns the 10 most recently inserted rows by default in SQL Server"
+      ],
+      "answer": 0,
+      "explanation": "Limiting (`TOP`/`OFFSET-FETCH`) happens last, after `ORDER BY`. Without an `ORDER BY`, which 10 rows you get is undefined and may vary between executions. SQL Server makes no guarantee about clustered-index or insertion order here."
+    },
+    {
+      "subtopic": "Anti-join correctness",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of these correctly and reliably find customers in table A who have no matching order in table B? (Select all that apply.)",
+      "options": [
+        "`LEFT JOIN B ON B.CustomerId = A.Id WHERE B.Id IS NULL`",
+        "`WHERE NOT EXISTS (SELECT 1 FROM B WHERE B.CustomerId = A.Id)`",
+        "`WHERE A.Id NOT IN (SELECT CustomerId FROM B)` when `B.CustomerId` can contain NULL",
+        "`INNER JOIN B ON B.CustomerId = A.Id WHERE B.Id IS NULL`"
+      ],
+      "answer": [0, 1],
+      "explanation": "The `LEFT JOIN ... IS NULL` anti-join and `NOT EXISTS` are the two correct, reliable patterns. `NOT IN` breaks when the subquery yields a NULL (every comparison becomes UNKNOWN, returning zero rows). An `INNER JOIN` drops unmatched rows before the `IS NULL` test can ever be true, so it returns nothing."
+    },
+    {
+      "subtopic": "Self-join depth limits",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A self-join is used to fetch each employee with their manager's name via `LEFT JOIN dbo.Employees AS m ON m.Id = e.ManagerId`. What are the two relevant correctness considerations?",
+      "options": [
+        "Use `LEFT JOIN` so the manager-less root survives, and switch to a recursive CTE if you need the entire multi-level hierarchy",
+        "Use `INNER JOIN` so the root is excluded, and a single self-join already returns the whole tree",
+        "Use `CROSS JOIN` to pair every employee with every manager, then filter in `WHERE`",
+        "Use `RIGHT JOIN` so managers without reports are preserved, and a self-join handles arbitrary depth"
+      ],
+      "answer": 0,
+      "explanation": "A `LEFT JOIN` preserves the root row whose `ManagerId` is NULL (an `INNER JOIN` would drop the CEO). A single self-join only resolves one level; traversing an arbitrary-depth org tree requires a recursive CTE."
+    },
+    {
+      "subtopic": "Accidental Cartesian product",
+      "source": "sql/sql-joins-and-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A two-table query unexpectedly returns millions of rows even though both tables are small. Besides a missing `ON` predicate, what is the other classic cause described for this row explosion?",
+      "options": [
+        "A join key that is non-unique on both sides, so each row on one side matches many rows on the other (m × n)",
+        "A `WHERE` clause that filters the preserved table of a `LEFT JOIN`",
+        "Using `UNION ALL` instead of `UNION`, which fails to remove duplicates",
+        "An aggregate in the `SELECT` list without a matching `GROUP BY`"
+      ],
+      "answer": 0,
+      "explanation": "Even with a correct `ON`, if the join key is non-unique on both sides each matching row multiplies, producing an m × n row explosion. The distractors describe a LEFT-to-INNER degradation, a dedup difference, and a grouping error — none of which cause a Cartesian-style explosion."
+    }
+  ]
+}

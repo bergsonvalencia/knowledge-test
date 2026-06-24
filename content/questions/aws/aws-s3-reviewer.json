@@ -1,0 +1,264 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-s3-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Durability vs availability",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "S3 Standard is designed for **11 nines** of durability. What does that 99.999999999% figure actually describe?",
+      "options": [
+        "The probability that you can reach an object at any given moment",
+        "The probability that an object survives over a year without being lost",
+        "The percentage of requests that return within the SLA latency target",
+        "The fraction of time the S3 API endpoint is reachable each year"
+      ],
+      "answer": 1,
+      "explanation": "Durability is the probability your object survives (data is not lost). Reachability 'right now' is availability, which is lower (Standard targets 99.99%) and class-dependent — conflating the two is the most common S3 interview slip."
+    },
+    {
+      "subtopic": "Consistency model",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Since December 2020, a successful overwrite-PUT to S3 is immediately visible to any subsequent GET, with no eventual-consistency window — and this requires no extra configuration or cost.",
+      "answer": true,
+      "explanation": "S3 has provided strong read-after-write consistency for all operations (PUTs, overwrites, DELETEs, and LISTs) since December 2020, at no extra cost or config. The old eventual-consistency caveat is a myth you must bust."
+    },
+    {
+      "subtopic": "Object and key limits",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the maximum size of a single S3 object, and the cap on a single PUT?",
+      "options": [
+        "5 GB object maximum; 5 GB single-PUT cap",
+        "5 TB object maximum; 5 GB single-PUT cap",
+        "5 TB object maximum; 5 TB single-PUT cap",
+        "5 GB object maximum; 100 MB single-PUT cap"
+      ],
+      "answer": 1,
+      "explanation": "An object can be up to 5 TB, but a single PUT is capped at 5 GB. Above 5 GB you must use multipart upload (recommended above ~100 MB for throughput and resilience)."
+    },
+    {
+      "subtopic": "Flat namespace and prefixes",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In the key `reports/2026/q2.csv`, the slashes create real nested folders on disk that S3 stores hierarchically.",
+      "answer": false,
+      "explanation": "The S3 namespace is flat — the key is one opaque UTF-8 string and the slashes are just convention. The console renders 'folders' by treating `/` as a delimiter, but nothing is nested on disk; the prefix is used only for listing, lifecycle, and replication scoping."
+    },
+    {
+      "subtopic": "Default encryption",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "If you PUT a new object to a modern S3 bucket without specifying any encryption settings, what happens?",
+      "options": [
+        "The object is stored unencrypted until you enable default encryption",
+        "The PUT is rejected because encryption is mandatory but unspecified",
+        "The object is encrypted automatically with at least SSE-S3",
+        "The object is encrypted only if Block Public Access is enabled"
+      ],
+      "answer": 2,
+      "explanation": "Encryption at rest is on by default — every new object is encrypted with at least SSE-S3 automatically, and you cannot store unencrypted objects. No configuration is required for baseline encryption."
+    },
+    {
+      "subtopic": "Storage class selection",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An object's access pattern is unknown and likely to change over time, and you want to avoid retrieval fees and managing transition rules. Which storage class fits best?",
+      "options": [
+        "Standard-IA",
+        "One Zone-IA",
+        "Intelligent-Tiering",
+        "Glacier Instant Retrieval"
+      ],
+      "answer": 2,
+      "explanation": "Intelligent-Tiering automatically moves objects between access tiers based on observed access, has no retrieval fees (just a small per-object monitoring fee), and needs no lifecycle rule — the 'set it and forget it' choice for unknown/changing patterns. Standard-IA and Glacier classes charge retrieval fees and assume a known pattern."
+    },
+    {
+      "subtopic": "One Zone-IA durability",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does **One Zone-IA** differ from the other standard storage classes with respect to data loss risk?",
+      "options": [
+        "It has lower designed durability because it keeps one copy in a single AZ; losing that AZ loses the data",
+        "It has the same multi-AZ durability but simply a lower availability target",
+        "It replicates across two AZs instead of three, halving durability",
+        "It stores no redundant copies at all, so any disk failure loses data"
+      ],
+      "answer": 0,
+      "explanation": "Unlike the other classes that share 11-nines durability across at least three AZs, One Zone-IA keeps its copy in a single AZ — lose the AZ, lose the data. That is why it is ~20% cheaper and reserved for re-creatable data."
+    },
+    {
+      "subtopic": "Versioning and delete markers",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On a versioning-enabled bucket, you issue a `DELETE` on key `data.json` without specifying a version ID. What happens, and how do you restore the object?",
+      "options": [
+        "The latest version is permanently erased; restore from a backup or replica",
+        "A delete marker is added as the new latest version (GETs return 404); restore by deleting the marker",
+        "All versions are removed at once; restore by re-enabling versioning",
+        "The delete is rejected because a version ID is required on a versioned bucket"
+      ],
+      "answer": 1,
+      "explanation": "A versioned DELETE without a version ID does not erase data — it adds a zero-byte delete marker that becomes the latest version, so GETs return 404. You recover by deleting the marker. To truly remove a version you must DELETE with its specific versionId."
+    },
+    {
+      "subtopic": "Cross-account access",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A bucket in account A must be readable by a role in partner account B, but never public. What is required for the cross-account grant to work?",
+      "options": [
+        "Only a bucket policy in account A naming account B's role as principal",
+        "Only an IAM policy on account B's role allowing the S3 actions",
+        "An allow on both sides: a bucket policy in A naming B's role and an IAM policy on B's role",
+        "An ACL on each object setting `bucket-owner-full-control` for account B"
+      ],
+      "answer": 2,
+      "explanation": "Cross-account access requires an allow on both sides — the resource (bucket) policy in account A AND the identity (IAM) policy on the principal in account B. A single-side allow is insufficient across accounts. ACLs are disabled by default and are not the mechanism here."
+    },
+    {
+      "subtopic": "SSE-KMS cost optimization",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An SSE-KMS bucket serving millions of small reads per hour has a surprisingly large **KMS** bill. What is the correct fix that preserves CloudTrail audit and key rotation?",
+      "options": [
+        "Switch the bucket to SSE-S3 to eliminate all KMS calls",
+        "Enable S3 Bucket Keys so a bucket-level data key envelope-encrypts many objects",
+        "Move the objects to Glacier Deep Archive to reduce request volume",
+        "Disable CloudTrail logging of KMS GenerateDataKey calls"
+      ],
+      "answer": 1,
+      "explanation": "S3 Bucket Keys reuse a short-lived bucket-level data key to envelope-encrypt many objects, collapsing thousands of per-object GenerateDataKey/Decrypt calls into far fewer — cutting KMS cost while keeping the CMK, its policy, rotation, and CloudTrail audit. Switching to SSE-S3 would lose the audit trail."
+    },
+    {
+      "subtopic": "Presigned URL semantics",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A backend generates a presigned PUT URL using a role that only has `s3:GetObject` (not `s3:PutObject`). A client uses the URL to upload. What happens?",
+      "options": [
+        "The upload succeeds because the presigned URL itself grants the PUT permission",
+        "The upload fails because the URL cannot grant more than the signer's own permissions",
+        "The upload succeeds but the object is quarantined until an admin approves it",
+        "The upload succeeds only if Block Public Access is turned off"
+      ],
+      "answer": 1,
+      "explanation": "A presigned URL embeds a signature derived from the signer's permissions and cannot grant more than the signer holds. If the signing role lacks s3:PutObject, the presigned PUT fails — the URL conveys the signer's authority, not new authority."
+    },
+    {
+      "subtopic": "Multipart upload (code reading)",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the .NET code below, which statement is correct?",
+      "code": "using Amazon.S3.Transfer;\n\nvar transfer = new TransferUtility(s3);\nawait transfer.UploadAsync(new TransferUtilityUploadRequest\n{\n    BucketName = \"my-app-prod\",\n    Key        = \"video/keynote-4k.mp4\",\n    FilePath   = \"keynote-4k.mp4\"\n});",
+      "lang": "csharp",
+      "options": [
+        "TransferUtility always uses a single PUT regardless of file size",
+        "TransferUtility automatically switches to multipart with parallel parts for large files, handling part sizing and retries",
+        "This code fails for files over 100 MB unless you call InitiateMultipartUpload first",
+        "TransferUtility disables retries, so a failed part restarts the whole upload"
+      ],
+      "answer": 1,
+      "explanation": "The high-level TransferUtility auto-switches to multipart and parallel parts for large files, handling part sizing, parallelism, and retries — which is why it is preferred over hand-rolling the part API. A failed part retries without restarting the whole upload."
+    },
+    {
+      "subtopic": "Event notification delivery",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "S3 event notifications are at-least-once and not guaranteed to be strictly ordered, so consumers should be written to be idempotent.",
+      "answer": true,
+      "explanation": "S3 notifications deliver at-least-once and without strict ordering guarantees, so a consumer can see duplicates or out-of-order events — making idempotency a requirement for correct downstream processing."
+    },
+    {
+      "subtopic": "Bucket policy enforcing TLS (code reading)",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does this bucket policy statement enforce?",
+      "code": "{\n  \"Sid\": \"DenyInsecureTransport\",\n  \"Effect\": \"Deny\",\n  \"Principal\": \"*\",\n  \"Action\": \"s3:*\",\n  \"Resource\": [\n    \"arn:aws:s3:::my-app-prod\",\n    \"arn:aws:s3:::my-app-prod/*\"\n  ],\n  \"Condition\": { \"Bool\": { \"aws:SecureTransport\": \"false\" } }\n}",
+      "lang": "json",
+      "options": [
+        "It denies all S3 actions on the bucket whenever the request does not use TLS (HTTPS)",
+        "It allows public read access only over HTTPS",
+        "It blocks all access to the bucket from every principal at all times",
+        "It denies requests that lack a KMS encryption header"
+      ],
+      "answer": 0,
+      "explanation": "The condition `aws:SecureTransport=false` matches non-TLS requests, and the Deny on `s3:*` for both the bucket and its objects (`/*`) forces all access over HTTPS. It does not grant anything (it is a Deny) and is unrelated to encryption-header enforcement."
+    },
+    {
+      "subtopic": "Object Lock retention modes",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Regulators require audit logs to be immutable for 7 years such that **not even the root user** can delete them early. Which configuration is correct?",
+      "options": [
+        "Object Lock in Governance mode with a 7-year retention",
+        "Object Lock in Compliance mode with a 7-year retention",
+        "A Legal Hold with MFA Delete enabled",
+        "Versioning plus a lifecycle rule that expires objects after 7 years"
+      ],
+      "answer": 1,
+      "explanation": "Only Object Lock Compliance mode prevents anyone — including the root account — from shortening or removing the retention until it expires. Governance mode allows holders of s3:BypassGovernanceRetention to override it, so it fails the 'not even root' requirement."
+    },
+    {
+      "subtopic": "Request-rate scaling",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Your application needs far more than 5,500 GET/s against a single bucket. What is the correct way to scale request throughput?",
+      "options": [
+        "Request an account-level bucket request-rate quota increase from AWS Support",
+        "Spread keys across many prefixes, since the ~5,500 GET/s and ~3,500 write/s limits are per prefix and prefixes are unlimited",
+        "Shard the data across multiple buckets because the limit is per bucket",
+        "Enable Transfer Acceleration, which removes the per-bucket request-rate ceiling"
+      ],
+      "answer": 1,
+      "explanation": "The rate limits (~3,500 writes/s and ~5,500 GET/HEAD per second) are per prefix, not per bucket, and a bucket has no limit on the number of prefixes. You scale horizontally by spreading keys across more prefixes. Transfer Acceleration speeds long-distance transfers but does not raise the request-rate unit."
+    },
+    {
+      "subtopic": "Access evaluation logic",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Within a single AWS account, which statements about how an S3 request is authorized are correct? (Select all that apply.)",
+      "options": [
+        "An explicit Deny in any IAM or bucket policy overrides any Allow",
+        "Access can be granted if either an identity policy or the resource policy allows it",
+        "Block Public Access can override a policy/ACL that would grant public access",
+        "If neither an identity policy nor a bucket policy allows the action, it is granted by default",
+        "An object ACL set to `public-read` reliably grants public access on a modern bucket"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "An explicit Deny always wins; within an account either an identity or resource policy allowing the action suffices; and BPA overrides public-granting policies/ACLs. Absent any allow, access is an implicit Deny (not granted). With ACLs disabled by default (Bucket owner enforced), a `public-read` ACL fails or is meaningless."
+    },
+    {
+      "subtopic": "Replication and CloudFront origin access",
+      "source": "aws/aws-s3-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about S3 replication and serving a private bucket through CloudFront are correct? (Select all that apply.)",
+      "options": [
+        "Replication (CRR or SRR) requires versioning enabled on both the source and destination buckets",
+        "Delete markers are replicated automatically by default",
+        "Origin Access Control (OAC) is preferred over the legacy OAI and supports SSE-KMS origins",
+        "Replication needs an IAM role that S3 assumes to read the source and write the destination",
+        "Same-Region Replication (SRR) places the destination in a different Region"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Replication requires versioning on both buckets and an IAM role S3 assumes to read source and write destination; OAC replaces OAI, supports SSE-KMS origins and SigV4, and is the modern choice. Delete-marker replication is opt-in (not automatic), and SRR keeps the destination in the SAME Region (CRR is the cross-Region one)."
+    }
+  ]
+}

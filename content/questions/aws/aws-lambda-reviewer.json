@@ -1,0 +1,272 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-lambda-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Serverless model",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Lambda's execution model, which IAM construct grants the *function's code* permission to call other AWS services (e.g. read DynamoDB, write logs)?",
+      "options": [
+        "The execution role the function assumes at runtime",
+        "The resource-based policy attached to the function",
+        "A static IAM access key embedded in the deployment package",
+        "The caller's IAM identity, passed through to the handler"
+      ],
+      "answer": 0,
+      "explanation": "The execution role is the IAM role Lambda assumes to get temporary credentials for the function's AWS calls. The resource-based policy is the opposite angle — it controls who/what may *invoke* the function, not what the code may do."
+    },
+    {
+      "subtopic": "Invocation models",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "An S3 `ObjectCreated` event triggers a Lambda. Which invocation type does S3 use, and what does it imply for the uploader?",
+      "options": [
+        "Asynchronous; the uploader gets a 202 immediately and never sees the handler's result or failure",
+        "Synchronous; the uploader blocks and receives any handler error as a 5xx",
+        "Poll-based; the uploader's request stays in a queue until the handler acks it",
+        "Synchronous; S3 retries the handler twice before returning to the uploader"
+      ],
+      "answer": 0,
+      "explanation": "S3 invokes Lambda asynchronously: the event is handed to a Lambda-internal queue and S3 immediately gets a 202. The uploader never learns of a downstream failure, which is exactly why an on-failure destination or DLQ is needed to avoid silent data loss."
+    },
+    {
+      "subtopic": "Async retries",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For an **asynchronous** Lambda invocation whose handler keeps failing, how many automatic retries does Lambda perform before routing to a DLQ or on-failure destination?",
+      "options": [
+        "2 retries (3 attempts total)",
+        "5 retries (6 attempts total)",
+        "0 retries — it goes straight to the DLQ",
+        "Retries for up to 24 hours regardless of count"
+      ],
+      "answer": 0,
+      "explanation": "Async invocations are retried twice with backoff (3 attempts total), then routed to a DLQ or on-failure destination. The 24-hour figure is EventBridge's retry behavior, not Lambda's async machinery."
+    },
+    {
+      "subtopic": "Memory and CPU",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Lambda exposes a separate CPU/vCPU configuration knob that you set independently of the memory allocation.",
+      "answer": false,
+      "explanation": "There is no separate CPU knob. You configure only memory (128 MB to 10,240 MB), and vCPU scales linearly with that memory — around ~1,769 MB you get the equivalent of one full vCPU."
+    },
+    {
+      "subtopic": "Execution timeout ceiling",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the hard maximum execution timeout for a single Lambda invocation?",
+      "options": [
+        "15 minutes",
+        "5 minutes",
+        "60 minutes",
+        "30 minutes"
+      ],
+      "answer": 0,
+      "explanation": "15 minutes is the hard ceiling and the single most-quoted Lambda limit. If a job can exceed it, Lambda is the wrong primitive — use Fargate, Batch, or decompose with Step Functions."
+    },
+    {
+      "subtopic": "Reserved vs provisioned concurrency",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes **reserved** from **provisioned** concurrency?",
+      "options": [
+        "Reserved is a free cap-and-guarantee on a function's slice of the account pool; provisioned is paid pre-warming of environments to skip cold start",
+        "Reserved is paid pre-warming for latency; provisioned is a free cap on the account pool",
+        "Both are paid; reserved raises the account ceiling while provisioned lowers it",
+        "Reserved pre-warms environments while provisioned only caps the function's maximum concurrency"
+      ],
+      "answer": 0,
+      "explanation": "Reserved concurrency (free) both caps a function at N and guarantees it can reach N by carving N from the shared pool. Provisioned concurrency (paid) pre-initializes environments so requests skip cold start — it is about latency, not raising the ceiling. The two are orthogonal."
+    },
+    {
+      "subtopic": "Throttling and the 429",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Lambda throttles and returns **429 `TooManyRequestsException`**. Which callers must handle/retry the 429 in their own code?",
+      "options": [
+        "Synchronous callers (API Gateway clients, direct SDK `Invoke`)",
+        "Asynchronous sources like S3 and SNS",
+        "Poll-based sources like SQS and Kinesis",
+        "Only EventBridge scheduled rules"
+      ],
+      "answer": 0,
+      "explanation": "Synchronous callers see the 429 immediately and must handle/retry it themselves. Async and poll-based sources absorb 429s automatically by retrying — throttling there is expected backpressure, not necessarily an error."
+    },
+    {
+      "subtopic": "SQS visibility timeout",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For an SQS event source mapping, what is the recommended relationship between the queue's visibility timeout and the function timeout?",
+      "options": [
+        "Visibility timeout should be at least ~6× the function timeout so retries don't overlap in-flight processing",
+        "Visibility timeout should equal the function timeout exactly",
+        "Visibility timeout should be half the function timeout to speed up redelivery",
+        "Visibility timeout is irrelevant because Lambda manages redelivery internally"
+      ],
+      "answer": 0,
+      "explanation": "Setting the visibility timeout to at least ~6× the function timeout prevents a message from becoming visible (and being redelivered) while a previous attempt is still being processed. After maxReceiveCount deliveries the message moves to the queue's DLQ."
+    },
+    {
+      "subtopic": "Cold start and warm reuse",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is putting an `AmazonDynamoDBClient` in a `static` field considered the biggest cheap cold-start/performance win?",
+      "options": [
+        "Static initialization runs once during Init and is reused across all warm invocations on that environment",
+        "Static fields force Lambda to keep the environment alive indefinitely",
+        "Static fields are persisted to /tmp and survive even after the environment is torn down",
+        "Static fields cause Lambda to pre-warm additional concurrent environments automatically"
+      ],
+      "answer": 0,
+      "explanation": "Anything outside the handler runs once per environment during Init and is then reused by every warm invocation. A static client avoids re-creating the connection on each call. It does not keep the environment alive, persist beyond teardown, or trigger pre-warming."
+    },
+    {
+      "subtopic": "Keep-warm limitation",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "A scheduled keep-warm ping every few minutes eliminates cold starts even under a sudden burst of concurrent requests.",
+      "answer": false,
+      "explanation": "Keep-warm keeps one environment alive but does not solve concurrent cold starts — under a burst, every new concurrent environment still pays Init. It is a cheap trick, not a real concurrency guarantee; provisioned concurrency is the actual lever."
+    },
+    {
+      "subtopic": "Stream poison records",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "A Kinesis/DynamoDB Streams ESM stalls because one poison record blocks the shard. Which settings help the shard advance instead of stalling? (Select all that apply.)",
+      "options": [
+        "`BisectBatchOnFunctionError` to split the batch and isolate the bad record",
+        "`MaximumRecordAgeInSeconds` to bound how long a record is retried",
+        "An on-failure destination so the failed record is offloaded",
+        "Increasing the SQS `maxReceiveCount` on the stream",
+        "Setting reserved concurrency to 0 for the consumer"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Bisect-on-error, a bounded record age (and max retry attempts), and an on-failure destination let the shard move past a poison record. `maxReceiveCount` is an SQS concept, not a stream one, and reserved concurrency 0 would disable the function entirely."
+    },
+    {
+      "subtopic": "Partial batch responses",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An SQS-driven handler enables `ReportBatchItemFailures` and returns the code below for a batch of 10 where 2 messages threw. What happens to the batch?",
+      "code": "return new SQSBatchResponse { BatchItemFailures = failures };\n// failures contains the 2 failed MessageIds",
+      "lang": "csharp",
+      "options": [
+        "The 8 successful messages are deleted from the queue; only the 2 reported failures become visible again for retry",
+        "All 10 messages are returned to the queue and the whole batch is reprocessed",
+        "All 10 messages are deleted; the 2 failures are silently dropped",
+        "The 2 failures are deleted and the 8 successes are retried"
+      ],
+      "answer": 0,
+      "explanation": "With ReportBatchItemFailures you return only the ids of records that failed; the rest are acknowledged and deleted, so a single bad message doesn't force reprocessing of the whole batch. Without it, a partial failure would return the entire batch."
+    },
+    {
+      "subtopic": "Idempotency",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In an idempotent SQS payment consumer, what makes the duplicate-delivery protection work in this snippet?",
+      "code": "await _ddb.PutItemAsync(new PutItemRequest {\n    TableName = \"Charges\", Item = charge.ToItem(),\n    ConditionExpression = \"attribute_not_exists(chargeId)\" });\nawait _gateway.ChargeAsync(charge);",
+      "lang": "csharp",
+      "options": [
+        "The conditional write fails on redelivery, throwing before the gateway charge runs — making the duplicate a no-op",
+        "The SQS visibility timeout deletes the duplicate before it reaches the handler",
+        "DynamoDB automatically deduplicates identical PutItem requests",
+        "The charge gateway is idempotent by default, so the second call is ignored"
+      ],
+      "answer": 0,
+      "explanation": "SQS delivers at least once, so on redelivery the conditional write `attribute_not_exists(chargeId)` throws ConditionalCheckFailedException before `ChargeAsync` runs. The conditional write is the gate; an unconditional put would let the charge run twice."
+    },
+    {
+      "subtopic": "Idempotency key choice",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When building idempotency for an at-least-once source, why must the idempotency key be derived from a stable business identity (e.g. order id) rather than a timestamp or server-generated id?",
+      "options": [
+        "A per-attempt value differs across redeliveries, so duplicates would each get a new key and bypass the dedup gate",
+        "Business ids are shorter and reduce DynamoDB storage cost",
+        "Timestamps cannot be stored as DynamoDB partition keys",
+        "Server-generated ids are not allowed in conditional expressions"
+      ],
+      "answer": 0,
+      "explanation": "Redeliveries of the same logical event must collide on the same key. A timestamp or per-attempt server id changes on each retry, so each duplicate would produce a distinct key and slip past the conditional/dedup check — defeating idempotency. The other options are not real constraints."
+    },
+    {
+      "subtopic": "SnapStart uniqueness",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A .NET function uses SnapStart and generates a `Guid` correlation seed during Init. Why is this a bug, and what is the fix?",
+      "options": [
+        "The seed is frozen into the snapshot and shared across all restores; regenerate it in an after-restore runtime hook",
+        "SnapStart disallows GUID generation entirely; switch to a sequential id",
+        "Init code never runs under SnapStart; move the generation into the handler permanently",
+        "The seed is fine because SnapStart re-runs Init on every restore"
+      ],
+      "answer": 0,
+      "explanation": "SnapStart snapshots a fully-Init'd environment, so anything generated during Init (random seeds, ephemeral creds, unique ids) is frozen into the snapshot and reused across every restore. The fix is to re-randomize in an after-restore hook (e.g. `RegisterAfterRestore`), not to move it into the handler or abandon GUIDs."
+    },
+    {
+      "subtopic": "Edge compute selection",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You need to make a network call to an origin and assemble dynamic content on the CloudFront **origin request** event. Which edge runtime fits, and why not the other?",
+      "options": [
+        "Lambda@Edge — it runs on all four CloudFront events and can make network calls; CloudFront Functions run only on viewer events with no network access",
+        "CloudFront Functions — they run on all four events and allow network access at sub-millisecond latency",
+        "CloudFront Functions — they are the only option that can run on origin events",
+        "Lambda@Edge — but only because CloudFront Functions cannot rewrite headers"
+      ],
+      "answer": 0,
+      "explanation": "CloudFront Functions are restricted to viewer request/response with no network or filesystem access. Lambda@Edge runs on all four events (viewer + origin) and can make network calls, so it is the correct choice for origin-side dynamic assembly."
+    },
+    {
+      "subtopic": "When not to use Lambda",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which workloads are poor fits for Lambda and better served by Fargate/Batch/Step Functions or a long-lived service? (Select all that apply.)",
+      "options": [
+        "A nightly ETL job that routinely runs ~25 minutes as a single unit",
+        "Steady, high, predictable throughput running thousands of concurrent executions 24/7",
+        "Stateful workloads needing long-lived websocket connections and large in-memory caches",
+        "Spiky, short, embarrassingly-parallel event processing triggered by S3 uploads",
+        "Glue code reacting to occasional EventBridge events"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Jobs over 15 minutes, steadily hot high-throughput workloads, and stateful/sticky work all fight Lambda's freeze/thaw and limits — they belong on Fargate/Batch/Step Functions or a long-lived service. Spiky short parallel work and event-driven glue are exactly what Lambda excels at."
+    },
+    {
+      "subtopic": "Memory tuning trade-off",
+      "source": "aws/aws-lambda-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "For a CPU-bound function, raising the memory allocation can reduce *both* latency and total cost, because billing is GB-seconds and the shorter duration can offset the higher per-ms memory rate.",
+      "answer": true,
+      "explanation": "Because vCPU scales with memory and price = GB-seconds, a CPU-bound function often finishes faster at higher memory and the reduced duration offsets the higher memory rate — sometimes costing the same or less. The reviewer recommends tuning empirically with Lambda Power Tuning."
+    }
+  ]
+}

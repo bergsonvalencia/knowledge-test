@@ -1,0 +1,268 @@
+{
+  "topic": "sql",
+  "source": "sql/security-and-access-control-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Logins vs users",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the SQL Server security model, what is the correct division of responsibility between a **login** and a **database user**?",
+      "options": [
+        "A login is a server-level principal that authenticates a connection; a database user is a database-level principal that holds permissions inside one database",
+        "A login holds permissions inside a database; a database user authenticates the connection at the server",
+        "Both are server-level principals stored in `master`; the user is just an alias for the login",
+        "A login is a per-table grant; a database user is a per-schema grant"
+      ],
+      "answer": 0,
+      "explanation": "A login (server-level, in `master`) proves who you are; a database user (database-level, usually mapped by SID) decides what you may do in that one database. The other options invert or confuse the two scopes."
+    },
+    {
+      "subtopic": "Authorization triad",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Every authorization check in SQL Server evaluates which triad?",
+      "options": [
+        "principal → securable → permission",
+        "login → password → connection",
+        "schema → table → column",
+        "role → user → login"
+      ],
+      "answer": 0,
+      "explanation": "Authorization is nothing more than checking whether a principal (login, user, role, app role) has a permission (SELECT, EXECUTE, ...) on a securable (server, database, schema, table, column, procedure)."
+    },
+    {
+      "subtopic": "GRANT/REVOKE/DENY",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `REVOKE` do, and how does it differ from `DENY`?",
+      "options": [
+        "`REVOKE` removes a previously granted or denied permission, returning to neutral; the user may still get the permission through another role",
+        "`REVOKE` explicitly forbids the permission and overrides any grant, just like `DENY` but only at table scope",
+        "`REVOKE` is an alias for `DENY` and guarantees the user can never access the securable",
+        "`REVOKE` grants the permission to everyone except the named principal"
+      ],
+      "answer": 0,
+      "explanation": "`REVOKE` simply deletes the grant/deny row (back to neutral); it is not a deny, so the user can still inherit the permission via another role. To guarantee no access you must use `DENY`."
+    },
+    {
+      "subtopic": "Dynamic data masking",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Dynamic data masking (DDM) is a true security boundary: once a column is masked, a user without `UNMASK` cannot recover the real values stored in that column.",
+      "answer": false,
+      "explanation": "DDM only obfuscates values at display time. The real data stays in the table, indexes, and backups, so an unprivileged user can filter, cast, join, or copy the column to infer or extract the actual values."
+    },
+    {
+      "subtopic": "TDE basics",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What threat does Transparent Data Encryption (TDE) primarily protect against?",
+      "options": [
+        "Stolen media — a lifted backup (`.bak`) or detached `.mdf`/`.ldf` data files at rest",
+        "A malicious DBA running normal SELECT queries against the live database",
+        "Snooping the network wire between the client and the server",
+        "An over-privileged application account running ad-hoc DML"
+      ],
+      "answer": 0,
+      "explanation": "TDE encrypts data and log files (and backups) at rest, so a thief with the raw files gets ciphertext. It is transparent to any legitimate privileged query (the DBA still sees plaintext), does not protect the wire, and is not an authorization control."
+    },
+    {
+      "subtopic": "DENY precedence exception",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A user has `DENY SELECT ON dbo.Orders` and also `GRANT SELECT ON dbo.Orders(Amount)`. Ignoring `sysadmin`, what is the user's effective access to `dbo.Orders`?",
+      "options": [
+        "They can read only the `Amount` column — the column-level GRANT overrides the object-level DENY for that one column",
+        "They can read nothing — DENY at the table level overrides every grant, including the column grant",
+        "They can read every column — the GRANT promotes them to full table access",
+        "The two statements conflict and SQL Server raises an error at grant time"
+      ],
+      "answer": 0,
+      "explanation": "The documented exception to 'DENY wins' is that a column-level GRANT overrides an object-level (table) DENY. So `Amount` remains readable even with a table-level DENY SELECT (this quirk is suppressed only when Common Criteria compliance is enabled)."
+    },
+    {
+      "subtopic": "Ownership chaining",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A user has `EXECUTE` on `dbo.usp_GetData` but no `SELECT` on `dbo.Salaries`, which the proc reads. The proc and table share owner `dbo`. The query succeeds. Now the proc is rewritten to read the table via `EXEC(@sql)`. What happens?",
+      "options": [
+        "It now fails for the user — the ownership chain breaks inside dynamic SQL, so permissions are re-checked against the caller, who lacks SELECT on `dbo.Salaries`",
+        "It still succeeds — dynamic SQL preserves the ownership chain because the proc is still owned by `dbo`",
+        "It still succeeds — once EXECUTE is granted on a proc the caller permanently inherits SELECT on every table it touches",
+        "It fails even in the original (non-dynamic) version because EXECUTE never lets a proc read a table the caller can't"
+      ],
+      "answer": 0,
+      "explanation": "Ownership chaining skips the permission check on referenced objects only when they share the same owner AND access is static. Inside `EXEC(@sql)`/`sp_executesql` the chain breaks and permissions are re-checked against the caller, who lacks SELECT."
+    },
+    {
+      "subtopic": "Least-privilege app account",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the senior least-privilege pattern for an application's database account?",
+      "options": [
+        "A custom role with `EXECUTE` on a curated set of procedures and no direct table access, relying on ownership chaining for the procs to reach tables",
+        "Membership in `db_datareader` plus `db_datawriter` so the ORM can read and write any table",
+        "Membership in `db_owner` so schema migrations and DML both work without extra grants",
+        "A login mapped to `sysadmin` but restricted to a single database via the default schema"
+      ],
+      "answer": 0,
+      "explanation": "The least-privilege design gives the app a custom role with EXECUTE on a curated proc surface and no table grants; ownership chaining lets the procs touch the tables. A leaked connection string then can't run ad-hoc DML, DROP TABLE, or bulk-exfiltrate. db_owner/db_datawriter/sysadmin are the opposite of least privilege."
+    },
+    {
+      "subtopic": "Orphaned users",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "After restoring a database to a brand-new instance, an application can no longer connect even though its user still exists in the database. What is the most likely cause and fix?",
+      "options": [
+        "The user is orphaned — its SID no longer matches any server login; re-link it with `ALTER USER ... WITH LOGIN = ...`",
+        "The user's password expired — reset it with `ALTER USER ... WITH PASSWORD`",
+        "The database is read-only after restore — run `ALTER DATABASE ... SET READ_WRITE`",
+        "TDE was lost in the restore — recreate the Database Encryption Key to restore login access"
+      ],
+      "answer": 0,
+      "explanation": "An orphaned user is a database user whose SID no longer maps to any server login, common after restoring to a new instance. Detect by comparing `sys.database_principals` to `sys.server_principals`; fix with `ALTER USER ... WITH LOGIN = ...`."
+    },
+    {
+      "subtopic": "RLS FILTER vs BLOCK",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Row-Level Security FILTER and BLOCK predicates are correct? (Select all that apply.)",
+      "options": [
+        "A FILTER predicate silently removes non-matching rows from reads (and read-modify writes) without raising an error",
+        "A BLOCK predicate raises an error on write operations that would violate the rule, e.g. inserting a row a tenant could not see",
+        "The predicate is an inline table-valued function bound to a table by a `SECURITY POLICY`",
+        "A FILTER predicate raises `permission denied` for every row the principal cannot see",
+        "BLOCK predicates apply to `SELECT` reads, hiding rows the same way FILTER does"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "FILTER silently removes rows (no error); BLOCK raises an error on offending writes (AFTER INSERT/UPDATE, BEFORE UPDATE/DELETE). Both are inline TVFs attached via a SECURITY POLICY. FILTER never errors per row, and BLOCK governs writes, not SELECT reads."
+    },
+    {
+      "subtopic": "Deterministic vs randomized AE",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need to JOIN and run equality lookups on an Always Encrypted column. Which encryption type must you choose, and what is the trade-off?",
+      "options": [
+        "Deterministic — same plaintext yields same ciphertext so equality/joins/indexing work, but it is more vulnerable to inference on low-cardinality data",
+        "Randomized — it is the only type that supports server-side equality, at the cost of larger ciphertext",
+        "Deterministic — it allows full range comparisons and `LIKE` without a secure enclave",
+        "Randomized — it supports joins because the ciphertext is salted identically across rows"
+      ],
+      "answer": 0,
+      "explanation": "Deterministic encryption produces identical ciphertext for identical plaintext, enabling equality lookups, joins, grouping, and indexing, but is more vulnerable to inference on low-cardinality columns. Randomized is more secure but supports no server-side operations (range/LIKE need a 2019+ enclave)."
+    },
+    {
+      "subtopic": "Schema-level grants",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Granting `SELECT ON SCHEMA::reporting` to a role gives that role SELECT on every current object in the `reporting` schema as well as any objects added to it later.",
+      "answer": true,
+      "explanation": "A schema is both a namespace and a unit for granting permissions. A schema-level grant cascades to all contained securables, including future objects, which is why grouping objects by access profile and granting at the schema level is cleaner than per-table grants."
+    },
+    {
+      "subtopic": "DENY across roles",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "User `maria` is in `Sales_RW` (`GRANT SELECT ON dbo.Orders`) and `PII_Lockdown` (`DENY SELECT ON dbo.Orders(CreditCardNo)`). She is not a `sysadmin`. What happens when she runs `SELECT * FROM dbo.Orders;`?",
+      "options": [
+        "The statement fails — `*` includes `CreditCardNo`, and the column-level DENY overrides the table grant, so the query is rejected",
+        "The statement succeeds and `CreditCardNo` is returned as NULL for every row",
+        "The statement succeeds and `CreditCardNo` is silently dropped from the result set",
+        "The statement succeeds in full because the table-level GRANT covers all columns"
+      ],
+      "answer": 0,
+      "explanation": "`SELECT *` touches `CreditCardNo`, which is denied; DENY wins over the table grant, so the whole statement is rejected (Msg 230, SELECT permission denied). She must explicitly omit the denied column. RLS-style silent removal does not apply to column DENY."
+    },
+    {
+      "subtopic": "Always Encrypted trust boundary",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Compliance requires that even a `sysadmin` DBA cannot read patient SSNs. Why does Always Encrypted satisfy this when TDE does not?",
+      "options": [
+        "Always Encrypted encrypts in the client driver and the engine never holds the keys, so a DBA query returns only ciphertext; TDE decrypts pages in memory so a live query returns plaintext",
+        "Always Encrypted stores the Column Master Key inside the database so only the application schema can decrypt it, blocking the DBA",
+        "Always Encrypted runs the decryption inside `tempdb`, which sysadmins cannot access",
+        "TDE and Always Encrypted both expose plaintext to a DBA; only column-level DENY can hide it from sysadmin"
+      ],
+      "answer": 0,
+      "explanation": "Always Encrypted draws the trust boundary at the client driver: keys (CMK/CEK) live with the app, so the engine stores only ciphertext and cannot decrypt. TDE decrypts pages into memory on read, so any live privileged query sees plaintext. Note sysadmin bypasses permission checks, so a column DENY cannot stop it."
+    },
+    {
+      "subtopic": "RLS predicate performance",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team binds an RLS FILTER predicate whose inline TVF does an expensive lookup with a non-indexed correlated subquery. Why is this a serious problem beyond the obvious cost?",
+      "options": [
+        "The predicate becomes part of every query plan against the table and runs under the query's context, so it taxes every read on the table",
+        "RLS re-evaluates the predicate once per connection only, so the cost is amortized and harmless",
+        "A FILTER predicate runs with elevated DBO context, so an expensive lookup risks a privilege-escalation, not a performance issue",
+        "The predicate executes only on writes, so it slows INSERT/UPDATE but never SELECT"
+      ],
+      "answer": 0,
+      "explanation": "The predicate is appended to the plan and runs under the query's permissions/context on every query against the table, so a heavy predicate taxes all reads. It must be cheap, ideally `SELECT 1 WHERE ...` against an indexed lookup. It is not amortized per connection, and FILTER applies to reads."
+    },
+    {
+      "subtopic": "TDE key hierarchy",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about TDE's key hierarchy and operational consequences are correct? (Select all that apply.)",
+      "options": [
+        "The chain runs Service Master Key → Database Master Key → certificate → Database Encryption Key, which performs the AES encryption of pages",
+        "If you lose the certificate and its private key, the encrypted backups become unrecoverable",
+        "Once any database on the instance uses TDE, `tempdb` is also encrypted",
+        "TDE encrypts pages in memory as well as on disk, so a memory dump yields ciphertext",
+        "The Database Encryption Key is stored in the client's key store, never on the server"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The hierarchy is SMK → DMK → certificate (or asymmetric/EKM key) → DEK → AES page encryption; losing the cert+private key loses the backups; and tempdb is encrypted once any DB on the instance uses TDE. Pages are decrypted in memory (not ciphertext there), and the DEK lives on the server, not the client (that is Always Encrypted's CMK)."
+    },
+    {
+      "subtopic": "Contained databases",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does a contained database largely eliminate orphaned-user problems on restore/failover?",
+      "options": [
+        "Its users authenticate against the database itself with `CREATE USER ... WITH PASSWORD`, so authentication metadata travels with the database and there is no separate server login SID to re-map",
+        "It automatically recreates matching server logins on the target instance during restore",
+        "It disables SID-based mapping and authorizes every user as `dbo` after a restore",
+        "It stores all logins in `master` on the target instance before the restore completes"
+      ],
+      "answer": 0,
+      "explanation": "A contained database carries its own authentication metadata; users authenticate directly against the DB (no server login), so moving/failing over the database needs no login re-creation or SID re-mapping, the very thing that orphans users. It does not auto-create server logins or authorize everyone as dbo."
+    },
+    {
+      "subtopic": "EF Core injection safety",
+      "source": "sql/security-and-access-control-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In EF Core, which call is injection-unsafe when fed user input, and what is the safe replacement?",
+      "code": "var name = Request.Query[\"name\"];\nvar a = db.Users.FromSqlRaw($\"SELECT * FROM Users WHERE Name = '{name}'\");\nvar b = db.Users.FromSqlInterpolated($\"SELECT * FROM Users WHERE Name = {name}\");",
+      "lang": "csharp",
+      "options": [
+        "`a` is unsafe — `FromSqlRaw` with string interpolation concatenates the input as SQL; use `FromSqlInterpolated` (or `{0}` placeholders), which binds it as a parameter",
+        "`b` is unsafe — `FromSqlInterpolated` always concatenates the interpolated value verbatim into the SQL text",
+        "Both are unsafe because any raw SQL in EF Core bypasses parameterization entirely",
+        "Both are safe because EF Core escapes all interpolated strings before sending them to SQL Server"
+      ],
+      "answer": 0,
+      "explanation": "`FromSqlRaw` with an interpolated string concatenates user input into the SQL text and is injectable. `FromSqlInterpolated` (and `{0}` placeholders) turns interpolated values into bound `SqlParameter`s, so they can never be parsed as SQL. EF Core does not auto-escape `FromSqlRaw`."
+    }
+  ]
+}

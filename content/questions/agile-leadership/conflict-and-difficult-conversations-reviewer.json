@@ -1,0 +1,269 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Lencioni Five Dysfunctions",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Lencioni's *Five Dysfunctions of a Team*, **Fear of Conflict** is dysfunction #2. Which dysfunction does it rest directly on?",
+      "options": [
+        "Absence of Trust",
+        "Lack of Commitment",
+        "Avoidance of Accountability",
+        "Inattention to Results"
+      ],
+      "answer": 0,
+      "explanation": "Lencioni stacks the dysfunctions bottom-up: Absence of Trust → Fear of Conflict → Lack of Commitment → Avoidance of Accountability → Inattention to Results. Fear of Conflict (#2) builds directly on trust (#1); the other three sit above it."
+    },
+    {
+      "subtopic": "Task vs relationship conflict",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement is the comment **\"you always over-engineer everything\"** an example of?",
+      "options": [
+        "Relationship conflict — it attacks the person, not the work",
+        "Task conflict — it is about a design approach",
+        "Process conflict — it is about who does what",
+        "Healthy task conflict that improves decisions"
+      ],
+      "answer": 0,
+      "explanation": "\"You always...\" attacks character and status, so it is relationship (affective) conflict, which almost always degrades trust and decisions. Task conflict would name the work, e.g. \"the cache layer is premature.\""
+    },
+    {
+      "subtopic": "Thomas-Kilmann modes",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "On the Thomas-Kilmann grid, which mode is **high assertiveness, high cooperativeness** (\"we both win\")?",
+      "options": [
+        "Collaborating",
+        "Competing",
+        "Compromising",
+        "Accommodating"
+      ],
+      "answer": 0,
+      "explanation": "Collaborating is high/high — the only mode that grows the pie by integrating both sets of concerns. Competing is high/low, Accommodating is low/high, and Compromising sits in the moderate centre."
+    },
+    {
+      "subtopic": "NVC four steps",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Marshall Rosenberg's Nonviolent Communication (NVC) template has four steps in order. What are they?",
+      "options": [
+        "Observation, Feeling, Need, Request",
+        "Situation, Behavior, Impact, Intent",
+        "Share, Tell, Ask, Encourage",
+        "Observation, Evaluation, Need, Demand"
+      ],
+      "answer": 0,
+      "explanation": "NVC is Observation → Feeling → Need → Request. Situation/Behavior/Impact is SBI; Share/Tell/Ask/Encourage is STATE; and NVC deliberately avoids evaluation and demands (it uses neutral observation and a request you can decline)."
+    },
+    {
+      "subtopic": "Escalation to HR",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "An allegation of harassment between two team members is something a Scrum Master should first try to mediate before involving HR.",
+      "answer": false,
+      "explanation": "Harassment, discrimination, threats, and protected-class issues carry legal duties and must go straight to HR/your manager without mediation. Handling them informally can make things worse and is explicitly the wrong move."
+    },
+    {
+      "subtopic": "Avoiding mode trade-offs",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which situation is the **best** fit for the **Avoiding** Thomas-Kilmann mode?",
+      "options": [
+        "A trivial naming dispute that flares up in a heated meeting",
+        "A production outage decision that must be made immediately",
+        "A high-stakes architecture split where both teams' needs must be met",
+        "A request where you realize the other person is simply right"
+      ],
+      "answer": 0,
+      "explanation": "Avoiding (low/low) fits trivial issues or when emotions are too hot to talk productively — let it cool. The outage needs Competing, the architecture split needs Collaborating, and yielding because they're right is Accommodating."
+    },
+    {
+      "subtopic": "Glasl escalation ladder",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A conflict has reached **Glasl Phase 3 (lose/lose, stages 7-9)**. What kind of intervention does the model say is now required?",
+      "options": [
+        "Power intervention — management, HR, or separation",
+        "Light facilitation; the parties can still self-correct",
+        "An outside mediator who can broker a win-win",
+        "A good retrospective conversation between the parties"
+      ],
+      "answer": 0,
+      "explanation": "By Phase 3 parties will accept their own damage if it harms the other more, so facilitation alone cannot save it — it needs power intervention (management/HR/separation). Self-resolution fits Phase 1 and an outside mediator fits Phase 2."
+    },
+    {
+      "subtopic": "Positions vs interests",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In mediation, an engineer says **\"I won't use their library.\"** Which of these is the **interest** underneath that **position**?",
+      "options": [
+        "\"I need code I can debug and own when something breaks\"",
+        "\"Their library must be removed from the repo\"",
+        "\"I refuse to work with that person\"",
+        "\"They should have asked me before choosing it\""
+      ],
+      "answer": 0,
+      "explanation": "A position is the stated demand (\"I won't use their library\"); the interest is the underlying need driving it — here, debuggable, owned code. Interests overlap far more than positions, which is where a deal can be found (Getting to Yes, Fisher & Ury)."
+    },
+    {
+      "subtopic": "STATE skill",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the Crucial Conversations **STATE** skill, what does the **second T — \"Talk tentatively\"** mean in practice?",
+      "options": [
+        "Phrase your conclusion as \"I'm starting to wonder if...\" rather than \"the fact is...\"",
+        "Share only the least controversial facts and withhold the rest",
+        "Wait silently until the other person has fully calmed down",
+        "Tell the unvarnished truth bluntly so there is no ambiguity"
+      ],
+      "answer": 0,
+      "explanation": "Talk tentatively means stating your story as a contribution, not a verdict (\"I'm starting to wonder if...\"), so it stays open to challenge. Sharing least-controversial facts is the first S; the goal is honesty with safety, not blunt certainty."
+    },
+    {
+      "subtopic": "Managing up — disagree and commit",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You strongly disagreed with your manager's decision, argued your case privately with data, and they still chose to proceed. Per the **\"disagree and commit\"** principle, what is the right next move (assuming no ethical/legal/safety line)?",
+      "options": [
+        "Get behind the decision visibly so the team isn't confused",
+        "Quietly slow-walk the work so the flaws become obvious",
+        "Raise your objection again, publicly, in the next team meeting",
+        "Tell the team privately that you opposed the call"
+      ],
+      "answer": 0,
+      "explanation": "Disagree and commit means you argue hard in private with data, but once the decision is made you support it publicly. Re-litigating publicly, slow-walking, or undermining it with the team all break the commit half — the only exception is an ethics/legal/safety line."
+    },
+    {
+      "subtopic": "Amygdala hijack / de-escalation order",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A teammate becomes visibly flooded — raised voice, accusations — in what Goleman calls an **amygdala hijack**. Why does the reviewer say to de-escalate *before* problem-solving?",
+      "options": [
+        "The thinking brain is partly offline, so you cannot reason with them in that state",
+        "Problem-solving first signals weakness and invites further attacks",
+        "Naming the emotion will make them more defensive, so delay it",
+        "The other person must apologize before any reasoning can begin"
+      ],
+      "answer": 0,
+      "explanation": "During a hijack the amygdala drives fight-flight-freeze and the rational brain is partly offline, so reasoning lands nowhere — you must lower arousal first. Affect labeling (\"name it to tame it\") actually reduces intensity, and no apology is a prerequisite."
+    },
+    {
+      "subtopic": "Request vs demand (code-reading)",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Per NVC, what distinguishes a **request** from a **demand**? Consider the pseudocode for how the speaker reacts to \"no\":",
+      "code": "function onResponse(answer) {\n  if (answer === \"no\") {\n    if (style === \"request\") stayCurious();   // explore their reason\n    else punish();                            // pressure, withdraw, retaliate\n  }\n}",
+      "lang": "javascript",
+      "answer": 0,
+      "options": [
+        "Whether \"no\" is acceptable: a request stays curious, a demand punishes",
+        "How politely the ask is phrased (\"would you mind...\")",
+        "Whether the ask is made in private or in front of the team",
+        "Whether the ask names a specific deadline"
+      ],
+      "explanation": "NVC defines the difference by the reaction to refusal: with a request you accept \"no\" gracefully and stay curious; with a demand you punish. If \"no\" was never acceptable, it was a demand regardless of how politely it was worded."
+    },
+    {
+      "subtopic": "SBI — behavior vs judgement (code-reading)",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An SBI feedback message is assembled below. Which field violates SBI by stating a **character judgement** instead of an observable behavior?",
+      "code": "const feedback = {\n  situation: \"In yesterday's sprint review, when the PO asked about payments\",\n  behavior: \"you were rude and disrespectful to Priya\",\n  impact: \"she stopped contributing for the rest of the meeting\"\n};",
+      "lang": "javascript",
+      "answer": 0,
+      "options": [
+        "behavior — \"rude and disrespectful\" is a verdict, not a camera-checkable observation",
+        "situation — it pins the time and place too narrowly",
+        "impact — impact should never describe an effect on one person",
+        "None; all three fields follow SBI correctly"
+      ],
+      "explanation": "SBI's Behavior must describe what a camera would see (e.g. \"you interrupted Priya twice before she finished\"), not a character label like \"rude.\" The Situation is correctly specific and the Impact correctly states the observed effect."
+    },
+    {
+      "subtopic": "Spillover / de-personalizing",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which techniques are recommended to keep disagreement on the **task** axis and prevent spillover into **relationship** conflict? (Select all that apply.)",
+      "options": [
+        "Agree decision criteria up front and use written options and data",
+        "Have a facilitator reframe personal jabs back to the work",
+        "Let the most senior person decide quickly to end the debate",
+        "Suppress the disagreement entirely so no one gets upset",
+        "Attack the problem, not the person"
+      ],
+      "answer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "Structure (data, written options, agreed criteria), a facilitator who reframes jabs to the work, and attacking the problem not the person all keep conflict productive. Having the senior person just decide and suppressing the disagreement both abandon the healthy-conflict goal."
+    },
+    {
+      "subtopic": "Glasl phase boundaries (hard)",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two leads have moved into **stereotyping each other, recruiting allies into camps, and one was publicly humiliated** in a review. Which Glasl phase is this, and what does it imply about intervention?",
+      "options": [
+        "Phase 2 (win/lose) — the parties can no longer self-correct; bring in an outside mediator",
+        "Phase 1 (win/win) — a good retro between them will still resolve it",
+        "Phase 3 (lose/lose) — go straight to HR/separation, mediation is futile",
+        "Phase 2 (win/lose) — leave them alone; coalitions resolve themselves over time"
+      ],
+      "answer": 0,
+      "explanation": "Images & coalitions, loss of face, and threats are Phase 2 (stages 4-6, win/lose), where parties can no longer self-correct and need an outside mediator. It hasn't reached the self-destructive lose/lose of Phase 3, and it's well past Phase 1 self-resolution."
+    },
+    {
+      "subtopic": "Escalation judgement (hard)",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which situations warrant **escalating to a manager** (after attempting facilitation) rather than continuing to handle it yourself? (Select all that apply.)",
+      "options": [
+        "A conflict that recurs despite a mediated agreement",
+        "A conflict hurting delivery that needs reassignment, which is outside your authority",
+        "A one-off healthy task disagreement still in Glasl Phase 1",
+        "A conflict that has escalated to Glasl Phase 2-3",
+        "Any disagreement, the moment it first surfaces"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Escalate after trying when a conflict recurs, sits outside your authority (e.g. reassignment), or has reached Glasl Phase 2-3. A one-off Phase-1 task disagreement is yours to facilitate, and escalating every disagreement on sight makes you look unable to manage."
+    },
+    {
+      "subtopic": "Mutual Purpose vs Mutual Respect (hard)",
+      "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In Crucial Conversations, safety drops because the other person believes you are **pursuing a goal that works against them**, even though they feel you respect them personally. Which condition has broken, and which tool best restores it?",
+      "options": [
+        "Mutual Purpose has broken — rebuild a shared goal (e.g. via CRIB)",
+        "Mutual Respect has broken — apologize for disrespecting them",
+        "Mutual Purpose has broken — STATE your facts more forcefully",
+        "Mutual Respect has broken — use Contrasting to clarify a misunderstanding"
+      ],
+      "answer": 0,
+      "explanation": "Believing you're working against their goals is a Mutual Purpose failure (not respect), so you rebuild a shared goal — CRIB: Commit to seek, Recognize the purpose, Invent a mutual purpose, Brainstorm. Apologizing addresses respect, and pushing facts harder would worsen safety."
+    }
+  ]
+}

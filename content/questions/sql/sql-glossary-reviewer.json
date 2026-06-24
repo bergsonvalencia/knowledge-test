@@ -1,0 +1,207 @@
+{
+  "topic": "sql",
+  "source": "sql/sql-glossary-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Logical query processing order",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A column alias defined in the `SELECT` list can be referenced in which clause of the same query?",
+      "options": [
+        "`ORDER BY`",
+        "`WHERE`",
+        "`GROUP BY`",
+        "`HAVING`"
+      ],
+      "answer": 0,
+      "explanation": "In logical processing order, SELECT (where aliases are assigned) runs before ORDER BY but after WHERE, GROUP BY, and HAVING. So the alias exists for ORDER BY but not for the earlier clauses, which still see only base columns and expressions."
+    },
+    {
+      "subtopic": "Three-valued logic and NULL",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In SQL's three-valued logic, the expression `NOT (NULL = 5)` evaluates to TRUE, so a `WHERE` clause using it would keep the row.",
+      "answer": false,
+      "explanation": "`NULL = 5` is UNKNOWN, and `NOT (UNKNOWN)` is still UNKNOWN, not TRUE. A WHERE clause keeps only TRUE rows, so the row is discarded. Negating a NULL comparison does not flip it into a kept row."
+    },
+    {
+      "subtopic": "Anti-join with NOT IN and NULLs",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `Customer` table has 100 rows. The query below returns 0 rows even though many customers have never placed an order. The `Orders.CustomerId` column is nullable and contains at least one NULL. What is the root cause?",
+      "code": "SELECT c.Id\nFROM dbo.Customer AS c\nWHERE c.Id NOT IN (SELECT o.CustomerId FROM dbo.Orders AS o);",
+      "lang": "sql",
+      "options": [
+        "The subquery returns a NULL, so every `c.Id <> NULL` comparison is UNKNOWN and no row qualifies for `NOT IN`",
+        "`NOT IN` requires the subquery to be correlated, and this one is not, so it short-circuits to an empty result",
+        "`NOT IN` silently de-duplicates the outer table and removes all rows when duplicates exist in the subquery",
+        "The optimizer rewrites `NOT IN` as an inner join, which drops all unmatched customers"
+      ],
+      "answer": 0,
+      "explanation": "With a NULL in the subquery list, `NOT IN` expands to `c.Id <> val1 AND c.Id <> val2 AND ... AND c.Id <> NULL`; the NULL comparison is UNKNOWN, making the whole conjunction UNKNOWN for every row, so nothing qualifies. The fix is `NOT EXISTS`, which is NULL-safe."
+    },
+    {
+      "subtopic": "Outer join ON vs WHERE",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Moving a filter on the right-side table from the `ON` clause of a `LEFT JOIN` into the `WHERE` clause can silently turn the outer join into an inner join.",
+      "answer": true,
+      "explanation": "A predicate in ON is applied while still preserving unmatched left rows (padded with NULL), but the same predicate in WHERE runs after the join and removes those NULL-padded rows, effectively making it an inner join. This is the most common outer-join mistake."
+    },
+    {
+      "subtopic": "Ranking functions on ties",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For salaries `5000, 5000, 4000` ordered descending, which ranking function assigns the values `1, 1, 2`?",
+      "options": [
+        "`DENSE_RANK()`",
+        "`RANK()`",
+        "`ROW_NUMBER()`",
+        "`NTILE(3)`"
+      ],
+      "answer": 0,
+      "explanation": "DENSE_RANK gives ties the same rank with no gaps, so 5000,5000,4000 becomes 1,1,2. RANK would produce 1,1,3 (a gap), ROW_NUMBER would produce 1,2,3 (no ties), and NTILE(3) buckets rows rather than ranking by value."
+    },
+    {
+      "subtopic": "LAST_VALUE default frame",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer uses `LAST_VALUE(Amount) OVER (PARTITION BY CustomerId ORDER BY OrderDate)` expecting each row to show the partition's final amount, but it returns the current row's amount instead. Why, and what is the correct fix?",
+      "options": [
+        "Adding `ORDER BY` sets the default frame to `RANGE ... CURRENT ROW`; specify `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`",
+        "`LAST_VALUE` ignores `ORDER BY`, so the partition is unordered; add a secondary `ORDER BY` key to make it deterministic",
+        "`LAST_VALUE` requires `PARTITION BY` to be removed; use a bare `OVER ()` so the whole result is one window",
+        "The query needs `LAST_VALUE(Amount) IGNORE NULLS`; the NULLs at the partition boundary collapse the frame to one row"
+      ],
+      "answer": 0,
+      "explanation": "When ORDER BY is present without an explicit frame, the default frame is RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW, so the window ends at the current row and LAST_VALUE returns that row's value. Extending the frame to UNBOUNDED FOLLOWING makes it see the true last row."
+    },
+    {
+      "subtopic": "Normalization forms",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "`Enroll(StudentId, CourseId, StudentName, CourseName)` has primary key `(StudentId, CourseId)`. `StudentName` depends only on `StudentId` and `CourseName` only on `CourseId`. What is the highest normal form satisfied, and what is violated?",
+      "options": [
+        "It is in 1NF but violates 2NF due to partial dependencies on parts of the composite key",
+        "It is in 2NF but violates 3NF due to transitive dependencies between non-key columns",
+        "It is in 3NF but violates BCNF because a determinant is not a candidate key",
+        "It is fully normalized to BCNF; the dependencies are on prime attributes only"
+      ],
+      "answer": 0,
+      "explanation": "Both StudentName and CourseName depend on only part of the composite key — the definition of a partial dependency, which violates 2NF. It is still in 1NF (atomic columns). A transitive dependency (3NF) would be non-key depending on another non-key, which is not the case here."
+    },
+    {
+      "subtopic": "Covering index and key lookups",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An execution plan shows a repeated `Index Seek` followed by a `Key Lookup` for a query that filters on `CustomerId` and selects `OrderDate` and `Amount`. What is the standard fix to eliminate the lookups?",
+      "options": [
+        "Add a covering index keyed on `CustomerId` that `INCLUDE`s `OrderDate` and `Amount`",
+        "Drop the non-clustered index so the query falls back to a clustered index scan",
+        "Wrap `CustomerId` in `ISNULL()` so the predicate becomes more selective",
+        "Convert the non-clustered index into a second clustered index on the table"
+      ],
+      "answer": 0,
+      "explanation": "A key lookup happens when the non-clustered index lacks columns the query needs. Adding those columns via INCLUDE makes the index covering, so the query is answered from the index alone and the lookups disappear. A table can only have one clustered index, ruling out that option."
+    },
+    {
+      "subtopic": "SARGable predicates",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Assuming `OrderDate` is an indexed `DATETIME2` column, which of the following predicates are SARGable (able to use an index seek)? Select all that apply.",
+      "options": [
+        "`WHERE OrderDate >= '2026-01-01' AND OrderDate < '2027-01-01'`",
+        "`WHERE OrderDate = '2026-06-19'`",
+        "`WHERE YEAR(OrderDate) = 2026`",
+        "`WHERE CONVERT(date, OrderDate) = '2026-06-19'`"
+      ],
+      "answer": [0, 1],
+      "explanation": "SARGable predicates keep the indexed column bare on one side. The range and the direct equality leave OrderDate unwrapped and can seek. Wrapping the column in YEAR() or CONVERT() applies a function to the indexed column, forcing a scan, so those two are non-SARGable."
+    },
+    {
+      "subtopic": "Isolation levels and anomalies",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Under `REPEATABLE READ`, a transaction runs `SELECT COUNT(*) FROM dbo.Orders WHERE Status = N'Open'` twice. Between the two reads, another transaction inserts and commits a new `Open` order. What happens?",
+      "options": [
+        "The second read returns a higher count — a phantom read, which REPEATABLE READ does not prevent",
+        "The second read returns the original count, because REPEATABLE READ takes a range lock blocking the insert",
+        "The second read returns a higher count — a non-repeatable read, the exact anomaly REPEATABLE READ prevents",
+        "The insert is blocked until the first transaction commits, so neither read can complete"
+      ],
+      "answer": 0,
+      "explanation": "REPEATABLE READ locks the rows it already read (preventing dirty and non-repeatable reads) but does not take range locks, so a brand-new row matching the filter can still appear — a phantom. Only SERIALIZABLE's range locks (or SNAPSHOT) would prevent it."
+    },
+    {
+      "subtopic": "Update lock and deadlock avoidance",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about update (U) locks and the lock compatibility model are correct? Select all that apply.",
+      "options": [
+        "A U lock is compatible with a shared (S) lock, so readers can proceed while a row is being searched for modification",
+        "A U lock is incompatible with another U lock, which prevents two read-then-write transactions from deadlocking on a shared-to-exclusive upgrade",
+        "When the modification actually occurs, the U lock converts to an exclusive (X) lock",
+        "An exclusive (X) lock is compatible with shared (S) locks but not with other X locks",
+        "Two shared (S) locks are incompatible with each other, so only one reader can hold a row at a time"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "U locks are compatible with S but not with other U or X locks, and convert to X at modification time — this is exactly how they prevent the classic upgrade deadlock. An X lock is incompatible with every other lock including S, and multiple S locks coexist freely, so the last two options are false."
+    },
+    {
+      "subtopic": "TRUNCATE vs DELETE",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements correctly describe how `TRUNCATE TABLE` differs from `DELETE` (with no `WHERE`) in SQL Server? Select all that apply.",
+      "options": [
+        "`TRUNCATE` resets the table's `IDENTITY` seed, while `DELETE` leaves it unchanged",
+        "`TRUNCATE` uses minimal logging by deallocating pages, while `DELETE` logs each row",
+        "`TRUNCATE` does not fire row-level DML triggers, while `DELETE` does",
+        "`TRUNCATE` cannot be rolled back because it is not transactional, while `DELETE` can"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "TRUNCATE resets IDENTITY, is minimally logged via page deallocation, and bypasses row-level triggers — all true. The last option is false: TRUNCATE is transactional and can be rolled back inside a transaction; it is also blocked when the table is referenced by a foreign key."
+    },
+    {
+      "subtopic": "Dynamic SQL and injection",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which approach to running dynamic SQL both prevents SQL injection of user-supplied values and promotes execution-plan reuse?",
+      "options": [
+        "`sp_executesql` with typed parameters passed separately from the SQL text",
+        "`EXEC(@sql)` after concatenating the user input into the string",
+        "Hand-escaping single quotes in the user input before concatenating it",
+        "Wrapping the whole concatenated statement in a `TRY...CATCH` block"
+      ],
+      "answer": 0,
+      "explanation": "sp_executesql passes values as separate typed parameters, so user input can never be parsed as code, and the stable parameterized text gets a reusable cached plan. EXEC of a concatenated string is injection-prone, and hand-escaping is brittle and bypassable."
+    },
+    {
+      "subtopic": "Encryption at rest vs from privileged users",
+      "source": "sql/sql-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A compliance requirement says that even a DBA with full server access must not be able to read certain column values in plaintext. Which feature meets this, and why does Transparent Data Encryption (TDE) not?",
+      "options": [
+        "Always Encrypted: encryption/decryption happen in the client driver so keys and plaintext never reach the engine; TDE only encrypts files at rest while the engine sees plaintext",
+        "TDE with a column master key: it encrypts individual columns so the DBA sees ciphertext; Always Encrypted only protects whole database files",
+        "Dynamic Data Masking: it hides values from all users including DBAs; TDE merely slows down disk reads",
+        "Row-level security: it blocks the DBA's queries from returning the rows; TDE has no effect on query results"
+      ],
+      "answer": 0,
+      "explanation": "Always Encrypted does crypto in the client driver, so the engine (and thus a DBA) only ever handles ciphertext. TDE encrypts data and log files at rest but the engine decrypts pages into memory and works with plaintext, so it does nothing against an authenticated privileged session. DDM is a display convenience, not a boundary, and RLS filters rows, not values from a DBA."
+    }
+  ]
+}

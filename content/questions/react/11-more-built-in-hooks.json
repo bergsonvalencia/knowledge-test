@@ -1,0 +1,272 @@
+{
+  "topic": "react",
+  "source": "react/11-more-built-in-hooks.md",
+  "questions": [
+    {
+      "subtopic": "useLayoutEffect timing",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Relative to the browser paint, when does `useLayoutEffect` fire?",
+      "options": [
+        "Synchronously after DOM mutation but before the browser paints",
+        "Asynchronously after the browser paints the new frame",
+        "Before React commits any DOM mutations",
+        "On the server during SSR, before hydration begins"
+      ],
+      "answer": 0,
+      "explanation": "`useLayoutEffect` runs synchronously after React commits DOM mutations but before paint, letting you measure and adjust layout with no visible flicker. Firing after paint describes `useEffect`, and it does not run on the server."
+    },
+    {
+      "subtopic": "useEffect vs useLayoutEffect default",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which hook is the recommended default for data fetching, subscriptions, logging, and timers?",
+      "options": [
+        "`useEffect`, because it runs asynchronously after paint and doesn't block rendering",
+        "`useLayoutEffect`, because blocking paint guarantees the data is ready",
+        "`useImperativeHandle`, because side effects belong on the ref",
+        "`useSyncExternalStore`, because all subscriptions must go through it"
+      ],
+      "answer": 0,
+      "explanation": "`useEffect` is the default for non-layout side effects since it runs after paint and doesn't delay what the user sees. `useLayoutEffect` is reserved for layout reads that must happen before paint."
+    },
+    {
+      "subtopic": "useId purpose",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What problem does `useId` primarily solve?",
+      "options": [
+        "Producing a stable, unique ID that matches between server render and client hydration",
+        "Generating efficient, collision-free keys for items in a rendered list",
+        "Creating globally unique database primary keys on the client",
+        "Memoizing an expensive computed value across renders"
+      ],
+      "answer": 0,
+      "explanation": "`useId` produces deterministic IDs so SSR markup and client markup agree and React doesn't warn about a hydration mismatch. It is explicitly NOT for list keys (those come from data identity)."
+    },
+    {
+      "subtopic": "useDebugValue purpose",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "`useDebugValue` attaches a label to a custom hook that appears in React DevTools and has no runtime effect on the component's behavior.",
+      "answer": true,
+      "explanation": "`useDebugValue` is purely a debugging aid surfaced in DevTools; it does not change component behavior at runtime."
+    },
+    {
+      "subtopic": "useImperativeHandle intent",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the main reason to use `useImperativeHandle`?",
+      "options": [
+        "Expose a narrow, intentional imperative API on a ref while keeping the underlying DOM node private",
+        "Replace props and state as the primary mechanism for passing data to children",
+        "Subscribe a component to an external store without tearing",
+        "Generate hydration-safe IDs for form controls"
+      ],
+      "answer": 0,
+      "explanation": "It customizes the handle exposed through a ref so a parent can call a deliberate API (`focus()`, `play()`) without reaching into arbitrary internals. Data flow should still use props/state, not this escape hatch."
+    },
+    {
+      "subtopic": "getSnapshot stability",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In `useSyncExternalStore`, why must `getSnapshot()` return a referentially stable value when the underlying data hasn't changed?",
+      "options": [
+        "Returning a fresh object each call makes React think the value changed every render, causing an infinite re-render loop",
+        "React serializes the snapshot to JSON, and unstable values fail serialization",
+        "A new reference each call disables concurrent rendering for the whole tree",
+        "Unstable snapshots are silently ignored, so subscriptions never fire"
+      ],
+      "answer": 0,
+      "explanation": "React compares snapshot references to decide whether to re-render; building a new object/array every call always looks like a change and loops infinitely. Caching and returning the same reference for unchanged data prevents this."
+    },
+    {
+      "subtopic": "useSyncExternalStore tearing",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What concurrency hazard does `useSyncExternalStore` specifically prevent that a naive `useState` + `useEffect` subscription does not?",
+      "options": [
+        "Tearing — different parts of the UI reading different values because the store changed mid-render",
+        "Memory leaks from forgetting to unsubscribe on unmount",
+        "Hydration mismatches caused by non-deterministic IDs",
+        "Layout flicker from measuring the DOM after paint"
+      ],
+      "answer": 0,
+      "explanation": "In concurrent rendering, an effect-based subscription can read a value that changed mid-render, so the UI tears. `useSyncExternalStore` guarantees a consistent snapshot for the whole render, avoiding tearing."
+    },
+    {
+      "subtopic": "useId for related IDs",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A component needs several related IDs (a field, its hint, its error message). What is recommended?",
+      "options": [
+        "Call `useId` once and append suffixes like `${id}-hint` and `${id}-error`",
+        "Call `useId` separately for each element to guarantee independence",
+        "Use the array index of each element as its ID",
+        "Generate the IDs with `Math.random()` so they never collide"
+      ],
+      "answer": 0,
+      "explanation": "Calling `useId` once and suffixing keeps related IDs consistent and unique with a single hook call. Multiple `useId` calls are unnecessary, and random IDs break hydration determinism."
+    },
+    {
+      "subtopic": "useLayoutEffect SSR",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Using `useLayoutEffect` in server-rendered code logs a warning because there is no layout to measure before hydration.",
+      "answer": true,
+      "explanation": "`useLayoutEffect` does not run on the server; in server-rendered code it warns. The fix is to guard it or move the layout read into `useEffect`."
+    },
+    {
+      "subtopic": "useDebugValue lazy format",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the purpose of passing a format function as the second argument to `useDebugValue`, e.g. `useDebugValue(date, d => d.toISOString())`?",
+      "options": [
+        "React calls the formatter only when DevTools inspects the value, keeping expensive formatting off the hot path",
+        "It runs the formatter on every render to keep the label up to date",
+        "It memoizes the value so the hook skips re-running when the input is unchanged",
+        "It validates the value's type and throws if formatting fails"
+      ],
+      "answer": 0,
+      "explanation": "The optional formatter is lazy: React invokes it only when DevTools actually inspects the hook, so costly formatting doesn't run on normal renders."
+    },
+    {
+      "subtopic": "React 19 ref as prop",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does `ref` work with function components in React 19 when using `useImperativeHandle`?",
+      "options": [
+        "`ref` is a normal prop, so no `forwardRef` wrapper is needed (though `forwardRef` still works)",
+        "`forwardRef` is now mandatory and the only supported way to receive a ref",
+        "Function components cannot receive refs; you must convert to a class",
+        "`ref` must be passed through React Context instead of as a prop"
+      ],
+      "answer": 0,
+      "explanation": "In React 19 `ref` is just a regular prop, so a function component can accept it directly without `forwardRef`. `forwardRef` still works but is slated for deprecation."
+    },
+    {
+      "subtopic": "useImperativeHandle deps",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What happens to the exposed handle if you omit the dependency array in `useImperativeHandle(ref, factory)`?",
+      "options": [
+        "The handle is recreated on every render",
+        "The handle is created once and frozen for the component's lifetime",
+        "React throws because `deps` is required",
+        "The handle is recreated only when the ref identity changes"
+      ],
+      "answer": 0,
+      "explanation": "Like other hooks, omitting `deps` causes the factory to run and recreate the handle every render. Supplying `deps` recreates it only when a dependency changes."
+    },
+    {
+      "subtopic": "Tooltip positioning code",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this tooltip code, why is `useLayoutEffect` (not `useEffect`) the correct choice?",
+      "code": "function Tooltip({ targetRef }) {\n  const [top, setTop] = useState(0);\n  useLayoutEffect(() => {\n    const rect = targetRef.current.getBoundingClientRect();\n    setTop(rect.bottom + window.scrollY);\n  }, [targetRef]);\n  return <div style={{ position: \"absolute\", top }}>Hint</div>;\n}",
+      "lang": "tsx",
+      "options": [
+        "It measures and repositions before paint, so the tooltip never flashes at the wrong position",
+        "`useEffect` cannot call `getBoundingClientRect`, which only works synchronously",
+        "`useLayoutEffect` runs during server rendering, ensuring the position is correct in the SSR HTML",
+        "`useEffect` would never re-run when `targetRef` changes, so the position would be stale"
+      ],
+      "answer": 0,
+      "explanation": "Reading layout and setting state in `useLayoutEffect` happens before paint, so the user never sees the tooltip in the wrong spot. With `useEffect` the initial (top:0) frame would paint first, causing a visible jump."
+    },
+    {
+      "subtopic": "useId misuse for keys",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "`useId` is an appropriate way to generate the `key` for each item when rendering a list with `.map()`.",
+      "answer": false,
+      "explanation": "`useId` is per-component-instance, not per-list-item, so it's the wrong tool for keys. Keys must come from your data's stable identity."
+    },
+    {
+      "subtopic": "Online status snapshot code",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In this `useSyncExternalStore` call, what is the role of the third argument `() => true`?",
+      "code": "useSyncExternalStore(\n  (cb) => {\n    window.addEventListener(\"online\", cb);\n    window.addEventListener(\"offline\", cb);\n    return () => { /* remove listeners */ };\n  },\n  () => navigator.onLine,\n  () => true,\n);",
+      "lang": "tsx",
+      "options": [
+        "It is `getServerSnapshot`, supplying the value used during SSR and initial hydration when `navigator` is unavailable",
+        "It is a fallback subscribe function used if the first one throws",
+        "It forces the component to always re-render on every store change",
+        "It is the unsubscribe function returned to React"
+      ],
+      "answer": 0,
+      "explanation": "The optional third argument is `getServerSnapshot`, used during server rendering and initial hydration (here assuming online), since `navigator.onLine` isn't available on the server."
+    },
+    {
+      "subtopic": "Choosing the right hook (multi)",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which scenarios are legitimate use cases for `useLayoutEffect` over `useEffect`? (Select all that apply.)",
+      "options": [
+        "Measuring an element's size to position a popover before the user sees the first frame",
+        "Auto-scrolling a chat container to the bottom without a visible jump",
+        "Fetching JSON from an API when the component mounts",
+        "Logging analytics events after the component renders",
+        "Reading `getBoundingClientRect` to synchronously adjust the DOM before paint"
+      ],
+      "answer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "`useLayoutEffect` is for layout reads/adjustments that must occur before paint (popover positioning, flicker-free auto-scroll, `getBoundingClientRect` adjustments). Fetching and analytics logging are non-layout work best left in `useEffect`."
+    },
+    {
+      "subtopic": "useSyncExternalStore in practice (multi)",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `useSyncExternalStore` are correct? (Select all that apply.)",
+      "options": [
+        "`subscribe` must return an unsubscribe function that React calls on cleanup",
+        "It is mainly library plumbing; app code usually consumes a wrapper like `useSelector`",
+        "`getSnapshot` should return a new object literal on every call to ensure freshness",
+        "It exists to keep snapshots consistent and avoid tearing under concurrent rendering",
+        "It is primarily intended for generating accessibility IDs"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "`subscribe` returns the unsubscribe function, the hook is library plumbing wrapped by `useSelector`/Zustand hooks, and its purpose is tearing-free consistent snapshots. Returning a fresh object each call causes infinite loops, and ID generation is `useId`'s job."
+    },
+    {
+      "subtopic": "StrictMode double-invoke",
+      "source": "react/11-more-built-in-hooks.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does React in development StrictMode mount an effect, run its cleanup, then mount it again?",
+      "options": [
+        "To surface missing or incorrect cleanup, pushing you to write idempotent setup with a matching teardown",
+        "To benchmark whether `useLayoutEffect` or `useEffect` is faster for the effect",
+        "Because effects always run twice in production for reliability",
+        "To pre-fetch data twice so the cache is warm before paint"
+      ],
+      "answer": 0,
+      "explanation": "StrictMode's dev-only mount/cleanup/re-mount cycle exposes effects that lack proper cleanup, encouraging idempotent setup paired with a correct teardown. This behavior is development-only, not production."
+    }
+  ]
+}

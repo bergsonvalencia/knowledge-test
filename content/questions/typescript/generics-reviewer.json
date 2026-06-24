@@ -1,0 +1,292 @@
+{
+  "topic": "typescript",
+  "source": "typescript/generics-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Why generics vs any",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does a generic like `identity<T>(x: T): T` give you that `identity(x: any): any` does not?",
+      "options": [
+        "It preserves the relationship between the input and output types, so the caller keeps full type information",
+        "It runs faster at runtime because `T` is monomorphized into specialized code",
+        "It allows the function to accept more types than the `any` version does",
+        "It performs a runtime check that the argument matches the declared type `T`"
+      ],
+      "answer": 0,
+      "explanation": "A generic preserves the link between input and output (out is exactly in), whereas `any` erases all type relationships and disables checking. The other options are wrong: types are erased at runtime so there is no monomorphization or runtime check, and `any` is actually the more permissive escape hatch."
+    },
+    {
+      "subtopic": "Type erasure",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Because type parameters are erased, you can write `new T()` or `x instanceof T` inside a generic function body.",
+      "answer": false,
+      "explanation": "Type parameters are a compile-time-only construct that vanish under type erasure, so there is no `T` value at runtime. To get runtime type info you must pass a constructor or tag value as an actual argument."
+    },
+    {
+      "subtopic": "keyof constraint and getProperty",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `function getProperty<T, K extends keyof T>(obj: T, key: K): T[K]` called as `getProperty(person, \"age\")` where `person` is `{ name: string; age: number; active: boolean }`, what is the return type?",
+      "code": "function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {\n  return obj[key];\n}\nconst person = { name: \"Ada\", age: 36, active: true };\nconst age = getProperty(person, \"age\");",
+      "lang": "typescript",
+      "options": [
+        "`number`",
+        "`string | number | boolean`",
+        "`unknown`",
+        "`number | undefined`"
+      ],
+      "answer": 0,
+      "explanation": "`K` is pinned to the specific key `\"age\"`, so the indexed access `T[K]` resolves to that single property's type, `number`. It is not a union of all property types (that would happen only if `K` were `keyof T` rather than one specific key)."
+    },
+    {
+      "subtopic": "Constraints vs any",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why prefer `function longest<T extends { length: number }>(a: T, b: T): T` over taking `a: any, b: any`?",
+      "options": [
+        "The constraint lets you read `.length` in the body while still returning the caller's exact type `T`",
+        "The constraint makes the function run a runtime validation that both arguments have a `length`",
+        "`any` would reject arrays because arrays do not structurally have a `length` property",
+        "The constraint forces both arguments to be the literal type `{ length: number }` rather than the caller's type"
+      ],
+      "answer": 0,
+      "explanation": "A constraint lets you safely touch known members (`.length`) while the return type still tracks the caller's concrete `T`. `any` would let you touch anything but erase the return type and disable checking. There is no runtime validation, and the return is the precise `T`, not the bound."
+    },
+    {
+      "subtopic": "Static members and class type parameters",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does TypeScript reject a `static` member that references a generic class's type parameter `T`?",
+      "code": "class Registry<T> {\n  static last: T; // Error\n  items: T[] = [];\n}",
+      "lang": "typescript",
+      "options": [
+        "Statics belong to the class itself and are shared across all instantiations, so there is no single `T` for them",
+        "Static members are evaluated before the type parameter is bound, causing a temporal dead zone",
+        "TypeScript only allows type parameters on instance methods, never on fields of any kind",
+        "The `static` keyword erases the type parameter, leaving `T` as `any` which is disallowed in strict mode"
+      ],
+      "answer": 0,
+      "explanation": "The type parameter is per-instance; statics are shared across every instantiation, so there is no single `T` they could refer to. Instance members (fields and methods) can use `T` freely; only static members cannot."
+    },
+    {
+      "subtopic": "Method-level type parameters",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A method inside a generic class can declare its own fresh type parameter (e.g. `map<U>`) that is independent of the class's type parameter.",
+      "answer": true,
+      "explanation": "Methods can introduce their own type parameters independent of the class's. In the reviewer's `Box<T>`, `map<U>(fn: (t: T) => U): Box<U>` adds a fresh `U` while still using the class's `T`."
+    },
+    {
+      "subtopic": "Const-vs-let inference",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For `function identity<T>(value: T): T`, what are the inferred types of `c1` and `l1` below?",
+      "code": "const c1 = identity(\"hello\");\nlet   l1 = identity(\"hello\");",
+      "lang": "typescript",
+      "options": [
+        "`c1` is `\"hello\"` and `l1` is `string`",
+        "`c1` is `string` and `l1` is `\"hello\"`",
+        "Both are `\"hello\"`",
+        "Both are `string`"
+      ],
+      "answer": 0,
+      "explanation": "Generic call-site inference preserves the literal, so `T` is `\"hello\"`. A `const` binding does not widen, but a `let` binding widens the literal to `string` — the widening happens at the mutable binding, not at the call."
+    },
+    {
+      "subtopic": "Return-only type parameter",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `function parseJson<T>(text: string): T { return JSON.parse(text) as T; }`, why is `const u1 = parseJson(\"{}\")` inferred as `unknown`?",
+      "options": [
+        "`T` appears only in the return position, so there is no argument value for the compiler to infer it from, and it falls back to its default",
+        "`JSON.parse` always returns `unknown`, which overrides any inferred `T`",
+        "The `as T` cast is illegal, so the compiler discards `T` and substitutes `unknown`",
+        "`text: string` widens `T` to `unknown` because string arguments cannot carry type information"
+      ],
+      "answer": 0,
+      "explanation": "Inference needs a value to bite on; when `T` appears only in the return position there is nothing to infer it from, so it falls back to its default (`unknown` here). The fix is to annotate the call, e.g. `parseJson<{ id: number }>(\"{}\")`."
+    },
+    {
+      "subtopic": "const type parameter",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the inferred type of `q`?",
+      "code": "function asTupleConst<const T extends readonly unknown[]>(...xs: T): T {\n  return xs;\n}\nconst q = asTupleConst(\"a\", \"b\");",
+      "lang": "typescript",
+      "options": [
+        "`readonly [\"a\", \"b\"]`",
+        "`[string, string]`",
+        "`string[]`",
+        "`(\"a\" | \"b\")[]`"
+      ],
+      "answer": 0,
+      "explanation": "A `const` type parameter (TS 5.0) behaves as if every argument were written `as const`: tuples stay tuples, literals are preserved, and the inferred type becomes `readonly`. Without `const`, the result would widen to `[string, string]`."
+    },
+    {
+      "subtopic": "NoInfer",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the inferred type of `r`, and what would change if `fallback` were typed `NoInfer<T>` instead of `T`?",
+      "code": "function paginateLoose<T>(items: T[], fallback: T): T {\n  return items[0] ?? fallback;\n}\nconst r = paginateLoose([\"a\", \"b\"] as const, \"z\");",
+      "lang": "typescript",
+      "options": [
+        "`r` is `\"a\" | \"b\" | \"z\"`; with `NoInfer<T>`, `T` would pin to `\"a\" | \"b\"` and the `\"z\"` call would be a compile error",
+        "`r` is `\"a\" | \"b\"`; with `NoInfer<T>`, `r` would become `\"a\" | \"b\" | \"z\"`",
+        "`r` is `string`; `NoInfer<T>` would have no effect because the input is already `as const`",
+        "`r` is `\"z\"`; with `NoInfer<T>`, `r` would become `never`"
+      ],
+      "answer": 0,
+      "explanation": "Both `items` and `fallback` feed inference of `T`, so the compiler unifies them into `\"a\" | \"b\" | \"z\"` and silently accepts the wrong `\"z\"`. `NoInfer<T>` blocks the fallback position from inference, pinning `T` to `\"a\" | \"b\"` so the out-of-range `\"z\"` becomes a compile error."
+    },
+    {
+      "subtopic": "The appears-once rule",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to the 'appears at least twice' heuristic, why is `<T>` pointless in `function size<T>(x: T[]): number { return x.length; }`?",
+      "options": [
+        "`T` appears in only one position and never links to the return or another parameter, so it constrains nothing",
+        "`T` cannot be used with `.length` because arrays are not generic over their element type",
+        "`T` shadows the built-in array element type, which is a compile error",
+        "`T` must always appear in the return type or the function will not type-check"
+      ],
+      "answer": 0,
+      "explanation": "A type parameter that appears in exactly one position connects nothing, so it is dead ceremony — the signature should be `function size(x: unknown[]): number`. A real generic links two or more positions (input to output, input to input, or one parameter to another)."
+    },
+    {
+      "subtopic": "What makes a real generic",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following signatures use their type parameter to link **two or more** positions (a genuinely useful generic)? Select all that apply.",
+      "options": [
+        "`function identity<T>(x: T): T`",
+        "`function longest<T extends { length: number }>(a: T, b: T): T`",
+        "`function getProperty<T, K extends keyof T>(obj: T, key: K): T[K]`",
+        "`function log<T>(x: T): void`",
+        "`function parseLog<T>(text: string): void`"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "`identity` links input to output, `longest` links input to input, and `getProperty` links the key parameter to the object and the return. `log<T>` uses `T` only once (input) and `parseLog<T>` never uses `T` at all, so both are pointless."
+    },
+    {
+      "subtopic": "Array covariance unsoundness",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Does this compile under strict mode, and what runtime hazard does it create?",
+      "code": "class Shape { area = 0; }\nclass Circle extends Shape { radius = 1; }\nconst circles: Circle[] = [new Circle()];\nconst shapes: Shape[] = circles;\nshapes.push(new Shape());",
+      "lang": "typescript",
+      "options": [
+        "It compiles; because the arrays alias the same object, `circles` now holds a plain `Shape`, so a later `circles[1].radius` reads `undefined`",
+        "It fails to compile because arrays are invariant, so `Circle[]` is not assignable to `Shape[]`",
+        "It compiles and is safe because `push` is checked contravariantly on the element type",
+        "It fails to compile because `shapes.push(new Shape())` violates the readonly inference of `circles`"
+      ],
+      "answer": 0,
+      "explanation": "Arrays are covariant, so `Circle[]` is assignable to `Shape[]` and the code compiles. But `shapes` and `circles` alias the same array, so pushing a `Shape` corrupts the static `Circle[]` — the deliberate array-covariance soundness hole TypeScript accepts for ergonomics."
+    },
+    {
+      "subtopic": "Function parameter variance",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Under `strictFunctionTypes`, with `Dog extends Animal`, which assignment of standalone function-typed variables is allowed?",
+      "code": "declare let takeAnimal: (a: Animal) => void;\ndeclare let takeDog: (a: Dog) => void;",
+      "lang": "typescript",
+      "options": [
+        "`takeDog = takeAnimal` (an Animal-accepter can stand in for a Dog-accepter)",
+        "`takeAnimal = takeDog` (a Dog-accepter can stand in for an Animal-accepter)",
+        "Both assignments are allowed because function parameters are bivariant",
+        "Neither assignment is allowed because function parameters are invariant"
+      ],
+      "answer": 0,
+      "explanation": "Function parameter positions are contravariant under `strictFunctionTypes`: a handler accepting a wider type (`Animal`) can stand in where a narrower one (`Dog`) is expected, so `takeDog = takeAnimal` is allowed. The reverse is rejected. (Method parameters are the special bivariant exception, not standalone function types.)"
+    },
+    {
+      "subtopic": "Variance positions",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "With `Dog <: Animal`, which statements about variance are correct? Select all that apply.",
+      "options": [
+        "`() => Dog` is assignable to `() => Animal` because return positions are covariant",
+        "A `Ref<T>` that is both read and written is invariant, so only an exact `T` match is assignable",
+        "`Dog[]` is assignable to `Animal[]`, which is covariant and unsound on write",
+        "`(a: Animal) => void` is assignable to `(a: Dog) => void` because parameters are covariant",
+        "Read+write cells are covariant, so a `Ref<Dog>` is assignable to a `Ref<Animal>`"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Return positions are covariant, mutable read+write cells are invariant (exact match only), and arrays are covariant but unsound on write. Option 4 misstates the rule — `(a: Animal) => void` is assignable to `(a: Dog) => void` because parameters are *contravariant*, not covariant. Option 5 contradicts invariance."
+    },
+    {
+      "subtopic": "Higher-order inference",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the type of `out`?",
+      "code": "function compose<A, B, C>(f: (a: A) => B, g: (b: B) => C): (a: A) => C {\n  return a => g(f(a));\n}\nconst out = compose((s: string) => s.length, (n: number) => n > 0)(\"hi\");",
+      "lang": "typescript",
+      "options": [
+        "`boolean`",
+        "`number`",
+        "`string`",
+        "`(a: string) => boolean`"
+      ],
+      "answer": 0,
+      "explanation": "Higher-order inference flows `B = number` (the return of `f`) into `g`'s parameter; `A = string` and `C = boolean`. The composed function is `(a: string) => boolean`, and calling it with `\"hi\"` yields `boolean`. (`(a: string) => boolean` would be the type before invocation.)"
+    },
+    {
+      "subtopic": "Default type parameters",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For `interface Level<T extends string = \"info\">`, which statement is true?",
+      "code": "interface Level<T extends string = \"info\"> {\n  label: T;\n}",
+      "lang": "typescript",
+      "options": [
+        "`Level` (no argument) uses `T = \"info\"`, and `Level<42>` is an error because the default constraint requires a string",
+        "`Level<42>` is allowed because the default `\"info\"` overrides the constraint",
+        "Defaulted type parameters must be declared before non-defaulted ones in the parameter list",
+        "The default `\"info\"` is ignored unless the caller also passes `as const`"
+      ],
+      "answer": 0,
+      "explanation": "A default supplies a fallback (`T = \"info\"`) when no argument is given, and the default itself must satisfy the constraint. `Level<42>` fails because `42` is not assignable to `string`. Defaults must come *after* non-defaulted parameters, not before."
+    },
+    {
+      "subtopic": "Promise and Awaited",
+      "source": "typescript/generics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `async function loadUser(): Promise<{ id: number }>`, what is `type User = Awaited<ReturnType<typeof loadUser>>`?",
+      "options": [
+        "`{ id: number }`",
+        "`Promise<{ id: number }>`",
+        "`{ id: number } | undefined`",
+        "`Promise<{ id: number } | undefined>`"
+      ],
+      "answer": 0,
+      "explanation": "`ReturnType<typeof loadUser>` is `Promise<{ id: number }>`, and `Awaited<T>` recursively unwraps the promise's resolved type, giving `{ id: number }`. `Awaited` does not add `undefined` or leave the `Promise` wrapper in place."
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "topic": "typescript",
+  "source": "typescript/typescript-glossary-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "structural vs nominal typing",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "TypeScript decides whether one type is assignable to another primarily by:",
+      "options": [
+        "The shape (members) of the type, regardless of its declared name",
+        "The declared name, so two identically-shaped interfaces are incompatible",
+        "Whether the value's class explicitly uses an `implements` clause",
+        "A runtime reflection check performed when the assignment executes"
+      ],
+      "answer": 0,
+      "explanation": "TypeScript is structurally typed: a value fits a type if it has the right members, no declared relationship required. Nominal (name-based) checks and `implements` requirements describe C#/Java, not TypeScript, and there is no runtime check because types are erased."
+    },
+    {
+      "subtopic": "any vs unknown",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "You receive a value typed `unknown` from `JSON.parse`. What must you do before calling `value.toUpperCase()`?",
+      "options": [
+        "Narrow `value` (e.g. with `typeof value === \"string\"`) so the compiler proves it is a string",
+        "Nothing — `unknown` accepts any member access, just like `any`",
+        "Cast the whole module to `any` so checking is disabled project-wide",
+        "Re-declare the variable as `void` so the result is ignored"
+      ],
+      "answer": 0,
+      "explanation": "`unknown` is the safe top type: it accepts any value in but forbids member access until you narrow. That narrowing requirement is exactly what distinguishes it from `any`, which would let `value.toUpperCase()` through unchecked."
+    },
+    {
+      "subtopic": "type erasure",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Because TypeScript uses type erasure, `Array<string>` and `Array<number>` are the same construct at runtime and a type parameter `T` has no runtime presence.",
+      "answer": true,
+      "explanation": "Types are stripped at emit, so generics are not reified (unlike C#). At runtime both are just `Array`, and there is no way to inspect `T` — the single biggest gotcha for developers expecting reflection."
+    },
+    {
+      "subtopic": "never vs void",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which return type best describes a function that always throws and therefore never returns normally?",
+      "options": [
+        "`never`",
+        "`void`",
+        "`undefined`",
+        "`unknown`"
+      ],
+      "answer": 0,
+      "explanation": "`never` is the bottom type for code paths that never produce a value (always throw or loop forever). `void` means the function does return but with no usable value, and `undefined` is a specific returned value."
+    },
+    {
+      "subtopic": "union vs intersection",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For object types, how do `A | B` (union) and `A & B` (intersection) compare in terms of guaranteed members?",
+      "options": [
+        "The union guarantees only the common members; the intersection requires all members of both",
+        "The union requires all members of both; the intersection guarantees only the common members",
+        "Both guarantee exactly the same set of members in all cases",
+        "The union guarantees all members of both, just with each marked optional"
+      ],
+      "answer": 0,
+      "explanation": "A union value is one-of, so only members common to every member are safely accessible without narrowing; an intersection value is all-of, requiring every member of both. The member sets move opposite to object size, which trips people up."
+    },
+    {
+      "subtopic": "excess property checks",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `type Opts = { id: number }` and `declare function run(o: Opts): void`, why does `run({ id: 1, extra: true })` error while assigning the same object to a variable first (`const o = { id: 1, extra: true }; run(o)`) compiles?",
+      "code": "type Opts = { id: number };\ndeclare function run(o: Opts): void;\nrun({ id: 1, extra: true });   // line A\nconst o = { id: 1, extra: true };\nrun(o);                         // line B",
+      "lang": "typescript",
+      "options": [
+        "Line A is a fresh object literal, which triggers the excess-property check; once stored in a variable the literal is no longer fresh, so plain structural compatibility applies",
+        "Line A fails because `extra: true` makes the object structurally incompatible with `Opts`; the variable version coerces the type",
+        "Line B errors too — both lines are rejected for the unknown `extra` property",
+        "Line A errors because object literals cannot be passed to functions without a type annotation"
+      ],
+      "answer": 0,
+      "explanation": "Excess-property checks fire only on fresh literals passed directly. Storing the object in a variable removes freshness, so structural compatibility (which permits extra members) takes over. The object is structurally compatible with `Opts` in both cases."
+    },
+    {
+      "subtopic": "void return type rule",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An array method expects a callback typed `(x: T) => void`, yet passing `array.push` (which returns a `number`) compiles without error. Why?",
+      "options": [
+        "A `void` return type means the result is ignored, so a function returning a value is still assignable to that slot",
+        "`push` is special-cased by the compiler to be callback-compatible",
+        "The compiler widens the callback's return type to `number` to match `push`",
+        "`void` and `number` are mutually assignable, so any return type fits"
+      ],
+      "answer": 0,
+      "explanation": "The `void`-return rule says callers must ignore the result, so a function that returns something is assignable where `() => void` is expected. This is exactly what lets `array.push` be passed to `forEach`. `void` and `number` are not generally interchangeable."
+    },
+    {
+      "subtopic": "as const and union derivation",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the type `X`?",
+      "code": "const arr = [\"a\", \"b\", \"c\"] as const;\ntype X = (typeof arr)[number];",
+      "lang": "typescript",
+      "options": [
+        "`\"a\" | \"b\" | \"c\"`",
+        "`string`",
+        "`string[]`",
+        "`readonly [\"a\", \"b\", \"c\"]`"
+      ],
+      "answer": 0,
+      "explanation": "`as const` gives `arr` the type `readonly [\"a\", \"b\", \"c\"]`; indexing a tuple type with `number` yields the union of its element types. This is the standard idiom for deriving a union from an array of literals. Without `as const`, the elements would widen to `string`."
+    },
+    {
+      "subtopic": "satisfies vs annotation",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the type of `b.method` versus `a.method`?",
+      "code": "const a = { method: \"GET\" } as { method: \"GET\" | \"POST\" };\nconst b = { method: \"GET\" } satisfies { method: \"GET\" | \"POST\" };",
+      "lang": "typescript",
+      "options": [
+        "`b.method` is `\"GET\"`; `a.method` is `\"GET\" | \"POST\"`",
+        "Both `a.method` and `b.method` are `\"GET\"`",
+        "Both `a.method` and `b.method` are `\"GET\" | \"POST\"`",
+        "`b.method` is `\"GET\" | \"POST\"`; `a.method` is `\"GET\"`"
+      ],
+      "answer": 0,
+      "explanation": "`satisfies` validates the shape but returns the original narrow inferred type, so `b.method` stays the literal `\"GET\"`. The assertion `as` replaces the inferred type with the broader declared one, widening `a.method` to `\"GET\" | \"POST\"`."
+    },
+    {
+      "subtopic": "discriminated unions and exhaustiveness",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about discriminated unions and the `never`-based exhaustiveness check are correct? (Select all that apply.)",
+      "options": [
+        "Each member sharing a common literal-typed tag (e.g. `kind`) lets the compiler narrow on a `switch`",
+        "Assigning the switched value to a `never` in the `default` branch makes the compiler error if a new member is added but unhandled",
+        "The exhaustiveness guarantee from `never` is enforced at compile time, not just at runtime",
+        "An ordinary shared property of a wider type (e.g. `id: number`) can drive the same narrowing as a literal discriminant",
+        "A runtime `default: throw` alone provides the same compile-time exhaustiveness guarantee as the `never` pattern"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A literal-typed discriminant enables narrowing and, combined with a `never` default, gives a compile-time error when a new variant is unhandled. A non-literal shared property (option 4) cannot drive narrowing, and a runtime `throw` (option 5) only fails at runtime, not at compile time."
+    },
+    {
+      "subtopic": "private vs hash-private fields",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements correctly contrast TypeScript's `private` modifier with ECMAScript `#private` fields? (Select all that apply.)",
+      "options": [
+        "`private` is a compile-time visibility check only and is erased at runtime",
+        "`#name` is enforced by the JavaScript engine and throws on outside access",
+        "A `private` member is still readable at runtime (e.g. via `Object.keys` or JSON)",
+        "`#`-fields participate in TypeScript's structural type compatibility just like `private` members",
+        "Both `private` and `#` give identical, runtime-enforced encapsulation"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`private` is soft, compile-time-only privacy that disappears at runtime and is readable; `#name` is hard, engine-enforced privacy. Hash-private fields are branded and not part of the structural type (so option 4 is wrong), and the two are not equivalent (option 5 is wrong)."
+    },
+    {
+      "subtopic": "distributive conditional types",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is `Result`?",
+      "code": "type ToArray<T> = T extends unknown ? T[] : never;\ntype Result = ToArray<string | number>;",
+      "lang": "typescript",
+      "options": [
+        "`string[] | number[]`",
+        "`(string | number)[]`",
+        "`never`",
+        "`Array<string | number>` which equals `string[]` only"
+      ],
+      "answer": 0,
+      "explanation": "Because the checked type is a naked (bare) type parameter, the conditional distributes over each union member: `ToArray<string> | ToArray<number>` = `string[] | number[]`. To get `(string | number)[]` you would wrap the parameter in a tuple: `[T] extends [unknown] ? T[] : never`."
+    },
+    {
+      "subtopic": "Omit vs Pick key-constraint asymmetry",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Unlike `Pick<T, K>`, whose `K` is constrained to `keyof T`, the key argument of `Omit<T, K>` is not constrained to `keyof T`, so a misspelled key passed to `Omit` silently no-ops instead of erroring.",
+      "answer": true,
+      "explanation": "This asymmetry is a real gotcha: `Pick`'s `K` is checked against `keyof T` (a typo errors), but `Omit`'s key parameter is not, so `Omit<User, \"passwrod\">` compiles and removes nothing."
+    },
+    {
+      "subtopic": "TypeScript 6.0 tsconfig defaults",
+      "source": "typescript/typescript-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are correct defaults or behaviors for a fresh tsconfig under TypeScript 6.0? (Select all that apply.)",
+      "options": [
+        "`strict` is `true` by default",
+        "`esModuleInterop` is always on and can no longer be disabled",
+        "`types` defaults to `[]`, so you must list `@types` packages explicitly to include them globally",
+        "`module` defaults to `commonjs` and `target` defaults to `es5`",
+        "`noUncheckedIndexedAccess` is enabled automatically as part of `strict`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "TS 6.0 ships `strict: true`, always-on `esModuleInterop`, and `types: []` by default. `module` defaults to `esnext` and `target` to `es2025` (not commonjs/es5), and `noUncheckedIndexedAccess` is a separate option not included in `strict`."
+    }
+  ]
+}

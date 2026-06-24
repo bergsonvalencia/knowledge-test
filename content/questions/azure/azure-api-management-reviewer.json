@@ -1,0 +1,264 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-api-management-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Core objects",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In APIM's object model, which entity does a consumer use to actually call the APIs in a given scope, and which carries the keys?",
+      "options": [
+        "A **subscription**, which carries a primary and a secondary key",
+        "A **product**, which carries a single shared key",
+        "An **operation**, which carries the subscription key inline",
+        "A **group**, which carries one key per member"
+      ],
+      "answer": 0,
+      "explanation": "A subscription is the consumer's grant to call a scope (product/API/all) and carries two keys (primary + secondary). Products gate access and define plans but are not what carries the key; groups only govern portal visibility."
+    },
+    {
+      "subtopic": "Subscription key rotation",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does an APIM subscription expose two subscription keys (primary and secondary)?",
+      "options": [
+        "To rotate keys without downtime",
+        "One is for inbound, the other for outbound policies",
+        "One authenticates the user, the other meters usage",
+        "One is for the managed gateway, the other for the self-hosted gateway"
+      ],
+      "answer": 0,
+      "explanation": "Two keys let you rotate the secret without downtime: switch callers to the secondary, regenerate the primary, then switch back. Subscription keys never authenticate users, and they are not split by policy section or gateway type."
+    },
+    {
+      "subtopic": "Policy sections",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the correct execution order of the four policy sections in an APIM policy document?",
+      "options": [
+        "inbound → backend → outbound → on-error",
+        "inbound → outbound → backend → on-error",
+        "on-error → inbound → backend → outbound",
+        "backend → inbound → outbound → on-error"
+      ],
+      "answer": 0,
+      "explanation": "Policies run inbound (on the request), then backend (around the backend call), then outbound (on the response), with on-error triggered whenever any stage throws."
+    },
+    {
+      "subtopic": "Subscription key header",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "By default, which HTTP header carries the APIM subscription key?",
+      "options": [
+        "`Ocp-Apim-Subscription-Key`",
+        "`Authorization`",
+        "`X-Api-Key`",
+        "`Api-Version`"
+      ],
+      "answer": 0,
+      "explanation": "The subscription key is sent in `Ocp-Apim-Subscription-Key` by default (or the `subscription-key` query param). `Authorization` carries the OAuth2/JWT bearer token, a separate concern."
+    },
+    {
+      "subtopic": "Subscription key is not auth",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A subscription key proves the identity of the end user and is sufficient as the only access control for a public, end-user-facing API.",
+      "answer": false,
+      "explanation": "A subscription key is a coarse shared secret that identifies the subscriber for metering/throttling and gates product access — it is not user authentication. For public/end-user APIs you must layer JWT (OAuth2/OIDC) and/or mTLS."
+    },
+    {
+      "subtopic": "base inheritance bug",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A global throttling policy stops applying to one API after a developer adds the inbound policy below at the API scope. What is the most likely cause?",
+      "code": "<inbound>\n  <set-header name=\"X-Trace\" exists-action=\"override\">\n    <value>@(context.RequestId)</value>\n  </set-header>\n</inbound>",
+      "lang": "xml",
+      "options": [
+        "The inbound section omits `<base />`, so it replaces the inherited global policy instead of extending it",
+        "`set-header` implicitly disables all parent rate-limit policies",
+        "API-scope policies always take exclusive precedence and suppress global policies",
+        "`context.RequestId` throws, which aborts the global throttling policy"
+      ],
+      "answer": 0,
+      "explanation": "Without `<base />` as the first statement, the API-scope inbound section replaces the parent (global) policy rather than inheriting it, so the global rate-limit is lost. `set-header` does not disable parents, and global policies are inherited via `<base />`, not auto-suppressed."
+    },
+    {
+      "subtopic": "rate-limit vs quota",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How do `rate-limit` and `quota` differ in window and the HTTP status they return when exceeded?",
+      "options": [
+        "`rate-limit` uses a short sliding window and returns 429; `quota` uses a long fixed window and returns 403",
+        "`rate-limit` uses a long fixed window and returns 403; `quota` uses a short sliding window and returns 429",
+        "Both use a sliding window; `rate-limit` returns 503 and `quota` returns 429",
+        "Both use a fixed monthly window; `rate-limit` returns 429 and `quota` returns 429"
+      ],
+      "answer": 0,
+      "explanation": "`rate-limit` smooths bursts over a short sliding window (seconds) and returns 429 Too Many Requests; `quota` caps usage over a long fixed window (hours–months) and returns 403 Forbidden. Mixing up the windows or status codes is a classic wrong answer."
+    },
+    {
+      "subtopic": "rate-limit by key",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You must enforce **100 calls/minute per authenticated user** and a hard **50,000 calls/month per subscription**. Which combination is correct?",
+      "options": [
+        "`rate-limit-by-key` keyed on the user (JWT sub / Authorization) for the per-minute burst, plus `quota-by-key` keyed on `context.Subscription.Id` for the monthly cap",
+        "`quota-by-key` keyed on the user for the per-minute burst, plus `rate-limit-by-key` keyed on the subscription for the monthly cap",
+        "Two `rate-limit` policies, since `quota` cannot be scoped per subscription",
+        "A single `rate-limit-by-key` with both `calls` and a monthly `renewal-period`"
+      ],
+      "answer": 0,
+      "explanation": "Short per-user bursts are a `rate-limit-by-key` (429) keyed on the user's identity; a long monthly cap is a `quota-by-key` (403) keyed on the subscription id. Swapping the policies inverts both the windows and the status codes, and one policy cannot express both a per-second and a monthly window."
+    },
+    {
+      "subtopic": "Versions vs revisions",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The team must ship a **breaking** `v2` of an API while existing consumers keep calling `v1` unchanged. What should they use?",
+      "options": [
+        "A **version** under a versioning scheme, so v1 and v2 coexist and consumers migrate on their own timeline",
+        "A **revision**, promoted to current, since revisions run side-by-side per consumer",
+        "A new **product** that hides v1 from all consumers",
+        "A second **subscription** scoped to the v2 operations only"
+      ],
+      "answer": 0,
+      "explanation": "Versions are consumer-visible, breaking changes that run side-by-side via a scheme (path/header/query). A revision changes the single live contract and would break current callers; products and subscriptions are access/gating constructs, not contract-evolution mechanisms."
+    },
+    {
+      "subtopic": "Revisions semantics",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Revisions are intended for non-breaking changes to an existing version: only the **current** revision serves production traffic, and you can roll back by making a previous revision current.",
+      "answer": true,
+      "explanation": "Revisions are deployment-safety for a single contract — non-breaking edits staged and promoted to current (or rolled back) on the same URL, with non-current revisions reachable via `;rev=N`."
+    },
+    {
+      "subtopic": "Securing access controls",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about APIM access-control mechanisms are correct? (Select all that apply.)",
+      "options": [
+        "`validate-jwt` validates the token's signature, issuer, audience, expiry, and required claims at the gateway",
+        "A subscription key answers \"who is the end user and what may they do?\"",
+        "mTLS / `validate-client-certificate` establishes that the calling client app is trusted",
+        "Managed identity lets APIM pull secrets/certs from Key Vault and authenticate to backends without secrets in policy",
+        "Subscription keys provide both authentication and authorization for end users"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "`validate-jwt` does edge authn/authz; mTLS proves the client app is trusted; managed identity gives secretless access to Key Vault and backends. A subscription key only identifies the subscriber for metering/gating — it answers neither end-user identity nor authorization."
+    },
+    {
+      "subtopic": "Backend authentication",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How can APIM call a protected backend without placing any secret in the policy XML, while ensuring only the gateway can reach the backend?",
+      "options": [
+        "Give APIM a managed identity (`authentication-managed-identity`) and lock the backend to the APIM VNet/IP",
+        "Hardcode the backend API key in a `set-header` inside the inbound section",
+        "Rely on the caller's `Ocp-Apim-Subscription-Key` being forwarded to the backend",
+        "Store the backend password in a `context.Variables` entry set from the request body"
+      ],
+      "answer": 0,
+      "explanation": "A managed identity lets APIM authenticate to backends (and fetch Key Vault secrets) with no secret in policy; locking the backend to APIM's VNet/IP prevents clients bypassing the gateway. Hardcoding keys, forwarding the subscription key, or stuffing passwords into variables all leak or misuse secrets."
+    },
+    {
+      "subtopic": "Caching gotcha",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which pair of policies implements gateway response caching, and what is the main correctness risk?",
+      "options": [
+        "`cache-lookup` (inbound) + `cache-store` (outbound); failing to vary the cache key by the right header/query/subscription can serve one consumer's data to another",
+        "`cache-store` (inbound) + `cache-lookup` (outbound); the risk is exceeding the internal cache size",
+        "`validate-content` (inbound) + `cache-store` (outbound); the risk is schema drift",
+        "`cache-lookup` (inbound) + `cache-lookup` (outbound); the risk is a duplicate Retry-After header"
+      ],
+      "answer": 0,
+      "explanation": "`cache-lookup` runs inbound to serve a cached response and `cache-store` runs outbound to save it. The classic bug is forgetting to vary by the right header/query/subscription, which leaks one consumer's cached response to another."
+    },
+    {
+      "subtopic": "Throttling accuracy",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In a multi-region or scaled-out APIM deployment, `rate-limit`/`quota` counters are globally exact, so you can safely use APIM throttling as a hard transactional billing cap.",
+      "answer": false,
+      "explanation": "Counters are per-gateway-region (per-unit), not globally exact, so a caller can exceed the nominal limit by roughly the number of units. APIM throttling is a protective control, not an exact transactional cap — enforce hard billing limits elsewhere."
+    },
+    {
+      "subtopic": "Self-hosted gateway",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Backends run on-prem and data must not leave the corporate network, but the team wants Azure-based API management. What is the correct deployment, and what is its key constraint?",
+      "options": [
+        "A self-hosted gateway container deployed next to the backends; it still phones home to Azure for config/telemetry and requires the Developer or Premium (classic) tier — v2 tiers do not support it",
+        "A Consumption-tier gateway, because it scales to zero and keeps traffic local",
+        "A managed gateway in a nearby Azure region, because managed gateways never egress data",
+        "A self-hosted gateway on any tier, including Basic v2 and Standard v2"
+      ],
+      "answer": 0,
+      "explanation": "The self-hosted gateway is a container you run where the backends live so local traffic stays local, while management/telemetry stays in Azure; it requires Developer/Premium (classic) and is not supported on v2 tiers. The Consumption tier explicitly does not support the self-hosted gateway, and a managed gateway runs in Azure."
+    },
+    {
+      "subtopic": "Pricing tiers",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which single classic tier should you name when you need multi-region deployment, VNet support, and the self-hosted gateway together?",
+      "options": [
+        "Premium",
+        "Standard",
+        "Developer",
+        "Consumption"
+      ],
+      "answer": 0,
+      "explanation": "Premium is the classic tier that unlocks multi-region, VNet, and the self-hosted gateway. Developer supports VNet and self-hosted but is non-production with no SLA and no multi-region; Standard lacks VNet/multi-region; Consumption supports none of the three."
+    },
+    {
+      "subtopic": "Backend pools 2025 features",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about APIM **Backend** entities and recent backend-pool features are correct? (Select all that apply.)",
+      "options": [
+        "A reusable Backend entity holds the URL, credentials, and can define a load-balanced pool, referenced via `set-backend-service`",
+        "Built-in load balancing and circuit breaker on backend pools can do priority/active-passive routing and trip on failures without a separate policy",
+        "Referencing a Backend entity is cleaner than hardcoding backend URLs in policy",
+        "Backend entities can only be created by importing a WSDL definition",
+        "The circuit breaker on a backend pool requires writing a custom retry policy in every operation"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A Backend entity centralizes URL/credentials/pool config and is referenced with `set-backend-service`; 2025-era built-in load balancing and circuit breaker handle priority routing and failure-tripping without a separate policy, and reusing the entity beats hardcoding URLs. Backends are not WSDL-only, and the built-in circuit breaker is the point of avoiding per-operation custom retry policies."
+    },
+    {
+      "subtopic": "Transformation / SOAP-to-REST",
+      "source": "azure/azure-api-management-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given the policy below fronting a legacy SOAP/XML backend, what does it accomplish?",
+      "code": "<inbound>\n  <base />\n  <rewrite-uri template=\"/legacy/v1/getProducts\" />\n</inbound>\n<outbound>\n  <base />\n  <xml-to-json kind=\"direct\" apply=\"always\" consider-accept-header=\"false\" />\n  <cache-store duration=\"30\" />\n</outbound>",
+      "lang": "xml",
+      "options": [
+        "Rewrites the request path to the legacy endpoint, converts the XML response to JSON, and caches the response for 30 seconds",
+        "Converts the inbound JSON request to XML before forwarding, then caches the request for 30 seconds",
+        "Validates the response against the OpenAPI schema and stores it in Redis indefinitely",
+        "Strips the `X-Powered-By` header and rate-limits the backend to 30 calls/second"
+      ],
+      "answer": 0,
+      "explanation": "`rewrite-uri` reshapes the request path to the legacy endpoint; `xml-to-json` (outbound) converts the SOAP/XML response to JSON; `cache-store duration=\"30\"` caches the response for 30 seconds. No request-to-XML conversion, schema validation, header stripping, or rate-limiting is present."
+    }
+  ]
+}

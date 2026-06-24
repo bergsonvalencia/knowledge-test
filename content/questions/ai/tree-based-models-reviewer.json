@@ -1,0 +1,186 @@
+{
+  "topic": "ai",
+  "source": "ai/tree-based-models-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Gini impurity",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A node contains 6 positive and 2 negative samples. What is its Gini impurity?",
+      "options": ["0.375", "0.25", "0.5", "0.75"],
+      "answer": 0,
+      "explanation": "Gini = 1 − Σ p_i² = 1 − (0.75² + 0.25²) = 1 − (0.5625 + 0.0625) = 0.375. The other values ignore the squaring or miscount the class fractions."
+    },
+    {
+      "subtopic": "regression leaf prediction",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What value does a leaf of a regression tree output for the points that land in it?",
+      "options": ["The mean of the training targets in that leaf", "The median of the training targets in that leaf", "The majority class label in that leaf", "The maximum target value in that leaf"],
+      "answer": 0,
+      "explanation": "A regression-tree leaf predicts the mean target of its training points, making the tree a piecewise-constant function. Majority class is the classification-tree rule, not regression."
+    },
+    {
+      "subtopic": "feature scaling",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Decision trees require features to be standardized or normalized before training.",
+      "answer": false,
+      "explanation": "Splits depend only on the ordering of a feature's values, and any monotonic transform leaves that ordering unchanged — so scaling/standardization is unnecessary, unlike for SVMs, k-NN, or neural nets."
+    },
+    {
+      "subtopic": "regression criterion",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What split criterion does a CART regression tree maximize?",
+      "options": ["Variance reduction (drop in MSE)", "Information gain from entropy", "Gini impurity reduction", "Margin width between classes"],
+      "answer": 0,
+      "explanation": "Regression has no class to count, so the criterion swaps impurity for variance: the split score is variance reduction, equivalently the drop in MSE around the child means. Gini and entropy are classification criteria."
+    },
+    {
+      "subtopic": "out-of-bag fraction",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When a bootstrap sample of size `n` is drawn with replacement from `n` rows, approximately what fraction of the original rows are left out of that sample?",
+      "options": ["≈ 37%", "≈ 50%", "≈ 63%", "≈ 5%"],
+      "answer": 0,
+      "explanation": "Each row's probability of being omitted is (1 − 1/n)ⁿ → 1/e ≈ 0.368, so about 37% of rows are out-of-bag for any given tree. (The ≈63% are the rows that ARE included.)"
+    },
+    {
+      "subtopic": "information gain calculation",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A parent node (Gini 0.48) is split into a left child of 30 samples (Gini 0.30) and a right child of 70 samples (Gini 0.42). What is the Gini gain?",
+      "options": ["0.096", "0.120", "0.060", "0.384"],
+      "answer": 0,
+      "explanation": "Weighted child Gini = 0.3·0.30 + 0.7·0.42 = 0.090 + 0.294 = 0.384; gain = 0.48 − 0.384 = 0.096. The distractor 0.384 is the weighted child impurity itself, not the gain."
+    },
+    {
+      "subtopic": "Gini vs entropy",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is Gini impurity the default classification criterion in CART rather than entropy?",
+      "options": ["It avoids the logarithm and is slightly cheaper to compute while almost always picking the same split", "It is guaranteed to find a globally optimal tree whereas entropy is greedy", "It is immune to overfitting whereas entropy overfits", "It can be used for regression while entropy cannot"],
+      "answer": 0,
+      "explanation": "Gini and entropy almost always select the same split; Gini is preferred because it skips the log₂ computation and is cheaper. Both are greedy criteria, both can overfit, and neither is the regression criterion (variance is)."
+    },
+    {
+      "subtopic": "gradient boosting residuals",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In gradient boosting with squared-error loss, the current model predicts `ŷ = [5, 5, 5, 5]` for true targets `y = [3, 7, 9, 1]`. What does the next tree fit?",
+      "code": "y     = [3, 7, 9, 1]\ny_hat = [5, 5, 5, 5]",
+      "lang": "python",
+      "options": ["The residuals [−2, +2, +4, −4]", "The targets [3, 7, 9, 1]", "The squared residuals [4, 4, 16, 16]", "A reweighted copy of the targets"],
+      "answer": 0,
+      "explanation": "For squared-error loss the negative gradient equals the residual r = y − ŷ = [−2, +2, +4, −4], so the next tree fits those residuals. Fitting the raw targets or squared residuals is not how gradient boosting steps downhill; reweighting is AdaBoost's mechanism."
+    },
+    {
+      "subtopic": "random forest randomness",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which sources of randomness distinguish a random forest from a single decision tree? (Select all that apply.)",
+      "options": ["Bootstrap sampling of rows with replacement for each tree", "A random subset of features considered at each split", "Random initialization of leaf values via gradient descent", "Randomly shuffling the target labels before training"],
+      "answer": [0, 1],
+      "explanation": "A random forest adds two doses of randomness: bootstrap row sampling per tree and a random feature subset (≈√p) at each split, which decorrelates the trees. Trees have no gradient-descent leaf init, and shuffling labels would destroy the signal."
+    },
+    {
+      "subtopic": "bagging variance",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Adding more trees to a random forest increases the risk of overfitting.",
+      "answer": false,
+      "explanation": "Bagging only averages low-bias, high-variance trees, so adding trees just stabilizes the estimate and never increases overfitting. It is boosting, not bagging, where too many rounds can start fitting noise."
+    },
+    {
+      "subtopic": "boosting weak learners",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In gradient boosting, why are the base learners deliberately kept shallow (e.g., stumps)?",
+      "options": ["Each weak, high-bias learner reduces a bit of residual bias; summing many of them cuts bias without each one adding much variance", "Shallow trees are needed so they can be trained fully in parallel", "Shallow trees are the only kind that can fit residuals", "Shallow trees guarantee the ensemble cannot overfit no matter how many rounds run"],
+      "answer": 0,
+      "explanation": "Boosting sums many high-bias, low-variance weak learners, each chipping away residual bias. Boosting is sequential (not parallel), any tree can fit residuals, and too many rounds still overfit even with stumps."
+    },
+    {
+      "subtopic": "OOB estimate",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How is the out-of-bag (OOB) error of a random forest computed?",
+      "options": ["For each row, predict it using only the trees whose bootstrap sample excluded it, then aggregate those predictions", "Average the training accuracy of all trees on the full dataset", "Hold out 37% of rows as a separate test set before any training begins", "Use the single tree with the lowest training error to score every row"],
+      "answer": 0,
+      "explanation": "Each row was unseen by ≈37% of trees; predicting it from only those trees and aggregating gives an OOB error that approximates cross-validation for free. No separate holdout is carved out up front, and it uses the excluding trees, not one tree."
+    },
+    {
+      "subtopic": "AdaBoost mechanism",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does AdaBoost do after each round to focus the next learner?",
+      "options": ["Increases the weights of misclassified points so the next tree concentrates on them", "Fits the next tree to the negative gradient of squared-error loss", "Removes correctly classified points from the training set", "Bootstraps a fresh random sample and a random feature subset"],
+      "answer": 0,
+      "explanation": "AdaBoost reweights the data: misclassified points get larger weights and more-accurate trees get a larger vote in the weighted majority. Fitting the negative gradient is gradient boosting's mechanism, not AdaBoost's."
+    },
+    {
+      "subtopic": "variance-averaging formula",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Averaging `T` trees each with variance `σ²` and pairwise correlation `ρ` gives ensemble variance `ρ·σ² + (1−ρ)·σ²/T`. As `T → ∞`, what limits how low the ensemble variance can go?",
+      "options": ["The floor `ρ·σ²`, which only shrinks if the trees are decorrelated", "Zero, since the variance vanishes entirely with enough trees", "`σ²`, which is unaffected by adding trees", "`(1−ρ)·σ²`, the irreducible noise term"],
+      "answer": 0,
+      "explanation": "As T → ∞ the (1−ρ)·σ²/T term vanishes, leaving the floor ρ·σ². Only reducing the pairwise correlation ρ (the point of random feature subsets) lowers that floor — which is why decorrelation matters as much as adding trees."
+    },
+    {
+      "subtopic": "extrapolation failure",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You must predict next quarter's revenue, which is trending steadily upward and will exceed every value in the training data. Why is a plain decision tree or random forest a poor choice?",
+      "options": ["Piecewise-constant leaves cannot extrapolate beyond the training target range, so predictions flatten at the last seen level", "Trees require feature scaling that destroys the temporal ordering of the data", "Trees cannot handle a numeric target, only categorical labels", "Random forests average away the trend so all predictions converge to the global mean"],
+      "answer": 0,
+      "explanation": "Tree leaves output constants, so the model cannot extrapolate a rising trend — it saturates at the highest leaf value seen in training. Trees handle numeric targets fine and need no scaling; the issue is purely the inability to extrapolate."
+    },
+    {
+      "subtopic": "feature importance caveats",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about tree-based feature importance are correct? (Select all that apply.)",
+      "options": ["Impurity-based (MDI) importance is biased toward high-cardinality and continuous features", "Importance tells you a feature matters but not which direction it pushes the prediction", "A single feature dominating importance can be a sign of data leakage", "Permutation importance is fully reliable even when features are strongly correlated"],
+      "answer": [0, 1, 2],
+      "explanation": "Impurity-based importance is biased toward high-cardinality/continuous features and inflated by correlation; importance is global, not directional; and a dominant feature often signals leakage. Permutation importance is more trustworthy but still misleading under strong feature correlation, so the last option is wrong."
+    },
+    {
+      "subtopic": "boosting overfit risk",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is gradient boosting more prone to overfitting than a random forest, and what mitigates it?",
+      "options": ["It keeps reducing bias by fitting residuals, so too many rounds or too high a learning rate begins fitting noise; early stopping, shrinkage, and subsampling mitigate it", "It bootstraps fewer rows per tree, so each tree memorizes its sample; using more rows fixes it", "It averages correlated trees, so variance never falls; decorrelating features fixes it", "It cannot use a validation set, so overfitting is undetectable; only OOB error mitigates it"],
+      "answer": 0,
+      "explanation": "Boosting sequentially fits residuals to drive down bias, so excess rounds or a large η start fitting noise and raise variance — countered by early stopping, shrinkage (small η), and row/column subsampling. Boosting does not work by averaging or bootstrapping like a forest."
+    },
+    {
+      "subtopic": "overfit diagnosis",
+      "source": "ai/tree-based-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A single unpruned tree scores 100% train / 78% test while a 500-tree forest on the same data scores 96% train / 89% test. What best explains the difference?",
+      "options": ["The lone tree is high-variance and memorized noise; the forest averages decorrelated trees to cut variance, trading a little training fit for much better generalization", "The forest underfits because its lower training accuracy means it failed to learn the data", "The lone tree generalizes better because its training accuracy is higher", "The forest has higher bias, which is why its test accuracy is higher"],
+      "answer": 0,
+      "explanation": "Perfect train accuracy with a large train-test gap is the signature of an overfit high-variance tree; bagging averages decorrelated trees to reduce variance, giving slightly lower train but markedly higher test accuracy. Higher training accuracy does not mean better generalization."
+    }
+  ]
+}

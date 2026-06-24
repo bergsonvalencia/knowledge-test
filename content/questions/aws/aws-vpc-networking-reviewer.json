@@ -1,0 +1,268 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-vpc-networking-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "VPC and subnet scope",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the relationship between a VPC, an Availability Zone, and a subnet in terms of scope?",
+      "options": [
+        "A VPC is Regional and spans every AZ in the Region, while each subnet lives in exactly one AZ",
+        "A VPC is AZ-scoped and each subnet can span multiple AZs for high availability",
+        "Both VPCs and subnets are Regional, and AZs are slices within a subnet",
+        "A VPC can span multiple Regions, and each subnet maps to one Region"
+      ],
+      "answer": 0,
+      "explanation": "A VPC is Regional (spans all AZs in one Region, never crossing Region boundaries), and a subnet is pinned to exactly one AZ. Spreading subnets across AZs is how you achieve HA. VPCs never span Regions."
+    },
+    {
+      "subtopic": "Public vs private subnet",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What actually makes a subnet \"public\" in a VPC?",
+      "options": [
+        "A `public` boolean flag set to true on the subnet object",
+        "Its route table has a `0.0.0.0/0` route pointing at an Internet Gateway (and resources have a public IP)",
+        "It is associated with the VPC's main route table rather than a custom one",
+        "It has a Network ACL that allows all inbound traffic"
+      ],
+      "answer": 1,
+      "explanation": "Public vs private is purely a routing distinction: a public subnet's route table sends `0.0.0.0/0` to an Internet Gateway and its resources have public/Elastic IPs. There is no public flag, and the main-vs-custom table or NACL posture does not define publicness."
+    },
+    {
+      "subtopic": "IGW vs NAT direction",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A private-subnet EC2 instance must download OS patches from the internet but must reject all unsolicited inbound connections. What should `0.0.0.0/0` point to in its route table?",
+      "options": [
+        "An Internet Gateway",
+        "A NAT Gateway in a public subnet",
+        "An egress-only Internet Gateway",
+        "A VPC peering connection"
+      ],
+      "answer": 1,
+      "explanation": "A NAT Gateway in a public subnet provides outbound-only IPv4 egress while blocking unsolicited inbound. An IGW would also permit inbound, an egress-only IGW is IPv6-only, and peering does not reach the internet."
+    },
+    {
+      "subtopic": "Security group statefulness",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Because security groups are stateful, allowing an inbound rule on port 443 automatically permits the response traffic to flow back out, regardless of the outbound rules.",
+      "answer": true,
+      "explanation": "Security groups are stateful, so return traffic for an allowed inbound connection is automatically permitted without a matching outbound rule. This is the key difference from stateless NACLs."
+    },
+    {
+      "subtopic": "Free VPC endpoint",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which AWS services are reachable through a free **gateway** VPC endpoint?",
+      "options": [
+        "Secrets Manager and KMS",
+        "S3 and DynamoDB",
+        "SSM and ECR",
+        "Any AWS service plus partner SaaS"
+      ],
+      "answer": 1,
+      "explanation": "Gateway endpoints support only S3 and DynamoDB, are free, and work by adding a route-table prefix-list entry. Everything else (Secrets Manager, KMS, SSM, ECR, SaaS) requires a billed interface/PrivateLink endpoint."
+    },
+    {
+      "subtopic": "Usable IPs per subnet",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How many usable host addresses does a `/24` subnet provide in AWS, and why?",
+      "options": [
+        "256, because a `/24` has 256 total addresses all usable",
+        "254, because only the network and broadcast addresses are reserved",
+        "251, because AWS reserves the first four and the last IP in every subnet",
+        "250, because AWS reserves five addresses at the start and one at the end"
+      ],
+      "answer": 2,
+      "explanation": "A `/24` has 256 addresses, but AWS reserves the first four and the last IP in every subnet, leaving 251 usable. The standard network/broadcast-only reservation (254) does not apply on AWS."
+    },
+    {
+      "subtopic": "NACL stateless return traffic",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "After tightening a NACL on a subnet, existing inbound HTTPS connections start timing out even though inbound TCP 443 is explicitly allowed. What is the most likely cause?",
+      "code": "NACL inbound:  allow tcp 443 from 0.0.0.0/0\nNACL outbound: (only allow tcp 443 to 0.0.0.0/0)",
+      "lang": "text",
+      "options": [
+        "The NACL is stateless, so the outbound rules must also allow the ephemeral return port range (1024-65535)",
+        "The security group on the instance is blocking inbound 443",
+        "The NACL rule numbers are in the wrong order so 443 is being denied",
+        "The Internet Gateway is performing 1:1 NAT incorrectly on port 443"
+      ],
+      "answer": 0,
+      "explanation": "NACLs are stateless, so response traffic (which leaves on ephemeral ports 1024-65535) is not auto-allowed; the outbound rules deny it. Add an outbound allow for the ephemeral range. A stateful security group would not have this problem."
+    },
+    {
+      "subtopic": "NAT Gateway HA and cost",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For a fault-tolerant 3-AZ design, what is the recommended NAT Gateway layout and what does it cost?",
+      "options": [
+        "One NAT Gateway for the whole VPC, billed only per-GB processed",
+        "One NAT Gateway per AZ with each AZ's private route table pointing at its local NAT, billed hourly per gateway plus per-GB",
+        "One NAT Gateway in any AZ shared by all subnets, with no hourly charge",
+        "Two NAT Gateways for HA regardless of AZ count, billed only hourly"
+      ],
+      "answer": 1,
+      "explanation": "A NAT Gateway lives in a single AZ, so for fault tolerance and to avoid cross-AZ data charges you deploy one per AZ (three for 3 AZs) with each private route table pointing at its local NAT. NAT bills hourly per gateway plus a per-GB data-processing fee."
+    },
+    {
+      "subtopic": "VPC peering limits",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about VPC peering are correct? (Select all that apply.)",
+      "options": [
+        "Peering is non-transitive: if A peers B and B peers C, A cannot reach C through B",
+        "The two VPCs must have non-overlapping CIDR blocks",
+        "Peering provides transitive routing automatically through intermediate VPCs",
+        "Traffic between peered VPCs stays on the AWS backbone",
+        "A full mesh of N VPCs requires only N peering connections total"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Peering is non-transitive, requires non-overlapping CIDRs, and keeps traffic on the AWS backbone. It does not provide transitive routing, and a full mesh of N VPCs needs N(N-1)/2 connections, not N."
+    },
+    {
+      "subtopic": "SSM Session Manager",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Auditors require interactive shell access to production EC2 instances with full session logging, no inbound SSH, and no shared keys. What is the correct approach?",
+      "options": [
+        "A hardened bastion host in a public subnet with key rotation",
+        "SSM Session Manager: the SSM Agent runs with an IAM role and connects outbound, so no inbound port 22 or SSH keys are needed",
+        "An interface endpoint for SSH that proxies port 22 over PrivateLink",
+        "A NAT Gateway that forwards inbound SSH to the private instances"
+      ],
+      "answer": 1,
+      "explanation": "SSM Session Manager gives a shell via the SSM Agent making an outbound connection (IAM role with AmazonSSMManagedInstanceCore), eliminating the bastion, SSH keys, and open port 22, with sessions logged to CloudWatch/S3 and audited in CloudTrail. A bastion still requires inbound access and keys."
+    },
+    {
+      "subtopic": "Interface endpoint private DNS",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An interface endpoint's private DNS name is not resolving, and the SDK keeps reaching the service over its public IP. What is the usual cause?",
+      "options": [
+        "The endpoint's security group has no outbound rules",
+        "The VPC's `enableDnsSupport` and/or `enableDnsHostnames` flags are not both enabled",
+        "The endpoint was created in the wrong AZ",
+        "A gateway endpoint for the same service is shadowing the interface endpoint"
+      ],
+      "answer": 1,
+      "explanation": "Both `enableDnsSupport` and `enableDnsHostnames` must be on for the interface endpoint's private DNS name to override the public one. Without them the SDK resolves the service to its public IP, bypassing private routing."
+    },
+    {
+      "subtopic": "ELB family selection",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A high-throughput TCP service needs a static IP per AZ and must preserve the client source IP. Which load balancer fits, and can AWS WAF attach to it?",
+      "options": [
+        "ALB; yes, WAF attaches to an ALB",
+        "NLB; no, WAF does not attach to an NLB",
+        "GWLB; yes, WAF attaches via GENEVE",
+        "NLB; yes, WAF attaches to an NLB"
+      ],
+      "answer": 1,
+      "explanation": "An NLB operates at Layer 4, offers a static/Elastic IP per AZ, and preserves source IP. WAF does not attach to an NLB (it attaches to ALB/CloudFront). The ALB is L7 and a GWLB is for inline L3 appliances."
+    },
+    {
+      "subtopic": "SG-to-SG references",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "A security group rule can reference another security group as its source, whereas a Network ACL can only match CIDR ranges.",
+      "answer": true,
+      "explanation": "Security groups can reference other SGs as the source (e.g. allow from the ALB's SG), the idiomatic way to chain tiers without hardcoding IPs. NACLs match CIDR ranges only."
+    },
+    {
+      "subtopic": "NACL evaluation order",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How do a security group and a Network ACL differ in how their rules are evaluated?",
+      "options": [
+        "Both evaluate rules in numbered order, stopping at the first match",
+        "An SG is the union of all its rules (order irrelevant); a NACL is evaluated in rule-number order, lowest first, stopping at the first match",
+        "An SG stops at the first matching rule; a NACL takes the union of all rules",
+        "Both take the union of all rules, but the NACL also considers deny rules"
+      ],
+      "answer": 1,
+      "explanation": "An SG is the union of all its rules, so order is irrelevant and there is no deny. A NACL is processed in rule-number order (lowest first) and stops at the first match, so a low-numbered allow can shadow a higher-numbered deny."
+    },
+    {
+      "subtopic": "IPv6 egress and EIPs",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about Elastic IPs and IPv6 egress are correct? (Select all that apply.)",
+      "options": [
+        "A NAT Gateway is IPv4-only; outbound-only IPv6 egress requires an egress-only Internet Gateway",
+        "An egress-only Internet Gateway permits instance-initiated outbound IPv6 and blocks unsolicited inbound",
+        "AWS now charges per allocated public IPv4 address per hour, including ones that are in use",
+        "An Elastic IP is released automatically when its instance is stopped",
+        "A NAT Gateway can provide outbound-only egress for both IPv4 and IPv6"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A NAT Gateway is IPv4-only, so IPv6 outbound-only egress uses an egress-only IGW, which blocks unsolicited inbound. AWS charges per allocated public IPv4 per hour even when in use. An EIP survives stop/start (it is not auto-released), and NAT does not handle IPv6."
+    },
+    {
+      "subtopic": "Transit Gateway at scale",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An organization has 25 VPCs across accounts that all need to communicate, plus a requirement for central egress inspection, and the existing peering mesh has become unmanageable. Why is a Transit Gateway the better design?",
+      "options": [
+        "A peering mesh of 25 VPCs needs 300 connections and is non-transitive; a TGW lets each VPC attach once with transitive routing and centralized inspection",
+        "Transit Gateway removes the need for non-overlapping CIDRs, so re-IPing is unnecessary",
+        "Peering cannot connect VPCs across accounts, but Transit Gateway can",
+        "Transit Gateway is free, whereas peering charges per-GB for all traffic"
+      ],
+      "answer": 0,
+      "explanation": "A 25-VPC full mesh is 25*24/2 = 300 non-transitive peering connections. A TGW is hub-and-spoke: each VPC attaches once, routing is transitive via TGW route tables, and a dedicated inspection VPC centralizes egress. CIDRs must still be non-overlapping, peering does support cross-account, and TGW adds hourly + per-GB charges."
+    },
+    {
+      "subtopic": "VPC Lambda networking",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A Lambda function is attached to a private subnet to reach an RDS database. It now also needs to call the public S3 and Secrets Manager APIs. What is true about its internet access?",
+      "options": [
+        "A VPC-attached Lambda keeps its default AWS-managed internet access, so no extra configuration is needed",
+        "A VPC-attached Lambda has no internet access unless routed through a NAT; use a gateway endpoint for S3 and an interface endpoint for Secrets Manager to avoid the NAT",
+        "Lambda cannot be attached to a VPC and reach RDS at the same time",
+        "Attaching Lambda to a VPC requires assigning it an Elastic IP for outbound calls"
+      ],
+      "answer": 1,
+      "explanation": "Once attached to a VPC, a Lambda loses the default managed internet access and has none unless you route through a NAT. The secure-by-default pattern is a free gateway endpoint for S3 and an interface endpoint for Secrets Manager, avoiding the NAT entirely."
+    },
+    {
+      "subtopic": "Longest-prefix routing",
+      "source": "aws/aws-vpc-networking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A subnet's route table has `10.0.0.0/16 -> local`, `0.0.0.0/0 -> nat-xxxx`, and `10.0.5.0/24 -> pcx-xxxx` (a peering connection). Traffic destined for `10.0.5.10` will be sent where, and why?",
+      "options": [
+        "To the NAT Gateway, because `0.0.0.0/0` is the default route",
+        "To the peering connection, because `10.0.5.0/24` is the most specific (longest-prefix) match",
+        "To the local target, because the local route always takes priority over all others",
+        "It is dropped, because two routes overlap for the same destination"
+      ],
+      "answer": 1,
+      "explanation": "Most-specific (longest-prefix) match wins. `10.0.5.10` matches the `/24` peering route (most specific) over both the `/16` local and the `/0` default. The local route cannot be removed but does not automatically override a more specific route to a non-VPC destination."
+    }
+  ]
+}

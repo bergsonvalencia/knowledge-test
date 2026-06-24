@@ -1,0 +1,276 @@
+{
+  "topic": "system-design",
+  "source": "system-design/scalability-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Scalability vs performance",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement best captures what **scalability** means?",
+      "options": [
+        "The ability to handle growing load by adding resources, with cost rising roughly in proportion to capacity",
+        "The raw speed at which a single request is served end to end",
+        "The guarantee that every read returns the most recent write",
+        "The percentage of time a system is available to serve requests"
+      ],
+      "answer": 0,
+      "explanation": "Scalability is about handling growth by adding resources with cost rising no faster than capacity. Raw single-request speed is performance, not scalability — a fast single box can be unscalable; consistency and availability are separate properties."
+    },
+    {
+      "subtopic": "Vertical vs horizontal scaling",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which is a genuine drawback of **vertical** scaling (scale up) that **horizontal** scaling avoids?",
+      "options": [
+        "The node remains a single point of failure with a hard hardware ceiling",
+        "It forces you to make every service stateless",
+        "It introduces replication lag between nodes",
+        "It requires a load balancer in front of the node"
+      ],
+      "answer": 0,
+      "explanation": "Scaling up keeps one box (a SPOF) and hits a hard ceiling (the biggest machine you can buy), with cost growing super-linearly at the top. Statelessness, replication lag, and load balancers are concerns of the horizontal/distributed approach, not penalties of scaling up."
+    },
+    {
+      "subtopic": "Stateless services",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Calling a service \"stateless\" means the overall system holds no state anywhere.",
+      "answer": false,
+      "explanation": "Stateless refers to the *service* keeping no client-specific state in process memory between requests. State doesn't vanish — it is externalized to a database, distributed cache, object storage, or a self-contained token. The system still has state."
+    },
+    {
+      "subtopic": "Load balancing L4 vs L7",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A **Layer 4** load balancer routes traffic based on what?",
+      "options": [
+        "IP address and port, without reading the payload",
+        "HTTP path, host, header, and cookie values",
+        "The TLS certificate's subject name after termination",
+        "The geographic location of the client"
+      ],
+      "answer": 0,
+      "explanation": "L4 operates at the transport layer on IP + port and does not read the payload, making it fast and protocol-agnostic. Routing by HTTP path/host/header/cookie and TLS termination are L7 capabilities."
+    },
+    {
+      "subtopic": "Percentiles and tail latency",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does the reviewer insist on reporting **p95/p99** latency rather than the average?",
+      "options": [
+        "Averages hide the slow tail — a few very slow requests barely move the mean but are what users notice",
+        "Averages are mathematically impossible to compute on streaming data",
+        "Percentiles always produce a smaller number than the mean, which looks better",
+        "The average over-weights the slow requests and exaggerates the problem"
+      ],
+      "answer": 0,
+      "explanation": "One 10s request among ninety-nine 10ms requests barely moves the mean but wrecks p99. The tail, not the average, is what users complain about — especially under high fan-out where the slowest call dominates the page."
+    },
+    {
+      "subtopic": "Elasticity and statelessness",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "**Elasticity** (autoscaling) is described as requiring statelessness. Why can't you safely autoscale nodes that hold in-memory user sessions?",
+      "options": [
+        "Removing a node on scale-down would destroy the only copy of those users' session state",
+        "Stateful nodes cannot be placed behind a load balancer at all",
+        "Autoscalers can only add nodes, never remove them, so state would accumulate",
+        "In-memory sessions make the node respond too slowly to be added to a pool"
+      ],
+      "answer": 0,
+      "explanation": "Elasticity adds nodes on a spike and removes them when idle; you can't safely kill a node that holds the only copy of a user's session. Externalizing session state lets any node serve any request, so scale-down is safe."
+    },
+    {
+      "subtopic": "Sticky sessions",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Why are **sticky sessions (session affinity)** considered a smell? Select all that apply.",
+      "options": [
+        "They defeat even load distribution across the backend pool",
+        "They break when the pinned node dies, dropping that client's state",
+        "They complicate autoscaling",
+        "They are required for any HTTPS traffic to work",
+        "They make the database the bottleneck by routing all writes to one shard"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Stickiness is a crutch for stateful servers: it skews load distribution, loses state when the node dies, and complicates autoscaling. It is unrelated to HTTPS, and it does not route DB writes to a single shard — externalizing the session removes the need for it entirely."
+    },
+    {
+      "subtopic": "Little's Law sizing",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A service receives **800 RPS** with an average response time of **250 ms**. Using Little's Law, roughly how many requests are in flight on average, and how many nodes are needed at minimum if one node handles ~50 concurrent?",
+      "options": [
+        "~200 concurrent → at least 4 nodes (plus headroom)",
+        "~50 concurrent → at least 1 node",
+        "~3,200 concurrent → at least 64 nodes",
+        "~16 concurrent → at least 1 node"
+      ],
+      "answer": 0,
+      "explanation": "L = λ × W = 800 × 0.25 = 200 concurrent. 200 / 50 = 4 nodes at the limit, so you run 4 plus headroom and never at 100% utilization."
+    },
+    {
+      "subtopic": "Utilization trap",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Running a server at ~100% CPU utilization is the most efficient operating point because no capacity is wasted.",
+      "answer": false,
+      "explanation": "As utilization ρ approaches 1, queue length and wait time grow roughly proportional to 1/(1−ρ), so latency blows up. The reviewer targets ~70–80% to leave headroom for bursts — 100% is a latency disaster, not efficiency."
+    },
+    {
+      "subtopic": "Database bottleneck",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A read-heavy API's database CPU pegs at peak while the stateless app tier sits idle. Per the escalation ladder, what is the **cheapest** effective first move?",
+      "options": [
+        "Cache the hot reads (in-memory / Redis) to remove load before it hits the DB",
+        "Shard the database across multiple nodes by a chosen key",
+        "Add more stateless app nodes behind the load balancer",
+        "Add read replicas and route all reads to them"
+      ],
+      "answer": 0,
+      "explanation": "The ladder goes cheap→expensive: cache reads first, then optimize queries/indexes, then scale up, then replicas, then shard. Adding app nodes in front of an overloaded DB only makes it fall over faster; replicas and sharding come later and cost more."
+    },
+    {
+      "subtopic": "Replicas vs sharding",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Your single primary database is saturating on **write** throughput (not reads). Which technique actually addresses this?",
+      "options": [
+        "Sharding (horizontal partitioning) — split rows across nodes by a key",
+        "Adding more read replicas to offload the primary",
+        "Putting a read-through cache in front of the database",
+        "Switching the load balancer from L4 to L7"
+      ],
+      "answer": 0,
+      "explanation": "Read replicas and caches scale reads; every write still hits the single primary. Sharding splits rows across nodes and is the technique that scales writes and storage. A load balancer change is irrelevant to DB write capacity."
+    },
+    {
+      "subtopic": "Read-your-own-writes",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With asynchronously-updated read replicas, a user updates their profile and immediately reloads the page but sees the **old** values. What is happening and a valid mitigation?",
+      "options": [
+        "Replication lag served a stale replica; route that user's reads to the primary briefly after a write",
+        "The cache TTL expired; lower the cache TTL to zero for all users",
+        "The shard key is hot; pick a more evenly distributed shard key",
+        "The load balancer lost affinity; enable sticky sessions for all clients"
+      ],
+      "answer": 0,
+      "explanation": "This is the read-your-own-writes problem: async replicas lag, so a read just after a write may hit a not-yet-updated replica. Mitigate by reading the writer for that user briefly, or using synchronous/quorum reads where correctness demands it."
+    },
+    {
+      "subtopic": "Capacity estimation",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A system serves **100 million reads/day**. Using the back-of-the-envelope recipe (86,400 s/day, ~5× peak factor), the **peak** RPS is closest to:",
+      "options": [
+        "~5,800 RPS",
+        "~1,160 RPS",
+        "~290 RPS",
+        "~58,000 RPS"
+      ],
+      "answer": 0,
+      "explanation": "Average RPS = 100,000,000 / 86,400 ≈ 1,160. Peak ≈ 1,160 × 5 ≈ 5,800 RPS. 1,160 is the average (not peak); 290 is the resulting concurrency at 50 ms response time, not RPS."
+    },
+    {
+      "subtopic": "Externalizing state in code",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In this ASP.NET Core configuration, what is the scalability purpose of registering the distributed Redis cache before `AddSession()`?",
+      "code": "builder.Services.AddStackExchangeRedisCache(o =>\n{\n    o.Configuration = builder.Configuration.GetConnectionString(\"Redis\");\n});\nbuilder.Services.AddSession();",
+      "lang": "csharp",
+      "options": [
+        "Session state lives in Redis, not node memory, so any node can serve any request",
+        "It encrypts session cookies so they cannot be tampered with by the client",
+        "It pins each user to one node via a consistent hash for faster lookups",
+        "It enables L7 path-based routing at the load balancer"
+      ],
+      "answer": 0,
+      "explanation": "Backing sessions with Redis externalizes the state, so the service stays stateless and any node can read the session — enabling load balancing, autoscaling, and rolling restarts. It is not about cookie encryption, node pinning, or LB routing."
+    },
+    {
+      "subtopic": "Queues and back-pressure",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The reviewer warns that \"a queue without back-pressure is a **delayed crash**, not a fix.\" What is the underlying reason?",
+      "options": [
+        "An unbounded queue merely buffers in front of the bottleneck; the buffer keeps growing until memory runs out",
+        "Queues add network hops that always increase end-to-end latency beyond acceptable limits",
+        "At-least-once delivery guarantees duplicates, which corrupt the datastore",
+        "Workers cannot be scaled independently of producers when a queue is involved"
+      ],
+      "answer": 0,
+      "explanation": "A queue doesn't remove the bottleneck — it buffers ahead of it. If arrival rate exceeds drain rate and the queue is unbounded, it grows without limit until memory is exhausted. Back-pressure (bounded queues, shedding, rate limits) is what prevents the delayed crash."
+    },
+    {
+      "subtopic": "Idempotent consumers",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You move slow PDF generation behind a queue with workers. Why does the reviewer insist the worker be **idempotent**?",
+      "options": [
+        "At-least-once delivery means a message may be processed more than once, so duplicate processing must be safe",
+        "Idempotency is what makes the API return `202 Accepted` instead of `200 OK`",
+        "It guarantees the result is ready synchronously when the original request returns",
+        "It prevents replication lag between the queue and the database"
+      ],
+      "answer": 0,
+      "explanation": "Async queues are designed for at-least-once delivery, so duplicates will happen; idempotent consumers make reprocessing the same message harmless. It has nothing to do with the 202 status, synchronous results, or replication lag."
+    },
+    {
+      "subtopic": "Sharding key choice",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about **shard key** choice and sharding trade-offs are correct? Select all that apply.",
+      "options": [
+        "A poorly chosen key creates hot shards (skew) and forces expensive cross-shard fan-out queries",
+        "Hash sharding spreads data evenly but kills efficient range scans",
+        "Consistent hashing minimizes data movement when shards are added or removed",
+        "Sharding makes cross-shard transactions and joins trivial, which is its main appeal",
+        "Range sharding always distributes load perfectly evenly regardless of key"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Bad keys cause hot shards and fan-out; hash sharding spreads evenly but breaks range scans; consistent hashing minimizes reshuffling. Cross-shard transactions/joins are hard (often avoided or denormalized), and range sharding risks hotspots on sequential keys rather than guaranteeing even load."
+    },
+    {
+      "subtopic": "CDN caching correctness",
+      "source": "system-design/scalability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When configuring CDN caching, the reviewer flags a subtle correctness hazard around **personalized** responses. What goes wrong if it is mishandled?",
+      "options": [
+        "A bad `Vary` / cache key can serve one user's personalized response to a different user",
+        "Fingerprinted filenames like `app.9f3c.js` cause the browser to re-download on every request",
+        "Setting `Cache-Control: public, max-age=31536000, immutable` forces revalidation on every hit",
+        "`stale-while-revalidate` blocks the response until the origin confirms freshness"
+      ],
+      "answer": 0,
+      "explanation": "Personalized content must be marked `private`/`no-store` or vary correctly; a bad `Vary` or cache key can leak one user's data to another. Fingerprinted names enable long caching (new deploy = new URL), `immutable` avoids revalidation, and `stale-while-revalidate` serves fast and refreshes in the background."
+    }
+  ]
+}

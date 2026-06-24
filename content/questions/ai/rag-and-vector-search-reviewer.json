@@ -1,0 +1,271 @@
+{
+  "topic": "ai",
+  "source": "ai/rag-and-vector-search-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "What RAG injects",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A model frequently produces output in the wrong tone and a poorly structured format for your use case, even when given correct facts. Why is plain RAG the wrong tool to fix this?",
+      "options": [
+        "RAG injects knowledge, not behavior or skill — better context cannot teach the model a different style or output format",
+        "RAG cannot be used unless the model is first fine-tuned on the target documents",
+        "RAG only works for numeric data, not free-form prose",
+        "RAG permanently overwrites the model's weights, which would corrupt its formatting"
+      ],
+      "answer": 0,
+      "explanation": "RAG supplies missing knowledge by changing the model's input; it does not change how the model responds. Tone, format, and skill are behavior, which is the domain of fine-tuning. RAG never touches the model's weights."
+    },
+    {
+      "subtopic": "Cosine similarity",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why is cosine similarity the usual default for comparing text embeddings rather than Euclidean distance?",
+      "options": [
+        "It measures the angle (direction) between vectors and ignores magnitude, so a short query can still match a long passage on meaning",
+        "It is the only measure that returns values bounded between 0 and 1 in all cases",
+        "It is the only similarity measure that ANN indexes can compute",
+        "It always ranks neighbors differently from Euclidean distance, giving more accurate results"
+      ],
+      "answer": 0,
+      "explanation": "Cosine scores direction and ignores vector length, letting a short query match a long document on meaning. On normalized vectors it ranks neighbors identically to Euclidean, so the second and fourth options are wrong; its general range is -1 to 1."
+    },
+    {
+      "subtopic": "Offline RAG pipeline",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which sequence correctly describes the offline indexing phase of a RAG pipeline?",
+      "options": [
+        "Ingest documents, chunk them, embed each chunk, store vectors plus text and metadata in the index",
+        "Embed the query, retrieve top-k chunks, build the prompt, generate the answer",
+        "Fine-tune the LLM, then embed the query, then store the answer",
+        "Rerank candidates, fuse keyword and vector scores, then ingest documents"
+      ],
+      "answer": 0,
+      "explanation": "Offline indexing is ingest, chunk, embed, index, done ahead of time and amortized over queries. The second option is the online query phase; the others mix unrelated steps."
+    },
+    {
+      "subtopic": "RAG and hallucination",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "RAG reduces hallucination but does not eliminate it, because the model can still answer confidently and wrongly if retrieval fetches the wrong context or the model ignores the supplied context.",
+      "answer": true,
+      "explanation": "Handing the model real source text reduces fabrication, but a wrong-context retrieval or a model that ignores the context can still yield a confident wrong answer, so hallucination is reduced, not eliminated."
+    },
+    {
+      "subtopic": "Recall@k as ceiling",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Your RAG system's `recall@k` is low for a class of queries. Why is improving the generator (better prompt, stronger LLM) unlikely to help these queries?",
+      "options": [
+        "If the relevant chunk never appears in the top-k, the generator has no correct source to ground its answer in",
+        "A stronger LLM automatically re-runs retrieval until recall improves",
+        "Low recall@k only affects latency, not answer correctness",
+        "The generator can reconstruct missing chunks from its training data when recall is low"
+      ],
+      "answer": 0,
+      "explanation": "Recall@k caps the whole system: if the relevant chunk is not retrieved, no generator can ground on it. The generator does not re-run retrieval or reconstruct missing source text, so improving it cannot fix a retrieval miss."
+    },
+    {
+      "subtopic": "Dot product vs cosine",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team normalizes every embedding to unit norm at index time, then scores with the `dot` function below at query time. What is the main motivation, and is it correct?",
+      "code": "def normalize(v):\n    n = sum(x*x for x in v) ** 0.5\n    return [x / n for x in v]\n\ndef dot(a, b):\n    return sum(x*y for x, y in zip(a, b))\n\n# a, b were already normalized at index/query time\nscore = dot(a, b)",
+      "lang": "python",
+      "options": [
+        "Correct: on unit-norm vectors dot product equals cosine similarity, so they get cosine's ranking using the cheaper operation",
+        "Incorrect: dot product on normalized vectors ranks neighbors differently from cosine, so results will be wrong",
+        "Correct: dot product on normalized vectors becomes Euclidean distance, which is more accurate than cosine",
+        "Incorrect: normalizing destroys the meaning encoded in the vectors, so similarity is meaningless"
+      ],
+      "answer": 0,
+      "explanation": "When ‖A‖ = ‖B‖ = 1, A·B equals cosine similarity, so normalizing once and using the cheaper dot product gives identical rankings. Normalization removes only magnitude, not direction, so meaning is preserved."
+    },
+    {
+      "subtopic": "Cosine computation",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the query and two documents below, which document is more similar to `q` by cosine similarity, and what is its score?",
+      "code": "q = [3, 4]\nd = [4, 3]\ne = [0, 5]",
+      "lang": "text",
+      "options": [
+        "`d`, with cosine 0.96",
+        "`e`, with cosine 0.96",
+        "`d`, with cosine 0.80",
+        "`e`, with cosine 1.00"
+      ],
+      "answer": 0,
+      "explanation": "‖q‖ = ‖d‖ = ‖e‖ = 5. q·d = 24 so cos(q,d) = 24/25 = 0.96; q·e = 20 so cos(q,e) = 20/25 = 0.80. d is closer at 0.96."
+    },
+    {
+      "subtopic": "Exact vs ANN search",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Brute-force exact nearest-neighbor search over a vector store is O(N·d) per query. What does an approximate nearest-neighbor (ANN) index fundamentally trade to become fast enough at scale?",
+      "options": [
+        "It gives up some recall (it may miss part of the true top-k) in exchange for much lower query latency",
+        "It gives up the ability to store metadata in exchange for speed",
+        "It gives up precision in the embedding model in exchange for a smaller index",
+        "It gives up nothing — ANN is both faster and exact"
+      ],
+      "answer": 0,
+      "explanation": "ANN returns almost the true nearest neighbors much faster; the key dial is recall, the fraction of the true top-k actually returned. Higher recall costs more time/memory. ANN is not exact, and it does not sacrifice metadata or embedding quality."
+    },
+    {
+      "subtopic": "HNSW vs IVF",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement correctly contrasts the HNSW and IVF approximate-nearest-neighbor index families?",
+      "options": [
+        "HNSW builds a layered navigable graph and hops coarse-to-fine toward the query; IVF clusters vectors into cells and searches only the few cells nearest the query",
+        "HNSW clusters vectors into cells and probes a subset; IVF builds a navigable small-world graph",
+        "Both perform exact search, differing only in memory layout",
+        "HNSW requires product quantization to function; IVF cannot be combined with it"
+      ],
+      "answer": 0,
+      "explanation": "HNSW is the graph-based family (layered hops, high recall, more memory); IVF is the partition-based family (cluster cells, probe a subset). The reviewer notes IVF is often paired with product quantization, not HNSW requiring it."
+    },
+    {
+      "subtopic": "Reranking with cross-encoder",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does a cross-encoder reranker add over plain bi-encoder vector search, and why is the standard pattern to retrieve broadly first and then rerank?",
+      "options": [
+        "A cross-encoder reads the query and each chunk together for a more accurate relevance score, but is slow, so you cheaply retrieve a large candidate set first and only rerank those candidates",
+        "A cross-encoder is faster than vector search, so it replaces retrieval entirely and scores the whole corpus directly",
+        "A cross-encoder produces embeddings that are stored in the index, removing the need for a vector database",
+        "A cross-encoder scores the query and chunk independently, which is why it is more accurate than a bi-encoder"
+      ],
+      "answer": 0,
+      "explanation": "A cross-encoder reads query and chunk jointly for higher accuracy but is slow, so you can't run it over the whole corpus; you retrieve a broad candidate set cheaply with the bi-encoder, then rerank. Scoring independently is what the bi-encoder does, not the cross-encoder."
+    },
+    {
+      "subtopic": "Chunk overlap",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Adding overlap between adjacent chunks (repeating a tail of one chunk at the start of the next) guards against an answer that spans a chunk boundary being split so that it appears in no single chunk.",
+      "answer": true,
+      "explanation": "Overlap repeats a little text across boundaries so a boundary-spanning answer still appears intact in at least one chunk — a cheap fix for the most common chunking failure."
+    },
+    {
+      "subtopic": "Top-k tuning trade-off",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Two setups achieve identical `recall@10`. Setup A passes all 10 retrieved chunks to the LLM; setup B reranks and passes only the best 3. Why is B usually the better choice?",
+      "options": [
+        "With equal recall the relevant chunk is present in both, but B sends less noise, costs fewer tokens, and avoids 'lost in the middle', helping the model focus",
+        "B has strictly higher recall because reranking adds new relevant chunks beyond the original top-10",
+        "A is better because passing more chunks always increases the chance of a correct answer",
+        "They are equivalent because the LLM ignores all but the first retrieved chunk"
+      ],
+      "answer": 0,
+      "explanation": "Equal recall@10 means the relevant chunk is in both candidate sets; B trims to the best 3, reducing noise, token cost, latency, and 'lost in the middle'. Reranking reorders existing candidates, so it does not raise recall@10."
+    },
+    {
+      "subtopic": "Hybrid search",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Why combine sparse keyword scoring (BM25/TF-IDF) with dense vector search in a hybrid retrieval setup? Select all that apply.",
+      "options": [
+        "Dense vectors catch paraphrases and meaning even when words differ",
+        "Keyword scoring reliably catches exact names, codes, and rare jargon that embeddings can blur",
+        "Fusing both (e.g. reciprocal rank fusion) is robust across different query types",
+        "Keyword search eliminates the need for an embedding model in the pipeline",
+        "Hybrid search guarantees 100% recall regardless of chunking quality"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Vectors handle paraphrase/meaning, keywords handle exact terms and rare jargon, and fusing them is robust across query types. Hybrid search still needs the embedding model and cannot guarantee perfect recall, especially if chunking is poor."
+    },
+    {
+      "subtopic": "Same embedding space",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team upgrades to a new, better embedding model but only re-embeds new documents going forward, leaving older document vectors as they were. Queries are embedded with the new model. What is the core problem?",
+      "options": [
+        "Distances are only meaningful within one embedding space, so query vectors and old document vectors are incomparable — 'nearness' to old docs becomes meaningless",
+        "Nothing breaks, because all embedding models place text in the same universal coordinate system",
+        "The new model produces vectors of identical meaning but they must be re-normalized, which fixes the issue automatically",
+        "Only the dimensionality matters; as long as both models output the same length, the vectors are comparable"
+      ],
+      "answer": 0,
+      "explanation": "Different embedding models produce incomparable coordinate systems, so a query embedded with the new model cannot be meaningfully compared to documents embedded with the old one. Changing the model requires re-embedding the whole corpus."
+    },
+    {
+      "subtopic": "RAG vs fine-tuning vs long context",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "You must build an assistant over a 10,000-page handbook that is edited weekly, and every answer must cite its source. Which statements correctly justify choosing RAG over fine-tuning or pure long context? Select all that apply.",
+      "options": [
+        "Weekly edits are handled by re-embedding only the changed pages — no model retraining",
+        "RAG can point each answer to the specific retrieved chunk it came from, satisfying the citation requirement",
+        "A long context window cannot practically hold 10,000 pages, and re-paying that token cost per query is lossy and expensive",
+        "Fine-tuning is the better choice here because baked-in facts are easier to cite than retrieved chunks",
+        "Fine-tuning updates instantly whenever the handbook changes, unlike RAG"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "RAG updates instantly by editing data, cites the retrieved chunk, and avoids stuffing 10,000 pages into context. Fine-tuning cannot cite sources and must be retrained to change facts (which go stale), so the last two options are wrong."
+    },
+    {
+      "subtopic": "Two-stage failure diagnosis",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A RAG answer is confidently wrong. You inspect the logs and find the correct passage WAS in the retrieved top-k, yet the model still produced the wrong answer. What does this localize the failure to, and what is the appropriate fix?",
+      "options": [
+        "A generation failure — tighten the prompt ('answer only from the context; otherwise say you don't know') or use a stronger model",
+        "A retrieval failure — improve chunking, increase top-k, or add a cross-encoder reranker",
+        "An embedding-space mismatch — re-embed the corpus with a compatible model",
+        "An indexing failure — rebuild the ANN index with higher recall settings"
+      ],
+      "answer": 0,
+      "explanation": "If the correct context was retrieved but the answer is wrong, the retriever did its job, so it is a generation/prompt failure. The fixes are prompt tightening or a stronger model; the other options all address retrieval, which was not at fault here."
+    },
+    {
+      "subtopic": "Faithfulness vs relevance",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In RAG evaluation, an answer is rated as fully faithful (grounded) yet scores poorly on the system's other quality metric. Which situation best explains how both can be true at once?",
+      "options": [
+        "The model replied 'I don't know' even though the retrieved context did contain the answer — faithful but not relevant/complete",
+        "The model invented a citation to a chunk that was never retrieved — unfaithful but highly relevant",
+        "The retrieved chunk was off-topic, so the model could not be faithful to it at all",
+        "Faithfulness and relevance are the same metric, so this situation is impossible"
+      ],
+      "answer": 0,
+      "explanation": "Faithfulness asks whether the answer is supported only by context; an answer can make no unsupported claims yet still fail to address the question (e.g. an unnecessary 'I don't know'), so it is faithful but not relevant/complete. The two metrics are distinct."
+    },
+    {
+      "subtopic": "Long context does not replace RAG",
+      "source": "ai/rag-and-vector-search-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A colleague argues that a model with a very large context window removes the need for RAG entirely. Which counterpoints from the reviewer are valid? Select all that apply.",
+      "options": [
+        "A big window does not add knowledge past the model's training cutoff — you still need to supply the text somehow",
+        "Dumping a whole corpus re-pays the token cost on every call and suffers 'lost in the middle'",
+        "Pasting raw text does not by itself provide per-source citations the way retrieving known chunks does",
+        "A large context window automatically retrieves and ranks the most relevant passages for you",
+        "Long context scales cleanly to arbitrarily large corpora, making retrieval pointless"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A bigger window holds more text but adds no new knowledge, re-pays token cost per call, suffers 'lost in the middle', and gives no inherent citations. It does not rank/retrieve for you and does not scale to large corpora, so the last two options are false."
+    }
+  ]
+}

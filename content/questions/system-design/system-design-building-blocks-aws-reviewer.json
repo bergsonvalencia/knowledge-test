@@ -1,0 +1,262 @@
+{
+  "topic": "system-design",
+  "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Service identity / secrets",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the recommended way to let an ECS-on-Fargate task call other AWS services without embedding any access keys?",
+      "options": [
+        "Attach an IAM role (the ECS task role) so the SDK gets temporary credentials automatically",
+        "Bake a long-lived IAM access key/secret into the container image and read it from an env var",
+        "Store an IAM access key in Secrets Manager and inject it at container startup",
+        "Use the account root user's credentials scoped to the task with a session policy"
+      ],
+      "answer": 0,
+      "explanation": "An attached IAM role gives the SDK temporary, auto-rotated credentials with no static keys anywhere — the single most important basic AWS security pattern. Storing or baking any access key (even in Secrets Manager) reintroduces a static credential, and root credentials should never be used by a workload."
+    },
+    {
+      "subtopic": "Compute selection",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A batch job regularly needs about 40 minutes to finish per run. Which compute choice is correct given AWS's documented limits?",
+      "options": [
+        "AWS Lambda, raising the timeout to 40 minutes in the function config",
+        "ECS on Fargate (or AWS Batch/Step Functions), because Lambda has a 15-minute max per invocation",
+        "AWS Lambda, splitting nothing and relying on automatic checkpointing past 15 minutes",
+        "ECS Express Mode, which removes Lambda's execution time limit while still being a Lambda function"
+      ],
+      "answer": 1,
+      "explanation": "Lambda caps a single invocation at 15 minutes, so a 40-minute job must run on Fargate/Batch/Step Functions. Lambda's timeout cannot be raised past 15 minutes, and ECS Express Mode provisions an ECS-on-Fargate service plus ALB — it is not a Lambda function."
+    },
+    {
+      "subtopic": "WAF attachment points",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "AWS WAF web ACLs can be attached to which of these resources?",
+      "options": [
+        "A CloudFront distribution, an Application Load Balancer, or API Gateway",
+        "A Network Load Balancer, because it terminates TLS at L4",
+        "An EC2 Auto Scaling Group, applied to each launched instance",
+        "A Route 53 hosted zone, to filter requests before DNS resolution"
+      ],
+      "answer": 0,
+      "explanation": "WAF inspects HTTP(S) traffic, so it attaches to CloudFront, ALB, or API Gateway. An NLB operates at L4 with no HTTP to inspect, and WAF does not attach to Auto Scaling Groups or Route 53 hosted zones."
+    },
+    {
+      "subtopic": "Object storage",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Amazon S3 is designed for 11 nines (99.999999999%) of durability for objects.",
+      "answer": true,
+      "explanation": "The reviewer cites S3's canonical designed durability of 11 nines. Durability (not availability) is the figure quoted, reflecting redundant storage of each object."
+    },
+    {
+      "subtopic": "Well-Architected pillars",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which is the sixth AWS Well-Architected pillar that older five-pillar study material omits?",
+      "options": [
+        "Sustainability",
+        "Scalability",
+        "Compliance",
+        "Maintainability"
+      ],
+      "answer": 0,
+      "explanation": "The six pillars are Operational Excellence, Security, Reliability, Performance Efficiency, Cost Optimization, and Sustainability — the last being the newer sixth pillar. Scalability, Compliance, and Maintainability are not named Well-Architected pillars."
+    },
+    {
+      "subtopic": "RDS Multi-AZ instance vs cluster",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team enables an **RDS Multi-AZ instance** deployment and then routes read traffic to the standby to offload the primary. Why does this fail to do what they expect?",
+      "options": [
+        "The Multi-AZ instance standby is not readable; it exists only for failover, so reads are not offloaded",
+        "The standby is readable but only for the last committed transaction, so reads are stale by minutes",
+        "Multi-AZ instance deployments place the standby in the same AZ, so it cannot take read traffic",
+        "Reads succeed but trigger an immediate failover each time the standby is queried"
+      ],
+      "answer": 0,
+      "explanation": "An RDS Multi-AZ *instance* deployment has a single non-readable standby used only for failover — it offloads no reads. To get readable standbys you need a Multi-AZ DB *cluster* (writer plus two readable standbys) or read replicas."
+    },
+    {
+      "subtopic": "SQS Standard semantics",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You use an **SQS Standard** queue with a pool of competing-consumer workers. Which design rule is essential given the queue's delivery semantics?",
+      "options": [
+        "Make consumers idempotent, because Standard is at-least-once and may deliver a message more than once",
+        "Process messages single-threaded, because Standard guarantees strict global ordering",
+        "Disable the visibility timeout, because Standard never redelivers an in-flight message",
+        "Rely on exactly-once delivery, since Standard deduplicates by message body automatically"
+      ],
+      "answer": 0,
+      "explanation": "SQS Standard is at-least-once with best-effort ordering, so duplicates are expected and consumers must be idempotent. It does not provide strict global ordering, exactly-once delivery, or content-based dedup — those are FIFO-queue features."
+    },
+    {
+      "subtopic": "Messaging service selection",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Multiple independent consumer groups must each read the **same** ordered event history and be able to replay from an earlier offset days later. Which AWS service fits?",
+      "options": [
+        "Kinesis Data Streams (or MSK), where consumers read at their own offset and can reprocess history within retention",
+        "SQS Standard, with each consumer group subscribed to the same queue",
+        "SQS FIFO, since strict ordering implies independent replayable consumers",
+        "SNS, fanning the same message out to each consumer group once"
+      ],
+      "answer": 0,
+      "explanation": "The replayable, ordered, multi-reader log model is Kinesis/MSK, where each consumer tracks its own offset and can reprocess within retention. An SQS queue (Standard or FIFO) deletes a message once consumed, so it cannot replay; SNS fans out once and does not retain a replayable log."
+    },
+    {
+      "subtopic": "L4 vs L7 load balancing",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need host- and path-based routing, native gRPC, and WebSocket support for an HTTP application. Which Elastic Load Balancing type is correct?",
+      "options": [
+        "Application Load Balancer (L7)",
+        "Network Load Balancer (L4)",
+        "Gateway Load Balancer (L3)",
+        "Classic Load Balancer (legacy)"
+      ],
+      "answer": 0,
+      "explanation": "Path/host/header routing, gRPC, and WebSockets are L7 features handled by the ALB. The NLB is L4 (TCP/UDP/TLS) with no HTTP routing, GWLB is an L3 appliance-insertion gateway, and the Classic LB is legacy."
+    },
+    {
+      "subtopic": "SCP behavior",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about **Service Control Policies (SCPs)** in AWS Organizations are correct? (Select all that apply.)",
+      "options": [
+        "SCPs cap the maximum permissions of principals inside member accounts but never grant permissions",
+        "SCPs do not apply to the Organizations management account",
+        "Effective permissions are the intersection of SCPs, RCPs, and identity/resource policies",
+        "An SCP can grant a principal a permission that its IAM identity policy lacks",
+        "SCPs attach to resources to block external/cross-org principals"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "SCPs only set a permissions ceiling, never grant, and don't apply to the management account; effective access is the intersection of SCPs, RCPs, and identity/resource policies. An SCP cannot grant a missing permission, and resource-side blocking of external principals is the job of RCPs, not SCPs."
+    },
+    {
+      "subtopic": "DR strategies",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Among AWS's four DR strategies, which is the active/passive option that keeps a **scaled-down but always-running** copy that can take reduced traffic immediately on failover?",
+      "options": [
+        "Warm Standby",
+        "Pilot Light",
+        "Backup & Restore",
+        "Multi-site Active/Active"
+      ],
+      "answer": 0,
+      "explanation": "Warm Standby keeps the full stack running at reduced scale, so it can serve reduced traffic immediately and scale up. Pilot Light keeps core infra on but the app off, Backup & Restore rebuilds from backups (hours), and Multi-site is active/active rather than passive."
+    },
+    {
+      "subtopic": "DynamoDB Global Tables consistency",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "DynamoDB Global Tables are multi-Region, multi-active and offer only eventual consistency, with no strong-consistency option.",
+      "answer": false,
+      "explanation": "Global Tables are multi-Region multi-active and default to eventual consistency, but the reviewer notes an optional strong-consistency mode exists. Claiming they are eventually consistent only is explicitly flagged as a red flag."
+    },
+    {
+      "subtopic": "Edge compute functions",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "When choosing **Lambda@Edge** over **CloudFront Functions** for CloudFront edge logic, which capabilities point you to Lambda@Edge? (Select all that apply.)",
+      "options": [
+        "You need to run on all four CloudFront event types (including origin request/response)",
+        "You need network access and access to the request body",
+        "You can write in Node.js or Python rather than only lightweight JavaScript",
+        "You need sub-millisecond execution on viewer request with the lowest possible cost",
+        "You only need to rewrite a viewer-request header with no external calls"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Lambda@Edge runs at regional edge caches on all four CloudFront events, supports Node.js/Python, and allows network and request-body access. The sub-millisecond, lowest-cost viewer-request/response header tweaks are exactly what CloudFront Functions is for."
+    },
+    {
+      "subtopic": "Aurora Global Database",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the documented maximum number of secondary Regions an Aurora Global Database can span?",
+      "options": [
+        "Up to 10 secondary Regions",
+        "Up to 5 secondary Regions",
+        "Up to 15 secondary Regions",
+        "Exactly 1 secondary Region"
+      ],
+      "answer": 0,
+      "explanation": "An Aurora Global Database has one primary plus up to 10 secondary Regions with sub-second replication. The '5' figure is stale, 15 is the Aurora read-replica limit within a Region, and the design supports more than a single secondary."
+    },
+    {
+      "subtopic": "Availability Zones",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Per current AWS guidance, every AWS Region has 3 or more independent Availability Zones, and spreading a tier across them is the primary intra-region HA mechanism — to be exhausted before reaching for multi-region.",
+      "answer": true,
+      "explanation": "The reviewer states every Region has 3+ AZs and that Multi-AZ is the primary intra-region HA mechanism, with multi-region added only after. The older '2 AZs per Region' claim is explicitly called stale, and reaching for multi-region before Multi-AZ is a red flag."
+    },
+    {
+      "subtopic": "RCP vs SCP intersection",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An S3 bucket's resource policy allows a partner's cross-account principal, but an **RCP** on the account denies access to all principals outside the organization. The partner is external. What is the net result and why?",
+      "options": [
+        "Access is denied, because effective access is the intersection of RCPs with identity/resource policies, and the RCP excludes external principals",
+        "Access is allowed, because a resource (bucket) policy that explicitly allows a principal overrides an RCP",
+        "Access is denied, because SCPs always block cross-account access regardless of RCPs",
+        "Access is allowed, because RCPs only restrict principals inside the organization's own accounts"
+      ],
+      "answer": 0,
+      "explanation": "Effective access is the intersection of SCPs, RCPs, and identity/resource policies, so an RCP that excludes external principals removes the access even though the bucket policy allows it. A resource policy cannot override an RCP, SCPs govern principals inside the account (not the cross-org resource side), and RCPs specifically target external/cross-org principals."
+    },
+    {
+      "subtopic": "Reading a CDK/IaC config",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A reviewer flags the snippet below before it ships. Per the basic-level AWS security pattern, what is the correct fix?",
+      "code": "TaskDefinition:\n  ContainerDefinitions:\n    - Name: api\n      Image: 123.dkr.ecr.amazonaws.com/api:latest\n      Environment:\n        - Name: AWS_ACCESS_KEY_ID\n          Value: AKIA...EXAMPLE\n        - Name: AWS_SECRET_ACCESS_KEY\n          Value: wJalr...EXAMPLE\n        - Name: DB_PASSWORD\n          Value: hunter2",
+      "lang": "yaml",
+      "options": [
+        "Remove the static AWS keys and attach an IAM task role; move DB_PASSWORD into Secrets Manager and fetch it at runtime",
+        "Keep the keys but move them to the task definition's Secrets section so they are encrypted at rest",
+        "Replace the keys with the account root credentials, which rotate automatically",
+        "Leave the keys; restrict the security group so only the app can reach the metadata endpoint"
+      ],
+      "answer": 0,
+      "explanation": "Static AWS keys in config violate the core pattern — attach an IAM task role so the SDK gets temporary credentials, and put the DB password in Secrets Manager fetched at runtime. Encrypting static keys at rest, using root credentials, or tightening a security group does not remove the embedded long-lived secret."
+    },
+    {
+      "subtopic": "Failover ownership / ARC",
+      "source": "system-design/system-design-building-blocks-aws-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In a two-region active/passive design, what is the senior/architect view of cross-region failover on AWS, and which service orchestrates it?",
+      "options": [
+        "Failover is customer-owned and orchestrated with Amazon Application Recovery Controller (zonal shift, routing controls, Region switch)",
+        "AWS automatically detects a regional outage and fails the workload over with no customer-side orchestration",
+        "Failover is driven by 'Route 53 ARC', which is the current name of the recovery controller",
+        "Aurora Global Database fails the entire application over by itself once the primary Region is unreachable"
+      ],
+      "answer": 0,
+      "explanation": "Failover is customer-owned and orchestrated by Amazon Application Recovery Controller. AWS does not automatically fail your workload across Regions, 'Route 53 ARC' is the stale name (now just ARC), and Aurora Global Database handles only data-tier replication/promotion, not whole-application failover."
+    }
+  ]
+}

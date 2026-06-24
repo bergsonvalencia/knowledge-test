@@ -1,0 +1,253 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-codepipeline-cicd-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Code* suite roles",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the AWS Code* suite, which service is the orchestration engine that sequences stages and actions, as opposed to compiling code or rolling out releases?",
+      "options": [
+        "CodePipeline",
+        "CodeBuild",
+        "CodeDeploy",
+        "CodeArtifact"
+      ],
+      "answer": 0,
+      "explanation": "CodePipeline is the workflow/orchestration engine. CodeBuild is ephemeral build/test compute, CodeDeploy is the release/rollout engine, and CodeArtifact is a package registry."
+    },
+    {
+      "subtopic": "Config files",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which configuration file controls **build** phases (install, pre_build, build, post_build) and artifact/report definitions for CodeBuild?",
+      "options": [
+        "appspec.yml",
+        "buildspec.yml",
+        "taskdef.json",
+        "nuget.config"
+      ],
+      "answer": 1,
+      "explanation": "buildspec.yml drives CodeBuild's phases, artifacts, cache, reports, and env. appspec.yml is CodeDeploy's deploy file; taskdef.json is the ECS task definition; nuget.config configures NuGet sources."
+    },
+    {
+      "subtopic": "In-place vs blue/green platforms",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "CodeDeploy **in-place** deployments (stop app on existing instances, install new revision, restart) are available on which compute platform?",
+      "options": [
+        "Lambda only",
+        "ECS only",
+        "EC2/on-prem only",
+        "All three: EC2, ECS, and Lambda"
+      ],
+      "answer": 2,
+      "explanation": "In-place is EC2/on-prem only. ECS and Lambda are always traffic-shift (blue/green-style): ECS swaps target groups between task sets and Lambda shifts an alias between versions."
+    },
+    {
+      "subtopic": "Lambda traffic shifting",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A Lambda deployment config of `Canary10Percent5Minutes` does what?",
+      "options": [
+        "Sends 10% of traffic to the new version for 5 minutes, then shifts the remaining 100%",
+        "Shifts 10% of traffic every 5 minutes until fully cut over",
+        "Runs the new version for 5 minutes in a shadow with 0% real traffic, then cuts over",
+        "Holds at 10% for 5 minutes and requires manual approval to continue"
+      ],
+      "answer": 0,
+      "explanation": "Canary shifts a small slice (10%), bakes for the stated time (5 minutes), then completes to 100%. Shifting equal increments on an interval is the Linear family (e.g. Linear10PercentEvery1Minute), not canary."
+    },
+    {
+      "subtopic": "Source hosting in 2026",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "**CodeCommit is closed to new customers**, so a brand-new project should host its repo in GitHub (or Bitbucket/GitLab) and connect through CodeConnections rather than creating a new CodeCommit repo.",
+      "answer": true,
+      "explanation": "CodeCommit has been closed to new customers since mid-2024. Existing repos keep working, but new projects should host in GitHub/Bitbucket/GitLab via CodeConnections (referencing the connection ARN)."
+    },
+    {
+      "subtopic": "Stages vs actions ordering",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Within a single CodePipeline stage that contains multiple actions, how do those actions run by default, and how do you force a specific order?",
+      "options": [
+        "Actions always run strictly sequentially in declaration order; there is no way to parallelize them",
+        "Actions can run in parallel; set `runOrder` to sequence specific actions",
+        "Actions run in parallel only if you mark the stage as `parallel: true`; otherwise sequential",
+        "Actions run in the order of their `priority` field; equal priorities run sequentially"
+      ],
+      "answer": 1,
+      "explanation": "Actions in the same stage can run in parallel, and `runOrder` sequences them (lower runs first; equal runOrder runs together). Stages always run in order, but actions within a stage are parallel unless ordered."
+    },
+    {
+      "subtopic": "Pipeline type V2 features",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are V2-only CodePipeline capabilities (not available in V1)? (Select all that apply.)",
+      "options": [
+        "Branch/tag/file-path trigger filters on a CodeConnections source",
+        "Pipeline-level and action-level variables",
+        "Stage-level conditions and rollback",
+        "Storing artifacts in an S3 artifact bucket between stages",
+        "Manual approval actions that pause the pipeline"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Rich Git trigger filters, pipeline/action variables, and stage-level conditions/rollback are V2-only. S3 artifact passing and manual approval actions exist in both V1 and V2, so they don't distinguish the types."
+    },
+    {
+      "subtopic": "Secrets in CodeBuild",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A security review flags a NuGet API token stored as a CodeBuild **project PLAINTEXT environment variable**. What is the correct fix?",
+      "options": [
+        "Base64-encode the token in the PLAINTEXT variable so it isn't human-readable in the console",
+        "Move it to Secrets Manager (or SSM SecureString) and reference it via `secrets-manager:`/`parameter-store:` in the buildspec env",
+        "Pass it only as a per-build override at `StartBuild` time so it never appears in the project config",
+        "Hardcode it inline in the buildspec `build` phase so it isn't a project-level variable"
+      ],
+      "answer": 1,
+      "explanation": "PLAINTEXT project env vars are visible in the console. Storing the secret in Secrets Manager/SSM and referencing it via typed keys lets CodeBuild inject it and mask it in logs. Base64 isn't encryption, per-build overrides still pass plaintext, and inlining in the buildspec leaks it into the repo/logs."
+    },
+    {
+      "subtopic": "ECS blue/green prerequisites",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An ECS service was created with default settings, and a CodeDeploy blue/green deploy fails immediately because traffic never shifts. What is the root cause?",
+      "options": [
+        "The service has only one task running, so there is nothing to shift",
+        "The service uses deployment controller `ECS` (rolling) instead of `CODE_DEPLOY` with two target groups",
+        "The ALB is missing a WAF, which CodeDeploy requires for traffic shifting",
+        "The task definition references `:LATEST` instead of a pinned revision"
+      ],
+      "answer": 1,
+      "explanation": "CodeDeploy blue/green on ECS requires deployment controller `CODE_DEPLOY` (the default is the `ECS` rolling controller), plus two target groups and a production listener so CodeDeploy can swap which TG the listener forwards to."
+    },
+    {
+      "subtopic": "EC2 lifecycle hook order",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For an EC2/on-prem **in-place** deploy, which appspec lifecycle hook order is correct?",
+      "options": [
+        "BeforeInstall -> ApplicationStop -> Install -> ApplicationStart -> AfterInstall -> ValidateService",
+        "ApplicationStop -> BeforeInstall -> Install -> AfterInstall -> ApplicationStart -> ValidateService",
+        "Install -> ApplicationStop -> BeforeInstall -> AfterInstall -> ValidateService -> ApplicationStart",
+        "ApplicationStart -> Install -> ApplicationStop -> AfterInstall -> ValidateService -> BeforeInstall"
+      ],
+      "answer": 1,
+      "explanation": "The in-place order is ApplicationStop -> BeforeInstall -> Install -> AfterInstall -> ApplicationStart -> ValidateService. ValidateService runs last so a failing health script triggers rollback before traffic is fully trusted."
+    },
+    {
+      "subtopic": "GitHub OIDC trust policy",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When GitHub Actions assumes an IAM role via OIDC (`AssumeRoleWithWebIdentity`), what restricts *which* repository and branch may assume the role?",
+      "options": [
+        "The IAM role's permissions policy, which lists allowed repos as resources",
+        "The role's trust policy, conditioned on the token `aud` and `sub` claims (e.g. `repo:org/name:ref:refs/heads/main`)",
+        "A GitHub secret containing the role ARN that only that repo can read",
+        "An IP allowlist on the role limiting requests to GitHub's runner address ranges"
+      ],
+      "answer": 1,
+      "explanation": "The role's trust policy conditions on the OIDC provider audience and the `sub` claim, restricting assumption to a specific repo/branch/environment. The permissions policy governs what the role can do once assumed, not who may assume it."
+    },
+    {
+      "subtopic": "CloudFormation change-set pattern",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the recommended **safe** way to deploy infrastructure changes through CodePipeline with a CloudFormation action?",
+      "options": [
+        "A single UpdateStack action that applies the template directly so the change is atomic",
+        "CreateChangeSet -> manual approval action -> ExecuteChangeSet, under a least-privileged CloudFormation role",
+        "Delete the stack and recreate it each deploy so drift can never accumulate",
+        "Run `cdk deploy` from the pipeline service role with full administrator access"
+      ],
+      "answer": 1,
+      "explanation": "The change-set pattern computes the diff (CreateChangeSet), gates it behind a manual approval for review, then applies it (ExecuteChangeSet), all under a distinct least-privileged CloudFormation role. A direct UpdateStack skips the reviewable diff, and delete/recreate is destructive."
+    },
+    {
+      "subtopic": "Triggers and event-driven pipelines",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The modern recommended way to start a pipeline from a CodeConnections (GitHub) source is **polling** the repository on a fixed interval from the source action.",
+      "answer": false,
+      "explanation": "Polling is the old, slower, API-costly path that should be avoided. The recommended trigger is event-driven: pushes arrive via the managed connection and EventBridge starts the pipeline."
+    },
+    {
+      "subtopic": "Buildspec phase ordering and reports",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "version: 0.2\nphases:\n  install:\n    runtime-versions:\n      dotnet: 8.0\n  pre_build:\n    commands:\n      - dotnet restore MyApp.sln\n  build:\n    commands:\n      - dotnet build MyApp.sln -c Release --no-restore\n      - dotnet test --no-build -c Release --logger \"trx;LogFileName=test.trx\"\nreports:\n  unit-tests:\n    files: [\"**/*.trx\"]\n    file-format: VisualStudioTrx",
+      "lang": "yaml",
+      "question": "Given this buildspec, which statement is correct about the `reports` block and the `--no-restore`/`--no-build` flags?",
+      "options": [
+        "The `reports` block fails the build whenever any test in the TRX is marked failed, overriding the phase exit codes",
+        "The TRX is parsed into a report group for pass/fail trends independent of build success, and `--no-build` reuses the output `dotnet build` produced earlier in the same phase",
+        "`--no-restore` will error because `dotnet restore` ran in a different phase than `dotnet build`",
+        "The `reports` block runs before `pre_build`, so the TRX must already exist when restore happens"
+      ],
+      "answer": 1,
+      "explanation": "Test reports populate a report group for trend visibility independent of whether the build fails. `--no-build`/`--no-restore` work because restore ran in pre_build and build ran earlier in the build phase within the same ephemeral workspace; phase artifacts persist across phases of one build."
+    },
+    {
+      "subtopic": "Alarm-driven rollback semantics",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A canary Lambda deploy trips an attached CloudWatch alarm during the bake window and CodeDeploy rolls back. What does the rollback actually do?",
+      "options": [
+        "It performs a literal in-memory undo of the alias change with no new deployment record",
+        "It deletes the new Lambda version so traffic has nowhere to go but the old version",
+        "It reroutes the alias to the previous version by creating a new, auditable deployment of the last-good revision",
+        "It pauses the pipeline and waits for a human to approve the revert before any traffic moves"
+      ],
+      "answer": 2,
+      "explanation": "Rollback reroutes the alias (or redeploys the last-good revision on EC2) by creating a *new* deployment of the prior known-good version, so it is auditable rather than a silent undo. It does not delete the new version or require human approval; the whole point is automatic, no-human-in-the-loop reversion."
+    },
+    {
+      "subtopic": "Distinct IAM roles and cross-account",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "In a cross-account pipeline (CI account builds, prod account deploys), which statements about IAM/KMS are correct? (Select all that apply.)",
+      "options": [
+        "The pipeline service role, CodeBuild role, CodeDeploy role, and CloudFormation role should be kept distinct",
+        "The pipeline action in the deploy stage assumes a role in the target (prod) account",
+        "The shared artifact bucket should be KMS-encrypted with a key the target account is granted permission to use",
+        "A single shared access key embedded in both accounts is the simplest correct way to read artifacts",
+        "The CloudFormation service role is the same role CodePipeline itself uses to invoke actions"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Distinct roles, cross-account role assumption, and a shared KMS key on the artifact bucket are the correct pattern. Embedding static access keys violates 'assign roles, never embed keys,' and the CloudFormation role (stack resource permissions) is deliberately distinct from the pipeline service role."
+    },
+    {
+      "subtopic": "Manual approval timeout behavior",
+      "source": "aws/aws-codepipeline-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A manual approval action gating the production deploy stage is left untouched until its default timeout (seven days) elapses. What happens?",
+      "options": [
+        "The action auto-approves and the production deploy proceeds",
+        "The action fails and the pipeline stops; it does not auto-approve",
+        "The action silently resets its timer and waits another seven days",
+        "The pipeline skips the approval action and continues to the next stage"
+      ],
+      "answer": 1,
+      "explanation": "A timed-out approval fails the action and the pipeline stops; it never auto-approves. Approval requires a human with `codepipeline:PutApprovalResult` to explicitly approve or reject."
+    }
+  ]
+}

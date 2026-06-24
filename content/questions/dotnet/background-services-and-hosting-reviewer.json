@@ -174,7 +174,11 @@
         "A low-latency, best-effort in-process handoff where losing a few items on restart is acceptable",
         "Decoupling a fast producer from a single in-process consumer within one process"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "Durability across restarts, competing consumers across replicas, and persistent exactly-once scheduling all exceed what an in-process worker can provide and call for a broker, Hangfire/Quartz, or Azure Functions. Best-effort low-latency handoff and single-process producer/consumer decoupling are exactly what in-process `BackgroundService` + channels are for."
     },
     {
@@ -190,7 +194,11 @@
         "`BackgroundService.ExecuteAsync` is awaited to completion before the host is considered started",
         "`IHostedService.StartAsync` is fire-and-forget and never awaited by the host"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "`IHostedService` is the raw contract (good for one-shot hooks); `BackgroundService` implements it and its `StartAsync` only awaits `ExecuteAsync` up to its first incomplete await, so the loop keeps running in the background. The host does NOT await `ExecuteAsync` to completion, and it DOES await `StartAsync` (it is not fire-and-forget)."
     },
     {
@@ -256,7 +264,7 @@
       "source": "dotnet/background-services-and-hosting-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "According to the reviewer, how will a captured `BackgroundService` exception be surfaced differently in .NET 11 compared to the .NET 6+ default?",
+      "question": "How will a captured `BackgroundService` exception be surfaced differently in .NET 11 compared to the .NET 6+ default?",
       "options": [
         "`IHost.RunAsync`/`StopAsync` (and `WaitForShutdownAsync`) will throw the captured exception instead of completing silently, making it observable to the code that ran the host",
         "The default will revert to .NET 5 behavior, silently swallowing the exception again",

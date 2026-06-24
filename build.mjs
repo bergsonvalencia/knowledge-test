@@ -38,8 +38,13 @@ function slug(s) {
   return String(s).toLowerCase().trim()
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "q";
 }
-// Normalize question text for duplicate detection.
-function normQ(s) { return String(s).toLowerCase().replace(/\s+/g, " ").replace(/[^a-z0-9 ]/g, "").trim(); }
+// Normalize for duplicate detection. Keys on question + code + options together, so two
+// distinct questions that merely share a generic stem ("What does this print?") don't collide.
+function normText(s) { return String(s == null ? "" : s).toLowerCase().replace(/\s+/g, " ").replace(/[^a-z0-9 ]/g, "").trim(); }
+function dupKey(q) {
+  const opts = Array.isArray(q.options) ? q.options.map(normText).sort().join("|") : "";
+  return [normText(q.question), normText(q.code), opts].join("##");
+}
 
 function highlight(code, lang) {
   const l = (lang || "").toLowerCase();
@@ -121,7 +126,7 @@ for (const file of files) {
     }
 
     // --- duplicate detection (across the whole bank) ---
-    const nk = normQ(q.question);
+    const nk = dupKey(q);
     if (seen.has(nk)) { pushErr(file, `${where}: duplicate question (also ${seen.get(nk)})`); return; }
 
     // --- normalize + id ---

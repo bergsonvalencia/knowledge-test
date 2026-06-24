@@ -1,0 +1,273 @@
+{
+  "topic": "ai",
+  "source": "ai/large-language-models-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Architecture & objective",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "At its core, what single training objective does a large language model optimize?",
+      "options": [
+        "Predict the next token given all the tokens before it",
+        "Classify each input sentence into a fixed set of categories",
+        "Reconstruct a sentence after randomly masking interior words bidirectionally",
+        "Maximize a human-provided reward signal during pretraining"
+      ],
+      "answer": 0,
+      "explanation": "An LLM is a decoder-only transformer trained with one self-supervised objective: predict the next token. Bidirectional masked reconstruction describes encoder-only models like BERT, and reward maximization is a post-training (RLHF) step, not the core pretraining objective."
+    },
+    {
+      "subtopic": "Tokenization",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why do modern LLMs use subword tokenization (e.g. BPE) rather than a pure-word or pure-character vocabulary?",
+      "options": [
+        "Subwords give a fixed vocabulary that can spell anything by composing pieces, avoiding the out-of-vocabulary problem while keeping sequences a reasonable length",
+        "Subwords guarantee exactly one token per English word, making token and word counts identical",
+        "Subwords let the model skip the embedding table entirely and process raw characters",
+        "Subwords are required so the model can attend bidirectionally across the sequence"
+      ],
+      "answer": 0,
+      "explanation": "A pure word vocabulary explodes and can't cover new/misspelled words; a pure character vocabulary makes sequences too long. Subwords hit the sweet spot: a fixed vocab with no OOV problem. Tokens are explicitly not one-per-word, and each token still indexes an embedding."
+    },
+    {
+      "subtopic": "Pretraining loss",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What loss function does next-token pretraining minimize?",
+      "options": [
+        "Cross-entropy: the negative log-probability assigned to the true next token, averaged over the sequence",
+        "Mean squared error between predicted and target embedding vectors",
+        "Cosine distance between the prompt embedding and the answer embedding",
+        "Hinge loss over the top-k candidate tokens"
+      ],
+      "answer": 0,
+      "explanation": "Pretraining penalizes the model by the negative log-probability it assigned to the actual next token, summed/averaged over positions — standard cross-entropy. The other losses (MSE, cosine, hinge) are not the next-token-prediction objective."
+    },
+    {
+      "subtopic": "Knowledge cutoff",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "An LLM has a live connection to the world and can answer questions about events that occurred after its training data was collected.",
+      "answer": false,
+      "explanation": "False. The model only knows what was in its training corpus; anything after the knowledge cutoff is invisible to it because there is no live connection. This staleness is exactly why retrieval (RAG) and tool calling exist."
+    },
+    {
+      "subtopic": "Autoregressive decoding",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the autoregressive generation loop, what happens after the decoder picks a token?",
+      "options": [
+        "The chosen token is appended to the sequence and the whole input is run through the model again to predict the next token",
+        "The model emits all remaining tokens of the answer in a single parallel pass",
+        "The token is discarded and the model re-samples the entire output from scratch",
+        "The model updates its weights via backpropagation before producing the next token"
+      ],
+      "answer": 0,
+      "explanation": "Each pass produces exactly one token, which is appended and fed back in for the next pass — the model consumes its own growing output. Generation is sequential, not parallel, and no weight updates (backprop) happen at inference time."
+    },
+    {
+      "subtopic": "Temperature mechanics",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Mechanically, how does the temperature parameter `T` affect decoding?",
+      "options": [
+        "It divides the logits by `T` before the softmax: `T < 1` sharpens the distribution, `T > 1` flattens it, and `T → 0` approaches greedy",
+        "It multiplies the final probabilities by `T`, then re-normalizes them to sum to 1",
+        "It caps the candidate set to the top `T` tokens before sampling",
+        "It adds Gaussian noise of standard deviation `T` to each sampled token's embedding"
+      ],
+      "answer": 0,
+      "explanation": "Temperature rescales logits as `softmax(logit/T)`. T<1 makes the distribution spikier and more deterministic, T>1 flattens it toward uniform, and T→0 collapses to argmax. Capping to a fixed candidate set is top-k, not temperature."
+    },
+    {
+      "subtopic": "Top-k vs top-p",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key difference between top-k and top-p (nucleus) sampling?",
+      "options": [
+        "Top-k always keeps a fixed number of tokens; top-p keeps a variable-size set — the smallest whose cumulative probability reaches `p` — so it adapts to the model's confidence",
+        "Top-k keeps tokens above a probability threshold; top-p keeps exactly `p` percent of the vocabulary",
+        "Top-k operates on whole sequences while top-p operates on individual tokens",
+        "Top-k is deterministic while top-p is always equivalent to greedy decoding"
+      ],
+      "answer": 0,
+      "explanation": "Top-k hard-limits to k tokens regardless of the distribution's shape; top-p keeps the smallest set whose cumulative probability ≥ p, so the candidate set shrinks when the model is confident and grows when it is unsure. Neither operates on whole sequences (that's beam search)."
+    },
+    {
+      "subtopic": "Beam search trade-offs",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is beam search common for machine translation but rarely used for open-ended chat?",
+      "options": [
+        "It optimizes for the highest-probability whole sequence, which suits short closed-ended tasks but tends to produce bland, generic, repetitive text for open-ended generation",
+        "It is the only decoding method that can run at temperature 0",
+        "It injects more randomness than sampling, which translation tasks require",
+        "It cannot be used with a causal attention mask, which chat models need"
+      ],
+      "answer": 0,
+      "explanation": "Beam search keeps the b best whole sequences and returns the most probable one — ideal for tasks with one right answer like translation, but it yields safe, generic text for open-ended chat. It is deterministic-leaning, not a source of extra randomness."
+    },
+    {
+      "subtopic": "Context window",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about the context window are correct? (Select all that apply.)",
+      "options": [
+        "The system prompt, conversation history, retrieved documents, the user question, and the model's output all share one fixed token budget",
+        "Adding more retrieved documents or history leaves less room for the generated answer",
+        "The context window persists across requests, giving the model memory between calls automatically",
+        "Naive self-attention cost scales roughly as O(n²) in sequence length",
+        "Doubling the context window halves the per-token price"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Input and output share one fixed token budget, so more history/docs leaves less room for the answer, and naive attention scales ~O(n²). The model is stateless across calls (memory only exists because the app resends history), and bigger windows raise cost rather than lowering per-token price."
+    },
+    {
+      "subtopic": "Lost in the middle",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Models tend to use information at the start and end of a long context more reliably than material buried in the middle, so where you place key facts in the prompt matters.",
+      "answer": true,
+      "explanation": "True. This is the 'lost in the middle' effect: models use information at the beginning and end of a long context more reliably than content in the middle, which is why prompt placement of key facts matters."
+    },
+    {
+      "subtopic": "Post-training pipeline",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A freshly pretrained base model fluently continues text but won't reliably follow instructions. Which post-training stage most directly fixes this?",
+      "options": [
+        "Instruction tuning (supervised fine-tuning on instruction–response pairs)",
+        "Increasing the context window at inference time",
+        "Lowering the decoding temperature to 0",
+        "Building a vector index for retrieval-augmented generation"
+      ],
+      "answer": 0,
+      "explanation": "Instruction tuning (SFT) continues training on (instruction, good-response) pairs so the model learns to do what it is asked rather than merely continue text. A larger window, lower temperature, or a RAG index do not teach a base model to follow instructions."
+    },
+    {
+      "subtopic": "Parameter-efficient fine-tuning",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does LoRA (Low-Rank Adaptation) do to make fine-tuning cheaper?",
+      "options": [
+        "Trains a small number of added weights instead of updating all of the model's parameters",
+        "Quantizes every weight to a single bit during the forward pass",
+        "Prunes the context window down to the most relevant tokens before inference",
+        "Replaces gradient descent with a closed-form least-squares solution over the full weight matrix"
+      ],
+      "answer": 0,
+      "explanation": "LoRA is a parameter-efficient fine-tuning method that trains small added matrices instead of all the model's weights, getting most of the benefit at a fraction of the cost. It is unrelated to bit-quantization, context pruning, or replacing gradient descent."
+    },
+    {
+      "subtopic": "Limitations & fixes",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which fixes are appropriate for reducing hallucination? (Select all that apply.)",
+      "options": [
+        "Ground answers in retrieved sources (RAG)",
+        "Ask the model for citations",
+        "Lower the decoding temperature",
+        "Raise the temperature to encourage more diverse, creative answers",
+        "Verify the answer externally"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "explanation": "The model optimizes for plausible continuations, not truth, so the standard fixes are grounding in retrieved sources, requesting citations, lowering temperature, and verifying externally. Raising temperature increases diversity and risk of error — the opposite of what reduces hallucination."
+    },
+    {
+      "subtopic": "Temperature & determinism (code)",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given the next-token distribution below, a service calls the model twice with these exact settings. What is the expected behavior?",
+      "code": "prompt: \"2 + 2 =\"\ndistribution: \" 4\" 0.90 | \" four\" 0.06 | \" 5\" 0.03 | \" ...\" 0.01\n\n# call A: temperature = 0\n# call B: temperature = 1.2",
+      "lang": "text",
+      "options": [
+        "Call A emits ` 4` deterministically every time; call B usually emits ` 4` but can occasionally emit a different (possibly wrong) token and is not reproducible",
+        "Both calls emit ` 4` deterministically because ` 4` is the argmax in both",
+        "Call A is random and call B is deterministic, since higher temperature concentrates probability",
+        "Call B always emits ` 4` because temperature only affects tokens below probability 0.5"
+      ],
+      "answer": 0,
+      "explanation": "At temperature 0 (greedy/argmax) the model always picks ` 4`. At temperature 1.2 the distribution flattens, so ` 4` stays most likely but the other tokens gain weight, making the output occasionally different and non-reproducible. Higher temperature flattens (not concentrates) the distribution."
+    },
+    {
+      "subtopic": "Latency & sequential generation",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does generation latency grow with the length of the output, even when a KV-cache is used?",
+      "options": [
+        "Each new token depends on all previous ones, so output tokens are produced one after another — the loop is inherently sequential even though the KV-cache makes each step cheaper",
+        "The KV-cache must be fully recomputed from scratch for every output token",
+        "Self-attention becomes a constant-time operation, so only output length contributes any cost at all",
+        "Longer outputs force the model to re-run pretraining on the new tokens"
+      ],
+      "answer": 0,
+      "explanation": "Autoregressive decoding is inherently sequential: each output token is conditioned on all prior tokens, so they must be produced one at a time. A KV-cache makes each step cheaper but does not remove the sequential dependency, and it certainly is not recomputed from scratch each step."
+    },
+    {
+      "subtopic": "Bigger windows vs retrieval",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Increasing the context-window size eliminates the need for retrieval (RAG).",
+      "answer": false,
+      "explanation": "False. A bigger window lets you paste more text, but it does not give the model knowledge past its training cutoff, provides no citations, costs more and runs slower as it fills, and can distract the model ('lost in the middle'). Retrieving only relevant, fresh, attributable chunks is usually better."
+    },
+    {
+      "subtopic": "Softmax computation (code)",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given the logits below, which set of softmax probabilities is correct at temperature `T = 1.0`? (Use e ≈ 2.718.)",
+      "code": "logits: a = 2.0, b = 1.0, c = 0.0\nP_i = softmax(logit_i / T),  T = 1.0",
+      "lang": "text",
+      "options": [
+        "P(a) ≈ 0.665, P(b) ≈ 0.245, P(c) ≈ 0.090",
+        "P(a) ≈ 0.500, P(b) ≈ 0.333, P(c) ≈ 0.167",
+        "P(a) ≈ 0.900, P(b) ≈ 0.090, P(c) ≈ 0.010",
+        "P(a) ≈ 0.333, P(b) ≈ 0.333, P(c) ≈ 0.333"
+      ],
+      "answer": 0,
+      "explanation": "At T=1 the exponentials are e²≈7.389, e¹≈2.718, e⁰=1.000, summing to ≈11.107, giving P(a)≈0.665, P(b)≈0.245, P(c)≈0.090. A uniform 1/3 split would require equal logits; the values must reflect the exponential gap between 2.0, 1.0, and 0.0."
+    },
+    {
+      "subtopic": "Decoding choice by task",
+      "source": "ai/large-language-models-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A pipeline extracts a structured JSON record from a document and must be testable and reproducible. Which decoding setting is most appropriate, and why?",
+      "options": [
+        "Greedy / temperature 0, because extraction needs one correct, reproducible, well-structured answer and randomness only hurts",
+        "High temperature (>1) with top-p, because diverse candidates make the JSON more robust",
+        "Beam search with a wide beam, because it maximizes creative variety in the output",
+        "Temperature 1.0 with no top-p, because the model's raw distribution is always the most accurate"
+      ],
+      "answer": 0,
+      "explanation": "Deterministic extraction wants a single correct, reproducible answer, so greedy/temperature 0 is the right choice — randomness only introduces variability and test flakiness. High temperature and wide beams add diversity that hurts a task with one correct structured output."
+    }
+  ]
+}

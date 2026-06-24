@@ -1,0 +1,276 @@
+{
+  "topic": "sql",
+  "source": "sql/transactions-isolation-and-locking-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "ACID basics",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which ACID property guarantees that once `COMMIT` returns, the change survives a crash or power loss?",
+      "options": [
+        "Durability",
+        "Atomicity",
+        "Consistency",
+        "Isolation"
+      ],
+      "answer": 0,
+      "explanation": "Durability means a committed change persists through failures, enforced via write-ahead logging (the log record is hardened to disk before the commit is acknowledged). Atomicity is all-or-nothing; it does not address surviving crashes after commit."
+    },
+    {
+      "subtopic": "ACID vs CAP consistency",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The \"C\" (Consistency) in ACID means the same thing as the \"C\" (Consistency) in the CAP theorem.",
+      "answer": false,
+      "explanation": "ACID consistency is about declared constraints/invariants staying valid within one database. CAP consistency is about replicas agreeing across a distributed system — a different concept."
+    },
+    {
+      "subtopic": "Default isolation level",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the default transaction isolation level in SQL Server (with default settings)?",
+      "options": [
+        "Read Committed",
+        "Read Uncommitted",
+        "Repeatable Read",
+        "Serializable"
+      ],
+      "answer": 0,
+      "explanation": "SQL Server defaults to Read Committed (lock-based unless READ_COMMITTED_SNAPSHOT is enabled). Serializable is the strictest level, not the default."
+    },
+    {
+      "subtopic": "Read phenomena",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A dirty read is distinguished from the other read phenomena because it is the only one that exposes:",
+      "options": [
+        "Uncommitted data from another transaction",
+        "A committed value change of a single row",
+        "New rows appearing in a range query",
+        "Rows disappearing from a range query"
+      ],
+      "answer": 0,
+      "explanation": "A dirty read exposes data another transaction modified but has not committed (and may roll back). Non-repeatable and phantom reads both involve committed changes from other transactions arriving between your reads."
+    },
+    {
+      "subtopic": "Deadlock victim error",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When SQL Server breaks a deadlock, the chosen victim transaction is rolled back and the session receives which error?",
+      "options": [
+        "Error 1205",
+        "Error 3960",
+        "Error 601",
+        "Error 8134"
+      ],
+      "answer": 0,
+      "explanation": "The deadlock victim fails with error 1205 and is fully rolled back. Error 3960 is the SNAPSHOT update-conflict error; error 601 occurs with NOLOCK during page splits."
+    },
+    {
+      "subtopic": "Non-repeatable vs phantom",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A transaction runs `SELECT COUNT(*) FROM Orders WHERE Total > 500` twice and gets 3 then 4, because another transaction inserted a qualifying row and committed in between. What is this, and which is the lowest standard ANSI level that prevents it via locking?",
+      "options": [
+        "Phantom read; Serializable",
+        "Non-repeatable read; Repeatable Read",
+        "Phantom read; Repeatable Read",
+        "Dirty read; Read Committed"
+      ],
+      "answer": 0,
+      "explanation": "A new row entering the range between two reads is a phantom read; only Serializable (key-range locks) prevents it under lock-based isolation. Repeatable Read holds shared locks on rows already read but does not lock the gap, so inserts still produce phantoms."
+    },
+    {
+      "subtopic": "Isolation level mechanism",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Under lock-based **Repeatable Read** in SQL Server, how are shared (S) locks on rows that were read handled?",
+      "options": [
+        "Held until the transaction commits",
+        "Released immediately after each read completes",
+        "Never taken, because reads use row versioning",
+        "Escalated to key-range locks over the whole table"
+      ],
+      "answer": 0,
+      "explanation": "Repeatable Read holds S locks on rows it reads until commit, preventing non-repeatable reads. Releasing the S lock immediately after the read is Read Committed behavior; key-range locks are Serializable."
+    },
+    {
+      "subtopic": "RCSI vs SNAPSHOT",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements correctly contrast READ_COMMITTED_SNAPSHOT (RCSI) with SNAPSHOT isolation in SQL Server? (Select all that apply.)",
+      "options": [
+        "RCSI gives each statement a snapshot as of the start of that statement",
+        "SNAPSHOT gives a snapshot as of the start of the transaction and can fail with error 3960 on a write conflict",
+        "RCSI is enabled per database via ALTER DATABASE, changing the meaning of the default Read Committed",
+        "RCSI detects write conflicts and raises error 3960 just like SNAPSHOT",
+        "SNAPSHOT takes shared locks on every row it reads to guarantee repeatable reads"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "RCSI is statement-level, database-enabled, and redefines the default Read Committed; SNAPSHOT is transaction-level and detects write conflicts (3960). RCSI does NOT detect update conflicts, and SNAPSHOT achieves repeatable reads via row versioning, not by taking shared locks."
+    },
+    {
+      "subtopic": "Update locks",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does SQL Server use Update (U) locks during the read phase of an `UPDATE`/`DELETE`?",
+      "options": [
+        "To prevent the deadlock where two transactions hold S locks on a row and both try to upgrade to X",
+        "To allow many writers to modify the same row simultaneously",
+        "To let readers see uncommitted data without taking shared locks",
+        "To escalate row locks to a table lock more aggressively"
+      ],
+      "answer": 0,
+      "explanation": "A U lock is asymmetric: compatible with S so reads proceed, but only one U is granted per resource (U+U conflict). This serializes would-be updaters and prevents the symmetric S-to-X upgrade deadlock. It does not enable concurrent writers or dirty reads."
+    },
+    {
+      "subtopic": "Lock escalation",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When lock escalation fires in SQL Server (e.g. a statement acquiring roughly 5,000 locks on one object), what does it escalate to?",
+      "options": [
+        "A single table-level lock, going directly from row/page to table",
+        "A page-level lock first, then a table lock only if needed",
+        "A database-level lock to protect the whole database",
+        "A set of key-range locks covering the affected rows"
+      ],
+      "answer": 0,
+      "explanation": "Escalation goes row/page directly to a single table lock to save memory; it does not stop at the page level. This trades memory for a sharp drop in concurrency — one big delete can lock the whole table."
+    },
+    {
+      "subtopic": "NOLOCK hazards",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Beyond permitting dirty reads, which problems can the `NOLOCK` / `READUNCOMMITTED` hint cause? (Select all that apply.)",
+      "options": [
+        "Returning the same committed row twice",
+        "Skipping committed rows entirely",
+        "Failing with error 601 during page splits or allocation changes",
+        "Guaranteeing a transactionally consistent snapshot of the table",
+        "Automatically taking exclusive locks to serialize readers"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "NOLOCK takes no shared locks, so a scan can read a row twice, miss committed rows, or hit error 601 during page splits. It provides no consistency guarantee and takes fewer locks, not exclusive ones — treat its results as approximate and possibly wrong."
+    },
+    {
+      "subtopic": "Lost update and snapshot",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Enabling RCSI on a database automatically prevents lost updates in a read-modify-write across separate transactions.",
+      "answer": false,
+      "explanation": "RCSI does not detect read-modify-write lost updates at all. SNAPSHOT isolation converts such conflicts into a detectable error 3960 (first-committer-wins) that you must catch and retry; RCSI offers no such detection."
+    },
+    {
+      "subtopic": "Savepoints",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `SAVE TRAN AfterDebit` savepoint is set, then more work is done, then `ROLLBACK TRAN AfterDebit` runs. What is true?",
+      "options": [
+        "Work done after the savepoint is undone, but locks acquired since the savepoint are NOT released",
+        "The entire transaction is rolled back and @@TRANCOUNT is reset to 0",
+        "Both the work and all locks taken since the savepoint are released",
+        "The savepoint commits the work up to that point durably"
+      ],
+      "answer": 0,
+      "explanation": "Rolling back to a named savepoint undoes work since the savepoint without aborting the whole transaction, but it does not release locks acquired since the savepoint. A nameless ROLLBACK rolls back the entire stack and zeroes @@TRANCOUNT."
+    },
+    {
+      "subtopic": "Nested transactions",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Consider the nesting below. After the inner `COMMIT TRAN`, what is the durability status of the work?",
+      "code": "BEGIN TRAN;            -- @@TRANCOUNT = 1\n  UPDATE A SET x = 1;\n  BEGIN TRAN;          -- @@TRANCOUNT = 2\n    UPDATE B SET y = 2;\n  COMMIT TRAN;         -- @@TRANCOUNT = 1\n  -- ... an error then forces ROLLBACK here",
+      "lang": "sql",
+      "options": [
+        "Nothing is durable yet; the inner COMMIT only decremented @@TRANCOUNT, and the later ROLLBACK undoes both updates",
+        "The UPDATE on B is durable because its inner transaction committed",
+        "Both updates are durable because @@TRANCOUNT reached a committed state",
+        "The UPDATE on A is durable but the UPDATE on B is rolled back"
+      ],
+      "answer": 0,
+      "explanation": "Nested transactions are mostly a fiction: an inner COMMIT merely decrements @@TRANCOUNT and makes nothing durable. Work becomes durable only at the outermost COMMIT. A subsequent ROLLBACK rolls back the entire stack, undoing both updates."
+    },
+    {
+      "subtopic": "Doomed transaction state",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Inside a `CATCH` block, `XACT_STATE()` returns `-1`. What does this indicate and what is the only legal action on the transaction?",
+      "options": [
+        "The transaction is uncommittable/doomed; only ROLLBACK is allowed",
+        "There is no active transaction; you may safely COMMIT",
+        "The transaction is active and committable; COMMIT will succeed",
+        "A savepoint is pending; you must issue ROLLBACK TRAN <name>"
+      ],
+      "answer": 0,
+      "explanation": "XACT_STATE() = -1 means the transaction is in an uncommittable (doomed) state — for example, after a deadlock — where only ROLLBACK is legal. A value of 1 means an active, committable transaction; 0 means none is open."
+    },
+    {
+      "subtopic": "Lock compatibility matrix",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Based on the SQL Server lock compatibility matrix, which requested lock is GRANTED when an Update (U) lock is already held on a resource?",
+      "options": [
+        "A Shared (S) lock",
+        "A second Update (U) lock",
+        "An Exclusive (X) lock",
+        "An Intent-Exclusive (IX) lock"
+      ],
+      "answer": 0,
+      "explanation": "U is compatible with S (a reader and the read phase of an update can coexist), so a requested S is granted against a held U. U+U conflicts (only one U per resource), and U is incompatible with IX and X — that asymmetry is exactly what defuses the S-to-X upgrade deadlock."
+    },
+    {
+      "subtopic": "Deadlock victim selection",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "T1 has modified 1 row and T2 has modified 40 rows when they deadlock. T2 is set to `DEADLOCK_PRIORITY LOW` while T1 is `NORMAL`. Which transaction does the monitor choose as the victim?",
+      "options": [
+        "T2, because DEADLOCK_PRIORITY LOW overrides the rollback-cost estimate",
+        "T1, because it has done the least log work and is cheapest to roll back",
+        "Neither; the monitor waits for one to finish on its own",
+        "Whichever transaction started later, regardless of priority"
+      ],
+      "answer": 0,
+      "explanation": "By default the engine kills the transaction cheapest to roll back (here T1, with only 1 row), but DEADLOCK_PRIORITY overrides cost: a LOW-priority session is chosen first regardless. Since T2 is LOW, T2 becomes the victim. A deadlock never resolves on its own."
+    },
+    {
+      "subtopic": "Optimistic concurrency for web",
+      "source": "sql/transactions-isolation-and-locking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A web \"edit product\" flow must fail loudly if another user saved first, but cannot hold a database lock during the user's think time. EF Core's recommended approach relies on what mechanism?",
+      "options": [
+        "A rowversion concurrency token added to the UPDATE's WHERE clause; 0 rows affected raises DbUpdateConcurrencyException",
+        "A SELECT WITH (UPDLOCK, HOLDLOCK) held open across the HTTP request",
+        "Setting the transaction isolation level to Serializable for the whole web request",
+        "Enabling RCSI so the second writer is blocked until the first commits"
+      ],
+      "answer": 0,
+      "explanation": "App-level optimistic concurrency reads a rowversion token, sends it to the client, and re-checks it in the UPDATE WHERE clause; 0 rows affected means someone wrote first, throwing DbUpdateConcurrencyException — no DB lock held across the round-trip. UPDLOCK/HOLDLOCK is pessimistic and cannot be held across a stateless request."
+    }
+  ]
+}

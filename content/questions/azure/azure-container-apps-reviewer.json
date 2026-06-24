@@ -1,0 +1,262 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-container-apps-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "What ACA is",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Azure Container Apps runs your workloads on a **managed Kubernetes** foundation. Which three open-source pillars does ACA bake in for autoscaling, distributed-app building blocks, and ingress respectively?",
+      "options": [
+        "KEDA, Dapr, Envoy",
+        "Istio, Linkerd, NGINX",
+        "Helm, Prometheus, Traefik",
+        "HPA, Service Mesh, Application Gateway"
+      ],
+      "answer": 0,
+      "explanation": "ACA's three baked-in OSS pillars are KEDA (event-driven autoscaling, scale to zero), Dapr (sidecar building blocks), and Envoy (ingress, TLS, traffic split). The other options mix in tools ACA does not surface as its core pillars."
+    },
+    {
+      "subtopic": "Core model nesting",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly describes the ACA core model nesting of environment, app, revision, and replica?",
+      "options": [
+        "An environment contains apps; an app has revisions (immutable snapshots); each revision scales to N replicas.",
+        "A replica contains environments; each environment is a revision of one app.",
+        "An app contains environments; each environment is an immutable snapshot scaled to N revisions.",
+        "A revision contains apps; each app runs one environment per replica."
+      ],
+      "answer": 0,
+      "explanation": "The hierarchy is environment -> app -> revision -> replica. The environment is the VNet/logging boundary holding apps; an app has immutable revisions; KEDA scales each revision's replicas 0..N. The other orderings invert the nesting."
+    },
+    {
+      "subtopic": "Default replicas",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are the default `minReplicas` and `maxReplicas` values for an ACA container app?",
+      "options": [
+        "min 0, max 10",
+        "min 1, max 10",
+        "min 0, max 30",
+        "min 1, max 100"
+      ],
+      "answer": 0,
+      "explanation": "ACA defaults to `minReplicas` 0 (enabling scale to zero) and `maxReplicas` 10, which you raise as needed. min 1 would prevent scale-to-zero by default, which is not the ACA default."
+    },
+    {
+      "subtopic": "Ingress / Envoy",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In ACA, an app configured with **internal** ingress is reachable from the public internet.",
+      "answer": false,
+      "explanation": "Internal ingress is reachable only from within the environment's VNet (service-to-service). Only **external** ingress is reachable from the internet; apps with no ingress are event-driven workers with no inbound HTTP."
+    },
+    {
+      "subtopic": "Apps vs jobs",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What fundamentally distinguishes a Container Apps **job** from a Container **app**?",
+      "options": [
+        "A job runs a finite task to completion and exits; an app is a service that stays up and scales replicas.",
+        "A job can only be triggered manually, while an app can be triggered by events.",
+        "A job runs on AKS while an app runs on App Service infrastructure.",
+        "A job cannot use a container image, while an app must use one."
+      ],
+      "answer": 0,
+      "explanation": "A job runs a containerized task that runs to completion and stops (each run is a job execution), whereas an app is a long-running service that scales replicas. Both run containers; jobs support manual, schedule, and event triggers."
+    },
+    {
+      "subtopic": "Scale to zero exceptions",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An event-driven worker has `minReplicas: 0` and a Service Bus scale rule, but compute cost stays high even when the queue is empty. Investigation shows a second scale rule on **CPU** was added. Why does the app never reach zero replicas?",
+      "options": [
+        "CPU (and memory) scale rules cannot scale to zero — they need at least one replica running to measure utilization, effectively holding the floor at 1.",
+        "Adding any second scale rule disables scale-to-zero entirely in ACA.",
+        "The Service Bus rule's cooldown of 300s permanently blocks scale-in once a CPU rule exists.",
+        "CPU rules force `minReplicas` to be ignored and replace it with the `maxReplicas` value."
+      ],
+      "answer": 0,
+      "explanation": "CPU and memory rules require at least one replica because there is nothing to measure at zero, so they effectively hold the floor at 1. The Service Bus/event rule could scale to zero on its own; the fix is to remove the CPU rule."
+    },
+    {
+      "subtopic": "Revisions",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following changes to a container app create a **new revision** (template-scoped changes)? Select all that apply.",
+      "options": [
+        "Changing the container image tag",
+        "Editing a scale rule (e.g. concurrent requests)",
+        "Changing resource limits (CPU/memory)",
+        "Changing only the value of an existing secret",
+        "Switching the app from single-revision to multiple-revision mode"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Template-scoped changes — image, env-var definitions, scale rules, resource limits — create a new revision. Changing only a secret value does not (replicas just restart to pick it up), and toggling the active-revisions mode is a configuration-level change, not a new revision."
+    },
+    {
+      "subtopic": "Traffic splitting / canary",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You must release `orders-api:2.0` as a canary — send 10% of traffic first, ramp to 100%, with instant rollback. What is required to do this in ACA?",
+      "options": [
+        "Put the app in multiple-revision mode and set traffic weights across revisions with `az containerapp ingress traffic set`.",
+        "Stay in single-revision mode and deploy v2, which automatically receives 10% until validated.",
+        "Use two separate environments and an external Azure Load Balancer to split traffic.",
+        "Create two separate container apps and split traffic at DNS with weighted records."
+      ],
+      "answer": 0,
+      "explanation": "Traffic splitting requires multiple-revision mode; you then set percentage weights per revision (e.g. v1=90 v2=10) and roll back instantly by reweighting. Single-revision mode cannot split traffic, and ACA does not need an external load balancer for this."
+    },
+    {
+      "subtopic": "Traffic set command",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the command below, what is the resulting traffic distribution?",
+      "code": "az containerapp ingress traffic set \\\n  --name orders-api --resource-group rg-shop \\\n  --revision-weight orders-api--v1=90 orders-api--v2=10",
+      "lang": "bash",
+      "options": [
+        "90% of traffic goes to revision v1, 10% to revision v2.",
+        "10% of traffic goes to revision v1, 90% to revision v2.",
+        "Both revisions receive 100% (mirrored traffic).",
+        "v1 is promoted to 100% and v2 is dropped."
+      ],
+      "answer": 0,
+      "explanation": "Weights map directly to revisions: `v1=90 v2=10` sends 90% to v1 and 10% to v2 — the classic canary split with the old revision still serving the bulk of traffic."
+    },
+    {
+      "subtopic": "Job triggers",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A nightly data-cleanup task currently runs on an always-on App Service worker, wasting compute 23 hours a day. Which ACA construct and trigger best replaces it?",
+      "options": [
+        "A Container Apps job with a Schedule trigger and a cron expression.",
+        "A Container app with an HTTP scale rule and `minReplicas: 0`.",
+        "A Container Apps job with a Manual trigger invoked by a cron VM.",
+        "A Container app with a CPU scale rule scaling to zero overnight."
+      ],
+      "answer": 0,
+      "explanation": "A schedule-triggered job runs on a cron expression, spins up, runs to completion, and exits — no always-on compute. A regular app stays up to serve requests, and a CPU rule cannot scale to zero anyway."
+    },
+    {
+      "subtopic": "Service discovery",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Two ACA apps in the same environment must call each other privately, with the callee never exposed to the internet. What is the correct approach?",
+      "options": [
+        "Give the callee internal ingress; the caller reaches it by app name via built-in service discovery over the environment's internal network.",
+        "Give the callee external ingress and restrict it with an IP allow-list of the caller.",
+        "Place each app in its own environment and peer the two VNets manually.",
+        "Expose the callee via a public FQDN and authenticate with a shared API key in code."
+      ],
+      "answer": 0,
+      "explanation": "Internal ingress keeps the callee off the public internet, and apps in an environment reach each other by app name through built-in service discovery. External ingress or separate environments would either expose the callee or break the shared internal network."
+    },
+    {
+      "subtopic": "Dapr",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Dapr in ACA are correct? Select all that apply.",
+      "options": [
+        "Dapr is an opt-in sidecar injected next to your app container in each replica.",
+        "Dapr components (pub/sub, state) are environment-scoped and shared by name across apps.",
+        "Dapr service invocation provides built-in mTLS, retries, and discovery via the target's app-id.",
+        "Dapr is mandatory for any ACA app that uses ingress.",
+        "Dapr requires your code to import the broker-specific SDK for pub/sub."
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Dapr is opt-in, runs as a sidecar, exposes environment-scoped components shared by name, and its service invocation adds mTLS/retries/discovery by app-id. It is not mandatory, and its whole point is to keep broker-specific SDKs out of your code."
+    },
+    {
+      "subtopic": "Secrets and revisions",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Changing the **value** of an existing ACA secret does not, by itself, create a new revision, but running replicas must restart to pick up the new value.",
+      "answer": true,
+      "explanation": "Secret values are not template-scoped, so changing one alone does not produce a new revision; however, a running replica must restart to read the updated value. Changing env-var definitions, by contrast, is template-scoped and does create a revision."
+    },
+    {
+      "subtopic": "Cold start and cooldown",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What are the two main behavioral consequences of relying on HTTP/event scale-to-zero in ACA?",
+      "options": [
+        "A cold start when the next request/event wakes a replica, and a cooldown (~300s) before KEDA scales back in toward zero.",
+        "Zero cold start but a fixed 60-second warm-up billed at the maximum replica count.",
+        "Immediate scale-in with no cooldown, plus guaranteed sub-millisecond wake latency.",
+        "A permanent minimum of one replica and no cooldown delay at all."
+      ],
+      "answer": 0,
+      "explanation": "Scale-to-zero costs nothing while idle but incurs a cold start when traffic returns, and KEDA waits a cooldown (~300s) after the metric clears before scaling in to avoid thrashing. There is no permanent one-replica floor for HTTP/event rules."
+    },
+    {
+      "subtopic": "Choosing ACA vs alternatives",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team needs to run ~8 microservices with autoscaling and blue/green rollout, using standard containers and no exotic Kubernetes features (no CRDs, custom networking, or service mesh). Which platform fits best and why?",
+      "options": [
+        "Container Apps — it delivers KEDA autoscaling, revisions with traffic-split blue/green, and service discovery without the operational burden of running a cluster.",
+        "AKS — only a full Kubernetes cluster can run multiple microservices with autoscaling.",
+        "App Service — it is the only Azure option that supports blue/green via slots and scale-to-zero.",
+        "Functions — eight microservices map naturally to eight functions with a rich binding model."
+      ],
+      "answer": 0,
+      "explanation": "ACA provides autoscaling, traffic-split blue/green, and service discovery without cluster ops, which is exactly this profile. AKS adds unneeded operational burden, App Service has no scale-to-zero, and full container microservices are a poor fit for the per-function FaaS model."
+    },
+    {
+      "subtopic": "CPU/memory scale-to-zero gotcha",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "If an ACA app has both an HTTP scale rule and a memory scale rule, the app can still scale all the way to zero replicas during idle periods.",
+      "answer": false,
+      "explanation": "Memory (and CPU) rules cannot scale to zero because there is nothing to measure with no replica running, so they effectively hold a floor of one replica regardless of the HTTP rule. To get true scale-to-zero, you must drop the memory rule and rely on HTTP/event rules only."
+    },
+    {
+      "subtopic": "Key Vault reference rotation",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A container needs a database connection string that must be rotatable **without redeploying the app**. Which ACA setup is recommended?",
+      "options": [
+        "Define an ACA secret as a Key Vault reference resolved with the app's managed identity, then expose it to the app via a `secretref` env var.",
+        "Hardcode the connection string in the image and rebuild the image on each rotation.",
+        "Store the connection string as a plain env-var definition and edit it on each rotation.",
+        "Pass the connection string as a command-line argument set at container start."
+      ],
+      "answer": 0,
+      "explanation": "A Key Vault reference secret resolved at runtime with managed identity, surfaced through a `secretref` env var, lets you rotate in Key Vault with no redeploy. Hardcoding requires a rebuild, and editing a plain env-var definition is template-scoped (creates a revision) and still requires reconfiguration."
+    },
+    {
+      "subtopic": "AWS mapping",
+      "source": "azure/azure-container-apps-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For an interviewer working across both clouds, which AWS service most closely maps to ACA's \"bring an image, we run and scale it serverlessly\" model?",
+      "options": [
+        "ECS on Fargate (with App Runner as the simpler request-driven web option).",
+        "EKS, since both ACA and EKS are managed Kubernetes you operate.",
+        "AWS Lambda, since both are purely event-driven FaaS with no container support.",
+        "A single Fargate run-task, since neither offers autoscaling or revisions."
+      ],
+      "answer": 0,
+      "explanation": "ACA maps most closely to ECS on Fargate (and App Runner for simple request-driven apps). EKS corresponds to AKS, Lambda corresponds to Functions, and a one-off Fargate run-task corresponds to ACI — ACA is ECS/Fargate plus serverless scaling and rollout."
+    }
+  ]
+}

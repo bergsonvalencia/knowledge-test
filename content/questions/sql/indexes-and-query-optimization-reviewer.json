@@ -1,0 +1,270 @@
+{
+  "topic": "sql",
+  "source": "sql/indexes-and-query-optimization-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Clustered vs non-clustered",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does a **clustered index** define for a SQL Server table?",
+      "options": [
+        "The physical sort order of the table — its leaf level *is* the table",
+        "A separate B+-tree whose leaf holds key columns plus a row locator",
+        "An in-memory copy of the rows used only for read caching",
+        "A constraint that forces every indexed column to be unique"
+      ],
+      "answer": 0,
+      "explanation": "A clustered index defines the physical sort order; the leaf level holds the actual rows, so there is exactly one per table. A separate B+-tree with a row locator describes a non-clustered index, not a clustered one."
+    },
+    {
+      "subtopic": "Index count limits",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How many clustered and non-clustered indexes can a single SQL Server table have?",
+      "options": [
+        "Up to 999 clustered and 1 non-clustered",
+        "Exactly 1 clustered and up to 999 non-clustered",
+        "1 clustered and 1 non-clustered",
+        "Unlimited clustered and unlimited non-clustered"
+      ],
+      "answer": 1,
+      "explanation": "A table has exactly one clustered index (its physical order) and up to 999 non-clustered indexes. The clustered count is the constraint — there can only ever be one physical ordering of the data."
+    },
+    {
+      "subtopic": "SARGability — LIKE",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "`WHERE Name LIKE '%abc'` (a leading wildcard) is SARGable and can use an index seek.",
+      "answer": false,
+      "explanation": "A leading wildcard `'%abc'` is non-SARGable because the engine cannot seek on a prefix it does not know. `LIKE 'abc%'` (trailing wildcard) is SARGable and can seek."
+    },
+    {
+      "subtopic": "Page and extent size",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the unit of I/O (page size) in SQL Server, and how big is an extent?",
+      "options": [
+        "4 KB page; 32 KB extent (8 pages)",
+        "8 KB page; 64 KB extent (8 pages)",
+        "16 KB page; 128 KB extent (8 pages)",
+        "8 KB page; 80 KB extent (10 pages)"
+      ],
+      "answer": 1,
+      "explanation": "SQL Server reads/writes 8 KB pages, grouped into 64 KB extents of 8 pages. Index design is fundamentally about minimizing the number of pages read."
+    },
+    {
+      "subtopic": "Covering indexes — INCLUDE",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Where do `INCLUDE` columns of a non-clustered index live, and what are they used for?",
+      "options": [
+        "In every level of the B+-tree; usable for seeking and ordering",
+        "Only at the leaf level; payload for the SELECT output, not seekable or sortable",
+        "In a separate filtered structure; usable only with a WHERE clause",
+        "In the clustered index leaf; they replace the row locator"
+      ],
+      "answer": 1,
+      "explanation": "INCLUDE columns are stored only at the leaf level as payload, so they cover SELECT-list output without bloating the navigation levels or counting against the key-size limit. They cannot be used for seeking, range predicates, or ORDER BY."
+    },
+    {
+      "subtopic": "Key Lookup cost",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A non-clustered seek finds **N** matching rows but needs columns the index lacks, forcing a Key Lookup whose own descent costs 3 reads. If the seek descent is 3 reads, what is the total logical-read cost, and why is it a scaling problem?",
+      "options": [
+        "3 + N reads — each lookup costs one read, so cost grows slowly",
+        "3 × N reads — the seek repeats per row",
+        "3 + 3N reads — each row pays a full per-row tree descent back to the base table",
+        "3 reads — the lookup is free once the seek locates the leaf"
+      ],
+      "answer": 2,
+      "explanation": "Cost is 3 (seek descent) + 3N (one full per-row descent into the clustered index per matched row). At 1,000 rows that is 3,003 reads and the lookup dominates — which is why covering the query collapses it back to the single seek."
+    },
+    {
+      "subtopic": "Composite key prefix",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `CREATE NONCLUSTERED INDEX IX ON Sales(CustomerId, ProductId, SaleDate)`, which predicate can perform an index **seek**?",
+      "code": "-- (a) WHERE ProductId = 99\n-- (b) WHERE CustomerId = 7 AND SaleDate > '2026-01-01'\n-- (c) WHERE SaleDate = '2026-01-01'\n-- (d) WHERE ProductId = 99 AND SaleDate = '2026-01-01'",
+      "lang": "sql",
+      "options": [
+        "(a) — ProductId is in the index",
+        "(b) — seeks on CustomerId, with SaleDate as a residual filter",
+        "(c) — SaleDate is the last key column",
+        "(d) — both columns are equality predicates"
+      ],
+      "answer": 1,
+      "explanation": "Only (b) starts at the leading column: it seeks on `CustomerId` and applies `SaleDate` as a residual (the `ProductId` gap stops further seeking). (a), (c), and (d) all omit the leading `CustomerId`, so there is no usable left-most prefix and the engine scans."
+    },
+    {
+      "subtopic": "SARGability rewrite",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An index exists on `OrderDate`, yet this query scans. What is the correct SARGable rewrite?",
+      "code": "SELECT * FROM dbo.Orders WHERE YEAR(OrderDate) = 2026;",
+      "lang": "sql",
+      "options": [
+        "WHERE CONVERT(int, YEAR(OrderDate)) = 2026",
+        "WHERE OrderDate >= '2026-01-01' AND OrderDate < '2027-01-01'",
+        "WHERE CAST(OrderDate AS date) BETWEEN '2026-01-01' AND '2026-12-31'",
+        "WHERE DATEPART(year, OrderDate) = 2026"
+      ],
+      "answer": 1,
+      "explanation": "Wrapping the column in `YEAR()` forces per-row evaluation → scan. The fix is a half-open range on the bare column. The other options still apply a function/cast to the column (`CONVERT`, `CAST`, `DATEPART`), so they remain non-SARGable."
+    },
+    {
+      "subtopic": "Estimated vs actual plan",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In an actual execution plan you see a large gap between **Estimated rows** and **Actual rows** on an operator. What does this most strongly indicate?",
+      "options": [
+        "The query is being parameterized incorrectly by the application",
+        "Stale or insufficient statistics producing a bad cardinality estimate",
+        "Fragmentation on the clustered index leaf pages",
+        "The plan was compiled with the legacy cardinality estimator only"
+      ],
+      "answer": 1,
+      "explanation": "A wide estimated-vs-actual gap is the classic signal of stale/insufficient statistics or a bad cardinality estimate, which leads the optimizer to pick the wrong operator. Fragmentation does not change row-count estimates."
+    },
+    {
+      "subtopic": "Parameter sniffing",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A stored proc runs fast for most customers but times out for one 'whale' with millions of rows; the cached plan uses Nested Loops + Key Lookup. What is happening?",
+      "options": [
+        "Missing statistics on the whale's rows that auto-update never refreshed",
+        "Parameter sniffing — the cached plan was compiled for a low-row value and is wrong for the high-row value",
+        "Index fragmentation that only affects the whale's partition",
+        "An implicit conversion that only triggers for large customers"
+      ],
+      "answer": 1,
+      "explanation": "The plan was sniffed and cached for a low-row customer (Nested Loops + lookups), which is catastrophic for a high-row customer that needs a Hash Join + scan. The same cached plan is reused regardless of the parameter — that reuse on skewed data is the defining symptom."
+    },
+    {
+      "subtopic": "Filtered indexes",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which scenario is a canonical, valid use of a **filtered index**?",
+      "options": [
+        "Enforcing one active email per user while allowing many NULL/inactive rows via `WHERE IsActive = 1`",
+        "Indexing a `bit` column across all rows to speed up any boolean filter",
+        "Replacing the clustered index to change the table's physical order",
+        "Combining two single-column indexes into one with an `OR` filter"
+      ],
+      "answer": 0,
+      "explanation": "A filtered unique index on the non-NULL/active subset enforces uniqueness there while allowing many NULLs — a canonical use. Filtered indexes generally cannot use `OR`, do not replace the clustered index, and indexing a low-selectivity `bit` over all rows is exactly what they avoid."
+    },
+    {
+      "subtopic": "Index maintenance thresholds",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An index shows ~20% fragmentation. Per the rough maintenance guidance, what action is appropriate, and what is the statistics side effect?",
+      "options": [
+        "REBUILD — and it refreshes statistics with a full scan",
+        "REORGANIZE — and it does NOT update statistics, so plan that separately",
+        "REORGANIZE — and it updates statistics with a full scan as a side effect",
+        "Leave it — 20% is below the action threshold"
+      ],
+      "answer": 1,
+      "explanation": "The ~15–30% band calls for REORGANIZE (online, lightweight). REORGANIZE does not update statistics — only REBUILD refreshes stats with a full scan — so you must plan a stat update separately after reorganizing."
+    },
+    {
+      "subtopic": "Composite key design",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about ordering columns in a composite index key are correct? (Select all that apply.)",
+      "options": [
+        "Equality-predicate columns should generally come before the range-predicate column",
+        "A range predicate is the last seekable column; key columns after it become residual filters only",
+        "Aligning trailing key columns with `ORDER BY` can let the plan skip the Sort operator",
+        "Two separate single-column indexes `IX(A)` and `IX(B)` are equivalent to one `IX(A,B)`",
+        "Putting the range column first maximizes the seekable prefix"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Equality-before-range, range-as-last-seek-key, and ORDER-BY alignment to skip Sort are all correct. The optimizer cannot combine separate single-column indexes as freely as one composite, and putting the range column first stops seeking immediately — so those two are wrong."
+    },
+    {
+      "subtopic": "When NOT to index",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which are valid reasons to NOT add (or to drop) a non-clustered index? (Select all that apply.)",
+      "options": [
+        "It is redundant — `IX(A)` is covered by an existing `IX(A,B)` left-most prefix",
+        "`sys.dm_db_index_usage_stats` shows many updates but near-zero seeks/scans/lookups",
+        "The column is low-selectivity (few distinct values) and would be scanned anyway",
+        "The table is queried frequently with selective equality predicates",
+        "The query already shows a clean Index Seek with no Key Lookup"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Redundant left-prefix indexes, unused write-heavy indexes, and lone low-selectivity columns are all reasons to drop/avoid. Frequent selective equality queries are a reason TO index, and a clean covered seek means the index is already earning its keep — neither argues against indexing."
+    },
+    {
+      "subtopic": "Non-unique clustered index",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "If you create a **non-unique** clustered index, how does SQL Server guarantee each row still has a unique identity, and why does it matter?",
+      "options": [
+        "It rejects duplicate key values at insert time",
+        "It adds a hidden 4-byte uniquifier to duplicate keys — and that locator is copied into every non-clustered index",
+        "It silently promotes the index to UNIQUE and fails later inserts",
+        "It stores a RID per duplicate row as on a heap"
+      ],
+      "answer": 1,
+      "explanation": "SQL Server appends a hidden 4-byte uniquifier to duplicate clustering keys. Because the clustering key is the row locator copied into every NCI, a wider/non-unique key inflates all NCIs — a reason to prefer a unique, narrow clustering key. A non-unique clustered index does not use RIDs (that is a heap)."
+    },
+    {
+      "subtopic": "OPTION (RECOMPILE) trade-off",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Adding `OPTION (RECOMPILE)` is a safe, low-cost default to slap on any hot OLTP query running thousands of times per second to avoid parameter-sniffing problems.",
+      "answer": false,
+      "explanation": "`OPTION (RECOMPILE)` fixes sniffing by never caching, but it pays the compile cost on every execution. On a high-frequency hot path that CPU cost is significant — it is suited to volatile/skewed, low-frequency queries, not thousands-per-second OLTP."
+    },
+    {
+      "subtopic": "Estimation degraders",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which of these historically causes the cardinality estimator to fall back to **average density** rather than sniffing a real value?",
+      "options": [
+        "A predicate using a local variable (e.g. `WHERE CustomerId = @localVar`)",
+        "A predicate using a literal constant",
+        "A covering index with INCLUDE columns",
+        "A high `FILLFACTOR` on the clustered index"
+      ],
+      "answer": 0,
+      "explanation": "A local-variable predicate cannot be sniffed at compile time, so the optimizer uses average density — the same effect as `OPTIMIZE FOR UNKNOWN`. A literal constant CAN be evaluated against the histogram; FILLFACTOR and INCLUDE columns do not affect this estimation behavior."
+    },
+    {
+      "subtopic": "Seek vs scan judgement",
+      "source": "sql/indexes-and-query-optimization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A senior engineer says 'an Index Seek is always better than an Index Scan.' Why is this oversimplified?",
+      "options": [
+        "Seeks always read the entire leaf level, so they are never cheaper",
+        "A seek over a huge range can read more pages than a scan you genuinely needed; judge by rows-read-vs-returned and logical reads",
+        "Scans never touch the buffer cache, so they have zero logical reads",
+        "The optimizer cannot choose a scan once a seekable index exists"
+      ],
+      "answer": 1,
+      "explanation": "'Seek good, scan bad' is a myth: a seek matching a million-row range can be worse than a scan you actually needed. The right judgement is rows read vs rows returned and logical reads — not the operator name."
+    }
+  ]
+}

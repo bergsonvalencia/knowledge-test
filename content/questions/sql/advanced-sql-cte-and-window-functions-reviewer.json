@@ -1,0 +1,272 @@
+{
+  "topic": "sql",
+  "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "CTE scope",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How long does a Common Table Expression (CTE) defined with `WITH` remain referenceable?",
+      "options": [
+        "For exactly the single statement that immediately follows the `WITH` clause",
+        "For the entire session until the connection is closed",
+        "For the whole batch, so any later statement in the batch can reference it",
+        "Until it is explicitly dropped with `DROP CTE`"
+      ],
+      "answer": 0,
+      "explanation": "A CTE lives only for the one statement that immediately follows the `WITH`; you cannot reference it in a second statement. That single-statement scope is the #1 difference from a temp table, which survives across statements in the session."
+    },
+    {
+      "subtopic": "CTE materialization",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "A CTE is materialized into `tempdb` the first time it is referenced, so referencing the same CTE multiple times in a query evaluates its logic only once.",
+      "answer": false,
+      "explanation": "A CTE is not materialized by default; SQL Server inlines its definition into the plan. Referencing a CTE N times can execute its logic N times — it behaves more like a named subquery/view than a temp table."
+    },
+    {
+      "subtopic": "Window functions vs GROUP BY",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What distinguishes a window function from a `GROUP BY` aggregate?",
+      "options": [
+        "A window function keeps every input row and attaches a value computed over a related window of rows",
+        "A window function collapses rows into one row per group, just like `GROUP BY`",
+        "A window function can only be used in the `WHERE` clause, not in `SELECT`",
+        "A window function always requires a `HAVING` clause to filter the result"
+      ],
+      "answer": 0,
+      "explanation": "Unlike `GROUP BY`, which collapses rows into one per group, a window function preserves every input row and attaches a computed value. This is why you can show detail rows alongside their group aggregate."
+    },
+    {
+      "subtopic": "Filtering window functions",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does the query `SELECT *, ROW_NUMBER() OVER (ORDER BY OrderDate) AS rn FROM Orders WHERE rn = 1;` fail?",
+      "options": [
+        "Window functions are evaluated in the `SELECT` step, which runs after `WHERE`, so the `rn` alias does not yet exist when `WHERE` is processed",
+        "`ROW_NUMBER()` is not allowed without a `PARTITION BY` clause",
+        "`WHERE` cannot appear in the same query as an `OVER` clause under any circumstances",
+        "The query is missing a `GROUP BY` that `ROW_NUMBER()` requires"
+      ],
+      "answer": 0,
+      "explanation": "By logical processing order, window functions are computed in the SELECT step, which runs after WHERE/GROUP BY/HAVING. So when WHERE is evaluated the window alias doesn't exist. The fix is to compute it in a CTE/subquery and filter the outer query."
+    },
+    {
+      "subtopic": "Recursive CTE structure",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the required structure of a recursive CTE in SQL Server?",
+      "options": [
+        "An anchor member, then `UNION ALL`, then a recursive member that joins back to the CTE name",
+        "An anchor member, then `UNION`, then a recursive member that joins back to the CTE name",
+        "A single `SELECT` with `OPTION (RECURSIVE)` appended",
+        "Two CTEs chained with commas, the second referencing the first"
+      ],
+      "answer": 0,
+      "explanation": "A recursive CTE is an anchor (seed) member combined with `UNION ALL` and a recursive member that references the CTE name. `UNION` (not `UNION ALL`) is not permitted between the anchor and recursive parts."
+    },
+    {
+      "subtopic": "MAXRECURSION",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A recursive CTE with no `OPTION (MAXRECURSION ...)` hint reaches 100 levels of recursion with more rows still to produce. What happens?",
+      "options": [
+        "The statement fails with error 530 and returns no result set",
+        "The query silently truncates and returns the first 100 levels of rows",
+        "The recursion continues because the default limit is unlimited",
+        "The query returns successfully but logs a warning to the error log"
+      ],
+      "answer": 0,
+      "explanation": "`MAXRECURSION` defaults to 100; exceeding it raises error 530 and fails the statement with no partial result. To allow deeper recursion you must set `OPTION (MAXRECURSION n)`, where 0 means unlimited."
+    },
+    {
+      "subtopic": "Ranking functions",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For the ordered values 100, 100, 90, 80, which ranking function produces the sequence 1, 1, 2, 3?",
+      "options": [
+        "`DENSE_RANK()`",
+        "`RANK()`",
+        "`ROW_NUMBER()`",
+        "`NTILE(4)`"
+      ],
+      "answer": 0,
+      "explanation": "`DENSE_RANK()` lets ties share a rank with no gaps (1,1,2,3). `RANK()` would skip after the tie (1,1,3,4), and `ROW_NUMBER()` is always strictly sequential (1,2,3,4)."
+    },
+    {
+      "subtopic": "Top-N per group with ties",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You must return the top 2 sales per region and you want **all** rows tied at 2nd place to be included. Which ranking function should you use before filtering `rnk <= 2` in the outer query?",
+      "options": [
+        "`DENSE_RANK()`",
+        "`ROW_NUMBER()`",
+        "`NTILE(2)`",
+        "`LEAD()`"
+      ],
+      "answer": 0,
+      "explanation": "`DENSE_RANK()` assigns the same rank to tied rows, so every salesperson tied at rank 2 survives the `rnk <= 2` filter. `ROW_NUMBER()` would arbitrarily keep just one of the tied rows, dropping the others."
+    },
+    {
+      "subtopic": "Default frame trap",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When you write `SUM(Total) OVER (ORDER BY OrderDate)` with **no explicit frame**, what frame does SQL Server apply by default?",
+      "options": [
+        "`RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`",
+        "`ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`",
+        "`ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`",
+        "`RANGE BETWEEN 1 PRECEDING AND CURRENT ROW`"
+      ],
+      "answer": 0,
+      "explanation": "With `ORDER BY` present and no explicit frame, the default is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. Because `RANGE` lumps peers with equal ORDER BY values together, duplicate dates make a running total jump by the whole tie group — which is why you should specify `ROWS`."
+    },
+    {
+      "subtopic": "ROWS vs RANGE behavior",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given the rows below ordered by `OrderDate` (note the tie on 2024-01-02), what does the running `SUM(Total)` produce when the frame is the **default** `RANGE ... CURRENT ROW`?",
+      "code": "OrderDate    Total\n2024-01-01    10\n2024-01-02    20\n2024-01-02    30\n2024-01-03     5",
+      "lang": "text",
+      "options": [
+        "10, 60, 60, 65",
+        "10, 30, 60, 65",
+        "10, 30, 50, 55",
+        "10, 60, 90, 95"
+      ],
+      "answer": 0,
+      "explanation": "Default `RANGE` treats the two 2024-01-02 rows as peers and includes both in each one's frame, so both show 10+20+30 = 60. An explicit `ROWS` frame would instead increment per row: 10, 30, 60, 65."
+    },
+    {
+      "subtopic": "LAST_VALUE trap",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "`LAST_VALUE(ClosePrice) OVER (PARTITION BY Symbol ORDER BY TradeDate)` unexpectedly returns the current row's value instead of the partition's final value. What is the correct fix?",
+      "options": [
+        "Add the frame `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`",
+        "Replace `LAST_VALUE` with `LAG(ClosePrice)`",
+        "Remove the `ORDER BY` from the `OVER` clause",
+        "Add `OPTION (MAXRECURSION 0)` to the statement"
+      ],
+      "answer": 0,
+      "explanation": "With the default frame ending at `CURRENT ROW`, `LAST_VALUE` sees the current row as the last in frame. Extending the frame to `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` makes it consider the entire partition and return the true last value."
+    },
+    {
+      "subtopic": "LAG semantics",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the month-over-month query below, what value does `MoMChange` have for each employee's earliest month?",
+      "code": "SELECT EmployeeId, [Month], Revenue,\n       Revenue - LAG(Revenue) OVER (PARTITION BY EmployeeId ORDER BY [Month]) AS MoMChange\nFROM MonthlyRevenue;",
+      "lang": "sql",
+      "options": [
+        "`NULL`, because there is no prior row and no default was supplied to `LAG`",
+        "`0`, because `LAG` returns 0 when there is no prior row",
+        "The same value as `Revenue`, because `LAG` returns the current row",
+        "An error, because `LAG` requires a non-null prior row"
+      ],
+      "answer": 0,
+      "explanation": "`LAG` returns its `default` argument (which defaults to `NULL`) at the partition's edge where no prior row exists. Subtracting `NULL` yields `NULL`, so the first month per employee is `NULL` unless an explicit default is passed."
+    },
+    {
+      "subtopic": "Aggregate window functions",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `SUM(Total) OVER (PARTITION BY CustomerId)` — with a `PARTITION BY` but **no** `ORDER BY` — compute on each row?",
+      "options": [
+        "The total over the entire partition, repeated identically on every row in that partition",
+        "A running total that accumulates row by row within the partition",
+        "The value of `Total` from the previous row in the partition",
+        "A single collapsed row per customer, like `GROUP BY`"
+      ],
+      "answer": 0,
+      "explanation": "With `PARTITION BY` and no `ORDER BY`, the frame is the whole partition, so every row sees its group total repeated. Adding an `ORDER BY` inside `OVER` would change the default frame and turn it into a running/cumulative total."
+    },
+    {
+      "subtopic": "Gaps and islands",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the classic gaps-and-islands technique, why does grouping by `DATEADD(DAY, -ROW_NUMBER() OVER (ORDER BY LoginDate), LoginDate)` collapse consecutive login days into one island?",
+      "options": [
+        "For a run of consecutive dates, the date minus its row number is a constant, so all rows in the same run share that grouping key",
+        "`ROW_NUMBER()` resets to 1 at every gap, which starts a new group automatically",
+        "`DATEADD` rounds the dates to the nearest week, merging adjacent days",
+        "The expression returns `NULL` for non-consecutive rows, excluding them from any group"
+      ],
+      "answer": 0,
+      "explanation": "Within a consecutive run, both the date and the row number increase by exactly 1 each step, so date − row_number stays constant; a gap breaks the constant and starts a new group. Grouping by that constant therefore collapses each run into a single island."
+    },
+    {
+      "subtopic": "Deduplication via updatable CTE",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The query below keeps which row(s) per `Email`?",
+      "code": "WITH d AS (\n    SELECT *, ROW_NUMBER() OVER (PARTITION BY Email ORDER BY UpdatedAt DESC) AS rn\n    FROM dbo.Customers\n)\nDELETE FROM d WHERE rn > 1;",
+      "lang": "sql",
+      "options": [
+        "The single most recently updated row per `Email` (the `rn = 1` row)",
+        "The oldest row per `Email`, because `DESC` keeps the bottom of the order",
+        "All rows, because you cannot `DELETE` through a CTE",
+        "No rows, because the `DELETE` removes every duplicate including `rn = 1`"
+      ],
+      "answer": 0,
+      "explanation": "`ORDER BY UpdatedAt DESC` assigns `rn = 1` to the newest row per `Email`; deleting `rn > 1` removes all other duplicates and keeps the newest. The CTE maps to a single underlying table, so it is updatable and the `DELETE` flows through it."
+    },
+    {
+      "subtopic": "Temp structures: storage and statistics",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about temp tables (`#t`) and table variables (`@t`) are correct? Select all that apply.",
+      "options": [
+        "Both temp tables and table variables are stored in `tempdb`",
+        "A temp table has statistics and supports full indexing, giving the optimizer accurate cardinality estimates",
+        "A table variable lives entirely in memory and never touches `tempdb`",
+        "A table variable's row changes are rolled back when its surrounding transaction rolls back",
+        "A temp table can be the target of parallel inserts, whereas a table variable cannot"
+      ],
+      "answer": [0, 1, 4],
+      "explanation": "Both objects live in `tempdb` (the 'in-memory' table variable is a myth), temp tables have statistics and full indexes, and temp tables support parallel inserts while table variables do not. The false options: table variables do live in `tempdb`, and they are NOT rolled back by a transaction rollback."
+    },
+    {
+      "subtopic": "Table variable rollback behavior",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Rows inserted into a table variable (`@t`) survive even if the surrounding transaction is rolled back, which makes table variables useful for audit/logging that must persist through a failed transaction.",
+      "answer": true,
+      "explanation": "Table variables are not affected by transaction rollback, so their rows persist — a genuine feature for audit/logging, but a trap if you assumed transactional behavior. Temp tables, by contrast, are rolled back."
+    },
+    {
+      "subtopic": "Choosing temp structures and window patterns",
+      "source": "sql/advanced-sql-cte-and-window-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are sound reasons to prefer a temp table (`#t`) over a CTE or table variable? Select all that apply.",
+      "options": [
+        "A heavy intermediate result is referenced several times and you want it computed once with statistics",
+        "The intermediate set is large and you need accurate cardinality estimates for a good plan",
+        "You need real indexes (clustered/nonclustered) on the intermediate data",
+        "You want the staged rows to survive a transaction rollback",
+        "You only need to make a single complex query more readable within one statement"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Temp tables shine for large, reused intermediate sets because they are computed once, carry statistics for accurate estimates, and support full indexing. Surviving rollback is a table-variable property (temp tables roll back), and pure single-statement readability is a job for a CTE."
+    }
+  ]
+}

@@ -1,0 +1,279 @@
+{
+  "topic": "typescript",
+  "source": "typescript/typescript-foundations-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Superset relationship",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does it mean that TypeScript is a **superset** of JavaScript?",
+      "options": [
+        "Every valid JavaScript program is also a valid TypeScript program; TS only adds type syntax on top",
+        "Every valid TypeScript program is also a valid JavaScript program that runs unchanged in any engine",
+        "TypeScript reimplements JavaScript's runtime with stricter, type-aware semantics",
+        "TypeScript removes JavaScript's unsafe features and adds a static type layer to what remains"
+      ],
+      "answer": 0,
+      "explanation": "A superset means every valid JS program is valid TS (rename `.js` to `.ts`). The reverse is false: TS-only syntax like `x: number` is a syntax error in a plain JS engine until it is erased."
+    },
+    {
+      "subtopic": "Type erasure and instanceof",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does `x instanceof MyInterface` fail to compile, while `x instanceof MyClass` works?",
+      "options": [
+        "Interfaces are erased and emit no runtime value, so there is nothing for `instanceof` to test against; a class emits a real constructor function",
+        "`instanceof` only accepts types declared with `class`, but an interface can be checked with `typeof` instead",
+        "Interfaces are checked nominally, and `instanceof` only supports structural types",
+        "An interface emits a frozen prototype object that `instanceof` cannot read"
+      ],
+      "answer": 0,
+      "explanation": "Type erasure strips interfaces entirely, so there is no runtime value to test. A class emits a constructor function, which is exactly what `instanceof` checks against."
+    },
+    {
+      "subtopic": "Structural typing",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In TypeScript, two independently declared types with the identical shape `{ x: number; y: number }` are mutually assignable even though neither `implements` or `extends` the other.",
+      "answer": true,
+      "explanation": "TypeScript decides assignability by shape (structural typing), not by declared name. No `implements`/`extends` relationship is required for two same-shaped types to be interchangeable."
+    },
+    {
+      "subtopic": "any vs unknown",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the recommended type for the result of `JSON.parse` or an untrusted API response, and why?",
+      "options": [
+        "`unknown`, because it accepts any value but forces you to narrow before use, making the trust boundary explicit",
+        "`any`, because it accepts any value and lets you access nested properties without ceremony",
+        "`object`, because parsed JSON is always an object and this rules out primitives",
+        "`never`, because external data is untrusted and should be unusable until validated"
+      ],
+      "answer": 0,
+      "explanation": "`unknown` is the safe top type: it accepts any value but forbids use until narrowed. `any` disables checking and propagates silently; `object` wrongly excludes primitive JSON like `42` or `\"x\"`; `never` accepts nothing."
+    },
+    {
+      "subtopic": "Inference: const vs let",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `const mode = \"dark\"` and `let theme = \"dark\"`, what types are inferred?",
+      "options": [
+        "`mode` is the literal type `\"dark\"`; `theme` is widened to `string`",
+        "`mode` is `string`; `theme` is the literal type `\"dark\"`",
+        "Both are inferred as the literal type `\"dark\"`",
+        "Both are inferred as `string` because string literals always widen"
+      ],
+      "answer": 0,
+      "explanation": "`const` cannot be reassigned, so the literal type `\"dark\"` is kept. `let` may be reassigned, so the literal widens to `string`."
+    },
+    {
+      "subtopic": "Two compiler jobs",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A file has a type error. With default settings, what does `tsc` do?",
+      "options": [
+        "It reports the error as a diagnostic but still emits JavaScript for the file",
+        "It refuses to emit any JavaScript until the type error is fixed",
+        "It emits JavaScript but inserts a runtime `throw` where the type error occurred",
+        "It emits JavaScript only for the lines before the first type error"
+      ],
+      "answer": 0,
+      "explanation": "Type-checking and emit are independent jobs. By default (`noEmitOnError` is false) errors are diagnostics that do not stop emit; the JS is still written. Set `noEmitOnError: true` to couple them."
+    },
+    {
+      "subtopic": "tsc --noEmit in CI",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a typical app stack, a bundler (Vite/esbuild/swc) produces the production JS. What is the usual role of `tsc --noEmit` in that setup?",
+      "options": [
+        "It acts as the dedicated type checker in CI, doing only the type-check job and producing no output files",
+        "It produces the production JavaScript while the bundler only handles assets",
+        "It strips types faster than the bundler and replaces the bundler's emit step",
+        "It minifies the bundler's output and emits source maps"
+      ],
+      "answer": 0,
+      "explanation": "`tsc --noEmit` runs only the type-check job (no output), serving as the type gate in CI while a fast, type-unaware bundler does the actual JS emit. `tsc` remains the source of truth for types and `.d.ts`."
+    },
+    {
+      "subtopic": "Excess property checks",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does this code do?",
+      "code": "interface Named { name: string }\nconst greet = (n: Named) => `Hi ${n.name}`;\nconst literal = { name: \"Ann\", age: 30 };\ngreet(literal);                  // (1)\ngreet({ name: \"Ann\", age: 30 }); // (2)",
+      "lang": "typescript",
+      "options": [
+        "(1) compiles because it goes through a variable; (2) errors because the fresh object literal triggers an excess-property check on `age`",
+        "Both compile because `age` is simply an extra structural member that is always ignored",
+        "Both error because `Named` does not declare an `age` property",
+        "(1) errors because `literal` has an extra property; (2) compiles because inline literals relax excess-property checks"
+      ],
+      "answer": 0,
+      "explanation": "Excess-property checks only fire on a fresh object literal assigned directly (line 2). Assigning through a variable (line 1) relaxes the check, so the extra `age` is allowed. This freshness heuristic is not nominal typing."
+    },
+    {
+      "subtopic": "Generics erasure vs C#",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "At runtime, how do `Array<string>` and `Array<number>` differ, and how does this compare to C#?",
+      "options": [
+        "They are identical (`Array`) because TS generics are erased; C# generics are reified and the element type is recoverable via reflection",
+        "They are distinct constructors because TS reifies generics, just like C# does",
+        "They are identical in both TS and C#, since all generics are erased on both platforms",
+        "They differ at runtime in TS but are identical in C#, because C# erases generics like Java"
+      ],
+      "answer": 0,
+      "explanation": "TS generics are erased (Java-style), so both are just `Array` at runtime and the type argument cannot be recovered. C# reifies generics, so `List<int>` keeps its element type and is reflectable — the classic .NET-to-TS mental-model bug."
+    },
+    {
+      "subtopic": "Function overloads at runtime",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "TypeScript function overloads generate multiple JavaScript functions, one per signature, and the engine dispatches to the matching one automatically at runtime.",
+      "answer": false,
+      "explanation": "Overloads are purely type-level: there is exactly one JS implementation. The multiple signatures vanish at runtime; you must branch on the arguments yourself. TS does no runtime overload dispatch."
+    },
+    {
+      "subtopic": "Type space vs value space",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following constructs live in **both** value space and type space (so the same spelling can be used as both a value and a type)? Select all that apply.",
+      "options": [
+        "A `class` declaration",
+        "A non-const `enum` declaration",
+        "An `interface` declaration",
+        "A `type` alias",
+        "A type parameter `T`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explanation": "A `class` is both a value (the constructor) and a type (the instance type); a non-const `enum` likewise emits a runtime object and names a type. `interface`, `type` aliases, and type parameters are type-space only and emit no runtime value."
+    },
+    {
+      "subtopic": "Contextual typing",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In `const doubled = [1, 2, 3].map(n => n * 2)`, why does `n` not need a type annotation?",
+      "options": [
+        "Contextual typing flows the expected type from the array's element type into the callback parameter",
+        "`map` is a special built-in that defaults all callback parameters to `number`",
+        "`noImplicitAny` is disabled by default, so `n` is silently typed as `any`",
+        "The compiler infers `n` from the `* 2` expression, since multiplication only accepts numbers"
+      ],
+      "answer": 0,
+      "explanation": "Contextual typing flows the expected type (the array's `number` element type) into the callback parameter, so `n` is inferred as `number` with no annotation. It is not from the operator and not silent `any`."
+    },
+    {
+      "subtopic": "noImplicitAny on parameters",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does the reviewer say function parameters specifically must be annotated, while locals usually need not be?",
+      "options": [
+        "Parameters have no initializer, so without an annotation they would be implicit `any`, which `noImplicitAny` (on in strict mode) flags",
+        "Parameters are checked nominally and locals structurally, so only parameters need a declared type",
+        "Locals are erased at runtime but parameters survive, so parameters need types to be emitted",
+        "Inference only runs inside function bodies, never across the parameter boundary"
+      ],
+      "answer": 0,
+      "explanation": "Inference works from an initializer; a parameter has none, so it would default to implicit `any` — which `noImplicitAny` (enabled by strict mode) reports as an error. Locals get their type from their initializer, so they usually need no annotation."
+    },
+    {
+      "subtopic": "TypeScript 6.0 defaults",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which changes are true of **TypeScript 6.0** (March 2026)? Select all that apply.",
+      "options": [
+        "`strict` now defaults to `true`",
+        "It is the last JavaScript-based compiler release",
+        "`types` defaults to `[]` (no automatic `@types` discovery)",
+        "It is a ground-up rewrite of the compiler in Go for ~10x faster builds",
+        "It changes core language semantics such as how narrowing works"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "6.0 flips `strict` on by default, is the last JS-based compiler, and defaults `types` to `[]`. The Go rewrite (~10x faster) is 7.0, not 6.0. Language semantics are explicitly stable across 5.x to 6.0 to 7.0."
+    },
+    {
+      "subtopic": "Unsound index access",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With default strict settings (and `noUncheckedIndexedAccess` NOT enabled), what is the static type of `x` and its runtime value?",
+      "code": "const xs: number[] = [1, 2, 3];\nconst x = xs[99];",
+      "lang": "typescript",
+      "options": [
+        "`x` is typed `number`, but its runtime value is `undefined` — an intentional unsoundness",
+        "`x` is typed `number | undefined`, and its runtime value is `undefined`",
+        "Accessing index 99 is a compile-time error because it exceeds the array length",
+        "`x` is typed `number` and its runtime value is `0`, the default for a numeric slot"
+      ],
+      "answer": 0,
+      "explanation": "Index access is deliberately unsound: `xs[99]` is typed as the element type `number`, not `number | undefined`, even though it is `undefined` at runtime. Enabling `noUncheckedIndexedAccess` adds `undefined` to make it sound."
+    },
+    {
+      "subtopic": "as const and indexed access",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What are types A and B?",
+      "code": "const settings = { retries: 3, label: \"x\" } as const;\ntype A = typeof settings;   // ?\ntype B = A[\"retries\"];      // ?",
+      "lang": "typescript",
+      "options": [
+        "A = `{ readonly retries: 3; readonly label: \"x\" }`; B = `3`",
+        "A = `{ retries: number; label: string }`; B = `number`",
+        "A = `{ readonly retries: number; readonly label: string }`; B = `number`",
+        "A = `{ retries: 3; label: \"x\" }` (not readonly); B = `3`"
+      ],
+      "answer": 0,
+      "explanation": "`as const` makes every property `readonly` and preserves literal types, and `typeof` reads that into type space. Indexed access on the literal-preserving type yields the literal `3`, not the widened `number`."
+    },
+    {
+      "subtopic": "Parameter bivariance",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The reviewer lists method **parameter bivariance** as an intentional unsoundness. What does this mean, and how does it interact with `strictFunctionTypes`?",
+      "options": [
+        "Method parameters are compared in both directions (bivariantly), which is convenient but unsafe; `strictFunctionTypes` makes function-typed parameters contravariant but methods keep bivariance",
+        "Method parameters are always contravariant, and `strictFunctionTypes` upgrades them to bivariant for convenience",
+        "Method parameters are invariant by default, and `strictFunctionTypes` relaxes them to bivariant",
+        "Method parameters are covariant, and `strictFunctionTypes` has no effect on methods or standalone functions"
+      ],
+      "answer": 0,
+      "explanation": "Method parameters are checked in both directions (bivariant) — convenient but unsound. `strictFunctionTypes` makes standalone function-typed parameters contravariant (sound), but explicitly exempts method parameters, which keep bivariance for ergonomics."
+    },
+    {
+      "subtopic": "Feature version milestones",
+      "source": "typescript/typescript-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which feature-to-version pairing matches the durable milestones the reviewer says to cite?",
+      "options": [
+        "`satisfies` arrived in 4.9 and template literal types in 4.1",
+        "`satisfies` arrived in 5.0 and `const` type parameters in 4.9",
+        "`NoInfer<T>` arrived in 5.2 and `using`/`Symbol.dispose` in 5.4",
+        "Standard decorators arrived in 4.9 and template literal types in 5.0"
+      ],
+      "answer": 0,
+      "explanation": "Per the reviewer's milestones: `satisfies` = 4.9 and template literal types = 4.1. (`const` type params and standard decorators = 5.0, `using`/`Symbol.dispose` = 5.2, `NoInfer<T>` = 5.4 — making the other options wrong.)"
+    }
+  ]
+}

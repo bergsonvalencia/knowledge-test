@@ -114,7 +114,11 @@
         "Multiple handlers for the same requirement behave as OR — any `Succeed` wins",
         "Multiple requirements in one policy behave as OR — satisfying any one passes the policy"
       ],
-      "answer": [0, 1, 3],
+      "answer": [
+        0,
+        1,
+        3
+      ],
       "explanation": "Succeed satisfies a requirement; Fail is a hard veto; same-requirement handlers are OR. Doing nothing leaves a requirement unmet (deny) but does NOT veto other handlers, and multiple requirements in a policy are AND, not OR."
     },
     {
@@ -154,7 +158,7 @@
       "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "After a resource-based ownership check fails for an invoice that *does* exist but is not the caller's, why does the reviewer recommend returning **404** rather than **403**?",
+      "question": "After a resource-based ownership check fails for an invoice that *does* exist but is not the caller's, why is returning **404** preferred over **403**?",
       "options": [
         "To avoid leaking the existence of the resource, which 403 would confirm and enable enumeration",
         "Because 403 is reserved exclusively for unauthenticated callers",
@@ -169,14 +173,18 @@
       "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which measures does the reviewer endorse for robustly closing BOLA/IDOR on a per-record endpoint? (Select all that apply.)",
+      "question": "Which measures help robustly close BOLA/IDOR on a per-record endpoint? (Select all that apply.)",
       "options": [
         "Use `IAuthorizationService.AuthorizeAsync(User, resource, requirement)` to check ownership imperatively",
         "Scope every data-layer query by the owning principal, e.g. `Where(i => i.OwnerId == userId)`",
         "Rely on `[Authorize(Roles = \"User\")]` alone to guarantee the caller owns the record",
         "Use `OperationAuthorizationRequirement` so one handler covers Read/Create/Update/Delete"
       ],
-      "answer": [0, 1, 3],
+      "answer": [
+        0,
+        1,
+        3
+      ],
       "explanation": "Resource-based `AuthorizeAsync`, owner-scoped queries (defense in depth), and `OperationAuthorizationRequirement` are all endorsed. A role check alone is exactly the design that ships IDOR — no role check substitutes for an ownership check."
     },
     {

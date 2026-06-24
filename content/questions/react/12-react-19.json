@@ -1,0 +1,264 @@
+{
+  "topic": "react",
+  "source": "react/12-react-19.md",
+  "questions": [
+    {
+      "subtopic": "useActionState return shape",
+      "source": "react/12-react-19.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `useActionState(action, initialState)` return, in order?",
+      "options": [
+        "`[state, formAction, isPending]`",
+        "`[formAction, state, isPending]`",
+        "`[state, dispatch]`",
+        "`[isPending, state, formAction]`"
+      ],
+      "answer": 0,
+      "explanation": "`useActionState` returns `[state, formAction, isPending]`: the current state, the action to wire to a `<form>`, and a boolean that is true while the action runs."
+    },
+    {
+      "subtopic": "Action signature",
+      "source": "react/12-react-19.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "An Action passed to `useActionState` has which signature?",
+      "options": [
+        "`(previousState, formData) => newState`",
+        "`(formData) => newState`",
+        "`(event, formData) => void`",
+        "`(formData, previousState) => Promise<void>`"
+      ],
+      "answer": 0,
+      "explanation": "The action receives `(previousState, formData)` and returns the next state. `previousState` lets you accumulate or return errors without extra `useState`."
+    },
+    {
+      "subtopic": "useFormStatus import",
+      "source": "react/12-react-19.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "From which package is `useFormStatus` imported?",
+      "options": [
+        "`react-dom`",
+        "`react`",
+        "`react-router`",
+        "`react-dom/server`"
+      ],
+      "answer": 0,
+      "explanation": "`useFormStatus` is a react-dom hook (it depends on DOM form semantics). `useActionState` and `useOptimistic`, by contrast, come from `react`."
+    },
+    {
+      "subtopic": "Context as provider",
+      "source": "react/12-react-19.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In React 19 you can render a context object directly as the provider, e.g. `<ThemeContext value=\"dark\">`, instead of `<ThemeContext.Provider value=\"dark\">`.",
+      "answer": true,
+      "explanation": "React 19 lets you render the context directly as the provider. The `.Provider` form still works but is slated for deprecation, with a codemod provided."
+    },
+    {
+      "subtopic": "ref as a prop",
+      "source": "react/12-react-19.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In React 19, how does a function component most idiomatically receive a `ref`?",
+      "options": [
+        "As an ordinary prop, destructured alongside other props",
+        "Only by wrapping the component in `forwardRef`",
+        "Via a special `useRef` parameter injected by React",
+        "Through `this.refs` on the component instance"
+      ],
+      "answer": 0,
+      "explanation": "React 19 passes `ref` as an ordinary prop, so `forwardRef` is no longer needed (it still works but is slated for deprecation). Function components have no `this`/instance, ruling out `this.refs`."
+    },
+    {
+      "subtopic": "useFormStatus placement gotcha",
+      "source": "react/12-react-19.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A developer calls `useFormStatus()` in the same component that renders the `<form>` and finds `pending` is always `false`. Why?",
+      "options": [
+        "`useFormStatus` reads the nearest **parent** `<form>`, so the calling component must be rendered **inside** that form, not the one that renders it",
+        "`useFormStatus` only works inside Server Components",
+        "`pending` is only `true` for forms that use `useOptimistic`",
+        "`useFormStatus` must be passed the form's ref as an argument to track it"
+      ],
+      "answer": 0,
+      "explanation": "`useFormStatus` reads the status of the nearest parent `<form>`. The component that renders the `<form>` is not inside it, so it always sees `pending: false`; the hook must live in a child like a `SubmitButton`."
+    },
+    {
+      "subtopic": "useOptimistic semantics",
+      "source": "react/12-react-19.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When an Action using `useOptimistic` fails (the async mutation throws), what happens to the UI?",
+      "options": [
+        "The optimistic value is dropped and the UI re-derives from the unchanged real state, returning to its prior value",
+        "React runs a dedicated rollback handler you registered with `useOptimistic`",
+        "The optimistic value persists until you manually call a `revert` function",
+        "React replays the optimistic update against the server until it succeeds"
+      ],
+      "answer": 0,
+      "explanation": "There is no failure-specific rollback. On error the parent state was simply never updated, so once the transition settles React drops the transient optimistic value and re-derives from the unchanged real state."
+    },
+    {
+      "subtopic": "useOptimistic usage pattern",
+      "source": "react/12-react-19.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `const [optimistic, addOptimistic] = useOptimistic(messages, reducer)`, when should `addOptimistic(value)` be called?",
+      "options": [
+        "Inside the Action, **before** awaiting the async mutation",
+        "After the async mutation resolves, to commit the value",
+        "Inside a `useEffect` that watches `messages`",
+        "Only from the `useFormStatus` submit button"
+      ],
+      "answer": 0,
+      "explanation": "You call `addOptimistic(value)` inside the Action before `await`, so the optimistic value renders instantly while the mutation is in flight; it is dropped once the real state settles."
+    },
+    {
+      "subtopic": "use API conditional calls",
+      "source": "react/12-react-19.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Unlike React hooks, the `use` API may be called conditionally — inside an `if`, inside a loop, or after an early `return`.",
+      "answer": true,
+      "explanation": "`use` is not bound by the Rules of Hooks ordering constraint, so it can run conditionally — e.g. reading context only when needed, or after an early return."
+    },
+    {
+      "subtopic": "use(promise) and Suspense",
+      "source": "react/12-react-19.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `use(promise)` do during render?",
+      "options": [
+        "Suspends the component until the Promise resolves, integrating with the nearest `<Suspense>` boundary (and error boundaries on rejection)",
+        "Returns immediately with `undefined`, then re-renders when the Promise settles",
+        "Throws synchronously unless wrapped in a `try/catch`",
+        "Blocks the JavaScript main thread until the Promise resolves"
+      ],
+      "answer": 0,
+      "explanation": "`use(promise)` suspends the component and works with the nearest `<Suspense>` boundary for the loading state, and routes rejections to error boundaries. It does not busy-block the thread or return `undefined`."
+    },
+    {
+      "subtopic": "useFormStatus return shape",
+      "source": "react/12-react-19.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which fields are part of the object returned by `useFormStatus`? (Select all that apply.)",
+      "options": [
+        "`pending`",
+        "`data`",
+        "`method`",
+        "`isPending`",
+        "`state`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`useFormStatus` returns `{ pending, data, method, action }`. `isPending` is the `useActionState` flag, and `state` is the `useActionState` value — neither belongs to `useFormStatus`."
+    },
+    {
+      "subtopic": "React 19 new APIs (select all)",
+      "source": "react/12-react-19.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following were introduced or made first-class in React 19? (Select all that apply.)",
+      "options": [
+        "The `use` API for reading a Promise or context",
+        "`useOptimistic`",
+        "Rendering `<title>`/`<meta>` anywhere and hoisting them to `<head>`",
+        "`useFormState` from react-dom as the recommended form hook",
+        "Class component lifecycle methods like `componentDidMount`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`use`, `useOptimistic`, and document-metadata hoisting are React 19 additions. `ReactDOM.useFormState` is deprecated in favor of `useActionState`, and class lifecycles are long-standing React, not new."
+    },
+    {
+      "subtopic": "useActionState replaces useFormState",
+      "source": "react/12-react-19.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does `useActionState` relate to the older `ReactDOM.useFormState`?",
+      "options": [
+        "It replaces the now-deprecated `useFormState` and additionally surfaces `isPending`",
+        "It is an alias for `useFormState` with no behavioral difference",
+        "It is a react-dom hook that wraps `useFormState` internally",
+        "It is unrelated; `useFormState` remains the recommended API"
+      ],
+      "answer": 0,
+      "explanation": "`useActionState` (from `react`) replaces the deprecated `ReactDOM.useFormState` and also exposes an `isPending` flag the old hook lacked."
+    },
+    {
+      "subtopic": "ref cleanup callback",
+      "source": "react/12-react-19.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "<div ref={(node) => {\n  const observer = observe(node);\n  return () => observer.disconnect();\n}} />",
+      "lang": "tsx",
+      "question": "In React 19, this ref callback returns a cleanup function. What is the consequence of returning a cleanup?",
+      "options": [
+        "The cleanup runs on unmount, and React **no longer** calls the ref callback again with `null`",
+        "React calls the cleanup, then still calls the callback with `null` on unmount as before",
+        "Returning a function from a ref callback is ignored; only `useEffect` supports cleanup",
+        "The cleanup runs on every re-render, not on unmount"
+      ],
+      "answer": 0,
+      "explanation": "When a ref callback returns a cleanup function, it runs on unmount (mirroring effect cleanup) and React suppresses the legacy null-call. The old behavior of calling the callback with `null` applies only when you do NOT return a cleanup."
+    },
+    {
+      "subtopic": "use() with render-created promises",
+      "source": "react/12-react-19.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In client code, it is fine to create a Promise during render and pass it straight to `use()`.",
+      "answer": false,
+      "explanation": "A Promise created fresh during render is recreated on every render, breaking Suspense's ability to track it. The Promise must come from a Suspense-aware cache or framework loader before you `use` it."
+    },
+    {
+      "subtopic": "Server Components adoption",
+      "source": "react/12-react-19.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why do Server Components and Server Actions rarely appear in a plain client-side React 19 app?",
+      "options": [
+        "They require a bundler/server integration that implements the RSC protocol (framework territory like the Next.js App Router)",
+        "They were removed from React 19 before stable release",
+        "They only work when `forwardRef` is also used",
+        "They depend on `useOptimistic`, which is server-only"
+      ],
+      "answer": 0,
+      "explanation": "Adopting Server Components/Actions is framework territory: you need a bundler and server integration that implements the RSC protocol, so they rarely show up in a plain client-side app."
+    },
+    {
+      "subtopic": "useActionState error reporting",
+      "source": "react/12-react-19.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "async function updateName(prev: string | null, fd: FormData) {\n  const error = await save(fd.get(\"name\") as string);\n  return error ?? null;\n}\nconst [error, formAction, isPending] = useActionState(updateName, null);",
+      "lang": "tsx",
+      "question": "In this pattern, how is a failure surfaced to the component as `error`?",
+      "options": [
+        "By returning an error value from the action (or throwing); the returned value becomes the next `state`",
+        "By calling a separate `setError` updater React injects into the action",
+        "By rejecting a Promise that React stores in a hidden second slot of the tuple",
+        "By writing to `isPending`, which doubles as the error channel"
+      ],
+      "answer": 0,
+      "explanation": "The action's return value becomes the next `state`, so returning an error value (or throwing) is how failure is reported. Here `error` is just the first tuple element — the latest returned state — not a separate updater or the `isPending` flag."
+    },
+    {
+      "subtopic": "Document metadata vs preloading APIs",
+      "source": "react/12-react-19.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Regarding React 19 metadata and resource features, which statements are correct? (Select all that apply.)",
+      "options": [
+        "Rendering `<title>`/`<meta>`/`<link>` anywhere hoists them to `<head>`, so `react-helmet` is no longer needed",
+        "`preload`, `preinit`, `prefetchDNS`, and `preconnect` are imported from `react-dom`",
+        "`preinit` can load and apply a stylesheet early as a side effect during render",
+        "Metadata hoisting requires wrapping tags in a special `<Head>` component from `react`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "React 19 hoists rendered `<title>`/`<meta>`/`<link>` into `<head>` (replacing `react-helmet`), and exposes `preload`/`preinit`/`prefetchDNS`/`preconnect` from `react-dom`; `preinit(..., { as: 'style' })` loads and applies early. There is no required `<Head>` wrapper component."
+    }
+  ]
+}

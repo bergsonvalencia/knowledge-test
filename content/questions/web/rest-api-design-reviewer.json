@@ -1,0 +1,269 @@
+{
+  "topic": "web",
+  "source": "web/rest-api-design-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Safe vs idempotent",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which HTTP method is **neither** safe **nor** idempotent?",
+      "options": [
+        "GET",
+        "PUT",
+        "DELETE",
+        "POST"
+      ],
+      "answer": 3,
+      "explanation": "POST is the only common verb that is neither safe (it changes server state) nor idempotent (calling it twice creates two resources). GET is safe and idempotent; PUT and DELETE are idempotent though not safe."
+    },
+    {
+      "subtopic": "URI design",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Following the resource-and-URI conventions, which endpoint is correctly designed?",
+      "options": [
+        "POST /api/createUser",
+        "DELETE /api/users/123",
+        "GET /api/getUser?id=123",
+        "POST /api/users/123/delete"
+      ],
+      "answer": 1,
+      "explanation": "Resources are nouns and the HTTP method is the verb, so `DELETE /api/users/123` is correct. The others embed an action (`createUser`, `getUser`, `delete`) in the path, which the reviewer explicitly says to avoid."
+    },
+    {
+      "subtopic": "401 vs 403",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A request arrives with a valid, authenticated token, but the user's role lacks permission for the operation. Which status code is correct?",
+      "options": [
+        "401 Unauthorized",
+        "403 Forbidden",
+        "400 Bad Request",
+        "405 Method Not Allowed"
+      ],
+      "answer": 1,
+      "explanation": "403 means \"I know who you are, but you're not permitted.\" 401 is for missing/invalid/expired credentials (not authenticated), which does not apply when the caller is authenticated."
+    },
+    {
+      "subtopic": "Status codes for creation",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A `POST` that successfully creates a new resource should return **201 Created** and include a `Location` header pointing at the new resource.",
+      "answer": true,
+      "explanation": "The reviewer states a creating POST returns 201 plus a `Location` header — returning 200 for a create is a classic trap."
+    },
+    {
+      "subtopic": "Failed requests and 200",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "It is acceptable to return `200 OK` with a body like `{\"error\": ...}` for a failed request, as long as the body clearly describes the error.",
+      "answer": false,
+      "explanation": "The reviewer is explicit: never return 200 for a failure — it breaks clients, caches, retries, and monitoring. Use the correct 4xx/5xx with a machine-readable error body."
+    },
+    {
+      "subtopic": "PUT vs PATCH semantics",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A resource currently has `{ \"name\": \"Ada\", \"email\": \"ada@x.com\", \"phone\": \"555\" }`. A client sends `PUT /users/9` with body `{ \"name\": \"Ada\", \"email\": \"ada@y.com\" }`. Per the PUT semantics, what is the expected result?",
+      "options": [
+        "Only `email` changes; `phone` is preserved",
+        "The whole representation is replaced, so `phone` is cleared (omitted fields removed)",
+        "The request is rejected with 422 because `phone` is missing",
+        "`phone` is preserved and `email` is updated, identical to PATCH"
+      ],
+      "answer": 1,
+      "explanation": "PUT replaces the whole representation, so fields omitted from the body are cleared. Preserving omitted fields is PATCH (partial update) behavior, not PUT."
+    },
+    {
+      "subtopic": "PATCH idempotency",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does the reviewer say PATCH is idempotent only conditionally (`Yes*`)?",
+      "options": [
+        "PATCH is never idempotent because it has a request body",
+        "An absolute patch like `{\"status\":\"paid\"}` is idempotent, but a relative one like \"increment quantity by 1\" is not",
+        "PATCH is idempotent only when it uses JSON Patch (RFC 6902) but not JSON Merge Patch",
+        "PATCH is idempotent only if the server returns 204 instead of 200"
+      ],
+      "answer": 1,
+      "explanation": "Idempotency depends on the patch's nature: absolute patches set a value (repeatable with the same effect), while relative patches (e.g., increment) accumulate. The patch document format (6902 vs 7386) does not determine this, nor does the status code."
+    },
+    {
+      "subtopic": "Idempotency keys",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A client sends `POST /api/payments` with an `Idempotency-Key`, the charge succeeds, but the response is lost in the network. The client retries with the **same** key. What does a correctly implemented server do?",
+      "options": [
+        "Process the charge again because each request is independent",
+        "Look up the stored key and replay the original response without charging a second time",
+        "Return 409 Conflict because the key already exists",
+        "Return 429 Too Many Requests to force the client to back off"
+      ],
+      "answer": 1,
+      "explanation": "The server stores `key → result` and replays the stored response for repeats instead of re-executing, so the card is charged only once. Returning 409 or 429 would defeat the purpose of making the retry safe and transparent."
+    },
+    {
+      "subtopic": "400 vs 422",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The server receives a syntactically valid JSON body that parses cleanly, but it violates a business rule (e.g., the requested transfer exceeds the account balance). Which is the **most specific** correct status code per the reviewer?",
+      "options": [
+        "400 Bad Request",
+        "409 Conflict",
+        "422 Unprocessable Entity",
+        "500 Internal Server Error"
+      ],
+      "answer": 2,
+      "explanation": "422 is for a request that is syntactically valid but semantically invalid (violates business rules). 400 is for content the server can't parse/understand; the reviewer notes many APIs collapse both into 400 but asks you to know the distinction."
+    },
+    {
+      "subtopic": "Pagination trade-offs",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Compared with offset/page-based pagination, what is the primary trade-off of cursor/keyset pagination?",
+      "options": [
+        "It is slower at deep offsets because the DB scans skipped rows",
+        "It cannot cap the page size",
+        "It does not support arbitrary \"jump to page 50\" navigation",
+        "It produces skips and duplicates when rows shift between requests"
+      ],
+      "answer": 2,
+      "explanation": "Cursor pagination is fast at any depth and stable under writes, but its trade-off is no random page jumps. The slow-deep-offset and skip/duplicate problems are weaknesses of *offset* pagination, not cursor."
+    },
+    {
+      "subtopic": "Conditional GET (ETag)",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A client previously cached a resource under `ETag \"v3\"`. It now sends `GET /users/123` with `If-None-Match: \"v3\"` and the resource has **not** changed. What does the server return?",
+      "options": [
+        "200 OK with the full body and `ETag \"v3\"`",
+        "304 Not Modified with no body",
+        "412 Precondition Failed",
+        "204 No Content"
+      ],
+      "answer": 1,
+      "explanation": "On a conditional GET where the entity tag still matches, the server returns 304 Not Modified with no body, saving bandwidth. 412 is for failed `If-Match` (used in optimistic concurrency on writes), not `If-None-Match` on reads."
+    },
+    {
+      "subtopic": "Optimistic concurrency",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Two clients both GET `/users/9` and receive `ETag \"v1\"`. Client A successfully `PUT`s with `If-Match: \"v1\"` (resource becomes `\"v2\"`). Client B then `PUT`s with `If-Match: \"v1\"`. What does the server return to Client B?",
+      "options": [
+        "200 OK, overwriting Client A's change",
+        "412 Precondition Failed, so B must refetch and retry",
+        "409 Conflict and the write silently succeeds",
+        "304 Not Modified"
+      ],
+      "answer": 1,
+      "explanation": "B's `If-Match: \"v1\"` no longer matches the current `\"v2\"`, so the server returns 412 Precondition Failed (or 409) — preventing a silent lost update. B refetches and retries against the new version."
+    },
+    {
+      "subtopic": "API versioning",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Adding a new **optional** field to a response is an additive change that, per the reviewer, does not by itself require a new API version.",
+      "answer": true,
+      "explanation": "The reviewer says to version only on breaking changes (removing/renaming a field, changing a type or meaning); additive changes like a new optional field don't need a new version."
+    },
+    {
+      "subtopic": "Mass assignment / over-posting",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which practices are recommended to defend against mass assignment / over-posting and related input attacks? (Select all that apply.)",
+      "options": [
+        "Bind requests to dedicated DTOs rather than directly to EF entities",
+        "Whitelist sortable/filterable fields instead of passing raw client input into `ORDER BY`",
+        "Trust client-side authorization checks to reduce server load",
+        "Concatenate validated query parameters into the SQL string for performance",
+        "Use parameterized queries / LINQ rather than string-built SQL"
+      ],
+      "answer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "DTOs stop a caller from setting fields like `IsAdmin=true`; whitelisting sort/filter fields and using parameterized queries/LINQ prevent injection and DoS. Trusting client-side checks and string-concatenating SQL are exactly the anti-patterns the reviewer warns against."
+    },
+    {
+      "subtopic": "Idempotent methods",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which HTTP methods are **idempotent**? (Select all that apply.)",
+      "options": [
+        "GET",
+        "PUT",
+        "DELETE",
+        "POST",
+        "HEAD"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "explanation": "GET, PUT, DELETE, HEAD (and OPTIONS) are idempotent — repeating them has the same server effect as doing them once. POST is not idempotent, which is why retries of POST need idempotency keys."
+    },
+    {
+      "subtopic": "Statelessness and identity",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An API runs as multiple instances behind a load balancer and must stay **stateless** while still \"knowing\" the user across requests. Which approach is consistent with the guidance?",
+      "options": [
+        "Store the authenticated user's session in in-process memory on the instance that authenticated them",
+        "Have the token carry identity/claims on every request, with shared state in a distributed store like Redis/DB",
+        "Pin each client to one instance with sticky sessions so its in-memory state is reused",
+        "Require the client to re-authenticate on every single request and hold no claims at all"
+      ],
+      "answer": 1,
+      "explanation": "Statelessness means any instance can serve any request: the token carries identity/claims per request and shared state lives in a distributed store (Redis/DB), not in-process memory. In-process sessions and sticky-session pinning break the stateless constraint."
+    },
+    {
+      "subtopic": "Richardson Maturity Model",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An API uses many resource URIs, the correct HTTP verbs, and proper status codes, but its responses do **not** embed hypermedia links for next actions. Where does it sit on the Richardson Maturity Model, and what does the reviewer say about this?",
+      "options": [
+        "Level 1 — it still effectively uses one verb",
+        "Level 2 — and most production APIs deliberately stop here because few clients consume hypermedia",
+        "Level 3 — proper verbs and status codes already constitute HATEOAS",
+        "Level 0 — without hypermedia it is just RPC over HTTP"
+      ],
+      "answer": 1,
+      "explanation": "Proper verbs + status codes without hypermedia is Level 2, where the reviewer says most production APIs sit, since few clients follow links and HATEOAS adds real complexity. Level 3 specifically requires HATEOAS/hypermedia."
+    },
+    {
+      "subtopic": "Long-running operations",
+      "source": "web/rest-api-design-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A client requests a multi-minute data export. Per the senior design guidance, what is the right response pattern?",
+      "options": [
+        "Hold the HTTP connection open and stream progress until the export finishes, then return 200",
+        "Return 202 Accepted with a status resource the client polls (or push via webhook/SignalR)",
+        "Return 201 Created immediately with the finished file in the body",
+        "Return 504 Gateway Timeout if it cannot finish within the request window"
+      ],
+      "answer": 1,
+      "explanation": "For long-running work the reviewer prescribes 202 Accepted plus a status resource the client polls (or a push channel) — don't hold an HTTP connection open for minutes. 201 implies the resource is already created; 504 is a fault, not a design pattern."
+    }
+  ]
+}

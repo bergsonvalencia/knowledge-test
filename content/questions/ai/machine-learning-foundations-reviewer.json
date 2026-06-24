@@ -1,0 +1,270 @@
+{
+  "topic": "ai",
+  "source": "ai/machine-learning-foundations-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "AI vs ML vs DL vs GenAI",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A chess engine that picks moves purely by hand-coded minimax search with no learning from data is best classified as which of the following?",
+      "options": [
+        "Artificial intelligence, but not machine learning",
+        "Machine learning, because it makes intelligent decisions",
+        "Deep learning, because it searches a large space",
+        "Generative AI, because it produces new move sequences"
+      ],
+      "answer": 0,
+      "explanation": "AI is the outermost goal and explicitly includes hand-written rule and search systems with no learning. It is not ML because nothing is learned from data; ML is strictly the subset that infers the rule from examples."
+    },
+    {
+      "subtopic": "Learning paradigms",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Pretraining a large language model by hiding the next word in raw web text and asking the model to predict it is an example of which learning paradigm?",
+      "options": [
+        "Self-supervised learning",
+        "Unsupervised learning",
+        "Supervised learning with human-provided labels",
+        "Reinforcement learning"
+      ],
+      "answer": 0,
+      "explanation": "Self-supervised learning invents labels from the data's own structure (predict the masked/next token), which is the engine behind LLM pretraining. It differs from unsupervised learning, which finds structure with no prediction target, and from supervised learning, which requires human-provided labels."
+    },
+    {
+      "subtopic": "Parameters vs hyperparameters",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In `y = w·x + b`, which of these is a hyperparameter rather than a parameter?",
+      "options": [
+        "The learning rate η that controls how fast `w` is updated",
+        "The weight `w`",
+        "The bias term `b`",
+        "The fitted prediction `ŷ` produced during training"
+      ],
+      "answer": 0,
+      "explanation": "Parameters (`w`, `b`) are learned from data by the optimizer; the learning rate η is set by you before training and controls the learning process, making it a hyperparameter. `ŷ` is an output, not a configuration value at all."
+    },
+    {
+      "subtopic": "Generalization and the test set",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "It is acceptable to compare several trained models on the test set and keep whichever one scores highest, as long as you only do it once.",
+      "answer": false,
+      "explanation": "Using the test set to choose among models is model selection, which leaks the test set into the development process and makes its score a dishonest estimate. The test set is consulted once only to estimate the final, already-chosen model's performance; tuning and model choice belong to validation."
+    },
+    {
+      "subtopic": "Overfitting vs underfitting",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A model reaches 99% accuracy on the training set but only 71% on the validation set. What is happening?",
+      "options": [
+        "Overfitting — high variance, the model memorized training noise",
+        "Underfitting — high bias, the model is too simple",
+        "Data leakage from the test set into training",
+        "The model has converged to the global optimum"
+      ],
+      "answer": 0,
+      "explanation": "A low train error with a large train-vs-validation gap is the signature of overfitting, the high-variance condition. Underfitting would show high error on both train and validation, not a wide gap."
+    },
+    {
+      "subtopic": "Bias-variance tradeoff",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "According to the bias-variance decomposition, what happens to expected test error as you increase a model's capacity well past the complexity the data supports?",
+      "options": [
+        "Bias keeps falling but variance rises faster, so total error increases again",
+        "Both bias and variance keep falling, so total error keeps dropping",
+        "Variance falls and bias rises, producing underfitting",
+        "Irreducible error grows, which dominates the total"
+      ],
+      "answer": 0,
+      "explanation": "Raising complexity lowers bias but raises variance; past the sweet spot the rising variance dominates, pushing total error back up — the right side of the U-shaped validation curve. Irreducible error is fixed noise and does not change with capacity."
+    },
+    {
+      "subtopic": "Training vs inference",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements correctly distinguish inference from training? (Select all that apply.)",
+      "options": [
+        "Inference feeds a new input through fixed parameters and must not mutate them",
+        "Inference needs no labels — it is just a forward pass",
+        "Inference typically cares about per-request latency and cost",
+        "Inference adjusts the weights using the gradient of the loss",
+        "Inference requires the full optimizer machinery to run"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Inference uses the already-learned parameters to predict on new inputs without labels and without changing the model, and is judged on latency/cost-per-request. Adjusting weights via the loss gradient and running the optimizer are training activities, not inference."
+    },
+    {
+      "subtopic": "Parametric vs non-parametric",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is k-Nearest Neighbors considered a non-parametric model?",
+      "options": [
+        "The training set itself is part of the model, so its size grows with the data",
+        "It has no tunable settings of any kind",
+        "It compresses the data into a fixed-size set of weights and discards the data",
+        "It makes strong assumptions about the shape of the decision boundary"
+      ],
+      "answer": 0,
+      "explanation": "Non-parametric models keep the data around — k-NN stores every training point, so the effective number of parameters grows with the dataset. Compressing into a fixed-size summary and making strong shape assumptions describe parametric models like linear regression."
+    },
+    {
+      "subtopic": "Data leakage in preprocessing",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An engineer fits a `StandardScaler` on the entire dataset (train + validation + test) before splitting, then trains and reports a validation score. What is the core problem?",
+      "options": [
+        "Data leakage — statistics from validation/test influenced the transform, inflating the score",
+        "Nothing is wrong; scaling on all data is the recommended approach",
+        "The model will underfit because scaling reduces feature variance",
+        "It only affects training speed, not the reported metrics"
+      ],
+      "answer": 0,
+      "explanation": "Preprocessing must be fit on the training data only and then applied to validation/test; fitting the scaler on everything lets information from held-out data leak into the model, producing an optimistic, unrealistic score. It does not cause underfitting and it does affect reported metrics."
+    },
+    {
+      "subtopic": "No Free Lunch theorem",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the practical implication of the No Free Lunch theorem for a real project?",
+      "options": [
+        "No single algorithm is best across all problems, so try several families and let validation decide",
+        "Deep neural networks are provably optimal for any problem with enough data",
+        "More data can never improve a model that is already chosen",
+        "You should pick the algorithm with the best published benchmark and never reconsider"
+      ],
+      "answer": 0,
+      "explanation": "Averaged over all possible problems no learner beats any other, so there is no universally best model — the right choice depends on the problem's structure, which is why you try a few sensible families and let validation performance pick. The other options contradict the theorem or the data-centric advice in the reviewer."
+    },
+    {
+      "subtopic": "When not to use ML",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which situations argue for a plain deterministic rule instead of a machine-learning model? (Select all that apply.)",
+      "options": [
+        "The logic is known, exact, and stable (e.g., tax-bracket calculation)",
+        "You have only a handful of training examples",
+        "A wrong, opaque decision is unacceptable and you need an auditable answer",
+        "You have abundant labeled data and a clearly measurable success metric",
+        "The input-output relationship is complex, unknown, and must be discovered from data"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "ML is the wrong tool when an exact rule already exists, when there is too little data to generalize, or when decisions must be guaranteed and auditable. Abundant labeled data with a clear metric, and an unknown relationship that must be learned, are exactly the conditions that favor ML."
+    },
+    {
+      "subtopic": "Effect of more data",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Adding substantially more clean training data, with model capacity unchanged, primarily affects the error decomposition how?",
+      "options": [
+        "Lowers variance while leaving bias essentially unchanged",
+        "Lowers bias while leaving variance unchanged",
+        "Lowers the irreducible error term toward zero",
+        "Raises bias to reduce overfitting"
+      ],
+      "answer": 0,
+      "explanation": "More data pins the model down with more examples, reducing its sensitivity to any particular sample — that lowers variance, with bias largely unchanged since the model family is the same. Irreducible error is noise nothing can remove, and bias is tied to model assumptions, not dataset size."
+    },
+    {
+      "subtopic": "The learning loop (code)",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In this gradient-descent update, what does flipping the sign on the highlighted line (using `+` instead of `-`) do?",
+      "code": "theta = theta - lr * grad   # standard step\n# vs.\ntheta = theta + lr * grad   # changed line",
+      "lang": "python",
+      "options": [
+        "It moves parameters in the direction of increasing loss, so training diverges instead of converging",
+        "It has no effect because the gradient already encodes direction",
+        "It is the correct form; gradient descent always adds the gradient",
+        "It only changes the speed of convergence, not whether it converges"
+      ],
+      "answer": 0,
+      "explanation": "The update `θ := θ − η·∇L` steps opposite the gradient to reduce loss; using `+` steps along the gradient (the direction of steepest increase), so the loss grows and training diverges. The sign is what makes it descent rather than ascent."
+    },
+    {
+      "subtopic": "Loss functions (code)",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For a binary classification problem, which loss is the standard choice and why?",
+      "code": "# loss A\nL = mean((y - y_hat) ** 2)\n# loss B\nL = -mean(y * log(y_hat) + (1 - y) * log(1 - y_hat))",
+      "lang": "python",
+      "options": [
+        "Loss B (binary cross-entropy) — it penalizes confident wrong probabilities, the standard for classification",
+        "Loss A (MSE) — squared error is always preferred regardless of task",
+        "Loss B, but only because it runs faster than MSE",
+        "Loss A, because cross-entropy cannot be used with probabilities"
+      ],
+      "answer": 0,
+      "explanation": "Classification uses cross-entropy (loss B), which strongly penalizes confident-but-wrong probability estimates; MSE is the standard for regression with continuous targets. Speed is not the reason, and cross-entropy is specifically defined over predicted probabilities."
+    },
+    {
+      "subtopic": "Bias-variance levers",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A model underfits: error is high on both the training and validation sets. Which action is most likely to help?",
+      "options": [
+        "Increase model capacity or add more informative features",
+        "Add stronger L2 regularization",
+        "Apply dropout and early stopping",
+        "Reduce the number of features the model can use"
+      ],
+      "answer": 0,
+      "explanation": "Underfitting is a high-bias problem, cured by increasing capacity, adding better features, or reducing regularization. Stronger regularization, dropout, early stopping, and fewer features all reduce capacity — they fight overfitting and would make underfitting worse."
+    },
+    {
+      "subtopic": "Bias-variance with regularization",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Applying regularization typically lowers variance a lot while raising bias only a little, which is why it can reduce total expected error on an overfit model.",
+      "answer": true,
+      "explanation": "Regularization penalizes complexity, trading a small increase in bias for a large reduction in variance; on an overfit (high-variance) model that lowers the bias²+variance sum and thus the expected error. The trade is intentionally asymmetric in variance's favor."
+    },
+    {
+      "subtopic": "Non-stationarity and drift",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A pricing model's predictions themselves cause the market to react, so the input-output relationship shifts faster than data can be collected and the model retrained. Which concept best names this failure, and what does it imply?",
+      "options": [
+        "Concept drift — the learned model is stale on arrival, so a learned model may be the wrong tool here",
+        "Data leakage — the test set was contaminated during training",
+        "High irreducible error — no model could ever do better, so add capacity",
+        "Underfitting — the model is too simple, so increase capacity"
+      ],
+      "answer": 0,
+      "explanation": "When the relationship between inputs and target changes over time, that is concept drift; in a non-stationary world that moves faster than you can retrain, a learned model is stale on arrival and ML may simply be the wrong approach. Leakage, irreducible error, and underfitting describe unrelated failure modes."
+    },
+    {
+      "subtopic": "Capacity vs generalization",
+      "source": "ai/machine-learning-foundations-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is a higher-capacity model not automatically a better model?",
+      "options": [
+        "Beyond the complexity the data supports, extra capacity lets the model memorize noise, which is overfitting",
+        "Higher capacity always increases bias and causes underfitting",
+        "Capacity has no effect on generalization, only on training time",
+        "Higher capacity guarantees lower validation error on any dataset"
+      ],
+      "answer": 0,
+      "explanation": "Capacity is the size of the hypothesis space; past what the data can support, the surplus capacity fits noise rather than signal, the definition of overfitting and rising variance. More capacity lowers bias (not raises it) and does not guarantee better validation error."
+    }
+  ]
+}

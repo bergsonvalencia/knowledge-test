@@ -1,0 +1,275 @@
+{
+  "topic": "sql",
+  "source": "sql/database-design-and-normalization-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Modification anomalies",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A denormalized `Orders` table stores `CustomerCity` on every order row. When customer 42 moves from Manila to Davao and an application updates only some of that customer's order rows, which anomaly has occurred?",
+      "options": [
+        "Update anomaly",
+        "Insertion anomaly",
+        "Deletion anomaly",
+        "Projection anomaly"
+      ],
+      "answer": 0,
+      "explanation": "An update anomaly is the inconsistency from a duplicated fact: changing one copy while missing another makes the table disagree with itself. Insertion/deletion anomalies involve being unable to record a fact without an order, or losing a fact when the last carrier row is deleted."
+    },
+    {
+      "subtopic": "Lossless join vs dependency preservation",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "BCNF decomposition is always lossless-join but is not always dependency-preserving.",
+      "answer": true,
+      "explanation": "The lossless-join property is always achievable (you can reconstruct the original by joining the parts), but some BCNF decompositions sacrifice the ability to enforce a functional dependency with a single-table constraint — which is exactly why 3NF is sometimes the pragmatic stopping point."
+    },
+    {
+      "subtopic": "Functional dependencies",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a table keyed on `EmployeeId` with FDs `EmployeeId → DeptId` and `DeptId → DeptName`, what kind of dependency does `DeptName` have on the key, and which normal form addresses it?",
+      "options": [
+        "A transitive dependency, addressed by 3NF",
+        "A partial dependency, addressed by 2NF",
+        "A trivial dependency, addressed by 1NF",
+        "A multi-valued dependency, addressed by 4NF"
+      ],
+      "answer": 0,
+      "explanation": "`DeptName` reaches the key only through the non-key column `DeptId` (`EmployeeId → DeptId → DeptName`), the definition of a transitive dependency, which 3NF forbids. It is not partial: partial dependencies require a composite key, and the key here is a single column."
+    },
+    {
+      "subtopic": "Second Normal Form",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Under what condition is a 2NF violation even possible?",
+      "options": [
+        "Only when the primary key is composite (more than one column)",
+        "Only when the table contains at least one nullable column",
+        "Only when the table has no foreign keys",
+        "Only when the primary key is a single surrogate column"
+      ],
+      "answer": 0,
+      "explanation": "2NF removes partial dependencies — a non-key column depending on only part of a composite key. With a single-column key there is no 'part' to depend on, so a 1NF table with a single-column key is automatically in 2NF; a 2NF risk exists only when the key is composite."
+    },
+    {
+      "subtopic": "First Normal Form",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `Contact` table has a `PhoneNumbers NVARCHAR(400)` column holding `'0917-111, 0918-222, 0919-333'`. Which normal form does this violate and what is the standard fix?",
+      "options": [
+        "1NF; move phones into a child table with one phone per row",
+        "2NF; split the table to remove a partial dependency",
+        "3NF; remove the transitive dependency on phone numbers",
+        "BCNF; make the phone column a superkey determinant"
+      ],
+      "answer": 0,
+      "explanation": "A comma-separated list in one column is a non-atomic / repeating group, which violates 1NF. The fix is a child `ContactPhone` table storing one phone per row, referencing the contact by FK. The other forms concern partial/transitive dependencies and superkey determinants, not atomicity."
+    },
+    {
+      "subtopic": "3NF vs BCNF",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An `Enrollment(Student, Subject, Teacher)` table has candidate keys `(Student, Subject)` and `(Student, Teacher)`, with the business rule that each teacher teaches exactly one subject (so `Teacher → Subject`). What is true of this table?",
+      "options": [
+        "It is in 3NF but not BCNF, because `Teacher` determines `Subject` but is not a superkey",
+        "It is in BCNF, because every determinant is already a superkey",
+        "It violates 2NF, because `Subject` partially depends on the key",
+        "It violates 1NF, because `Teacher` and `Subject` overlap"
+      ],
+      "answer": 0,
+      "explanation": "`Subject` is a prime attribute (part of candidate key `(Student, Subject)`), so 3NF tolerates the FD `Teacher → Subject`. BCNF does not: `Teacher` is a determinant that is not a superkey, so the table is 3NF but not BCNF — the classic overlapping-candidate-keys trap."
+    },
+    {
+      "subtopic": "Normal form mantra",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the Codd mantra 'the key, the whole key, and nothing but the key,' which clause maps to which normal form?",
+      "options": [
+        "'The key' → 1NF, 'the whole key' → 2NF, 'nothing but the key' → 3NF",
+        "'The key' → 2NF, 'the whole key' → 3NF, 'nothing but the key' → BCNF",
+        "'The key' → 1NF, 'the whole key' → 3NF, 'nothing but the key' → BCNF",
+        "'The key' → 2NF, 'the whole key' → 1NF, 'nothing but the key' → 3NF"
+      ],
+      "answer": 0,
+      "explanation": "'The key' (a key exists, atomic values) is 1NF, 'the whole key' (no partial dependency) is 2NF, and 'nothing but the key' (no transitive dependency) is 3NF. BCNF tightens the mantra to 'every key' but is not one of the three clauses."
+    },
+    {
+      "subtopic": "Denormalization trade-offs",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about denormalization are correct? (Select all that apply.)",
+      "options": [
+        "It typically speeds reads by avoiding joins/aggregations at query time",
+        "It re-introduces update anomalies that you must manage via triggers, app code, or ETL",
+        "It generally reduces total storage by eliminating tables",
+        "An indexed view or computed column is often preferable because the engine keeps it in sync for you",
+        "It eliminates the need to measure the workload before applying it"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Denormalization trades faster reads for slower writes, larger storage, and re-introduced anomalies that you must keep in sync. It increases storage (duplicated data), and it should be applied only after measuring the read bottleneck — so the storage-reduction and skip-measurement claims are wrong. Engine-maintained alternatives (indexed views, computed columns) are preferred first."
+    },
+    {
+      "subtopic": "Keys: PK vs UNIQUE vs candidate",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement about primary keys and UNIQUE constraints in SQL Server is correct?",
+      "options": [
+        "A table can have one PK but many UNIQUE constraints, and a FK may reference a UNIQUE key, not only the PK",
+        "A table can have multiple primary keys as long as each is NOT NULL",
+        "A UNIQUE constraint forbids NULLs entirely, just like a primary key",
+        "A foreign key can only ever reference a primary key, never a UNIQUE constraint"
+      ],
+      "answer": 0,
+      "explanation": "A table has exactly one PK but may have many UNIQUE (alternate-key) constraints and many FKs; an FK can reference any PK or UNIQUE key. A UNIQUE constraint allows one NULL (it doesn't forbid NULLs), and there can be only one primary key per table."
+    },
+    {
+      "subtopic": "UNIQUE and NULLs",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need email to be unique when provided, but many customers will have no email at all. Which SQL Server approach satisfies this?",
+      "options": [
+        "A filtered unique index `ON Customer(Email) WHERE Email IS NOT NULL`",
+        "A plain `UNIQUE (Email)` constraint, which already allows unlimited NULLs",
+        "A `CHECK (Email IS NOT NULL)` constraint combined with UNIQUE",
+        "A `PRIMARY KEY (Email)` since PKs allow many NULLs"
+      ],
+      "answer": 0,
+      "explanation": "A plain UNIQUE constraint in SQL Server permits only one NULL row, so it cannot allow many email-less customers. A filtered unique index that ignores NULL rows enforces 'unique when present' while allowing unlimited NULLs. A PK forbids NULLs entirely, and the CHECK option would forbid empty emails."
+    },
+    {
+      "subtopic": "CHECK constraints and NULL",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Given `CHECK (Age >= 18)`, an INSERT with `Age = NULL` will be rejected by the constraint.",
+      "answer": false,
+      "explanation": "A CHECK constraint passes when its predicate evaluates to TRUE or UNKNOWN. `NULL >= 18` is UNKNOWN, so the row is allowed. To require a present value of at least 18 you must add `NOT NULL` alongside the CHECK."
+    },
+    {
+      "subtopic": "DEFAULT constraint behavior",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A nullable column `Status` has `DEFAULT 'A'`. An application runs `INSERT INTO Account (Email, Status) VALUES ('x@y.com', NULL)`. What value does `Status` end up with?",
+      "options": [
+        "NULL, because an explicit NULL was supplied and the DEFAULT does not fire",
+        "'A', because the DEFAULT always overrides a supplied NULL",
+        "An error, because DEFAULT and an explicit NULL conflict",
+        "'A', but only if the column is also marked NOT NULL"
+      ],
+      "answer": 0,
+      "explanation": "A DEFAULT only fires when the column is omitted from the INSERT or set to the `DEFAULT` keyword. Inserting an explicit NULL into a nullable column stores NULL — the default is not applied. There is no conflict error."
+    },
+    {
+      "subtopic": "Surrogate vs natural keys",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the senior-default key strategy this reviewer recommends for a typical SQL Server table?",
+      "options": [
+        "A narrow surrogate PK (`INT`/`BIGINT IDENTITY` or sequence) plus a `UNIQUE` constraint on the natural/business key",
+        "A composite primary key built from all the natural business attributes",
+        "A random `GUID` (`NEWID()`) clustered primary key for global uniqueness",
+        "The natural key as the PK, with no surrogate, to avoid an extra column"
+      ],
+      "answer": 0,
+      "explanation": "The recommended default is a narrow, stable surrogate PK for lean joins/indexes, plus a UNIQUE constraint that still enforces the real-world uniqueness rule. A random GUID makes a poor clustered key, and using a mutable natural value as the PK cascades changes through every FK."
+    },
+    {
+      "subtopic": "GUID as clustered key",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Why is a random `GUID` from `NEWID()` a poor choice for a clustered primary key in SQL Server? (Select all that apply.)",
+      "options": [
+        "Random insert positions cause page splits and fragmentation",
+        "The 16-byte key bloats every nonclustered index because the clustering key rides along as the row locator",
+        "It cannot be used as a foreign key target",
+        "`NEWSEQUENTIALID()` or clustering on `IDENTITY` mitigates the locality problem"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "A random GUID scatters inserts across pages (page splits/fragmentation), and because the clustering key is copied into every nonclustered index as the row locator, the wide 16-byte key bloats them all. `NEWSEQUENTIALID()` or clustering on IDENTITY restores locality. A GUID can absolutely be a FK target, so that option is false."
+    },
+    {
+      "subtopic": "Constraints toolkit",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does the optimizer treat a trusted `CHECK` constraint or `FOREIGN KEY` differently from a trigger that enforces the same rule?",
+      "options": [
+        "Constraints are declarative and the optimizer can trust them for predicate elimination; triggers are imperative and not trusted",
+        "Triggers are evaluated at compile time while constraints run only at execution time",
+        "Constraints are cached in the plan cache whereas triggers bypass it entirely",
+        "Triggers always run faster, so the optimizer prefers them over constraints"
+      ],
+      "answer": 0,
+      "explanation": "A trusted declarative constraint lets the optimizer reason about and even eliminate predicates (it knows the data already satisfies the rule). A trigger is imperative procedural code the optimizer cannot trust for such reasoning, which is why constraints are preferred when the rule fits."
+    },
+    {
+      "subtopic": "Cardinality and junction tables",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How is a many-to-many (N:M) relationship physically modeled in a relational database?",
+      "options": [
+        "As two 1:N relationships through a junction table, typically with a composite PK of the two FKs",
+        "By storing a comma-separated list of related IDs in one column on each side",
+        "By placing a foreign key on the 'one' side pointing at a list on the 'many' side",
+        "As a single 1:1 relationship enforced by a shared primary key"
+      ],
+      "answer": 0,
+      "explanation": "N:M does not exist physically; it is always two 1:N relationships resolved by a junction table whose composite PK `(A, B)` enforces one link per pair. Relationship attributes live on the junction. CSV lists violate 1NF, and the other options describe different cardinalities."
+    },
+    {
+      "subtopic": "Cascade paths",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two FKs, from `OrderLine` and `Shipment`, both declare `ON DELETE CASCADE` back to `Order`, and SQL Server rejects the schema with 'may cause cycles or multiple cascade paths.' What is the correct resolution?",
+      "code": "ALTER TABLE OrderLine ADD CONSTRAINT FK_OL_Order\n    FOREIGN KEY (OrderId) REFERENCES [Order](OrderId) ON DELETE CASCADE;\nALTER TABLE Shipment ADD CONSTRAINT FK_Sh_Order\n    FOREIGN KEY (OrderId) REFERENCES [Order](OrderId) ON DELETE CASCADE;  -- rejected",
+      "lang": "sql",
+      "options": [
+        "Keep cascade on one path and set the other FK to `NO ACTION`, deleting those children explicitly in a transaction/proc",
+        "Add `WITH NOCHECK` to both foreign keys so the engine skips cascade validation",
+        "Convert both foreign keys to `SET DEFAULT` so neither performs a cascade",
+        "Drop the primary key on `Order` so no cascade path can be detected"
+      ],
+      "answer": 0,
+      "explanation": "SQL Server forbids multiple cascade paths (or cycles) reaching the same table because it cannot deterministically order the cascaded deletes. The standard fix is to cascade on one path and use NO ACTION on the other, handling those deletes procedurally (or use soft deletes). `WITH NOCHECK` and dropping the PK do not address the cascade-ordering rule."
+    },
+    {
+      "subtopic": "Indexing implications of keys",
+      "source": "sql/database-design-and-normalization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In SQL Server, which side of a foreign key relationship is automatically indexed, and what is the practical consequence?",
+      "options": [
+        "Only the referenced (parent) side is auto-indexed via its PK/UNIQUE; the referencing FK column is not, so FK-checked deletes and joins scan the child table unless you index it",
+        "Both the parent and child columns are auto-indexed when the FK is created, so no manual indexing is needed",
+        "Only the referencing (child) FK column is auto-indexed; the parent PK is left to the developer",
+        "Neither side is indexed, so foreign keys provide no performance benefit at all"
+      ],
+      "answer": 0,
+      "explanation": "SQL Server indexes the referenced side through its PK/UNIQUE key, but it does not create an index on the referencing FK column. Without one, parent-delete checks, cascades, and joins on that FK scan the child table — a classic hidden performance trap, so you should index FK columns yourself."
+    }
+  ]
+}

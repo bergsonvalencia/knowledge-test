@@ -1,0 +1,255 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-cosmos-db-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Default consistency level",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the **default** consistency level for a new Azure Cosmos DB account?",
+      "options": ["Strong", "Bounded Staleness", "Session", "Eventual"],
+      "answer": 2,
+      "explanation": "Session is the default. It gives read-your-writes and monotonic reads/writes within a client session at eventual-level cost (1x RU). Strong is not the default; many developers wrongly assume it is."
+    },
+    {
+      "subtopic": "API choice",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For a brand-new greenfield application, which Cosmos DB API should you choose, and why?",
+      "options": [
+        "MongoDB API, because Mongo drivers are the most mature",
+        "NoSQL (Core) API, because new features land there first and it has the richest SDK",
+        "Table API, because it is the cheapest to run",
+        "Gremlin API, because property graphs are the most flexible model"
+      ],
+      "answer": 1,
+      "explanation": "NoSQL (Core) is the native API and gets every capability first (change feed, hierarchical keys, vector search, the full SDK). The other APIs exist primarily for migration/compatibility, and the API is immutable after account creation."
+    },
+    {
+      "subtopic": "Resource model limits",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the maximum size of a single Cosmos DB item (JSON document)?",
+      "options": ["2 MB", "20 GB", "16 MB", "50 GB"],
+      "answer": 0,
+      "explanation": "An individual item is capped at 2 MB; large blobs should go to Azure Storage with only the URL stored in Cosmos. 20 GB is the logical-partition storage cap and ~50 GB is a physical partition — different limits."
+    },
+    {
+      "subtopic": "Point read cost",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Approximately how many RU does a **point read** of a 1 KB item by `id` and partition key cost?",
+      "options": ["About 1 RU", "About 5 RU", "About 10 RU", "About 0.1 RU"],
+      "answer": 0,
+      "explanation": "A 1 KB point read by id costs about 1 RU and is the cheapest, lowest-latency operation. The RU model normalizes a point read of a 1 KB item to roughly 1 RU; queries and writes cost more."
+    },
+    {
+      "subtopic": "Strong consistency RU cost",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Reads under **Strong** and **Bounded Staleness** consistency cost roughly 2x the RU of Session/Consistent-Prefix/Eventual reads because they perform quorum reads.",
+      "answer": true,
+      "explanation": "Strong and Bounded Staleness guarantee freshness via quorum reads (two replicas of a four-replica set), so they cost about 2x RU. Session, Consistent Prefix, and Eventual read a single replica at 1x RU."
+    },
+    {
+      "subtopic": "Hot partition",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A container uses `/country` as its partition key and 80% of traffic is `US`. RU/s is provisioned generously, yet requests return HTTP 429. What is the root cause?",
+      "options": [
+        "The account-level RU/s limit has been exceeded",
+        "A low-cardinality, skewed partition key concentrates traffic on one logical partition, capping you at one physical partition's RU/s share",
+        "The items exceed the 2 MB size limit and are being throttled",
+        "Strong consistency is doubling the RU cost of every read"
+      ],
+      "answer": 1,
+      "explanation": "Provisioned RU/s is split evenly across physical partitions, so a skewed low-cardinality key (`/country`) hashes most traffic to one logical/physical partition — a hot partition — yielding 429s while the container looks under-utilized. The cure is a high-cardinality, evenly-accessed key."
+    },
+    {
+      "subtopic": "Logical vs physical partitions",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes a **logical** partition from a **physical** partition?",
+      "options": [
+        "A logical partition is the ~50 GB storage node; a physical partition is the transaction boundary capped at 20 GB",
+        "A logical partition is all items sharing one partition-key value (the 20 GB transaction boundary); a physical partition is the storage/compute node (~50 GB, ~10k RU/s) hosting many logical partitions",
+        "A logical partition and a physical partition are the same thing, just named differently per API",
+        "A physical partition is capped at 20 GB and you split it manually as data grows"
+      ],
+      "answer": 1,
+      "explanation": "A logical partition = all items with the same partition-key value, is the transaction boundary, and is capped at 20 GB. A physical partition is the actual node (~50 GB, ~10k RU/s) onto which Cosmos maps many logical partitions and splits automatically."
+    },
+    {
+      "subtopic": "Hierarchical partition keys",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why would you choose **hierarchical (subpartitioned) partition keys** such as `/tenantId` then `/userId` for a multi-tenant app?",
+      "options": [
+        "To allow changing the partition key in place later without migrating data",
+        "To enable cross-partition transactions spanning multiple tenants",
+        "To spread a single large tenant across many sub-partitions (beating the 20 GB cap) while keeping prefix queries on `/tenantId` efficient",
+        "To remove the need for an indexing policy entirely"
+      ],
+      "answer": 2,
+      "explanation": "A single huge tenant would blow the 20 GB logical-partition cap on a flat `/tenantId` key; the hierarchy spreads it across sub-partitions while a prefix query (`/tenantId` alone) still targets only matching sub-partitions. The hierarchy is still fixed at container creation, so changing it later requires migration."
+    },
+    {
+      "subtopic": "Capacity modes",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Traffic to a container is highly variable and spiky with unpredictable peaks, and you want to avoid 429s without permanently over-provisioning. Which capacity mode fits best?",
+      "options": [
+        "Provisioned (manual) at the peak RU/s you ever expect",
+        "Autoscale with a max RU/s, scaling instantly between 10% and 100% of that max",
+        "Serverless, paying per request",
+        "Provisioned (manual) at the average RU/s"
+      ],
+      "answer": 1,
+      "explanation": "Autoscale lets you set a max RU/s and scales instantly between 10% and 100% based on load, ideal for variable/spiky traffic without over-provisioning. Manual at peak wastes money on idle; manual at average causes 429s on spikes; serverless suits dev/test and low/intermittent volume, not a high spiky production load."
+    },
+    {
+      "subtopic": "Multi-region writes + consistency",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "You can configure **Strong** consistency on an account that has **multi-region writes** enabled.",
+      "answer": false,
+      "explanation": "Strong consistency is incompatible with multi-region writes: a multi-write distributed system cannot provide RPO=0/RTO=0. For multi-region write accounts use Session or weaker (Bounded Staleness is also an anti-pattern there)."
+    },
+    {
+      "subtopic": "Change feed semantics",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team uses the **default (latest-version) change feed** to keep an Azure AI Search index in sync. Which behavior must they account for?",
+      "options": [
+        "The change feed surfaces only deletes, not creates or updates",
+        "The change feed is unordered, so events can arrive in any sequence within a partition",
+        "The default change feed does not surface deletes, so removed items won't be reflected unless you use a soft-delete flag or the all-versions-and-deletes mode",
+        "The change feed requires you to write your own polling loop with no checkpointing"
+      ],
+      "answer": 2,
+      "explanation": "The default/latest-version change feed records creates and updates ordered per partition but does NOT surface deletes; model a soft-delete flag or use the all-versions-and-deletes mode. The Azure Functions trigger checkpoints automatically, so no manual polling is needed."
+    },
+    {
+      "subtopic": "Change feed consumers",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about consuming the Cosmos DB **change feed** are correct? (Select all that apply.)",
+      "options": [
+        "The Azure Functions Cosmos DB trigger is a push model where the platform polls and invokes your function per batch, checkpointing automatically",
+        "The change-feed processor (pull model) uses a lease container to distribute partitions across workers",
+        "The change feed is ordered per partition for creates and updates",
+        "The change feed guarantees a single global total order across all partitions",
+        "The change feed surfaces deletes by default in latest-version mode"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The Functions trigger is push with automatic checkpointing; the change-feed processor is pull and uses a lease container for partition distribution; the feed is ordered per partition. It is not globally totally ordered, and latest-version mode excludes deletes."
+    },
+    {
+      "subtopic": "Indexing policy",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A write-heavy container stores a large unqueried `/payload` blob, and write RU is high. What is the most effective tuning move?",
+      "options": [
+        "Switch the indexing mode to `none` so nothing is indexed",
+        "Exclude `/payload/*` from the indexing policy so it isn't indexed on every write",
+        "Add a composite index covering `/payload`",
+        "Increase the item size limit beyond 2 MB to fit the payload"
+      ],
+      "answer": 1,
+      "explanation": "Cosmos auto-indexes every property by default; indexing a large unqueried path inflates write RU and storage. Excluding `/payload/*` cuts that cost while keeping queryable paths indexed. Disabling all indexing would break legitimate queries, and a composite index on an unqueried path adds cost rather than removing it."
+    },
+    {
+      "subtopic": "Point read vs query (code)",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In this single-partition query helper, what is the purpose of supplying `PartitionKey` in `QueryRequestOptions`?",
+      "code": "using var iter = _container.GetItemQueryIterator<Order>(query,\n    requestOptions: new QueryRequestOptions\n    {\n        PartitionKey = new PartitionKey(customerId)\n    });",
+      "lang": "csharp",
+      "options": [
+        "It encrypts the query parameters before sending them",
+        "It scopes the query to one logical partition so it doesn't fan out cross-partition",
+        "It converts the query into a cheaper point read automatically",
+        "It enables Strong consistency for just this query"
+      ],
+      "answer": 1,
+      "explanation": "Passing the partition key scopes the query to a single logical partition, avoiding a cross-partition fan-out to every physical partition (which costs the most RU and scales worst). It does not turn the query into a point read, nor does it change consistency or add encryption."
+    },
+    {
+      "subtopic": "CosmosClient lifetime (code)",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A .NET API shows rising latency and socket exhaustion under load. The controller does the following per request. What is the fix?",
+      "code": "public async Task<IActionResult> Get(string id)\n{\n    using var client = new CosmosClient(endpoint, credential); // per request\n    var c = client.GetContainer(\"db\", \"items\");\n    var item = await c.ReadItemAsync<Item>(id, new PartitionKey(id));\n    return Ok(item.Resource);\n}",
+      "lang": "csharp",
+      "options": [
+        "Wrap the call in a retry policy to absorb the 429s",
+        "Register a single `CosmosClient` as a DI singleton and inject it, instead of constructing one per request",
+        "Switch the connection mode from Direct to Gateway to reduce sockets",
+        "Add `ConsistencyLevel.Eventual` to the request options"
+      ],
+      "answer": 1,
+      "explanation": "`CosmosClient` is thread-safe and caches connection pools, the routing/partition map, and (in Direct mode) long-lived TCP connections; constructing one per request exhausts sockets and cold-starts those caches every call. Register one singleton in DI. Retries and Gateway mode don't address the per-request construction; the symptom is not throttling or consistency."
+    },
+    {
+      "subtopic": "Bounded staleness semantics",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which statement most accurately describes the guarantee of **Bounded Staleness** consistency?",
+      "options": [
+        "Reads always return the latest committed write, exactly like Strong but cheaper",
+        "Reads lag the latest write by at most K versions or T time, whichever comes first; it is a good fit for multi-region writes",
+        "Reads lag the latest write by at most K versions or T time, whichever comes first; it is near-strong for single-write-region accounts and an anti-pattern with multi-region writes",
+        "Reads may appear out of order but are never more than T seconds stale"
+      ],
+      "answer": 2,
+      "explanation": "Bounded Staleness bounds lag to at most K versions or T time, giving near-strong behavior across regions for single-write-region accounts; it costs 2x read RU and is an anti-pattern with multi-region writes. It does not guarantee the absolute latest write (that's Strong), and it preserves ordering rather than allowing out-of-order reads."
+    },
+    {
+      "subtopic": "Conflict resolution",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Regarding **conflict resolution** for multi-region (multi-master) writes in Cosmos DB, which statements are true? (Select all that apply.)",
+      "options": [
+        "Last-Writer-Wins (LWW) is the default and uses a numeric/timestamp property to pick a winner",
+        "LWW performs a real field-level merge of the two conflicting versions",
+        "A custom stored-procedure resolver can run your merge logic, and unresolved conflicts land in a conflicts feed you can inspect",
+        "Conflicts can occur when the same item is written concurrently in different regions",
+        "Multi-region writes eliminate write conflicts entirely, so no resolution policy is needed"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "LWW is the default and picks a winner by a numeric/timestamp property, silently dropping the loser (not a real merge). A custom sproc can merge, and unresolved conflicts go to a conflicts feed. Concurrent same-item writes across regions are exactly what causes conflicts, so a resolution policy is required."
+    },
+    {
+      "subtopic": "Vector index types",
+      "source": "azure/azure-cosmos-db-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You are building RAG over a NoSQL-API container with well over 50,000 vectors per scoped search and need the lowest latency and RU at scale. Which vector index type fits, and what caveat applies?",
+      "options": [
+        "`flat`, because it gives 100% recall and supports up to 4096 dimensions",
+        "`diskANN`, an approximate index best above ~50,000 vectors, but it needs at least 1,000 indexed vectors or a full scan runs",
+        "`quantizedFlat`, because brute-force is always fastest regardless of vector count",
+        "`diskANN`, but it is exact (100% recall) and capped at 505 dimensions"
+      ],
+      "answer": 1,
+      "explanation": "`diskANN` is the approximate-nearest-neighbor index with the lowest latency/RU and highest throughput at scale (>~50,000 vectors), supporting up to 4096 dimensions, but it needs at least 1,000 indexed vectors or it falls back to a full scan. `flat` is exact but capped at 505 dimensions; `quantizedFlat` suits smaller scoped sets; diskANN is approximate, not exact."
+    }
+  ]
+}

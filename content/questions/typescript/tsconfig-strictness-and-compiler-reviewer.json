@@ -1,0 +1,262 @@
+{
+  "topic": "typescript",
+  "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "tsconfig file set",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a `tsconfig.json`, what is the role of the `exclude` key?",
+      "options": [
+        "It prunes patterns out of `include`, but does not stop a file from being pulled in via an `import` or one listed in `files`",
+        "It is a hard deny-list that removes any matching file from the program even if another file imports it",
+        "It overrides `files`, removing any explicitly listed input that matches the pattern",
+        "It controls which `@types` packages the compiler auto-discovers from `node_modules`"
+      ],
+      "answer": 0,
+      "explanation": "`exclude` only filters what `include` would otherwise match; an imported file is still pulled in through the import graph, and a file in `files` is not removed. It is explicitly not a deny-list."
+    },
+    {
+      "subtopic": "strict umbrella",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How many individual type-checking flags does setting `\"strict\": true` enable?",
+      "options": ["Four", "Six", "Eight", "Ten"],
+      "answer": 2,
+      "explanation": "`strict` is an umbrella over eight flags: noImplicitAny, strictNullChecks, strictFunctionTypes, strictBindCallApply, strictPropertyInitialization, useUnknownInCatchVariables, alwaysStrict, and noImplicitThis."
+    },
+    {
+      "subtopic": "lib vs emit",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Changing the `lib` option alters the JavaScript that `tsc` emits.",
+      "answer": false,
+      "explanation": "`lib` only changes which ambient API declarations the type-checker believes exist; it never changes emitted output. `target` is the flag that affects emit by down-leveling syntax."
+    },
+    {
+      "subtopic": "noEmit purpose",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When is `\"noEmit\": true` the standard choice?",
+      "options": [
+        "When a bundler or fast transpiler (esbuild, SWC, Babel) emits the JavaScript and `tsc` runs purely as a type-safety gate",
+        "When publishing a library so consumers receive `.d.ts` files",
+        "When you need go-to-definition to jump from a `.d.ts` back to source",
+        "When you want to down-level optional chaining for older runtimes"
+      ],
+      "answer": 0,
+      "explanation": "`noEmit` makes tsc type-check only and write nothing — the standard setup when a bundler does the emit. Publishing types needs `declaration`; jumping to source needs `declarationMap`; down-leveling is governed by `target`."
+    },
+    {
+      "subtopic": "build mode",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which command topologically orders a project-reference graph, builds dependencies first, and skips up-to-date projects?",
+      "options": ["`tsc --watch`", "`tsc -b` (`tsc --build`)", "`tsc --noEmit`", "`tsc --incremental`"],
+      "answer": 1,
+      "explanation": "Build mode (`tsc -b` / `--build`) reads `references` and builds the dependency DAG in order, skipping fresh projects. Plain `tsc` ignores `references` for building; `--incremental` alone does not orchestrate cross-project builds."
+    },
+    {
+      "subtopic": "strictFunctionTypes variance",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does `strictFunctionTypes` fail to catch an unsafe assignment when the parameter is declared with **method** syntax (`{ handler(d): void }`) rather than a function-type property (`handler: (d) => void`)?",
+      "options": [
+        "Method parameters are intentionally checked bivariantly for ergonomic reasons; only function-type positions get the sound contravariant check",
+        "Method parameters are checked covariantly, which happens to be sound here",
+        "`strictFunctionTypes` is disabled inside class and object-literal bodies",
+        "Methods are exempt only when the class implements an interface"
+      ],
+      "answer": 0,
+      "explanation": "TypeScript deliberately keeps method parameters bivariant (unsound but convenient, e.g. for array methods and event handlers). Only `(x) => y` function-type parameters get the contravariant check that strictFunctionTypes adds."
+    },
+    {
+      "subtopic": "useUnknownInCatchVariables",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With the `strict` family on, what is the type of `e` in `catch (e)`, and what must you do before reading `e.message`?",
+      "options": [
+        "`e` is `any`; you can read `.message` directly",
+        "`e` is `unknown`; you must narrow it (e.g. `if (e instanceof Error)`) before touching `.message`",
+        "`e` is `Error`; `.message` is always available",
+        "`e` is `never`; the catch block is unreachable until you cast"
+      ],
+      "answer": 1,
+      "explanation": "`useUnknownInCatchVariables` (part of strict) types the caught value as `unknown`, forcing a narrowing guard before property access — because a `throw` can produce any value, not just an Error."
+    },
+    {
+      "subtopic": "noUncheckedIndexedAccess",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With `noUncheckedIndexedAccess` enabled, what is the type of `first` and does line 3 compile?",
+      "code": "const ids: number[] = [10, 20, 30];\nconst first = ids[0];\nconst doubled = first * 2;",
+      "lang": "typescript",
+      "options": [
+        "`first` is `number`; line 3 compiles",
+        "`first` is `number | undefined`; line 3 does NOT compile ('first' is possibly 'undefined')",
+        "`first` is `number | null`; line 3 compiles after a non-null assertion only",
+        "`first` is `any`; line 3 compiles with no diagnostic"
+      ],
+      "answer": 1,
+      "explanation": "The flag adds `| undefined` to every array/index read regardless of the literal index, so `first` is `number | undefined` and the arithmetic on line 3 is rejected until you guard or default it."
+    },
+    {
+      "subtopic": "exactOptionalPropertyTypes",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Under `exactOptionalPropertyTypes`, assigning `{ theme: undefined }` to a value typed `{ theme?: \"light\" | \"dark\" }` is an error.",
+      "answer": true,
+      "explanation": "The flag makes 'optional' mean 'may be absent' rather than 'may be undefined', so an explicit `undefined` is not assignable unless `undefined` is in the property's type — you must omit the property instead."
+    },
+    {
+      "subtopic": "module vs moduleResolution",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the distinction between `module` and `moduleResolution`?",
+      "options": [
+        "`module` is the module format of emitted code (output); `moduleResolution` is the algorithm for mapping import specifiers to files (input lookup)",
+        "`module` resolves imports to files; `moduleResolution` chooses the emitted module format",
+        "They are aliases — both set the output module system and either may be omitted",
+        "`module` controls type-checking only; `moduleResolution` controls emit only"
+      ],
+      "answer": 0,
+      "explanation": "`module` is the output format (esnext, commonjs, ...); `moduleResolution` is the input lookup algorithm (bundler, nodenext, ...). `nodenext` is a valid value for both, but they answer different questions."
+    },
+    {
+      "subtopic": "isolatedModules / verbatimModuleSyntax",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "This file is transpiled by esbuild with `isolatedModules` on, where `Theme` is a type. Why does it error?",
+      "code": "import { Theme } from \"./theme\";   // Theme is a type\nexport { Theme };",
+      "lang": "typescript",
+      "options": [
+        "A single-file transpiler can't tell `Theme` is a type, so the value re-export would emit a runtime re-export of something that doesn't exist; mark it `import type` / `export type`",
+        "`isolatedModules` forbids any re-export, even of values",
+        "The import path must use an explicit `.ts` extension under `isolatedModules`",
+        "`Theme` must be imported and re-exported in the same statement to satisfy the flag"
+      ],
+      "answer": 0,
+      "explanation": "Single-file transpilers see one file at a time and can't know `Theme` is type-only, so re-exporting it as a value would generate a runtime reference to a non-existent binding. The fix is explicit type-only markers (`import type` / `export type`)."
+    },
+    {
+      "subtopic": "composite / incremental",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `composite` are correct? (Select all that apply.)",
+      "options": [
+        "It marks a project as a referenceable build unit, required on any project that appears in another's `references`",
+        "It forces `declaration: true`",
+        "It implies `incremental` and writes a `.tsbuildinfo` file",
+        "It disables type-checking to speed up the build",
+        "It is only honored when emitting CommonJS modules"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`composite` makes a project referenceable, forces `declaration: true`, and implies `incremental` (recording state in `.tsbuildinfo`). It does not disable type-checking, and it is independent of the module format."
+    },
+    {
+      "subtopic": "extends merge semantics",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does `extends` resolve and merge configuration?",
+      "options": [
+        "The child's `compilerOptions` are shallow-merged over the parent's (child wins); since TS 5.0 `extends` may be an array merged left-to-right with later entries winning; parent relative paths resolve relative to the parent file",
+        "The parent's `compilerOptions` always win, so a child cannot override an inherited flag",
+        "`compilerOptions` are deep-merged recursively, including nested `paths` objects key by key",
+        "`extends` accepts only a single local file path and never an npm package"
+      ],
+      "answer": 0,
+      "explanation": "Merging is shallow with the child winning; the array form (TS 5.0+) merges left-to-right, last wins; and parent relative paths resolve from the parent file. `extends` also accepts npm base configs like `@tsconfig/node20`."
+    },
+    {
+      "subtopic": "strictPropertyInitialization",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Under `strict`, this class fails to compile. Which fix is the one that silences the checker WITHOUT actually proving the field is assigned?",
+      "code": "class Repository {\n  connection: string;\n  constructor(url?: string) {\n    if (url) this.connection = url;\n  }\n}",
+      "lang": "typescript",
+      "options": [
+        "Give `connection` a default value or assign it unconditionally in the constructor",
+        "Declare it optional: `connection?: string`",
+        "Use the definite-assignment assertion: `connection!: string`",
+        "Initialize it inline at the declaration: `connection: string = \"\"`"
+      ],
+      "answer": 2,
+      "explanation": "`connection!: string` tells the compiler to trust you that it is assigned elsewhere, suppressing the `strictPropertyInitialization` error without guaranteeing it. The default/unconditional-assignment and optional approaches are the honest fixes that actually satisfy the invariant."
+    },
+    {
+      "subtopic": "moduleResolution classic removed",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A teammate sets `\"module\": \"esnext\"` and `\"moduleResolution\": \"classic\"` in a TS 6.0 project. What happens?",
+      "options": [
+        "Both are accepted; `classic` simply emits a deprecation warning",
+        "`moduleResolution: \"classic\"` is REMOVED in TS 6.0 so the compiler rejects it; `module: \"esnext\"` is fine (it is the 6.0 default)",
+        "`module: \"esnext\"` is rejected because it requires `moduleResolution: \"nodenext\"`",
+        "Both are rejected; TS 6.0 forbids setting either flag explicitly"
+      ],
+      "answer": 1,
+      "explanation": "In TS 6.0 `moduleResolution: \"classic\"` is removed outright (not merely deprecated), so the compiler errors; use `bundler` or `nodenext`. `module: \"esnext\"` is valid and is the 6.0 default."
+    },
+    {
+      "subtopic": "TS 6.0 default changes",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are TypeScript 6.0 default/behavior changes? (Select all that apply.)",
+      "options": [
+        "`strict` defaults to `true`",
+        "`types` defaults to `[]` (no automatic `@types` discovery)",
+        "`esModuleInterop` is always on and can no longer be set to false",
+        "`target` defaults to `es5` for maximum compatibility",
+        "`module` defaults to `commonjs`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "In 6.0 `strict` is true by default, `types` defaults to `[]`, and `esModuleInterop` is forced on. The remaining options are wrong: `target` defaults to `es2025` (es5 is deprecated) and `module` defaults to `esnext`."
+    },
+    {
+      "subtopic": "ignoreDeprecations vs removed",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Your TS 6.0 build floods the console with deprecation warnings for `baseUrl` and `import ... assert {}`. What does setting `\"ignoreDeprecations\": \"6.0\"` accomplish, and what is the implication for 7.0?",
+      "options": [
+        "It silences the deprecation warnings while the project still compiles; those options are removed in TS 7.0, so the warning list is effectively your 7.0 readiness checklist",
+        "It automatically rewrites `baseUrl` into `paths` and `assert {}` into `with {}` so the config is 7.0-ready",
+        "It downgrades the project to TS 5.x behavior, re-enabling all deprecated options permanently",
+        "It promotes the deprecation warnings to hard errors so you are forced to fix them immediately"
+      ],
+      "answer": 0,
+      "explanation": "`ignoreDeprecations: \"6.0\"` only silences the warnings so the build stays green during migration; it changes nothing in the code. Because those options vanish in 7.0, the warnings are your migration debt to clear before upgrading."
+    },
+    {
+      "subtopic": "project references build trigger",
+      "source": "typescript/tsconfig-strictness-and-compiler-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In a monorepo where `app` references `shared`, running plain `tsc` in `app` does not rebuild `shared` after you edit it. Why?",
+      "options": [
+        "Plain `tsc` ignores the `references` array for *building*; it only consults references to resolve the already-emitted `.d.ts`. You need build mode (`tsc -b`)",
+        "`shared` is missing `incremental`, so its `.tsbuildinfo` is never written",
+        "`app` imports `shared` source directly, so the change is picked up but cached in memory",
+        "`tsc` rebuilds dependencies only when `outDir` is shared between the two projects"
+      ],
+      "answer": 0,
+      "explanation": "Plain `tsc` consumes a dependency's emitted `.d.ts` but never builds it; only build mode (`tsc -b` / `--build`) orders the reference graph and rebuilds stale dependencies first. Both projects must also be `composite: true`."
+    }
+  ]
+}

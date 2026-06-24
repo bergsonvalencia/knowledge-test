@@ -1,0 +1,272 @@
+{
+  "topic": "react",
+  "source": "react/06-managing-state.md",
+  "questions": [
+    {
+      "subtopic": "Declarative vs imperative UI",
+      "source": "react/06-managing-state.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In React's **declarative** approach to UI, how should the screen change in response to user input?",
+      "options": [
+        "You describe what the UI looks like for each state, and React reconciles the DOM to match",
+        "You issue step-by-step DOM commands to enable, disable, and show widgets as events occur",
+        "You attach mutation observers that flip element attributes when the model changes",
+        "You manually call `element.setAttribute` inside event handlers to keep the DOM current"
+      ],
+      "answer": 0,
+      "explanation": "Declarative UI means you describe what the screen should look like for each state and let React reconcile the DOM. The other options describe imperative DOM manipulation, which React's model deliberately avoids."
+    },
+    {
+      "subtopic": "Status enum vs boolean flags",
+      "source": "react/06-managing-state.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why is a single descriptive `status` string preferred over separate `isLoading`, `isError`, and `isSuccess` booleans?",
+      "options": [
+        "A status string is faster for React to diff than three separate booleans",
+        "Independent booleans can drift out of sync and represent impossible combinations like all being true at once",
+        "Booleans cannot be stored in `useState`, so a string is required",
+        "A status string avoids re-rendering the component when it changes"
+      ],
+      "answer": 1,
+      "explanation": "Separate booleans can all be true simultaneously, creating impossible states that drift out of sync. A single status enum makes those impossible combinations unrepresentable. The other options are not true (booleans render fine and there's no diffing-speed claim)."
+    },
+    {
+      "subtopic": "Derive don't store",
+      "source": "react/06-managing-state.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A component has `firstName` and `lastName` in state and also needs a `fullName`. How should `fullName` be handled?",
+      "options": [
+        "Store it in its own `useState` and update it in both name change handlers",
+        "Store it in a `ref` so it survives re-renders without triggering one",
+        "Compute it during render from `firstName` and `lastName`; do not store it in state",
+        "Store it in state but recompute it inside a `useEffect` whenever a name changes"
+      ],
+      "answer": 2,
+      "explanation": "`fullName` is fully derivable from existing state, so it should be computed during render rather than mirrored into state. Storing it (in state, a ref, or syncing via an effect) makes it redundant and prone to going stale."
+    },
+    {
+      "subtopic": "Lifting state up",
+      "source": "react/06-managing-state.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When two sibling components must stay in sync, where does the reviewer say the shared state should live?",
+      "options": [
+        "Duplicated in both siblings and kept in sync with an effect",
+        "In their closest common ancestor, which passes value and a setter callback down as props",
+        "In a module-level global variable both siblings import",
+        "In the topmost root component so every component can reach it"
+      ],
+      "answer": 1,
+      "explanation": "Lifting state up means moving it to the closest common ancestor, which becomes the single source of truth and passes value plus an onChange setter down. The reviewer warns against hoisting higher than necessary and against duplicated copies."
+    },
+    {
+      "subtopic": "State identity",
+      "source": "react/06-managing-state.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "React ties a component's state to the specific JSX variable or expression that produced it.",
+      "answer": false,
+      "explanation": "State is tied to the component's position in the render tree and its component type, not to the JSX variable or expression. As long as the same type stays at the same position, state is preserved."
+    },
+    {
+      "subtopic": "Modeling visual states",
+      "source": "react/06-managing-state.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A senior dev is modeling a form that can be empty, typing, submitting, successful, or in error. What is the recommended way to drive the UI?",
+      "options": [
+        "Keep one boolean per visual state and toggle each one in the relevant handler",
+        "Identify the visual states, store a single status value, and derive every label, disabled flag, and visibility from it",
+        "Read the DOM in each handler to decide which widgets to show next",
+        "Store the visual state in a ref and force re-renders manually when it changes"
+      ],
+      "answer": 1,
+      "explanation": "The reviewer says to enumerate the visual states, store a single status value (a small state machine), and derive all UI from it. One-boolean-per-widget invites impossible combinations, and reaching into the DOM is the imperative approach React avoids."
+    },
+    {
+      "subtopic": "Avoiding duplicated state",
+      "source": "react/06-managing-state.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An app stores both a list of items and a separate `selectedItem` copy of one of those objects. Editing an item's fields updates only one of the two. What is recommended instead?",
+      "options": [
+        "Deep-clone the selected item on every edit so both copies stay identical",
+        "Store a `selectedId` and look the item up in the list instead of keeping a duplicate object",
+        "Move the selected item into a Context so both copies read from one place",
+        "Wrap both copies in a single object so they update atomically"
+      ],
+      "answer": 1,
+      "explanation": "Storing the same object twice means edits sync to only one copy. The fix is to store a `selectedId` and look the item up in the canonical list. Cloning, Context, or grouping still leaves two copies of the data that can diverge."
+    },
+    {
+      "subtopic": "Grouping related state",
+      "source": "react/06-managing-state.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The reviewer advises grouping a cursor's `x` and `y` into a single `{ x, y }` object rather than two separate state variables. What is the primary benefit?",
+      "options": [
+        "It reduces the number of re-renders React performs per move",
+        "Updates that always change together stay atomic, so the two values can't get out of step",
+        "Objects in state are compared by value, so React skips redundant updates",
+        "It lets React batch the two `setState` calls that would otherwise happen separately"
+      ],
+      "answer": 1,
+      "explanation": "Values that change together belong in one object so the update is atomic and they can't drift apart. React does not value-compare objects in state, and the grouping is about correctness/atomicity, not render count or batching."
+    },
+    {
+      "subtopic": "Resetting state with key",
+      "source": "react/06-managing-state.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A `ProfileForm` keeps internal draft state. When the selected user changes, the previous user's draft leaks into the new form. What is the idiomatic fix?",
+      "options": [
+        "Wrap the form in `React.memo` so it re-renders with the new `userId`",
+        "Give the form `key={userId}` so a changed key remounts it with fresh state",
+        "Move the draft state up to the parent and pass it down as a prop",
+        "Call a reset function inside `useEffect` whenever `userId` changes"
+      ],
+      "answer": 1,
+      "explanation": "Giving the component a `key` tied to the entity makes React treat a key change as a new component, unmounting the old instance and mounting a fresh one with reset state. `React.memo` affects re-render skipping, not remounting; the effect-based reset is the manual workaround the reviewer's key approach replaces."
+    },
+    {
+      "subtopic": "Same position, same type",
+      "source": "react/06-managing-state.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "If `<Counter />` is re-rendered at the same position in the tree with different surrounding props, React preserves its existing count.",
+      "answer": true,
+      "explanation": "State is keyed by position and component type. The same `Counter` type at the same slot keeps its state across re-renders, even when surrounding props change."
+    },
+    {
+      "subtopic": "Derived value code reading",
+      "source": "react/06-managing-state.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "code": "function CartLine({ price, qty }) {\n  const [coupon, setCoupon] = useState(false);\n  const subtotal = price * qty;\n  const total = coupon ? subtotal * 0.9 : subtotal;\n  return (\n    <>\n      <p>Total: {total}</p>\n      <input type=\"checkbox\" checked={coupon}\n        onChange={(e) => setCoupon(e.target.checked)} />\n    </>\n  );\n}",
+      "lang": "tsx",
+      "question": "In this component, when the coupon checkbox is toggled, why does `total` always reflect the correct value without any extra state or effect?",
+      "options": [
+        "`total` is stored in `useState` and updated by the checkbox's onChange handler",
+        "`total` is recomputed during every render from `coupon`, `price`, and `qty`, so it can never be stale",
+        "React memoizes `total` and invalidates it when `coupon` changes",
+        "A `useEffect` recalculates `total` after each toggle"
+      ],
+      "answer": 1,
+      "explanation": "`subtotal` and `total` are derived during render, so toggling `coupon` triggers a re-render that recomputes them fresh. There is no stored `total`, no memoization, and no effect involved."
+    },
+    {
+      "subtopic": "Controlled children",
+      "source": "react/06-managing-state.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "After lifting state to a parent, what is true of the children that previously held their own copy?",
+      "options": [
+        "They become uncontrolled and manage an internal copy synced to props",
+        "They become controlled, reading the value from props and reporting changes up via a callback",
+        "They must use `useImperativeHandle` to expose their state to the parent",
+        "They keep their own `useState` and notify the parent only on blur"
+      ],
+      "answer": 1,
+      "explanation": "Lifting state makes children controlled: they read value from props and report edits up through the onChange callback instead of holding their own copy, keeping a single source of truth."
+    },
+    {
+      "subtopic": "State structure smells",
+      "source": "react/06-managing-state.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are state-structure smells the reviewer says to fix? (Select all that apply.)",
+      "options": [
+        "A `useState` that mirrors a prop or other piece of state",
+        "Separate `isLoading`, `isError`, and `isDone` booleans for one process",
+        "A deeply nested tree stored directly in state",
+        "Computing a `subtotal` from `price` and `qty` during render",
+        "Holding shared state in the closest common ancestor of the components that need it"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Mirroring state in `useState`, multiple mutually-exclusive booleans, and deeply nested tree state are all listed smells (fixed by deriving, a status enum, and normalizing by id). Computing a value during render and lifting state to a common ancestor are the recommended practices, not smells."
+    },
+    {
+      "subtopic": "When to reach for Context",
+      "source": "react/06-managing-state.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "At what point should you reach for **Context** instead of continuing to lift state?",
+      "options": [
+        "As soon as any two sibling components need to share a value",
+        "When the same value must survive a page reload",
+        "When lifted props would have to thread through many intermediate layers",
+        "Whenever a component re-renders more than once per second"
+      ],
+      "answer": 2,
+      "explanation": "Lifting trades a little prop-passing for consistency, but when props thread through many layers, the reviewer says to reach for Context. Two siblings sharing a value is solved by simple lifting; persistence across reloads and render frequency are unrelated concerns."
+    },
+    {
+      "subtopic": "Component defined inside another",
+      "source": "react/06-managing-state.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Declaring a child component function inside another component's body is safe because React recognizes it as the same component type across renders.",
+      "answer": false,
+      "explanation": "Each render creates a brand-new function identity, which React treats as a different type at that position. That silently unmounts the old subtree and wipes its state, so nested component definitions are a documented gotcha to avoid."
+    },
+    {
+      "subtopic": "Type swap resets state",
+      "source": "react/06-managing-state.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "function Panel({ ok }) {\n  return (\n    <section>\n      {ok\n        ? <Counter />\n        : <p>Closed</p>}\n    </section>\n  );\n}",
+      "lang": "tsx",
+      "question": "`Counter` holds an internal count. The user increments it, then `ok` flips to `false` and later back to `true`. What is the count after it comes back?",
+      "options": [
+        "The previous count, because the slot in `<section>` is unchanged",
+        "Reset to its initial value, because rendering `<p>` at that slot unmounted the `Counter`",
+        "Reset to its initial value, because any prop change resets child state",
+        "Undefined, because `Counter` never re-mounts after the first toggle"
+      ],
+      "answer": 1,
+      "explanation": "When `ok` is false, a `<p>` renders at that position, so React unmounts the `Counter` and destroys its state. Bringing it back mounts a fresh instance at its initial count. State is reset by the type change at that slot, not merely by a prop change."
+    },
+    {
+      "subtopic": "Two positions, two states",
+      "source": "react/06-managing-state.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two `<Counter />` siblings are rendered next to each other, both the same component type. What does the reviewer say about their state?",
+      "options": [
+        "They share one state because they are the same component type",
+        "Each gets its own independent state because they occupy different positions in the tree",
+        "Only the first retains state; the second is treated as a re-render of the first",
+        "They share state unless each is given a distinct `key`"
+      ],
+      "answer": 1,
+      "explanation": "State is keyed by position as well as type. Two same-type siblings sit at different positions, so each has its own independent state — no key is required to separate them."
+    },
+    {
+      "subtopic": "Preserving and resetting nuances",
+      "source": "react/06-managing-state.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about preserving and resetting React state are correct per the reviewer? (Select all that apply.)",
+      "options": [
+        "Conditionally rendering the same component in different branches can accidentally preserve state you meant to clear",
+        "Giving a same-type component a different `key` makes React mount a fresh instance and reset its state",
+        "Swapping a component for a different type at the same position destroys the old subtree's state",
+        "State is preserved as long as the JSX expression that produces the component is textually identical",
+        "Moving a same-type component to a different position keeps its existing state"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Same-component-in-different-branches can accidentally preserve state; a changed `key` forces a fresh instance; a type swap at a slot destroys state. State depends on position and type, not on identical JSX text, and a different position is a different slot, so state does not carry over there."
+    }
+  ]
+}

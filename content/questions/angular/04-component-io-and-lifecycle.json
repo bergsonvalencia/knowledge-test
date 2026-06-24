@@ -1,0 +1,271 @@
+{
+  "topic": "angular",
+  "source": "angular/04-component-io-and-lifecycle.md",
+  "questions": [
+    {
+      "subtopic": "Data flow direction",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Angular's decorator component API, how does data flow between a parent and child component?",
+      "options": [
+        "Parent to child via `@Input()`; child to parent via `@Output()` events",
+        "Child to parent via `@Input()`; parent to child via `@Output()` events",
+        "Both directions via `@Input()`; `@Output()` is only for sibling communication",
+        "The child directly mutates the parent's properties through a shared reference"
+      ],
+      "answer": 0,
+      "explanation": "Data flow is one-way: parent to child through inputs, child to parent through output events. A component never reaches up to mutate its parent; it emits and the parent decides what to do."
+    },
+    {
+      "subtopic": "Required inputs",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `@Input({ required: true })` do when the parent omits the binding?",
+      "options": [
+        "Angular errors at build time",
+        "Angular silently assigns `null` at runtime",
+        "Angular logs a console warning but renders normally",
+        "Angular waits and throws only after `ngAfterViewInit`"
+      ],
+      "answer": 0,
+      "explanation": "`{ required: true }` (added v16) makes Angular error at build time if the parent omits the binding, so the field doesn't need to be nullable. It is a compile-time guarantee, not a runtime warning."
+    },
+    {
+      "subtopic": "Attribute coercion transforms",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which built-in transforms coerce attribute strings, so that `@Input({ transform: booleanAttribute })` turns `disabled=\"\"` into a real boolean?",
+      "options": [
+        "`booleanAttribute` and `numberAttribute`",
+        "`coerceBoolean` and `coerceNumber`",
+        "`parseBool` and `parseInt`",
+        "`asBoolean` and `asNumber`"
+      ],
+      "answer": 0,
+      "explanation": "Angular ships `booleanAttribute` and `numberAttribute` (added v16.1) to handle attribute-string coercion in the input `transform` option. The other names do not exist in `@angular/core`."
+    },
+    {
+      "subtopic": "Two-way binding convention",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Two-way binding `[(x)]` is sugar for which pair of one-way bindings?",
+      "options": [
+        "`[x]` input plus `(xChange)` output",
+        "`[x]` input plus `(x)` output",
+        "`(x)` output plus `[xValue]` input",
+        "`[x]` input plus `(xUpdate)` output"
+      ],
+      "answer": 0,
+      "explanation": "`[(x)]` expands to `[x]=\"...\"` plus `(xChange)=\"...\"`: an input `x` paired with an output named exactly `xChange`. This `x`/`xChange` convention is what `model()` collapses into one declaration."
+    },
+    {
+      "subtopic": "Lifecycle hook ordering",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which lifecycle hook is the first safe point to read a `@ViewChild` query result?",
+      "options": [
+        "`ngAfterViewInit`",
+        "`ngOnInit`",
+        "the constructor",
+        "`ngAfterContentInit`"
+      ],
+      "answer": 0,
+      "explanation": "Decorator view query results land in `ngAfterViewInit`. Reading them in `ngOnInit` or the constructor gives `undefined` (unless `static: true`); `ngAfterContentInit` is for content queries, not view queries."
+    },
+    {
+      "subtopic": "model() behavior",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this component, what does calling `this.count.set(5)` do?",
+      "code": "count = model(0); // two-way writable signal\n\nbump() {\n  this.count.set(5);\n}",
+      "lang": "typescript",
+      "options": [
+        "Updates the writable signal AND emits the auto-created `countChange` output",
+        "Updates the signal only; the parent must manually re-read it",
+        "Emits `countChange` only; the local signal value is unchanged until the parent writes back",
+        "Throws, because a `model()` signal is read-only and cannot be set"
+      ],
+      "answer": 0,
+      "explanation": "`model()` is a writable two-way signal that auto-creates a matching `valueChange`/`countChange` output. Writing it with `set`/`update` both updates the signal locally and emits the change event so a parent's `[(count)]` stays in sync."
+    },
+    {
+      "subtopic": "output() return type",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What type does the signals-first `output()` function return, and what is it?",
+      "options": [
+        "An `OutputEmitterRef<T>` — a purpose-built emitter, not an `EventEmitter` or Observable",
+        "An `EventEmitter<T>` — the same RxJS-backed class as the decorator API",
+        "An `InputSignal<T>` — a read-only signal you call to get the last emitted value",
+        "An `Observable<T>` you subscribe to directly with `.pipe()`"
+      ],
+      "answer": 0,
+      "explanation": "`output()` returns an `OutputEmitterRef<T>`, a purpose-built emitter with `emit()` and a `subscribe()` (via `OutputRef`); it is explicitly NOT an `EventEmitter` and NOT an Observable. Only `input()`/`model()` produce signals."
+    },
+    {
+      "subtopic": "Required signal input typing",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the resolved TypeScript type of a field declared `id = input.required<string>()`?",
+      "options": [
+        "`InputSignal<string>` — `undefined` is dropped from the type",
+        "`InputSignal<string | undefined>` — required is only enforced at runtime",
+        "`string` — calling it is unnecessary because it is a plain property",
+        "`Signal<string | null>` — required inputs default to `null`"
+      ],
+      "answer": 0,
+      "explanation": "`input.required<T>()` produces an `InputSignal<T>` whose read type is exactly `T` with `undefined` dropped, because the build fails if the parent omits the binding. This is a key advantage over the decorator's `{ required: true }`, which still leaves a nullable type."
+    },
+    {
+      "subtopic": "Content projection change detection",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Content projected through `<ng-content>` is created and change-detected in the parent's context, so even an `OnPush` child cannot skip checking it.",
+      "answer": true,
+      "explanation": "Projected content is created and change-detected in the parent's context, not the child's. Because of this, an `OnPush` child cannot skip checking projected content even when its own inputs are unchanged."
+    },
+    {
+      "subtopic": "ngProjectAs constraints",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the purpose of `ngProjectAs`, and what is its key restriction?",
+      "options": [
+        "It makes an element match a different projection selector than its own identity; it accepts only a static value, not a bound expression",
+        "It renames the slot inside the child component; it accepts any bound expression",
+        "It forces projected content into the child's change-detection context; it must be a signal",
+        "It duplicates projected content across multiple slots; it accepts a comma-separated list"
+      ],
+      "answer": 0,
+      "explanation": "`ngProjectAs` makes Angular match an element (often an `ng-container` wrapper) against a different selector than its own identity. It accepts only a static value, never a bound expression."
+    },
+    {
+      "subtopic": "Signal queries vs ngOnChanges",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A signal input drives derived state. Why does the modern API rarely need `ngOnChanges` to react to that input changing?",
+      "code": "max = input(10);\ncount = input(0);\natLimit = computed(() => this.count() >= this.max());",
+      "lang": "typescript",
+      "options": [
+        "A `computed` re-runs automatically whenever any input signal it reads changes",
+        "`ngOnChanges` is deprecated and removed in v19, so it cannot be used",
+        "Signal inputs trigger `ngOnChanges` only on the first change, so derivation must be manual after that",
+        "`computed` caches forever and never recomputes, so no hook is needed"
+      ],
+      "answer": 0,
+      "explanation": "An input is a signal dependency; a `computed` recomputes automatically when any signal it reads changes, so `ngOnChanges` is rarely needed. `ngOnChanges` is not removed, and `computed` recomputes lazily on dependency change rather than caching forever."
+    },
+    {
+      "subtopic": "static flag on decorator queries",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `@ViewChild(X, { static: true })` are correct? (Select all that apply.)",
+      "options": [
+        "It resolves the query before the first change detection, so the result is readable in `ngOnInit`",
+        "It is only valid when the target isn't inside `@if`/`@for`",
+        "A static result does not update afterward if the matched node changes",
+        "It makes the query result reactive, updating whenever the matched node changes",
+        "Signal queries expose the same `static` flag for parity"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`static: true` resolves the query before the first change detection (readable in `ngOnInit`), is only valid when the target isn't inside structural control flow, and the result does not update afterward. Signal queries have no `static` flag and are always reactive."
+    },
+    {
+      "subtopic": "DestroyRef and takeUntilDestroyed",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Piping an Observable through `takeUntilDestroyed()` in an injection context causes it to auto-complete when the component is destroyed, removing the need for a manual `ngOnDestroy` Subject teardown.",
+      "answer": true,
+      "explanation": "`takeUntilDestroyed()` (called in an injection context) hooks into `DestroyRef` so the stream auto-completes on destroy, eliminating the classic manual `ngOnDestroy` + `Subject` unsubscribe dance."
+    },
+    {
+      "subtopic": "Conditional ng-content fallback gotcha",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A parent wraps projected content in `@if(show)`. When `show` becomes `false` at runtime, what happens to the slot's fallback content (v18+)?",
+      "options": [
+        "The fallback does NOT re-appear — slot assignment is decided once at component creation",
+        "The fallback re-appears immediately because the slot is now empty",
+        "Angular throws, because `<ng-content>` cannot be placed near `@if`",
+        "The previously projected content stays rendered until the next full change-detection cycle"
+      ],
+      "answer": 0,
+      "explanation": "`<ng-content>` slotting is static: slot assignment is decided once at component creation. If projected content is supplied conditionally and the condition later turns false, the fallback does not re-appear, which is a documented gotcha."
+    },
+    {
+      "subtopic": "afterEveryRender rename",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In v20, what happened to the former `afterRender` standalone function?",
+      "options": [
+        "It was renamed to `afterEveryRender` and the old name was dropped without a compat alias",
+        "It was renamed to `afterEveryRender` but the old `afterRender` alias still works",
+        "It was merged into `afterNextRender`, which now takes a `repeat: true` option",
+        "It was deprecated in favor of the `ngAfterRender` lifecycle interface"
+      ],
+      "answer": 0,
+      "explanation": "`afterEveryRender` is the v20 rename of the former `afterRender` (now stable), and the old name was dropped without a compatibility alias. It remains a browser-only standalone function, not a lifecycle interface method."
+    },
+    {
+      "subtopic": "Constructor vs ngOnInit with inputs",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is reading a decorator `@Input()` value inside the constructor a bug?",
+      "options": [
+        "Inputs are not yet set in the constructor; input-dependent setup belongs in `ngOnInit`",
+        "The constructor runs after `ngOnInit`, so the value is already stale",
+        "Constructors cannot access `this`, so the property is unreadable",
+        "Inputs are write-only until `ngAfterViewInit` resolves them"
+      ],
+      "answer": 0,
+      "explanation": "The constructor runs first and is for DI/field initialization only; inputs are not yet bound, so the value is undefined there. Input-dependent setup goes in `ngOnInit`, which runs once after the first `ngOnChanges` when inputs are set."
+    },
+    {
+      "subtopic": "Lifecycle order code reasoning",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Considering the standard Angular lifecycle order, which statements are TRUE? (Select all that apply.)",
+      "options": [
+        "`ngOnChanges` fires before `ngOnInit` on the first cycle and again on every subsequent decorator-input change",
+        "`ngAfterContentInit` fires before `ngAfterViewInit`",
+        "`afterNextRender` / `afterEveryRender` callbacks run only in the browser and are skipped during SSR/prerender",
+        "`ngDoCheck` runs exactly once, right after `ngOnInit`",
+        "`ngOnDestroy` fires before `ngAfterViewChecked` on the first cycle"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`ngOnChanges` precedes the first `ngOnInit` and re-fires on each decorator-input change; content hooks precede view hooks; render callbacks are browser-only. `ngDoCheck` fires on every change-detection run (not once), and `ngOnDestroy` runs at teardown, after the init/checked hooks."
+    },
+    {
+      "subtopic": "Signal vs decorator API trade-offs",
+      "source": "angular/04-component-io-and-lifecycle.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about the signals-first component I/O and query APIs are correct? (Select all that apply.)",
+      "options": [
+        "An `input()` returns a read-only `InputSignal<T>`; you cannot write to it from inside the component",
+        "Signal queries compose in `computed`/`effect`, whereas decorator queries do not",
+        "`viewChildren()` and `contentChildren()` have no `.required` variant",
+        "`output()` produces a signal you can read with `()` to get the last emitted value",
+        "Signal queries support a `static` flag just like decorator queries"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`input()` is read-only; signal queries (unlike decorator queries) feed `computed`/`effect`; and the multi-element `viewChildren`/`contentChildren` have no `.required` variant. Outputs are not signals, and signal queries have no `static` flag because they are always reactive."
+    }
+  ]
+}

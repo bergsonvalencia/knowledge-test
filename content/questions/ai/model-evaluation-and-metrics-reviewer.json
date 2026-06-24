@@ -1,0 +1,283 @@
+{
+  "topic": "ai",
+  "source": "ai/model-evaluation-and-metrics-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Train/validation/test roles",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the standard three-way split, what is the **validation set** used for?",
+      "options": [
+        "Fitting the model's weights (parameters)",
+        "Tuning hyperparameters and choosing between models",
+        "Producing the final unbiased generalization estimate",
+        "Computing the preprocessing statistics applied to all splits"
+      ],
+      "answer": 1,
+      "explanation": "The validation set tunes hyperparameters and selects models; the training set fits weights and the test set is opened once for the final estimate. Fitting preprocessing on all data would leak test statistics into training."
+    },
+    {
+      "subtopic": "Accuracy paradox",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A disease afflicts 1% of people. A model that predicts \"healthy\" for everyone reports 99% accuracy. What is its recall on the disease class?",
+      "options": [
+        "0.99",
+        "0.50",
+        "0.01",
+        "0.00"
+      ],
+      "answer": 3,
+      "explanation": "Recall = TP/(TP+FN). The always-healthy model catches zero true cases, so TP = 0 and recall = 0 — the accuracy paradox. The 99% figure reflects only the abundant negatives."
+    },
+    {
+      "subtopic": "Precision vs recall formulas",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which formula is **precision**?",
+      "options": [
+        "TP / (TP + FP)",
+        "TP / (TP + FN)",
+        "TN / (TN + FP)",
+        "(TP + TN) / total"
+      ],
+      "answer": 0,
+      "explanation": "Precision = TP/(TP+FP): of items predicted positive, the fraction truly positive. TP/(TP+FN) is recall, TN/(TN+FP) is specificity, and (TP+TN)/total is accuracy."
+    },
+    {
+      "subtopic": "ROC axes and AUC baseline",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "On a ROC curve, what is plotted and what AUC value corresponds to a random classifier?",
+      "options": [
+        "Precision (y) vs recall (x); random AUC = 0.0",
+        "TPR (y) vs FPR (x); random AUC = 0.5",
+        "FPR (y) vs TPR (x); random AUC = 1.0",
+        "Recall (y) vs precision (x); random AUC = 0.5"
+      ],
+      "answer": 1,
+      "explanation": "ROC plots TPR (recall) on y against FPR on x. The diagonal represents a random classifier with AUC = 0.5; 1.0 is perfect and below 0.5 means the model is anti-correlated."
+    },
+    {
+      "subtopic": "RMSE vs MAE relationship",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "For any set of residuals, RMSE is always greater than or equal to MAE, and the gap widens as error variance/outliers grow.",
+      "answer": true,
+      "explanation": "Squaring before averaging gives larger errors disproportionate weight, so RMSE ≥ MAE always, with equality only when all errors are equal in magnitude; outliers widen the gap."
+    },
+    {
+      "subtopic": "Data leakage in preprocessing",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You fit a `StandardScaler` on the **entire dataset** before splitting into train/test. Why is this a problem?",
+      "options": [
+        "It makes the test set too small to give a tight estimate",
+        "It leaks test-set statistics into training, inflating the reported score",
+        "It prevents stratification from preserving class ratios",
+        "It causes the validation set to overfit the leaderboard"
+      ],
+      "answer": 1,
+      "explanation": "Fitting preprocessing on the full dataset lets the scaler's mean/variance absorb information from the test rows, so the model implicitly sees test statistics and the score becomes optimistic. Fit on the training fold only, then apply to the others."
+    },
+    {
+      "subtopic": "Time-series cross-validation",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why must you NOT use ordinary shuffled k-fold cross-validation on time-series data?",
+      "options": [
+        "Shuffling destroys the class proportions needed for stratification",
+        "Random folds would train on future data to predict the past, which is leakage",
+        "k-fold is too expensive for long time series",
+        "The folds would be too correlated, like leave-one-out"
+      ],
+      "answer": 1,
+      "explanation": "Temporal order matters: random folds put future observations in the training set used to predict earlier ones, leaking information. Forward-chaining always trains on the past and validates on the next period."
+    },
+    {
+      "subtopic": "F1 as harmonic mean",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A classifier has precision = 1.0 and recall = 0.0. What is its F1 score, and why is the harmonic mean used instead of the arithmetic mean?",
+      "options": [
+        "F1 = 0.5; the arithmetic and harmonic means agree at the extremes",
+        "F1 = 0.0; the harmonic mean is dominated by the smaller value, punishing a sacrificed metric",
+        "F1 = 1.0; F1 rewards perfect precision regardless of recall",
+        "F1 is undefined; F1 cannot be computed when recall is zero"
+      ],
+      "answer": 1,
+      "explanation": "F1 = 2PR/(P+R) = 0 when R = 0. The harmonic mean is dominated by the smaller value, so it refuses to reward a model that maxes one metric by abandoning the other — unlike the arithmetic mean, which would give 0.5."
+    },
+    {
+      "subtopic": "Threshold movement effects",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "You **lower** a probabilistic classifier's decision threshold (flagging more samples as positive). Select ALL effects that tend to occur.",
+      "options": [
+        "Recall increases (or stays equal) as more true positives are caught",
+        "False positives increase (or stay equal), so precision tends to decrease",
+        "Recall decreases because fewer samples are flagged",
+        "Precision necessarily increases because the model is more aggressive",
+        "The operating point moves up-and-right along the ROC curve"
+      ],
+      "answer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "Lowering the threshold flags more samples: TP and FP both rise (or stay equal), so recall goes up while precision tends to fall, and the operating point slides up-and-right on the ROC curve. Recall does not drop and precision does not rise when lowering the threshold."
+    },
+    {
+      "subtopic": "Macro vs weighted averaging",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Three classes have per-class precision A=0.90 (support 80), B=0.60 (support 15), C=0.40 (support 5). Which statement is correct?",
+      "options": [
+        "Macro precision is 0.83 and weighted precision is 0.633",
+        "Macro precision is 0.633 and weighted precision is 0.83",
+        "Macro and weighted precision are both 0.633 because supports cancel out",
+        "Weighted precision equals overall accuracy for this single-label problem"
+      ],
+      "answer": 1,
+      "explanation": "Macro = (0.90+0.60+0.40)/3 = 0.633 (unweighted, so weak rare classes drag it down). Weighted = (0.90·80+0.60·15+0.40·5)/100 = 0.83, pulled up by the large accurate class A. Micro-F1 (not weighted precision) equals accuracy for single-label problems."
+    },
+    {
+      "subtopic": "Confusion matrix code reading",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the confusion matrix below (TP=40, FN=10, FP=20, TN=130), what are accuracy and recall?",
+      "code": "                 Predicted +   Predicted -\n   Actual +         TP = 40       FN = 10\n   Actual -         FP = 20       TN = 130",
+      "lang": "text",
+      "options": [
+        "Accuracy = 0.85, recall = 0.80",
+        "Accuracy = 0.80, recall = 0.667",
+        "Accuracy = 0.85, recall = 0.667",
+        "Accuracy = 0.727, recall = 0.80"
+      ],
+      "answer": 0,
+      "explanation": "Total = 200. Accuracy = (40+130)/200 = 0.85. Recall = TP/(TP+FN) = 40/50 = 0.80. Precision = 40/60 ≈ 0.667 and F1 ≈ 0.727 are the other figures from this matrix."
+    },
+    {
+      "subtopic": "When PR curve beats ROC",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Under heavy class imbalance with rare positives, the ROC curve can stay optimistic even when the model floods you with false positives, which is why the precision-recall curve is preferred.",
+      "answer": true,
+      "explanation": "ROC's FPR = FP/(FP+TN) has a huge true-negative denominator, so a flood of false positives barely moves it. The PR curve, using precision, exposes the precision collapse that actually hurts on rare-positive problems."
+    },
+    {
+      "subtopic": "Choosing precision vs recall by cost",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Select ALL scenarios where you should prioritize **precision** over recall.",
+      "options": [
+        "A spam filter where sending a real, important email to the spam folder is the worst outcome",
+        "Cancer screening where missing a true case can be fatal",
+        "Deciding whether a link is safe to auto-click on the user's behalf",
+        "Fraud detection where letting fraud slip through is catastrophic",
+        "Flagging an account for automatic suspension"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Precision is prioritized when a false positive is the costly error: trashing real mail, auto-clicking an unsafe link, and wrongly suspending an account. Cancer screening and fraud detection make a false negative (a miss) the costly error, so they optimize recall."
+    },
+    {
+      "subtopic": "Leave-one-out variance",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is leave-one-out cross-validation (k = n) described as nearly unbiased but **high-variance**?",
+      "options": [
+        "Each fold's tiny validation set of one example makes individual scores noisy and uncorrelated",
+        "The n training sets are almost identical, so the n per-fold errors are highly correlated",
+        "It systematically underestimates performance because training sets are too small",
+        "Stratification is impossible at k = n, distorting class ratios"
+      ],
+      "answer": 1,
+      "explanation": "Because each LOO training set differs by only one example, the n fitted models are nearly identical and their errors are highly correlated; averaging correlated errors reduces variance far less than averaging independent ones, so the estimate is high-variance despite low bias."
+    },
+    {
+      "subtopic": "Calibration vs accuracy",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Select ALL statements about probability calibration that are correct.",
+      "options": [
+        "A model can have excellent AUC yet output systematically miscalibrated probabilities",
+        "Calibration is the same thing as accuracy: a well-calibrated model is necessarily accurate",
+        "Naive Bayes tends to push probabilities toward 0 and 1, making it overconfident",
+        "Platt scaling and isotonic regression are post-hoc fixes fit on held-out data",
+        "A perfectly calibrated model always achieves the highest possible AUC"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "AUC measures ranking, not probability honesty, so a well-ranking model can be miscalibrated and a perfectly calibrated model need not have top AUC. Naive Bayes is a classic overconfident offender, and Platt scaling/isotonic regression are held-out post-hoc fixes. Calibration is distinct from accuracy — a model can be one without the other."
+    },
+    {
+      "subtopic": "Negative R-squared",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "SS_res = sum((y - y_hat) ** 2 for y, y_hat in pairs)  # model squared error\nSS_tot = sum((y - y_mean) ** 2 for y, _ in pairs)     # mean-baseline error\nr2 = 1 - SS_res / SS_tot",
+      "lang": "python",
+      "question": "Given the R² computation above, under what condition does the result become **negative**?",
+      "options": [
+        "When the model's predictions perfectly match the actuals",
+        "When SS_res exceeds SS_tot, i.e. the model's squared error is worse than predicting the mean",
+        "When the target variance SS_tot is zero",
+        "When residuals are negative on average (systematic under-prediction)"
+      ],
+      "answer": 1,
+      "explanation": "R² = 0 ties the mean-only baseline. If the model's squared error SS_res exceeds the baseline's SS_tot, the ratio exceeds 1 and R² goes negative — the model is worse than simply predicting ȳ. The sign of individual residuals is irrelevant since they are squared."
+    },
+    {
+      "subtopic": "Fraud model accuracy trap",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A fraud model reports **99.5% accuracy** on data where fraud is 0.5% of transactions. What is the correct senior assessment?",
+      "options": [
+        "It is excellent, since 99.5% far exceeds typical model accuracy",
+        "It may be no better than the majority-class baseline, which also scores 99.5% by calling everything legitimate",
+        "It is broken, because accuracy can never reach 99.5% on imbalanced data",
+        "It is fine for fraud as long as its specificity is above 0.99"
+      ],
+      "answer": 1,
+      "explanation": "The always-legitimate baseline already scores 99.5% while catching zero fraud — the accuracy paradox. You must check recall on the fraud class and the PR-AUC; high accuracy alone proves nothing here. High specificity also says nothing about catching the rare positives."
+    },
+    {
+      "subtopic": "MAPE failure mode",
+      "source": "ai/model-evaluation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why can MAPE = (100/n)·Σ|(y − ŷ)/y| be a dangerous choice as the headline regression metric for some targets?",
+      "options": [
+        "It is in squared units, so it is hard to interpret directly",
+        "It explodes when actual y is near 0 and is undefined at y = 0",
+        "It is always smaller than MAE, hiding large errors",
+        "It cannot be computed without the mean baseline SS_tot"
+      ],
+      "answer": 1,
+      "explanation": "Because each term divides by the actual y, MAPE blows up as y approaches 0 and is undefined at y = 0, so a few near-zero actuals can dominate or break the metric. MAPE is scale-free percent, not squared units, and needs no baseline."
+    }
+  ]
+}

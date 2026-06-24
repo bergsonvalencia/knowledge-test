@@ -1,0 +1,264 @@
+{
+  "topic": "architecture",
+  "source": "architecture/cqrs-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Definition",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does CQRS stand for, and what is its core idea?",
+      "options": [
+        "Command Query Responsibility Segregation — use a different model to update data (commands) than the one used to read data (queries)",
+        "Concurrent Query Replication Strategy — replicate queries across read replicas for throughput",
+        "Command Queue Routing Service — route all writes through a durable message queue",
+        "Centralized Query Resolution System — funnel all reads and writes through one unified model"
+      ],
+      "answer": 0,
+      "explanation": "CQRS = Command Query Responsibility Segregation: separate the model used to update data from the model used to read it. The other options invent unrelated expansions and contradict the 'separate models' premise."
+    },
+    {
+      "subtopic": "CQS origin",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "CQRS builds on Bertrand Meyer's Command Query Separation (CQS). What does CQS say about an individual method?",
+      "options": [
+        "A method is either a command (changes state, returns nothing) or a query (returns data, no side effects) — never both",
+        "Every method must return a status code so callers can detect failure",
+        "A method should accept either a command object or a query object but never both as parameters",
+        "Commands must be asynchronous and queries must be synchronous"
+      ],
+      "answer": 0,
+      "explanation": "CQS classifies each method as a command (mutates state, returns nothing) or a query (returns data, no side effects). CQRS lifts that distinction from the method level to the model level. The other options describe rules CQS does not make."
+    },
+    {
+      "subtopic": "CQS vs CQRS level",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "CQRS is essentially CQS applied at the model level rather than the method level.",
+      "answer": true,
+      "explanation": "The reviewer states CQRS 'lifts CQS from the method level up to the model level': separate command and query models instead of one CRUD model serving both."
+    },
+    {
+      "subtopic": "Scope of the pattern",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How should CQRS be scoped within a system?",
+      "options": [
+        "As a component-level pattern applied inside a single bounded context, not a top-level architecture for the whole system",
+        "As the overall architectural style governing every service in the system",
+        "As a database-only concern that the application layer never sees",
+        "As a UI rendering technique applied uniformly to every screen"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer is explicit: CQRS is a pattern applied inside a bounded context/microservice, not an architectural style for the whole system — most of a system is fine as CRUD."
+    },
+    {
+      "subtopic": "Read-side responsibilities",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to the commands-vs-queries contrast, what does the query (read) side contain?",
+      "options": [
+        "DTOs/projections shaped for the screen, with no domain logic — just read and map",
+        "The full set of domain aggregates and invariants used for validation",
+        "Business tasks like 'Book room' that change state",
+        "Transactional integrity guarantees enforced across multiple aggregates"
+      ],
+      "answer": 0,
+      "explanation": "The read side returns DTOs/projections optimized for presentation and deliberately carries no domain logic. Validation, domain logic, and aggregate consistency belong to the command (write) side."
+    },
+    {
+      "subtopic": "Single-store basic form",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Adopting CQRS necessarily means having two separate databases, one for writes and one for reads.",
+      "answer": false,
+      "explanation": "False. The basic form uses one shared store and only separates the models; two stores is the advanced form. The reviewer lists 'does not require two databases' as a common myth."
+    },
+    {
+      "subtopic": "Eventual consistency",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the advanced form with separate read and write stores synced asynchronously, what is the main consequence?",
+      "options": [
+        "Eventual consistency — the read store can briefly lag the write store, so reads may show stale data",
+        "Strong consistency — reads always reflect the latest committed write immediately",
+        "Loss of durability — committed writes can be silently dropped during sync",
+        "Write amplification that makes the command side reject concurrent commands"
+      ],
+      "answer": 0,
+      "explanation": "Async sync from write store to read store introduces eventual consistency: reads can briefly lag writes. Strong consistency is precisely what you give up, and the pattern does not imply lost durability or rejected commands."
+    },
+    {
+      "subtopic": "When to use",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are situations the reviewer cites as good fits for CQRS? (Select all that apply.)",
+      "options": [
+        "Collaborative domains where many users concurrently read/modify the same data",
+        "Disparate read/write scaling where reads vastly outnumber writes",
+        "Task-based UIs / complex domains with a rich write model and a logic-free read model",
+        "Simple CRUD domains where reads and writes have the same shape",
+        "A desire to apply one uniform model across the entire system"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Collaborative domains, disparate read/write scaling, and task-based/complex domains are listed as good fits. Simple CRUD and system-wide uniform application are exactly where the reviewer warns against CQRS."
+    },
+    {
+      "subtopic": "Fowler caution",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is Martin Fowler's overall caution about CQRS, per the reviewer?",
+      "options": [
+        "For most systems it adds risky complexity and is difficult to use well; it often becomes a drag on productivity",
+        "It should be the default starting point for every new greenfield system",
+        "It is mainly a performance anti-pattern that should never be used in production",
+        "It is harmless boilerplate that adds no real cost in any scenario"
+      ],
+      "answer": 0,
+      "explanation": "Fowler warns that for most systems CQRS adds risky complexity, is difficult to use well, and frequently becomes a significant drag on productivity. The other options misstate his stance in both directions."
+    },
+    {
+      "subtopic": "CQRS vs Event Sourcing",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the correct relationship between CQRS and Event Sourcing?",
+      "options": [
+        "They are independent patterns, frequently combined, but neither requires the other",
+        "Event Sourcing is a strict prerequisite for any CQRS implementation",
+        "CQRS is just a synonym for Event Sourcing",
+        "Using CQRS automatically means you are storing events instead of current state"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer states they are independent patterns often paired but neither requires the other. CQRS does not imply storing events, and Event Sourcing is not a prerequisite."
+    },
+    {
+      "subtopic": "Messaging role",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Messaging (a message bus/queue) is part of the definition of CQRS and is required to implement it.",
+      "answer": false,
+      "explanation": "False. Messaging is an optional, common companion for processing commands or publishing events, but it is not part of the CQRS definition. When used, you must handle failures, duplicates, and retries."
+    },
+    {
+      "subtopic": "Mediator relationship",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does an in-process mediator (e.g., MediatR in .NET) relate to CQRS?",
+      "options": [
+        "It is a common implementation vehicle for routing commands/queries to handlers, but CQRS doesn't require a mediator and a mediator doesn't imply CQRS",
+        "A mediator is mandatory; without one you cannot separate read and write models",
+        "Using a mediator automatically makes any codebase a CQRS system",
+        "A mediator replaces the need for separate command and query models"
+      ],
+      "answer": 0,
+      "explanation": "A mediator is a convenient way to route requests to handlers, but the relationship is orthogonal: CQRS does not require a mediator, and a mediator does not imply CQRS. It certainly does not eliminate the need for separate models."
+    },
+    {
+      "subtopic": "Simplified CQRS in .NET",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the 'simplified CQRS' .NET approach described, how are writes and reads typically handled?",
+      "options": [
+        "Writes go through the EF Core domain model; reads use lightweight queries (e.g., Dapper) returning DTOs — against a single database",
+        "Writes and reads both use heavyweight EF Core change-tracked entities against two separate databases",
+        "Writes use raw Dapper while reads use the full EF Core domain aggregates",
+        "Both sides bypass any ORM and issue hand-written SQL against an event store"
+      ],
+      "answer": 0,
+      "explanation": "Simplified CQRS keeps a single database: writes go through the EF Core domain model while reads use lightweight queries (e.g., Dapper) returning DTOs. The other options invert or complicate this arrangement."
+    },
+    {
+      "subtopic": "Command modeling",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "On the command (write) side, how should a command best be modeled in CQRS?",
+      "options": [
+        "As a business task such as `BookRoom`, capturing intent, rather than a field-level CRUD update",
+        "As a generic `UpdateEntity(fields)` setter that mirrors the database row",
+        "As a query that returns the resulting entity so the UI can re-render",
+        "As a projection DTO shaped exactly for the screen that issued it"
+      ],
+      "answer": 0,
+      "explanation": "Commands model business tasks (intent) like 'Book room', not field-level updates. A generic field setter is the CRUD model CQRS moves away from; returning data or shaping a screen DTO are query-side concerns."
+    },
+    {
+      "subtopic": "DDD interplay",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does CQRS interact with Domain-Driven Design, per the reviewer?",
+      "options": [
+        "The write side is where DDD aggregates and invariants pay off, while the read side deliberately skips them",
+        "DDD aggregates must be enforced identically on both the read and write sides",
+        "The read side is where DDD invariants are validated before data reaches the write store",
+        "CQRS forbids using DDD aggregates anywhere in the system"
+      ],
+      "answer": 0,
+      "explanation": "DDD aggregates and invariants live on the write side; the read side intentionally skips them and just maps to DTOs. Enforcing invariants on the read side, or banning DDD entirely, both contradict the reviewer."
+    },
+    {
+      "subtopic": "Cost boundary of eventual consistency",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about CQRS costs and myths are correct? (Select all that apply.)",
+      "options": [
+        "Eventual consistency is a real cost only once the read and write stores are separated",
+        "The basic single-store form separates the models but avoids cross-store eventual consistency",
+        "When messaging is used, you must handle failures, duplicates, and retries",
+        "Basic single-store CQRS still incurs eventual consistency between its two models",
+        "CQRS is required to be applied across the entire system to be valid"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Eventual consistency arises only when stores are separated, so the single-store form avoids it, and messaging brings failure/duplicate/retry handling. The basic form does not incur cross-store lag, and CQRS is a targeted pattern — not a system-wide mandate."
+    },
+    {
+      "subtopic": "CQS code reading",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Under strict Command Query Separation, which aspect of this method violates CQS?",
+      "code": "public decimal Withdraw(decimal amount)\n{\n    _balance -= amount;     // changes state\n    return _balance;        // also returns data\n}",
+      "lang": "csharp",
+      "options": [
+        "It both mutates state (`_balance -= amount`) and returns data, so it is neither a pure command nor a pure query",
+        "It uses `decimal` instead of `double`, which CQS prohibits",
+        "It is a query because it returns a value, so it fully satisfies CQS",
+        "It is a command because it has a side effect, so it fully satisfies CQS"
+      ],
+      "answer": 0,
+      "explanation": "CQS requires a method to be either a command (mutates, returns nothing) or a query (returns, no side effects) — never both. This method does both, violating CQS; the parameter type is irrelevant, and it is not a 'pure' command or query precisely because it mixes the two."
+    },
+    {
+      "subtopic": "Read/write model code reading",
+      "source": "architecture/cqrs-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given this CQRS query handler, what is wrong with it relative to the read-side contract?",
+      "code": "public OrderDto Handle(GetOrderQuery q)\n{\n    var order = _repo.Load(q.Id);\n    order.ApplyDiscount(0.10m);   // mutates the aggregate\n    _repo.Save(order);            // persists the change\n    return _map.ToDto(order);\n}",
+      "lang": "csharp",
+      "options": [
+        "A query must have no side effects and carry no domain logic — applying a discount and saving belong on the command side",
+        "Nothing is wrong; query handlers are expected to enforce domain invariants before returning DTOs",
+        "The only issue is that it returns a DTO instead of the domain aggregate",
+        "It should load from the write store rather than mapping to a DTO at all"
+      ],
+      "answer": 0,
+      "explanation": "The read side returns DTOs with no domain logic and no side effects; mutating the aggregate and saving is command-side behavior leaking into a query. Returning a DTO is exactly correct, so the other options misidentify the fault."
+    }
+  ]
+}

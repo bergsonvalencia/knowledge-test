@@ -1,0 +1,262 @@
+{
+  "topic": "architecture",
+  "source": "architecture/distributed-systems-and-cap-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "CAP theorem",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to the CAP theorem as taught in the reviewer, what is the real choice a distributed system makes?",
+      "options": [
+        "Pick any 2 of Consistency, Availability, and Partition tolerance up front",
+        "Keep Partition tolerance and choose between Consistency and Availability, only while partitioned",
+        "Keep Consistency always and choose between Availability and Partition tolerance",
+        "Choose Latency vs Consistency whenever the network is healthy"
+      ],
+      "answer": 1,
+      "explanation": "Partitions are unavoidable on real networks, so P is mandatory; the genuine trade is C vs A and only during a partition. 'Pick 2 of 3' is the explicitly-rejected framing, and the latency-vs-consistency trade belongs to PACELC's Else branch, not CAP."
+    },
+    {
+      "subtopic": "CAP consistency vs ACID consistency",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The 'C' in the CAP theorem means the same thing as the 'C' in ACID.",
+      "answer": false,
+      "explanation": "CAP's C is linearizability (every read sees the latest committed write, single-copy semantics). ACID's C means application invariants hold within a transaction. They share a letter but are different concepts."
+    },
+    {
+      "subtopic": "Replication vs partitioning",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the fundamental difference between replication and partitioning (sharding)?",
+      "options": [
+        "Replication splits different data across nodes; partitioning copies the same data to many nodes",
+        "Replication copies the same data to many nodes; partitioning splits different data across nodes",
+        "Both copy the same data, but replication is synchronous and partitioning is asynchronous",
+        "Replication is for write scaling; partitioning is for read scaling"
+      ],
+      "answer": 1,
+      "explanation": "Replication keeps copies of the same data for durability, availability, and read scaling; partitioning splits different data subsets across nodes to scale write throughput and dataset size. Option A reverses the two; the read/write scaling claim in D is also backwards."
+    },
+    {
+      "subtopic": "Quorum N/W/R",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a leaderless store with replication factor N, what condition guarantees that a read overlaps with the latest write (strong/overlapping consistency)?",
+      "options": [
+        "W + R = N",
+        "W + R > N",
+        "W = R",
+        "W + R < N"
+      ],
+      "answer": 1,
+      "explanation": "W + R > N forces the write set and read set to overlap on at least one node holding the newest value. W + R = N or less does not guarantee overlap, so reads may miss the latest write."
+    },
+    {
+      "subtopic": "Delivery semantics",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the realistic default delivery guarantee for messaging on an unreliable network, and what is its consequence?",
+      "options": [
+        "At-most-once — messages can be lost but never duplicated",
+        "Exactly-once — the broker guarantees no loss and no duplicates end-to-end",
+        "At-least-once — no loss, but duplicates can occur",
+        "Best-effort — neither loss nor duplication is bounded"
+      ],
+      "answer": 2,
+      "explanation": "At-least-once is the realistic default: clients retry until acked so nothing is lost, but retries cause duplicates. At-most-once avoids duplicates but loses messages, and true exactly-once delivery is impossible in the general case over an unreliable network."
+    },
+    {
+      "subtopic": "PACELC classification",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A consensus-backed store like etcd favors consistency under partition and still favors consistency over latency when the network is healthy. What is its PACELC classification?",
+      "options": [
+        "PA/EL",
+        "PC/EL",
+        "PA/EC",
+        "PC/EC"
+      ],
+      "answer": 3,
+      "explanation": "Under partition it chooses Consistency (PC); else it trades Latency for Consistency, again choosing Consistency (EC), giving PC/EC. PA/EL describes the opposite (default Cassandra/Dynamo)."
+    },
+    {
+      "subtopic": "Consistency models",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which consistency model is described as the strongest one still achievable while staying available under partitions?",
+      "options": [
+        "Linearizable / strong consistency",
+        "Sequential consistency",
+        "Causal consistency",
+        "Eventual consistency"
+      ],
+      "answer": 2,
+      "explanation": "Causal consistency preserves the order of causally-related operations everywhere while allowing concurrent ones to differ, and is the strongest model still achievable while remaining available under partition. Linearizable/strong forces a CP choice under partition; eventual is far weaker."
+    },
+    {
+      "subtopic": "Read-your-writes",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A user posts a comment and on refresh doesn't see it. Which guarantee cheaply fixes this without paying for global strong consistency?",
+      "options": [
+        "Monotonic reads",
+        "Read-your-writes consistency",
+        "Linearizability",
+        "Sequential consistency"
+      ],
+      "answer": 1,
+      "explanation": "Read-your-writes is a session-centric guarantee: a client always sees its own prior writes (e.g. pin its reads to the leader or session). Monotonic reads only prevents time going backward, and linearizable/sequential consistency are global and expensive."
+    },
+    {
+      "subtopic": "Sync vs async replication",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "With asynchronous leader-follower replication, a leader crash can lose writes that had not yet been replicated to any follower.",
+      "answer": true,
+      "explanation": "Async replication commits on the leader immediately and ships to followers in the background, so a leader crash can lose un-replicated writes and followers can serve stale reads. Synchronous replication avoids this loss at the cost of higher write latency."
+    },
+    {
+      "subtopic": "Sharding strategies",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is consistent hashing preferred over plain `hash(key) mod N` when the number of nodes changes?",
+      "options": [
+        "It preserves efficient range scans across the keyspace",
+        "Adding or removing a node moves only a minimal fraction of keys, instead of nearly all of them",
+        "It eliminates the need for replication of each shard",
+        "It removes the possibility of hot partitions entirely"
+      ],
+      "answer": 1,
+      "explanation": "With `hash(key) mod N`, changing N reshuffles almost every key; consistent hashing places keys and nodes on a ring so adding/removing a node moves only a minimal set of keys. It does not restore range scans (hashing kills those) and does not by itself remove hotspots."
+    },
+    {
+      "subtopic": "Quorum tuning",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A leaderless store has N=5. The team wants strongly-consistent reads while tolerating 2 simultaneous node failures on the write path. Which W and R satisfy both requirements?",
+      "options": [
+        "W = 1, R = 5",
+        "W = 5, R = 1",
+        "W = 3, R = 3",
+        "W = 2, R = 3"
+      ],
+      "answer": 2,
+      "explanation": "Tolerating 2 write failures requires W ≤ 3 (acks must come from the 3 reachable nodes), so W = 3; then strong consistency needs W + R > 5, so R ≥ 3, giving W = 3, R = 3 (3 + 3 = 6 > 5). W = 2, R = 3 gives only 5, which is not > 5; W = 5 cannot tolerate any node being down."
+    },
+    {
+      "subtopic": "Idempotent consumer",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In this idempotent-consumer handler, why must the dedup check, the side effect, and the processed-message record all commit within the same transaction?",
+      "code": "await using var tx = await db.Database.BeginTransactionAsync(ct);\nif (await db.ProcessedMessages.AnyAsync(m => m.Id == msg.MessageId, ct))\n    return;\ndb.Payments.Add(new Payment(msg.OrderId, msg.Amount));\ndb.ProcessedMessages.Add(new ProcessedMessage(msg.MessageId));\nawait db.SaveChangesAsync(ct);\nawait tx.CommitAsync(ct);",
+      "lang": "csharp",
+      "options": [
+        "To make the message broker switch into exactly-once delivery mode",
+        "So a redelivery is a no-op: the side effect and its dedup record are committed atomically, preventing a partial state where the payment applied but the message was not recorded as processed",
+        "To hold database locks across the network until every other consumer acknowledges",
+        "Because transactions make the handler run faster under high load"
+      ],
+      "answer": 1,
+      "explanation": "Committing the side effect and the dedup record atomically guarantees that if the payment is applied, the message is recorded as processed too, so a redelivery is safely ignored. Separating them risks applying the payment without recording it (or vice versa), reopening the double-charge window. The broker mode and performance claims are unrelated."
+    },
+    {
+      "subtopic": "Exactly-once illusion",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Because our broker has an 'exactly-once' delivery mode, handlers that send a confirmation email to an external mail service no longer need to be idempotent.",
+      "answer": false,
+      "explanation": "Exactly-once modes only cover a closed path inside the broker. The moment an effect reaches an external system (email, payment API, another DB) you still need idempotent handlers, because true exactly-once across an unreliable boundary is impossible."
+    },
+    {
+      "subtopic": "2PC blocking problem",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the well-known 'blocking problem' that makes two-phase commit (2PC) risky across services?",
+      "options": [
+        "Participants vote yes but the coordinator never sends prepare, so nothing happens",
+        "If the coordinator crashes after participants voted yes but before sending the decision, those participants are stuck holding locks with no safe way to proceed",
+        "Participants commit independently and then discover the coordinator wanted them to abort",
+        "Reads are blocked because every read must also run through the coordinator"
+      ],
+      "answer": 1,
+      "explanation": "After voting yes in the prepare phase a participant has durably promised it can commit and holds locks; if the coordinator crashes before delivering the decision, the participant cannot safely commit or abort and stays blocked. The other options misdescribe the protocol's failure mode."
+    },
+    {
+      "subtopic": "Saga isolation",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Compared to a 2PC distributed transaction, which ACID-like property does a saga give up entirely, and how is the resulting problem mitigated?",
+      "options": [
+        "Atomicity; mitigated by a global lock held by the orchestrator",
+        "Durability; mitigated by writing to multiple disks",
+        "Isolation; mitigated with countermeasures like semantic locks (e.g. a PENDING status)",
+        "Consistency; mitigated by running all steps in one database transaction"
+      ],
+      "answer": 2,
+      "explanation": "A saga has no isolation: other transactions can observe partial saga state (e.g. an order existing before payment confirms), mitigated by semantic locks such as a PENDING status, commutative updates, or re-reads. Atomicity is preserved by compensation (not given up entirely), and sagas deliberately avoid global locks and single-transaction execution across services."
+    },
+    {
+      "subtopic": "Compensating transactions",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Select all properties that compensating transactions in a saga should have, and the reasons given.",
+      "options": [
+        "They must be idempotent, because they may be retried",
+        "They acquire a global lock across all participating services until the saga completes",
+        "They should ideally be commutative, because they may race with the forward path",
+        "They restore perfect isolation so no observer ever sees intermediate state",
+        "They semantically reverse already-completed steps rather than performing an atomic rollback"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "Compensations are idempotent (they may be retried), ideally commutative (they can race with the forward path), and they semantically reverse completed steps because there is no global atomic rollback. Sagas explicitly take no global lock and provide no isolation, so the other two options are wrong."
+    },
+    {
+      "subtopic": "Consensus and majorities",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about consensus (Raft/Paxos) and the FLP impossibility result are correct?",
+      "options": [
+        "Any two majorities of nodes always intersect, which is why two leaders cannot both commit in the same term",
+        "FLP says that in a fully asynchronous network with even one possible crash, no deterministic algorithm can guarantee consensus",
+        "Real consensus systems sacrifice safety to gain liveness when timeouts fire",
+        "Practical algorithms keep safety always and use timeouts/randomization for liveness",
+        "In Raft, a log entry is committed as soon as the leader writes it locally, before any follower replicates it"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Majority overlap prevents two leaders committing in the same term; FLP shows guaranteed consensus is impossible in a fully asynchronous network with one possible crash; and practical systems never sacrifice safety, using timeouts/randomization only for liveness. Safety is never traded away, and in Raft an entry is committed only once a majority has replicated it."
+    },
+    {
+      "subtopic": "Clocks and ordering",
+      "source": "architecture/distributed-systems-and-cap-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why are vector clocks preferred over Lamport clocks when a system needs to surface true write-write conflicts?",
+      "options": [
+        "Lamport clocks require special GPS and atomic-clock hardware, while vector clocks do not",
+        "Lamport clocks impose an ordering but cannot detect concurrency, whereas vector clocks can identify two events as concurrent when neither vector dominates the other",
+        "Vector clocks are synchronized to wall-clock time, so they order events by real timestamp",
+        "Lamport clocks lose data on every write, while vector clocks never do"
+      ],
+      "answer": 1,
+      "explanation": "A smaller Lamport counter does not prove causality, so Lamport clocks give a total order but cannot detect concurrency. Vector clocks compare per-node counter vectors and flag two events as concurrent (a real conflict) when neither dominates the other. TrueTime, not Lamport, uses GPS/atomic clocks, and vector clocks are logical, not wall-clock synchronized."
+    }
+  ]
+}

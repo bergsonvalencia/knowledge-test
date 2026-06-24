@@ -1,0 +1,277 @@
+{
+  "topic": "react",
+  "source": "react/09-refs-custom-hooks-and-rules.md",
+  "questions": [
+    {
+      "subtopic": "useRef basics",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What happens when you mutate a ref's `.current` property (e.g. `ref.current = 5`)?",
+      "options": [
+        "React schedules a re-render of the component, just like a state setter",
+        "Nothing visible to React: no re-render and no effect re-run are triggered",
+        "React throws an error because refs are read-only after the first render",
+        "The component re-renders only if the new value differs from the old one"
+      ],
+      "answer": 1,
+      "explanation": "Mutating `.current` is invisible to React; it persists the value across renders but never triggers a re-render or re-runs effects. The state-setter behavior in the first option is exactly what `useRef` does NOT do."
+    },
+    {
+      "subtopic": "useRef identity",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "`useRef(initial)` returns the same `{ current }` object on every render of the component; only `.current` changes over time.",
+      "answer": true,
+      "explanation": "The ref object has a stable identity across renders. Only the `.current` property is mutated, which is what makes refs reliable for holding values like interval ids between renders."
+    },
+    {
+      "subtopic": "useState vs useRef",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Per the comparison of `useState` and `useRef`, which statements are TRUE?",
+      "options": [
+        "A `useState` change is async/batched, while writing `ref.current` is synchronous",
+        "Both `useState` and `useRef` persist their value across renders",
+        "You mutate a `useRef` directly, but you must use the setter for `useState`",
+        "Both trigger a re-render when their value changes",
+        "`useRef` cannot hold the latest value during render, but `useState` can"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "State setters are async/batched while ref writes are synchronous; both persist across renders; state is immutable-via-setter while refs are mutated directly. The fourth is false (refs do NOT re-render), and the fifth is false (a ref's `.current` can be read during render, though it should be avoided)."
+    },
+    {
+      "subtopic": "Reading refs during render",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The reviewer says not to read or write `.current` during render. Which use is the explicitly noted exception?",
+      "options": [
+        "Lazy one-time initialization, e.g. `if (ref.current === null) ref.current = expensiveCreate()`",
+        "Reading the DOM node to measure its size before the first paint",
+        "Comparing the previous render's value to the current props to decide markup",
+        "Writing the result of a network fetch so the JSX can display it"
+      ],
+      "answer": 0,
+      "explanation": "Lazy one-time init is the sanctioned during-render use because it sets the value exactly once. The others read/write the ref as part of the render data flow, which the reviewer warns against; refs should be touched in effects or handlers."
+    },
+    {
+      "subtopic": "DOM ref timing",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When you attach a ref to a host element with `<input ref={inputRef} />`, when is `inputRef.current` the actual DOM node?",
+      "options": [
+        "During the very first render pass, before the component mounts",
+        "After mount; before mount and after unmount it is `null`",
+        "Only while an event handler attached to that input is executing",
+        "Immediately when `useRef(null)` is called, regardless of mounting"
+      ],
+      "answer": 1,
+      "explanation": "The node does not exist during the first render; React populates `inputRef.current` after the element mounts, and resets it to `null` after unmount. That is why DOM refs must be used in effects or handlers, not during render."
+    },
+    {
+      "subtopic": "React 19 ref as prop",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about refs as props in React 19 are TRUE?",
+      "options": [
+        "A function component can receive `ref` as an ordinary prop and forward it to its own DOM node",
+        "`forwardRef` is no longer required, though it still works",
+        "`forwardRef` is slated for deprecation in a future version",
+        "Refs can no longer be attached to host elements like `<input>`",
+        "Passing `ref` as a prop forces the component to re-render whenever the node attaches"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "React 19 treats `ref` as a normal prop for function components, so parents pass it straight through and `forwardRef` is no longer required (still works, but slated for deprecation). Host-element refs still work, and attaching a node does not cause a re-render."
+    },
+    {
+      "subtopic": "Ref callbacks",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In React 19, what is the behavior when a ref callback `ref={node => {...}}` returns a cleanup function?",
+      "options": [
+        "React calls the callback with the node on attach and again with `null` on detach, then also runs the cleanup",
+        "React runs the cleanup on detach and does NOT additionally call the callback with `null`",
+        "Returning a cleanup is ignored; React always signals detach by passing `null` to the callback",
+        "The cleanup runs on every re-render of the component, not on detach"
+      ],
+      "answer": 1,
+      "explanation": "When a ref callback returns a cleanup, React runs that cleanup on detach and stops calling the callback with `null`. You use one mechanism or the other, not both."
+    },
+    {
+      "subtopic": "Portals — DOM vs React tree",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does a portal created with `createPortal(children, domNode)` change about a component's children?",
+      "options": [
+        "Their DOM position, while they stay in the same React tree (same context, state, lifecycle)",
+        "Both their DOM position and their React-tree position, detaching them from context",
+        "Only their React-tree position; the DOM output stays where the JSX sits",
+        "Neither; a portal just toggles `overflow: hidden` on the parent element"
+      ],
+      "answer": 0,
+      "explanation": "A portal moves only the DOM position of the children (often into `document.body`). They remain in the same React tree, so context, state, and lifecycle all keep working normally."
+    },
+    {
+      "subtopic": "Portal event bubbling",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A `Modal` uses `createPortal(<div className=\"overlay\">{children}</div>, document.body)`. A click inside the overlay bubbles to which parent?",
+      "options": [
+        "An ancestor of `document.body` in the real DOM, since that is where the node physically lives",
+        "Nowhere — portal content is isolated and its events do not bubble at all",
+        "The `Modal`'s React parent, where `createPortal` is written, not the DOM ancestor under `document.body`",
+        "Both the React parent and the DOM ancestor receive the event in DOM order"
+      ],
+      "answer": 2,
+      "explanation": "React events bubble through the React tree, not the DOM tree. The click propagates to the portal's React parent (where `createPortal` is written), even though the node physically sits under `document.body` — a common exam trap."
+    },
+    {
+      "subtopic": "Portal responsibilities",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Using a portal automatically gives you focus trapping, `aria` wiring, and scroll locking for a modal.",
+      "answer": false,
+      "explanation": "A portal only moves DOM nodes. You remain responsible for focus trapping, `aria` attributes, and scroll locking yourself."
+    },
+    {
+      "subtopic": "Custom hooks share logic not state",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "code": "function Layout() {\n  const isWide = useMediaQuery(\"(min-width: 1024px)\");\n  const isDark = useMediaQuery(\"(prefers-color-scheme: dark)\");\n  return <div className={isWide ? \"wide\" : \"narrow\"} data-dark={isDark} />;\n}",
+      "lang": "typescript",
+      "question": "Both calls invoke the same `useMediaQuery` custom hook. What is the relationship between `isWide` and `isDark`?",
+      "options": [
+        "They share one piece of state, so changing one media query updates both",
+        "Each call gets its own isolated state; the two calls do not interfere",
+        "The second call overwrites the first call's state because the hook is a singleton",
+        "Only the first call holds state; the second always returns the same value as the first"
+      ],
+      "answer": 1,
+      "explanation": "Custom hooks share logic, not state. Each call to `useMediaQuery` gets its own independent `useState`/`useEffect` instances, so the two calls track different queries without interfering."
+    },
+    {
+      "subtopic": "Custom hook naming",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The `use` prefix on a custom hook is a load-bearing convention: it tells React and the linter the function follows the Rules of Hooks.",
+      "answer": true,
+      "explanation": "The `use` prefix is how the tooling identifies a function as a hook. A plain function that calls hooks without the prefix breaks the lint check that enforces the Rules of Hooks."
+    },
+    {
+      "subtopic": "HOCs and render props",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Why did custom hooks largely replace HOCs and render props for sharing stateful logic?",
+      "options": [
+        "Hooks share logic without adding wrapper components, avoiding deep wrapper nesting",
+        "Hooks avoid prop-name collisions that occur when composing several HOCs",
+        "Hooks keep data flow explicit — you see which values come from which hook",
+        "Hooks are the only way to call `useState`; HOCs and render props cannot use state at all",
+        "Hooks make HOCs and render props impossible to write in modern React"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Hooks share logic without extra wrapper components (no wrapper hell), avoid HOC prop-name clashes, and keep data flow explicit. The last two options are false — HOCs/render props can manage state and still exist in older code and libraries."
+    },
+    {
+      "subtopic": "Render props vs HOC pitfalls",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Composing several HOCs like `withRouter(withAuth(withTheme(C)))` is specifically called out as causing which problems?",
+      "options": [
+        "Deep wrapper hell in the tree and prop-name collisions between HOCs",
+        "A pyramid of doom in JSX from nested function children",
+        "Stale closures over event handlers and missing effect dependencies",
+        "Hooks being called out of order, desyncing state slots"
+      ],
+      "answer": 0,
+      "explanation": "Stacked HOCs create wrapper hell (deep tree nesting) and prop-name collisions. The 'pyramid of doom in JSX' describes nested render props, not HOCs, and the other two describe unrelated effect/hook-order issues."
+    },
+    {
+      "subtopic": "Rules of Hooks — why order matters",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does React require hooks to be called in the same order on every render?",
+      "options": [
+        "React tracks hooks by the variable name they are assigned to, which must stay constant",
+        "React tracks hooks by call order/slot index; a skipped or conditional call shifts later hooks into the wrong slots",
+        "React re-runs all effects whenever the number of hooks changes, which is expensive",
+        "Hooks are stored in a hash map keyed by the source line number of each call"
+      ],
+      "answer": 1,
+      "explanation": "React matches each hook to its state by call order (slot index), not by name. Skipping a conditional hook shifts every later hook by one slot, so React returns the wrong state or crashes. Names and line numbers are not used to identify hooks."
+    },
+    {
+      "subtopic": "Conditional hook bug — code reading",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "function ProfileWrong({ user }: { user?: User }) {\n  if (!user) return <Login />;\n  const [tab, setTab] = useState(\"posts\");\n  return <Tabs value={tab} onChange={setTab} />;\n}",
+      "lang": "typescript",
+      "question": "Why does this component violate the Rules of Hooks?",
+      "options": [
+        "`useState` is initialized with a string instead of a lazy initializer function",
+        "The `useState` call sits after an early `return`, so it is skipped when `user` is falsy, changing call order between renders",
+        "It returns different JSX depending on `user`, which hooks forbid",
+        "`setTab` is passed to a child component, leaking state out of the hook"
+      ],
+      "answer": 1,
+      "explanation": "The `useState` is placed after an early `return`, so it runs only when `user` is truthy. That makes the hook call order depend on props, violating the rule that hooks run unconditionally at the top level. The fix is to call `useState` before the early return."
+    },
+    {
+      "subtopic": "Conditional logic inside hooks",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need an effect to run only when `cond` is true. What does the reviewer prescribe?",
+      "options": [
+        "Wrap the `useEffect` call in `if (cond) { ... }` so the hook only runs when needed",
+        "Call `useEffect` unconditionally and put the condition inside it: `useEffect(() => { if (cond) {...} }, [cond])`",
+        "Move the effect into a `.map()` over the conditions so it only fires for matches",
+        "Return early before the `useEffect` when `cond` is false"
+      ],
+      "answer": 1,
+      "explanation": "Always call the hook unconditionally and put the condition inside the callback, with `cond` in the dependency array. Wrapping the hook in an `if`, a loop, or an early return violates the top-level rule."
+    },
+    {
+      "subtopic": "use API exception",
+      "source": "react/09-refs-custom-hooks-and-rules.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which API is the explicit exception to the top-level rule, allowed to be called conditionally and inside loops or early branches?",
+      "options": [
+        "`useEffect`, because its dependency array already encodes conditions",
+        "`useState`, because its slot is reserved before any branching runs",
+        "React 19's `use` (for reading a Promise or context)",
+        "`useRef`, because it does not participate in re-rendering"
+      ],
+      "answer": 2,
+      "explanation": "React 19's `use` API may be called conditionally and inside loops or early branches. Regular hooks like `useState`, `useEffect`, and `useRef` remain bound by the top-level rule."
+    }
+  ]
+}

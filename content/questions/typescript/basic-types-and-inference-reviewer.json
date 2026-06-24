@@ -1,0 +1,285 @@
+{
+  "topic": "typescript",
+  "source": "typescript/basic-types-and-inference-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "primitives & wrappers",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why should you annotate a value with lowercase `string` rather than capital `String` in a type position?",
+      "options": [
+        "`String` is the boxed wrapper-object interface; a `string` is assignable to `String` but not the reverse, so the wrapper only ever costs you assignability and identity with no benefit",
+        "`String` is a reserved keyword that cannot legally appear in a type annotation",
+        "`String` only matches string literals, while `string` matches any character sequence",
+        "`String` and `string` are identical, so the choice is purely a lint-style preference"
+      ],
+      "answer": 0,
+      "explanation": "Lowercase `string` is the primitive; capital `String` is the JS wrapper-object interface. A `string` is assignable to `String`, but a `String` is not assignable back to `string`, so the wrapper only loses you assignability — there is no scenario where you need it as a value type."
+    },
+    {
+      "subtopic": "literal types & widening",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `const x = \"on\"` and `let y = \"on\"`, what are the inferred types of `x` and `y`?",
+      "options": [
+        "`x` is `\"on\"` and `y` is `string`",
+        "Both are `\"on\"`",
+        "Both are `string`",
+        "`x` is `string` and `y` is `\"on\"`"
+      ],
+      "answer": 0,
+      "explanation": "A `const` can never be reassigned, so the compiler safely keeps the literal type `\"on\"`. A `let` can be reassigned to any string, so it widens to `string` to keep the binding usable."
+    },
+    {
+      "subtopic": "any / unknown",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which type should you reach for at an untrusted boundary such as the result of `JSON.parse` or a `catch (e)` clause?",
+      "options": [
+        "`unknown`, because it forces you to narrow before any member access, keeping the type system honest",
+        "`any`, because it lets you use the value immediately without ceremony",
+        "`object`, because parsed data is always a non-primitive reference type",
+        "`never`, because the value's shape is not yet known"
+      ],
+      "answer": 0,
+      "explanation": "`unknown` is the safe top type: anything is assignable to it, but it permits no use until narrowed. `any` disables checking and spreads infectiously, so it gives zero safety at exactly the boundary where you most need it."
+    },
+    {
+      "subtopic": "arrays & tuples",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "`T[]` and `Array<T>` denote exactly the same type in TypeScript; choosing between them is purely a matter of style.",
+      "answer": true,
+      "explanation": "The two spellings are identical types. `T[]` is the common repo default; `Array<T>` can read better for complex element types like `Array<() => void>`, but neither changes the meaning."
+    },
+    {
+      "subtopic": "special types lattice",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In TypeScript's assignability lattice, which type is the top type and which is the bottom type?",
+      "options": [
+        "Top is `unknown`; bottom is `never`",
+        "Top is `any`; bottom is `void`",
+        "Top is `never`; bottom is `unknown`",
+        "Top is `object`; bottom is `null`"
+      ],
+      "answer": 0,
+      "explanation": "`unknown` is the top type — everything is assignable to it. `never` is the bottom type — it is assignable to every type and nothing (except `never`) is assignable to it. `any` deliberately sits outside the ordering, assignable both ways."
+    },
+    {
+      "subtopic": "object vs Object vs {}",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does the empty object type `{}` mean when used as an annotation, e.g. `let v: {}`?",
+      "options": [
+        "Any value except `null` or `undefined` — so `42`, `\"x\"`, and `true` are all assignable to it",
+        "An object literal with exactly zero properties, rejecting anything with extra keys",
+        "Any non-primitive (reference) value, equivalent to the lowercase `object` type",
+        "Only the literal value `{}` constructed with empty braces"
+      ],
+      "answer": 0,
+      "explanation": "`{}` means \"anything that is not `null` or `undefined`,\" so primitives like `42` and `\"x\"` are accepted. It is a classic beginner trap: it does not mean \"an empty object,\" and it is broader than the lowercase `object` type (which excludes primitives)."
+    },
+    {
+      "subtopic": "as const",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the inferred type of `cfg`?",
+      "code": "const cfg = { method: \"GET\", path: \"/users\" } as const;",
+      "lang": "typescript",
+      "options": [
+        "`{ readonly method: \"GET\"; readonly path: \"/users\" }`",
+        "`{ method: string; path: string }`",
+        "`{ method: \"GET\"; path: \"/users\" }` (literals kept, but mutable)",
+        "`readonly [\"GET\", \"/users\"]`"
+      ],
+      "answer": 0,
+      "explanation": "`as const` makes every property deeply `readonly` and keeps each literal at its narrowest type. Without it, the properties would widen to `string` and stay mutable; it is an object literal, not an array, so it is not a tuple."
+    },
+    {
+      "subtopic": "deriving a union from an array",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the type of `Role`?",
+      "code": "const ROLES = [\"admin\", \"editor\", \"viewer\"] as const;\ntype Role = (typeof ROLES)[number];",
+      "lang": "typescript",
+      "options": [
+        "`\"admin\" | \"editor\" | \"viewer\"`",
+        "`string`",
+        "`readonly [\"admin\", \"editor\", \"viewer\"]`",
+        "`string[]`"
+      ],
+      "answer": 0,
+      "explanation": "`as const` makes `ROLES` a readonly tuple of string literals; indexing it with `[number]` unions the element types, yielding the string-literal union. This is the single-source-of-truth pattern for the runtime values and their type."
+    },
+    {
+      "subtopic": "satisfies vs annotation vs assertion",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `type Cfg = Record<string, number | string>`, which declaration both validates the value against `Cfg` and lets `port` keep the narrow type `number`?",
+      "options": [
+        "`const c = { port: 8080 } satisfies Cfg;`",
+        "`const c: Cfg = { port: 8080 };`",
+        "`const c = { port: 8080 } as Cfg;`",
+        "`const c = { port: 8080 } as unknown as Cfg;`"
+      ],
+      "answer": 0,
+      "explanation": "`satisfies` checks assignability to `Cfg` and then discards the type, keeping the value's own inferred type, so `c.port` stays `number`. The `: Cfg` annotation widens `port` to `number | string`; both `as` forms assert without a real structural check."
+    },
+    {
+      "subtopic": "enum reverse mapping",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does `Color[\"RED\"]` fail to compile here?",
+      "code": "enum Color { Red = \"RED\", Green = \"GREEN\" }\nconst x = Color[\"RED\"];",
+      "lang": "typescript",
+      "options": [
+        "String enums have no reverse mapping; only numeric enums emit a value-to-name back-map, so indexing a string enum by its string value is invalid",
+        "Enum members can only be accessed with dot notation, never bracket notation",
+        "`\"RED\"` is the member's value but the member is named `Red`, and member names are case-sensitive",
+        "String enums are erased at compile time, so no `Color` object exists at runtime to index"
+      ],
+      "answer": 0,
+      "explanation": "Numeric enums emit a reverse map (`Color[0] === \"Red\"`), but string enums do not, so there is no `\"RED\"` -> name entry to index. The runtime object does exist for a regular string enum (only `const enum` is fully inlined)."
+    },
+    {
+      "subtopic": "null & undefined under strictNullChecks",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Under `strictNullChecks` (on by default in TS 6.0 `strict`), which of the following are true about `null` and `undefined`? (Select all that apply.)",
+      "options": [
+        "`null` and `undefined` are distinct types and are not assignable to each other",
+        "An optional property `x?: T` adds `undefined` (not `null`) to the member type",
+        "`string` includes `null`, so `let s: string = null` is allowed",
+        "To allow an absent value you must opt it in explicitly via a union like `string | null`",
+        "`null` is a member of every type, just as it is without `strictNullChecks`"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "With strictNullChecks, `null` and `undefined` are distinct non-interchangeable types, `x?: T` widens the member to `T | undefined`, and absence must be unioned in explicitly. They are NOT members of every type — that legacy behavior is exactly what the flag removes."
+    },
+    {
+      "subtopic": "type assertions",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is `value as T` preferred over the angle-bracket form `<T>value`?",
+      "options": [
+        "The angle-bracket form is ambiguous with JSX in `.tsx` files (the parser reads `<T>` as a tag), whereas `as` works identically in `.ts` and `.tsx`",
+        "The angle-bracket form performs a runtime conversion, while `as` is compile-time only",
+        "The angle-bracket form bypasses the overlap rule, making it unsafe in all files",
+        "The angle-bracket form only works on primitive types, while `as` works on object types"
+      ],
+      "answer": 0,
+      "explanation": "Both syntaxes are compile-time-only relabelings with the same overlap rules; the difference is that `<T>value` collides with JSX tag syntax in `.tsx`, so `as` is the one form that works everywhere."
+    },
+    {
+      "subtopic": "inference: empty containers",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Writing `const oops = []` with no annotation infers `oops` as `any[]`, a silent `any` leak, which is why empty containers should be annotated like `const names: string[] = []`.",
+      "answer": true,
+      "explanation": "An empty array literal with no annotation and no context infers `any[]` and does not narrow as you push elements, so the type system silently loses safety. Annotating the empty container (`const names: string[] = []`) is the recommended fix."
+    },
+    {
+      "subtopic": "any infectiousness",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Senior engineers call `any` \"infectious.\" What does that mean in practice?",
+      "options": [
+        "Member access on an `any` value yields `any` again (`danger.foo.bar()` stays `any`), so checking is silently disabled across every expression it flows through",
+        "Any module that imports an `any`-typed symbol is automatically compiled in non-strict mode",
+        "`any` forces every other variable in the same scope to also become `any`",
+        "Assigning `any` to a typed variable raises a compile error that propagates to callers"
+      ],
+      "answer": 0,
+      "explanation": "`any` is assignable both ways and propagates through expressions: every property access or call on an `any` is still `any`, so type checking quietly disappears downstream. It does not turn the file non-strict or force sibling variables to `any`."
+    },
+    {
+      "subtopic": "best common type",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the inferred type of `mixed`, and why?",
+      "code": "const mixed = [1, \"a\", 2];",
+      "lang": "typescript",
+      "options": [
+        "`(string | number)[]`, because best-common-type forms a union when no single member is a supertype of the others",
+        "`any[]`, because the elements have different types so inference gives up",
+        "`[number, string, number]`, a tuple matching each position",
+        "`unknown[]`, because mixed element types collapse to the top type"
+      ],
+      "answer": 0,
+      "explanation": "Best-common-type picks the narrowest type all elements fit; since neither `number` nor `string` is a supertype of the other, the result is the union element type `(string | number)[]`. A bare array literal is not inferred as a tuple."
+    },
+    {
+      "subtopic": "never as union identity",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `never` are correct? (Select all that apply.)",
+      "options": [
+        "`T | never` simplifies to `T` — `never` is the identity element of unions",
+        "`T & never` simplifies to `never` — `never` absorbs in intersections",
+        "`never` is the return type of a function that always throws or loops forever",
+        "A `never` value is assignable to any type, but only a `never` value is assignable to `never`",
+        "`never` and `void` are interchangeable, since both describe functions that produce no useful value"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "`never` vanishes from unions and absorbs in intersections, types never-returning functions, and as the bottom type is assignable to everything while accepting nothing but `never`. It is NOT interchangeable with `void`: a `void` function returns `undefined`, whereas a `never` function does not return at all."
+    },
+    {
+      "subtopic": "readonly array assignability",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which assignment is rejected by the compiler, and why?",
+      "code": "let mutable: number[] = [1, 2];\nconst ro: readonly number[] = mutable;\nmutable = ro;",
+      "lang": "typescript",
+      "options": [
+        "`mutable = ro` is rejected, because assigning a `readonly number[]` to a mutable `number[]` would let you mutate through a reference that was promised read-only",
+        "`const ro = mutable` is rejected, because a mutable array cannot be assigned to a readonly one",
+        "Both assignments are rejected, since `readonly number[]` and `number[]` are unrelated types",
+        "Neither is rejected; `readonly` is documentation only and has no effect on assignability"
+      ],
+      "answer": 0,
+      "explanation": "A mutable array is assignable to a readonly array (you only drop capabilities), so `const ro = mutable` is fine. The reverse — `mutable = ro` — is rejected because it would reintroduce mutating methods on a value promised to be read-only, breaking the guarantee."
+    },
+    {
+      "subtopic": "const enum tradeoffs",
+      "source": "typescript/basic-types-and-inference-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is `const enum` discouraged in shared libraries?",
+      "options": [
+        "Its references are inlined to literal values at emit, which single-file transpilers (Babel/esbuild) cannot do across files, so it breaks under `isolatedModules` and across declaration boundaries",
+        "It emits a larger runtime object than a regular enum, hurting bundle size",
+        "It supports only numeric members, so string-keyed lookups are impossible",
+        "It loses the reverse mapping that consumers of a library depend on"
+      ],
+      "answer": 0,
+      "explanation": "`const enum` emits no runtime object and inlines each reference to its literal value, which requires whole-program information; single-file transpilers under `isolatedModules` cannot inline a value declared in another file, so it breaks across module/declaration boundaries. That is why libraries prefer a string-literal union or a `const` object."
+    }
+  ]
+}

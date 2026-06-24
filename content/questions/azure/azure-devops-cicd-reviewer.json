@@ -1,0 +1,270 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-devops-cicd-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "CI vs CD",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the key difference between **Continuous Delivery** and **Continuous Deployment**?",
+      "options": [
+        "Continuous Delivery stops at a manual approval before production; Continuous Deployment ships every green build automatically with no manual gate",
+        "Continuous Delivery only builds and tests; Continuous Deployment also runs unit tests",
+        "Continuous Delivery deploys automatically to production; Continuous Deployment requires a manual approval",
+        "Continuous Delivery applies only to YAML pipelines; Continuous Deployment applies only to Classic Release pipelines"
+      ],
+      "answer": 0,
+      "explanation": "Both auto-build, test, and prepare every change. Delivery keeps production always deployable but requires a human approval; Deployment removes that gate and ships every green build automatically. The reversed option swaps the two definitions."
+    },
+    {
+      "subtopic": "Build once deploy many",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does the \"build once, deploy many\" principle insist that you **never rebuild** the artifact per environment?",
+      "options": [
+        "Rebuilding would exceed the Microsoft-hosted agent's per-job time limit",
+        "Rebuilding per environment breaks the guarantee that the bits you tested are the exact bits you ship",
+        "Rebuilding is impossible in multi-stage YAML pipelines",
+        "Rebuilding would invalidate the service connection's OIDC token"
+      ],
+      "answer": 1,
+      "explanation": "Deploying the same immutable artifact to every environment preserves the \"tested == shipped\" guarantee; environment differences come from variables/config, not recompiles. The other options are unrelated technical constraints, not the reason."
+    },
+    {
+      "subtopic": "Pipeline hierarchy",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a YAML pipeline, how do **jobs within a single stage** run by default?",
+      "options": [
+        "Sequentially, in the order they are declared",
+        "In parallel, unless chained with `dependsOn`",
+        "Only one at a time, gated by an approval",
+        "On a single shared agent that all jobs reuse"
+      ],
+      "answer": 1,
+      "explanation": "Jobs in a stage run in parallel by default; you use `dependsOn` to chain them. Stages (not jobs) are the ones that run sequentially by default. Each job also gets its own agent/workspace, not a shared one."
+    },
+    {
+      "subtopic": "Agents",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which scenario most clearly requires a **self-hosted** agent rather than a Microsoft-hosted one?",
+      "options": [
+        "Running a standard public open-source build that needs no special tooling",
+        "Building against a private database that sits behind your corporate firewall",
+        "Getting a fresh, clean VM for every single job with zero maintenance",
+        "Avoiding all responsibility for patching the build machine"
+      ],
+      "answer": 1,
+      "explanation": "Microsoft-hosted agents have public egress only and cannot reach private network resources, so reaching a database behind a firewall requires a self-hosted agent in your network. The other options describe advantages of hosted agents."
+    },
+    {
+      "subtopic": "Approvals vs gates",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Approvals and gates are configured **on the environment** (a protected resource), not in the pipeline YAML, so a pipeline author cannot bypass them.",
+      "answer": true,
+      "explanation": "Checks live on the environment/protected resource, which lets security/ops enforce them centrally; the pipeline author cannot remove or bypass them by editing YAML."
+    },
+    {
+      "subtopic": "Artifacts between jobs",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A deploy job in a later stage fails because the build output is missing. The deploy task references `$(Build.ArtifactStagingDirectory)/**/*.zip` directly. What is the fix?",
+      "code": "- stage: Deploy\n  jobs:\n  - job: DeployJob\n    steps:\n    - task: AzureWebApp@1\n      inputs:\n        package: '$(Build.ArtifactStagingDirectory)/**/*.zip'",
+      "lang": "yaml",
+      "options": [
+        "Add `condition: succeeded()` to the deploy stage so it waits for the build",
+        "Publish a pipeline artifact in the build job and `download:` it in the deploy job, referencing `$(Pipeline.Workspace)/<artifact>/...`",
+        "Set `dependsOn: Build` on the deploy job to copy the staging directory automatically",
+        "Move the deploy step into the same job as the build so it reuses the workspace"
+      ],
+      "answer": 1,
+      "explanation": "Each job runs on a separate clean agent/workspace, so `$(Build.ArtifactStagingDirectory)` is gone. You must publish a pipeline artifact and download it. `condition`/`dependsOn` control ordering but do not move files; merging jobs sidesteps the question rather than fixing the cross-job pattern."
+    },
+    {
+      "subtopic": "Secret variables",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A pipeline defines `SqlPassword` as a **secret** variable, but the running app reading `SQL_PASSWORD` from its environment can't see it. Why, and what fixes it?",
+      "options": [
+        "Secret variables are deleted after compile time; redefine it as a runtime parameter",
+        "Secret variables are not auto-exported to the process environment; map it explicitly with `env:`",
+        "Secret variables only work on self-hosted agents; switch the pool",
+        "Secret variables must be uppercase; rename it to `SQL_PASSWORD`"
+      ],
+      "answer": 1,
+      "explanation": "By design, secret variables are masked and not auto-injected into the environment to stop them leaking into child processes; you must map them explicitly via `env:`. The other explanations are fabricated rules."
+    },
+    {
+      "subtopic": "PR triggers",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "For a repository hosted in **Azure Repos**, the YAML `pr:` trigger block is what configures PR validation builds.",
+      "answer": false,
+      "explanation": "For Azure Repos, PR builds are driven by **branch policies** (build validation), not the YAML `pr:` block. The `pr:` trigger applies to GitHub/Bitbucket repos — a classic gotcha."
+    },
+    {
+      "subtopic": "Templates vs variables timing",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A senior distinction between template **parameters** and pipeline **variables** is their resolution timing. Which is correct?",
+      "options": [
+        "Both parameters and variables are resolved at runtime",
+        "Parameters resolve at compile time; variables resolve (mostly) at runtime",
+        "Parameters resolve at runtime; variables resolve at compile time",
+        "Both parameters and variables are resolved at compile time"
+      ],
+      "answer": 1,
+      "explanation": "Template parameters are resolved during YAML compilation (e.g. `${{ }}` expansion), while variables are resolved mostly at runtime (`$( )` macros and `$[ ]` expressions). This is why parameters can shape which YAML even exists, but runtime variable values cannot."
+    },
+    {
+      "subtopic": "Deployment strategies",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A release must go to 10% of traffic, verify health, then expand to 50% and finally 100%, aborting if metrics degrade. Which `deployment` strategy fits, and where do the health checks belong?",
+      "options": [
+        "`rolling`, with checks in `preDeploy`",
+        "`runOnce`, with checks in `routeTraffic`",
+        "`canary`, with `increments` and checks in `postRouteTraffic`",
+        "`blueGreen`, with checks in a `swap` hook"
+      ],
+      "answer": 2,
+      "explanation": "Canary releases to a small percentage first using `increments`, and `postRouteTraffic` runs the health verification so you can bail out before ramping further. There is no built-in `blueGreen` keyword; rolling/runOnce don't express percentage-based ramp with metric gating."
+    },
+    {
+      "subtopic": "Pipeline artifacts vs Azure Artifacts",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Select all statements that are **true** about distinguishing **pipeline artifacts** from **Azure Artifacts**.",
+      "options": [
+        "Pipeline artifacts are files published by one stage/job and consumed by later ones within a run",
+        "Azure Artifacts is a package management service hosting feeds of NuGet, npm, Maven, Python, and Cargo packages",
+        "`PublishPipelineArtifact@1` publishes a package version to an Azure Artifacts feed",
+        "Upstream sources let an Azure Artifacts feed proxy public registries like nuget.org and npmjs.com",
+        "Azure Artifacts feeds cannot host Universal Packages"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Pipeline artifacts carry build output across jobs/stages; Azure Artifacts hosts package feeds with upstream-source proxying. `PublishPipelineArtifact@1` publishes a pipeline artifact, not a feed package, and Azure Artifacts does host Universal Packages."
+    },
+    {
+      "subtopic": "Environments and checks",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are **automated gates / checks** (not human approvals) you can place on an environment?",
+      "options": [
+        "Query Azure Monitor alerts and proceed only if healthy",
+        "Require a designated person or group to click \"Approve\"",
+        "Enforce a business-hours deployment window",
+        "Invoke an Azure Function / REST API and act on its response",
+        "Acquire an exclusive lock so two runs can't race into the same environment"
+      ],
+      "answer": [0, 2, 3, 4],
+      "explanation": "Gates/automated checks evaluate without human input: Azure Monitor queries, business-hours windows, invoke-function, and the exclusive-lock check (a system-enforced check). A human clicking \"Approve\" is a manual approval, not an automated gate."
+    },
+    {
+      "subtopic": "Job isolation behavior",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Two steps in the **same job** write and then read a file on disk. Two steps split across **two jobs** in the same stage do the same and fail. Why does only the same-job case work?",
+      "options": [
+        "Steps in a job share the agent filesystem sequentially, while separate jobs may run on different agents with their own clean workspaces",
+        "Jobs disable the filesystem unless `dependsOn` is set, but steps always have it enabled",
+        "The second job runs before the first because jobs default to parallel, so the file isn't written yet",
+        "Files only persist when the job uses a `deployment` strategy of `runOnce`"
+      ],
+      "answer": 0,
+      "explanation": "Steps in a job run sequentially on the same agent and share the filesystem; separate jobs can land on different agents with isolated clean workspaces, so files don't flow between them without publishing/downloading artifacts. Parallelism alone wouldn't explain a missing file once you account for isolation."
+    },
+    {
+      "subtopic": "Service connections",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Security mandates that **no client secret** for the Azure deployment credential ever be stored in Azure DevOps, yet the pipeline must still deploy to Azure. Which ARM service connection authentication method satisfies this?",
+      "options": [
+        "Service principal with a stored client secret, rotated every 30 days",
+        "Service principal with a stored certificate",
+        "Workload identity federation (OIDC), presenting a short-lived federated token with no stored secret",
+        "A Personal Access Token (PAT) stored as a secret variable"
+      ],
+      "answer": 2,
+      "explanation": "Workload identity federation (OIDC) presents a short-lived federated token, so there is no stored secret to expire or leak. A stored client secret or certificate is still a stored credential; a PAT is the wrong credential type and is also stored."
+    },
+    {
+      "subtopic": "Templates and governance",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A platform team wants to **guarantee** that every pipeline touching a protected resource performs a mandatory security scan that authors cannot strip out. Which YAML reuse mechanism enforces this?",
+      "options": [
+        "A `step` template that authors `include` voluntarily",
+        "An `extends:` template combined with a required-template check on the protected resource",
+        "A variable template linked to a variable group",
+        "A `pr:` trigger that runs the scan on every pull request"
+      ],
+      "answer": 1,
+      "explanation": "An `extends:` template constrains a pipeline to only what the template allows, and a required-template check on the protected resource mandates that specific template — so authors cannot bypass it. A plain step template is opt-in; variable templates and `pr:` triggers don't enforce structure on protected resources."
+    },
+    {
+      "subtopic": "Slot swap semantics",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Regarding an Azure App Service **slot swap** used as native blue-green deployment, which statement is correct?",
+      "options": [
+        "The swap rebuilds the app in the production slot, so it is slower than a fresh deploy",
+        "After the swap, the old production becomes the new staging slot, enabling fast rollback by swapping back",
+        "Slot swap requires the canary `increments` keyword to route traffic gradually",
+        "Slot-sticky app settings move to the other slot during the swap, following the code"
+      ],
+      "answer": 1,
+      "explanation": "A swap is a near-instant hostname switch with pre-warming; the old prod becomes the new staging, so swapping back gives instant rollback. It doesn't rebuild, doesn't use canary increments, and slot-sticky (slot-specific) app settings stay with the slot rather than following the code."
+    },
+    {
+      "subtopic": "Deployment strategy trade-offs",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team needs the **best blast-radius control** for a risky release and already has strong observability and automated rollback. Compared with blue-green, which strategy fits and what is its main cost?",
+      "options": [
+        "Rolling — its main cost is requiring double the infrastructure",
+        "Canary — its main cost is needing good metrics/observability to drive the ramp and rollback",
+        "Recreate (`runOnce`) — its main cost is brief downtime during cutover",
+        "Blue-green is always superior, so no other strategy applies"
+      ],
+      "answer": 1,
+      "explanation": "Canary gives the best blast-radius control by shipping to a small percentage first and ramping while watching metrics, which is exactly why it depends on good observability and automated rollback. Double-infra is blue-green's cost, not rolling's; recreate's downtime is a different trade-off."
+    },
+    {
+      "subtopic": "Trigger configuration",
+      "source": "azure/azure-devops-cicd-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given this trigger block, which run will actually start a CI pipeline run?",
+      "code": "trigger:\n  branches:\n    include: [ main, release/* ]\n    exclude: [ docs/* ]\n  paths:\n    include: [ src/* ]\n  batch: true",
+      "lang": "yaml",
+      "options": [
+        "A push to `feature/login` that changes files under `src/`",
+        "A push to `main` that changes only files under `tests/`",
+        "A push to `release/2.0` that changes a file under `src/api/`",
+        "A push to `main` that changes only `README.md` at the repo root"
+      ],
+      "answer": 2,
+      "explanation": "The branch must match the include list (`main` or `release/*`) and the change must touch a `paths` include (`src/*`). `release/2.0` with a change under `src/api/` satisfies both. `feature/login` isn't an included branch; the `main` pushes touch only `tests/` or `README.md`, neither of which is under `src/`, so the path filter excludes them."
+    }
+  ]
+}

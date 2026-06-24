@@ -1,0 +1,272 @@
+{
+  "topic": "typescript",
+  "source": "typescript/functions-and-overloads-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "function type vs call signature",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "You need a value that is callable **and** carries an ordinary property (a hybrid type). Which TypeScript construct can express this, when the plain arrow function type expression cannot?",
+      "options": [
+        "An object type containing a call signature, e.g. `{ (a: string): number; meta: string }`",
+        "A `type` alias wrapping the arrow form, e.g. `type T = (a: string) => number`",
+        "A union of the arrow type and an object type, e.g. `((a: string) => number) | { meta: string }`",
+        "A `readonly` arrow type, e.g. `readonly (a: string) => number`"
+      ],
+      "answer": 0,
+      "explanation": "An object type with a parenthesized call signature can sit alongside ordinary properties, which the terse arrow form `(a: T) => R` cannot. A union does not make a single value both callable and property-bearing, and `readonly` on a function type is not valid syntax for this purpose."
+    },
+    {
+      "subtopic": "parameter names in function types",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In a function type expression like `(value: string) => number`, the parameter name `value` is significant for compatibility, so the implementing function must use the same name.",
+      "answer": false,
+      "explanation": "Parameter names in a function type are documentation only. Compatibility is determined by position and type; the implementation may name the parameter anything."
+    },
+    {
+      "subtopic": "optional parameter in-body type",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `function greet(name: string, title?: string)`, what is the type of `title` **inside the function body**?",
+      "options": [
+        "`string | undefined`",
+        "`string`",
+        "`string | null`",
+        "`undefined`"
+      ],
+      "answer": 0,
+      "explanation": "An optional parameter `x?: T` has the in-body type `T | undefined` and may be omitted at the call site. A default parameter (`= d`) is what strips the `undefined`, leaving just `T` — but that is not the case here."
+    },
+    {
+      "subtopic": "parameter ordering rules",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which parameter list is **illegal** in TypeScript?",
+      "options": [
+        "`(title?: string, name: string)`",
+        "`(name: string, title?: string)`",
+        "`(first: number, ...rest: number[])`",
+        "`(host: string, port: number = 443)`"
+      ],
+      "answer": 0,
+      "explanation": "A required parameter cannot follow an optional one, so `(title?: string, name: string)` is rejected. Optional and default parameters may follow required ones, and a rest parameter sitting last is fine."
+    },
+    {
+      "subtopic": "the void quirk",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A function that returns a `number` is assignable to a variable typed `() => void`; the returned value is simply ignored at the type level.",
+      "answer": true,
+      "explanation": "This is the contextual-void rule: any function type whose return is `R` is assignable to `() => void`, with the return discarded. It is exactly why `arr.forEach(x => arr2.push(x))` type-checks even though `push` returns a `number`."
+    },
+    {
+      "subtopic": "the void quirk — assignability vs direct annotation",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Consider the snippet below. Which statement correctly describes its compilation behavior?",
+      "code": "type VoidFn = () => void;\nconst f1: VoidFn = () => 42;        // line A\nfunction direct(): void {\n  return 42;                        // line B\n}",
+      "lang": "typescript",
+      "options": [
+        "Line A compiles (the `42` is ignored); line B errors because a value is returned from a directly-annotated `void` body",
+        "Both lines compile; the `42` is ignored in each case",
+        "Both lines error because `number` is not assignable to `void`",
+        "Line A errors; line B compiles because `void` permits any return value"
+      ],
+      "answer": 0,
+      "explanation": "The leniency is about assignability of function *types*: assigning a value-returning function into a `() => void` slot (line A) is allowed. A function whose body is *directly* annotated `(): void` (line B) still rejects an explicit `return 42` — `Type 'number' is not assignable to type 'void'`."
+    },
+    {
+      "subtopic": "never vs void return inference",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A function whose body is `throw new Error(msg);` with **no return-type annotation** will have which inferred return type?",
+      "options": [
+        "`void`",
+        "`never`",
+        "`undefined`",
+        "`unknown`"
+      ],
+      "answer": 0,
+      "explanation": "Without an annotation, an always-throwing function infers `void`. You only get `never` when you *annotate* `: never`; that explicit `never` is what powers exhaustiveness checks in `default` branches."
+    },
+    {
+      "subtopic": "return type inference keeps literals",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is `ReturnType<typeof flag>` for the function below?",
+      "code": "function flag(on: boolean) {\n  return on ? \"on\" : \"off\";\n}",
+      "lang": "typescript",
+      "options": [
+        "`\"on\" | \"off\"`",
+        "`string`",
+        "`\"on\"`",
+        "`boolean`"
+      ],
+      "answer": 0,
+      "explanation": "Return positions keep literal unions rather than widening to `string`: each conditional branch produces a literal type and the result is their union `\"on\" | \"off\"`. Widening to `string` would happen in a mutable `let` position, not in the inferred return type."
+    },
+    {
+      "subtopic": "this parameter",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about the `this` parameter in TypeScript are correct? (Select all that apply.)",
+      "options": [
+        "It is declared as a fake first parameter named `this` and is erased at emit, never counting as a real argument",
+        "An arrow function cannot declare a `this` parameter",
+        "`ThisParameterType<T>` extracts the `this` type and `OmitThisParameter<T>` strips it",
+        "Callers must explicitly pass a value for the `this` parameter as the first argument",
+        "Under `noImplicitThis`, an untyped `this` in a standalone function is silently inferred as `unknown`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The `this` parameter is a fake, erased first parameter that callers never pass; arrows capture lexical `this` and so cannot declare one; the two utility types read and strip it. Callers do not pass `this` as an argument, and under `noImplicitThis` an untyped `this` is an *error*, not inferred as `unknown`."
+    },
+    {
+      "subtopic": "overload resolution order",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does the compiler resolve which overload signature applies to a call?",
+      "options": [
+        "Top to bottom; the first overload whose parameters the arguments satisfy wins",
+        "It picks the most specific matching overload regardless of declaration order",
+        "Bottom to top; the last matching overload wins",
+        "It matches against the implementation signature, since that is the most general"
+      ],
+      "answer": 0,
+      "explanation": "Overload resolution is top-down and stops at the first matching signature, which is why you order from most specific to most general. The implementation signature is never a candidate for callers."
+    },
+    {
+      "subtopic": "implementation signature visibility",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the overloaded `parse` below, what happens when a consumer calls `parse(true)`?",
+      "code": "function parse(input: string): string[];\nfunction parse(input: number): number;\nfunction parse(input: string | number): string[] | number {\n  return typeof input === \"string\" ? input.split(\",\") : input * 2;\n}\nparse(true);",
+      "lang": "typescript",
+      "options": [
+        "It is a compile error: no overload matches a `boolean` argument",
+        "It compiles, matching the implementation signature `string | number`",
+        "It compiles and returns `string[] | number`",
+        "It compiles because `boolean` is assignable to `number`"
+      ],
+      "answer": 0,
+      "explanation": "Callers only see the two public overload signatures (`string` and `number`); neither accepts a `boolean`, so the call errors. The implementation signature (`string | number`) is hidden from consumers and is never a resolution candidate."
+    },
+    {
+      "subtopic": "construct signatures",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You want a factory parameter that accepts \"a class itself\" so the body can call `new` on it. Which parameter type expresses this?",
+      "options": [
+        "`Ctor: new (name: string) => T`",
+        "`Ctor: (name: string) => T`",
+        "`Ctor: T`",
+        "`Ctor: InstanceType<T>`"
+      ],
+      "answer": 0,
+      "explanation": "A construct signature `new (args) => InstanceType` types the static (constructor) side of a class, so passing `MyClass` itself type-checks. A plain call signature `(name) => T` types an ordinary function, not something invoked with `new`, and `InstanceType<T>` is an *instance*, not the constructor."
+    },
+    {
+      "subtopic": "construct signature accepts class not instance",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "For a parameter typed `Ctor: new (name: string) => T`, which arguments type-check? (Select all that apply.)",
+      "options": [
+        "The class value `Dog` (where `class Dog { constructor(public name: string) {} }`)",
+        "Any constructor whose static side matches `new (name: string) => T`",
+        "An instance produced by `new Dog(\"Rex\")`",
+        "The string `\"Dog\"` naming the class"
+      ],
+      "answer": [0, 1],
+      "explanation": "A class value's static side is a construct signature, so the class itself (`Dog`) and any matching constructor fit the parameter. An *instance* (`new Dog(...)`) is not a constructor, and a string naming the class is unrelated to the type."
+    },
+    {
+      "subtopic": "async return flattening",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is `ReturnType<typeof fetchUser>` for the async function below?",
+      "code": "async function fetchUser() {\n  return Promise.resolve({ id: 1, name: \"Ada\" });\n}",
+      "lang": "typescript",
+      "options": [
+        "`Promise<{ id: number; name: string }>`",
+        "`Promise<Promise<{ id: number; name: string }>>`",
+        "`{ id: number; name: string }`",
+        "`Promise<unknown>`"
+      ],
+      "answer": 0,
+      "explanation": "An async function always returns a `Promise`, and a `Promise` returned from the body is flattened (the async wrapping applies `Awaited` to the body's return), so it does not nest. The result is a single-level `Promise<{ id: number; name: string }>`."
+    },
+    {
+      "subtopic": "generic argument inference",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the type of `value`?",
+      "code": "function pick<T, K extends keyof T>(obj: T, key: K) {\n  return obj[key];\n}\nconst value = pick({ a: 1, b: \"x\" }, \"b\");",
+      "lang": "typescript",
+      "options": [
+        "`string`",
+        "`number`",
+        "`string | number`",
+        "`\"x\"`"
+      ],
+      "answer": 0,
+      "explanation": "`T` is inferred as `{ a: number; b: string }` and `K` as the literal `\"b\"`; the indexed-access return type `T[K]` resolves to `{ a: number; b: string }[\"b\"]`, which is `string`. The constraint both restricts `key` to existing keys and lets the result be typed precisely."
+    },
+    {
+      "subtopic": "parameter bivariance vs strictFunctionTypes",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With `strict` enabled, why does line A compile while line B errors?",
+      "code": "class Animal { move() {} }\nclass Dog extends Animal { bark() {} }\ntype MethodStyle = { on(a: Animal): void };\ntype FnStyle = { on: (a: Animal) => void };\nconst m: MethodStyle = { on: (d: Dog) => d.bark() }; // line A\nconst f: FnStyle = { on: (d: Dog) => d.bark() };     // line B",
+      "lang": "typescript",
+      "options": [
+        "Method-shorthand parameters are checked bivariantly (a legacy carve-out), but `strictFunctionTypes` checks function-type-property parameters contravariantly, rejecting the narrower `Dog` parameter",
+        "Line B errors because `Dog` is not a subtype of `Animal`",
+        "Method shorthand is checked contravariantly while function-type properties are bivariant, so only line B is rejected",
+        "Both forms are bivariant, but `strictFunctionTypes` only applies to top-level function declarations, so line B's nested property is rejected"
+      ],
+      "answer": 0,
+      "explanation": "`strictFunctionTypes` (part of `strict`) tightens *function-type-property* parameters to be contravariant, rejecting a handler that needs a narrower `Dog` where one taking any `Animal` is expected (line B). *Method-shorthand* parameters intentionally stay bivariant (line A). The mnemonic is: arrow property = strict, method shorthand = loose."
+    },
+    {
+      "subtopic": "when to avoid overloads",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "When is reaching for function **overloads** the right tool, versus a single union or generic signature? (Select all that apply.)",
+      "options": [
+        "Use overloads when the return type genuinely depends on the argument shape in a way one signature cannot express",
+        "Prefer a union parameter or generic when the parameter types vary but the return type does not depend on the argument shape",
+        "Overloads are appropriate when there is a finite, fixed set of argument/return combinations",
+        "Always prefer overloads over a generic because they produce clearer compiler errors",
+        "Use overloads whenever a function takes more than one parameter type, since unions are never allowed in parameters"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Overloads earn their keep when the return type varies with the argument shape and the combinations are finite and fixed; otherwise a union parameter or generic is simpler and gives better errors. Overloads are not universally clearer, and union types are perfectly valid as parameters."
+    },
+    {
+      "subtopic": "default parameter in-body type",
+      "source": "typescript/functions-and-overloads-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In `function connect(host: string, port: number = 443)`, the in-body type of `port` is `number | undefined`, and you should also mark it optional with `?` for callers.",
+      "answer": false,
+      "explanation": "A default parameter is already implicitly optional for callers, and its in-body type is `number` because the default strips `undefined`. Writing both `?` and a default (`port?: number = 443`) is a compile error."
+    }
+  ]
+}

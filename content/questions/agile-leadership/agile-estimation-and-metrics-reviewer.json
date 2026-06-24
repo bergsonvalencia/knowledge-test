@@ -1,0 +1,267 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Story points",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does a story point measure?",
+      "options": [
+        "The overall relative size of a backlog item, blending effort, complexity, and uncertainty/risk",
+        "The number of ideal engineering hours a senior developer needs to complete the item",
+        "The business value the customer will receive once the item is delivered",
+        "The calendar duration from when work starts to when it reaches production"
+      ],
+      "answer": 0,
+      "explanation": "A story point is a unitless, relative measure of overall size that bundles effort/volume, complexity, and uncertainty/risk. It is explicitly not hours, not value, and not duration."
+    },
+    {
+      "subtopic": "Relative vs absolute estimation",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why do agile teams prefer relative estimation (story points) over absolute estimation (hours)?",
+      "options": [
+        "Humans compare sizes more reliably than they predict absolute time, so relative estimates are more stable across people and time",
+        "Story points convert directly into a guaranteed delivery date, removing forecasting uncertainty",
+        "Relative estimates let managers compare productivity across different teams on a common scale",
+        "Hours are forbidden by the Scrum Guide, so teams must use points instead"
+      ],
+      "answer": 0,
+      "explanation": "Size is a property of the work, while hours are a property of the worker and drift with skill and interruptions; humans compare better than they predict, making relative estimates more stable. Points are team-local and never a cross-team comparison scale."
+    },
+    {
+      "subtopic": "Velocity",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Team A's velocity of 40 and Team B's velocity of 40 mean the two teams delivered an equivalent amount of work.",
+      "answer": false,
+      "explanation": "Velocity is measured in each team's private units (their own reference story), so it is never comparable across teams. Comparing the two 40s is like comparing one team's Celsius to another's Fahrenheit."
+    },
+    {
+      "subtopic": "Modified Fibonacci scale",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does the modified Fibonacci scale (1, 2, 3, 5, 8, 13, 20, 40, 100) use gaps that widen as numbers grow?",
+      "options": [
+        "Because at larger sizes you cannot meaningfully distinguish (e.g.) a 21 from a 22, so the scale refuses to offer false precision and the gaps encode growing uncertainty",
+        "Because larger items are completed by more developers, so their points must be multiplied",
+        "Because the gaps must mirror the actual number of hours each size takes",
+        "Because rounding to Fibonacci numbers makes summing velocity arithmetically exact"
+      ],
+      "answer": 0,
+      "explanation": "The widening gaps deliberately encode uncertainty: large items cannot be sized precisely, so the scale stops offering granularity you could not honor anyway. The scale is a conversation device, not arithmetic."
+    },
+    {
+      "subtopic": "Planning Poker",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Planning Poker, what is the primary purpose of revealing all estimate cards simultaneously?",
+      "options": [
+        "It removes the anchoring bias of the first number spoken aloud, preserving independent judgment",
+        "It guarantees the team reaches unanimous agreement on the first round",
+        "It lets the Product Owner cast the deciding vote when estimates diverge",
+        "It speeds the meeting by skipping any discussion of outliers"
+      ],
+      "answer": 0,
+      "explanation": "Simultaneous reveal defeats anchoring so each estimator judges independently; the divergence (especially outliers) is then mined for hidden scope or risk. The goal is convergence, not unanimity, and the PO clarifies scope but does not vote."
+    },
+    {
+      "subtopic": "Velocity as a metric",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Select all statements that are TRUE about velocity.",
+      "options": [
+        "It is an empirical, team-local capacity signal used to forecast how much the team can plausibly take on next",
+        "It should be reported as a range or average of recent Sprints rather than a single Sprint's number",
+        "A consistently rising velocity is reliable proof the team is delivering faster",
+        "It is a valid way to rank teams against each other for performance reviews",
+        "Only fully-Done items count toward it; no partial credit for half-finished work"
+      ],
+      "answer": [0, 1, 4],
+      "explanation": "Velocity is a team-local forecasting input, best expressed as a range/average, counting only fully-Done items. Rising velocity is often point inflation, not faster delivery, and velocity is never valid for cross-team ranking."
+    },
+    {
+      "subtopic": "Burndown vs burnup",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A release burndown chart has been flat for two Sprints, but the team insists it has been delivering steadily. What does the flat line most likely indicate, and which chart would disambiguate it?",
+      "options": [
+        "The result is ambiguous (no work done vs. work done but scope added); a burnup chart with a separate scope line would make the scope change explicit",
+        "The team definitely did nothing; a more granular burndown would confirm it",
+        "Scope definitely shrank; a velocity chart would show the lost points",
+        "The Sprint Goal was met early; a cumulative flow diagram would hide the issue"
+      ],
+      "answer": 0,
+      "explanation": "A burndown hides scope change, so a flat line cannot distinguish 'no progress' from 'progress offset by added scope.' A burnup separates the rising completed-work line from a distinct scope line, making added scope undeniable."
+    },
+    {
+      "subtopic": "Little's Law",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team holds throughput steady at 10 items/week and currently has an average WIP of 20 items. They then let WIP rise to 30 items with throughput unchanged. By Little's Law, what happens to average cycle time?",
+      "options": [
+        "It rises from 2 weeks to 3 weeks",
+        "It stays at 2 weeks because throughput did not change",
+        "It falls from 2 weeks to about 1.5 weeks because more items are being worked",
+        "It rises from 2 weeks to 6 weeks"
+      ],
+      "answer": 0,
+      "explanation": "Cycle time = WIP / throughput. At 20/10 it is 2 weeks; at 30/10 it is 3 weeks. With throughput fixed, cycle time rises proportionally with WIP, which is the math behind 'start less, finish more.'"
+    },
+    {
+      "subtopic": "Lead time vs cycle time",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes lead time from cycle time?",
+      "options": [
+        "Lead time starts when the request is created (enters the backlog); cycle time starts when work is pulled into In Progress, so lead time is always ≥ cycle time",
+        "Cycle time starts when the request is created; lead time starts when work begins, so cycle time is always ≥ lead time",
+        "Lead time and cycle time both start when work begins; they differ only in the unit used",
+        "Lead time measures the team's process speed while cycle time measures the customer's experience of speed"
+      ],
+      "answer": 0,
+      "explanation": "Lead time is the customer clock (created → delivered) and includes backlog wait; cycle time is the team clock (started → done). Because lead time adds the queue/wait time, lead time ≥ cycle time always."
+    },
+    {
+      "subtopic": "Forecasting with a range",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team has 180 points of remaining scope. Their last six Sprint velocities were 28, 22, 31, 25, 19, 27. What is the most defensible way to forecast the release?",
+      "options": [
+        "Roughly 6–10 Sprints, most likely about 8, by dividing scope by the optimistic (~31), average (~25), and pessimistic (~19) velocities",
+        "Exactly 7.2 Sprints, by dividing 180 by the mean velocity of 25.3",
+        "6 Sprints, by dividing 180 by the best-ever velocity of 31 to stay aggressive",
+        "10 Sprints, by dividing 180 by the lowest velocity of 19 to stay safe"
+      ],
+      "answer": 0,
+      "explanation": "Use a range: 180/31 ≈ 6 (best), 180/25 ≈ 7–8 (likely), 180/19 ≈ 10 (worst), giving a 6–10 Sprint window most likely ~8. A single number is a lie of precision; the window communicates risk and should be re-forecast each Sprint."
+    },
+    {
+      "subtopic": "Cumulative Flow Diagram",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "On a Cumulative Flow Diagram, which readings are correct?",
+      "options": [
+        "The vertical thickness of the In Progress band at a moment equals the WIP in that state",
+        "The slope of the Done band represents throughput (steeper = faster)",
+        "The horizontal distance between the arrival and completion curves approximates cycle/lead time",
+        "A band that widens over time indicates the team is finishing work faster than it arrives",
+        "A flat Done band means throughput has increased"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Band thickness = WIP, Done-band slope = throughput, and horizontal gap = cycle/lead time. A widening band signals a bottleneck (work arriving faster than it leaves), and a flat Done band means nothing is finishing."
+    },
+    {
+      "subtopic": "DORA metrics",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which set is exactly the four DORA metrics?",
+      "options": [
+        "Deployment frequency, lead time for changes, change failure rate, mean time to restore (MTTR)",
+        "Velocity, cycle time, throughput, work-in-progress",
+        "Deployment frequency, story points completed, defect count, customer NPS",
+        "Lead time for changes, MTTR, sprint goal success rate, escaped defects"
+      ],
+      "answer": 0,
+      "explanation": "DORA is deployment frequency, lead time for changes, change failure rate, and MTTR. The first two measure speed/throughput; the last two measure stability. Velocity, NPS, and sprint-goal success are not DORA metrics."
+    },
+    {
+      "subtopic": "NoEstimates",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "NoEstimates means a team stops planning and forecasting altogether.",
+      "answer": false,
+      "explanation": "NoEstimates means no per-item effort estimates, not no planning. Teams keep stories small and uniform and still forecast, using historical throughput and Monte Carlo instead of points."
+    },
+    {
+      "subtopic": "Goodhart's Law",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A manager sets 'velocity must increase every Sprint' as a goal. Per Goodhart's Law, what is the predictable result?",
+      "options": [
+        "The cheapest way to comply is to inflate estimates, so the number rises while actual delivery stays flat and the metric stops measuring anything real",
+        "Cycle time and throughput automatically improve because the team works harder",
+        "The team delivers more customer value because the target aligns incentives",
+        "Velocity becomes comparable across teams once everyone targets the same growth"
+      ],
+      "answer": 0,
+      "explanation": "When a measure becomes a target it ceases to be a good measure: the rational response is estimate inflation (same work, bigger numbers). Reality stays flat, trust erodes, and velocity loses meaning."
+    },
+    {
+      "subtopic": "Story points are team-local",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A manager proposes tying each developer's bonus to the share of story points they personally completed each Sprint. Which of the following are valid senior objections grounded in the reviewer?",
+      "options": [
+        "Story points are a team planning convention and explicitly must not be summed to an individual",
+        "It induces estimate inflation and incentivizes claiming points over collaborating — Goodhart's Law in action",
+        "It rewards avoiding hard or unsized work and hiding risk, undermining honest estimation",
+        "Points are a precise measure of individual productivity, so the scheme is statistically sound",
+        "It is fine as long as every developer uses the same reference story across all teams"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Points belong to the team's plan and must not be attributed to a person; making them a personal target triggers inflation, point-claiming, hard-work avoidance, and risk-hiding (Goodhart). Points are not a productivity measure, and reference stories are team-local, not a cross-team standard."
+    },
+    {
+      "subtopic": "Rising velocity diagnosis",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Velocity has climbed for several Sprints. What is the most reliable way to tell whether this reflects genuinely faster delivery rather than point inflation?",
+      "options": [
+        "Corroborate with measured flow metrics like cycle time and throughput, which come from real timestamps and are harder to game than points",
+        "Confirm the team hit its velocity target each Sprint, which proves the gains are real",
+        "Compare the team's velocity against a peer team that has a similar velocity",
+        "Check that the burndown line is descending faster than in earlier Sprints"
+      ],
+      "answer": 0,
+      "explanation": "Points can be inflated, so a rising velocity is ambiguous on its own. Cycle time and throughput are measured from timestamps and far harder to game; if they improved too, the speedup is real, if only the points grew it is inflation."
+    },
+    {
+      "subtopic": "Cross-ART normalized velocity",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Leadership wants a portfolio dashboard comparing delivery across multiple ARTs and asks for 'normalized velocity.' What is the senior recommendation?",
+      "options": [
+        "Decline to normalize velocity for comparison or ranking and instead report flow metrics, DORA, PI predictability, and outcome/OKR progress",
+        "Build a conversion factor so each ART's points map onto one shared velocity scale for ranking",
+        "Pick the highest-velocity ART as the baseline and grade the others against it",
+        "Average all ARTs' velocities into one portfolio velocity that leadership can target"
+      ],
+      "answer": 0,
+      "explanation": "Points are team-local, so any normalized-velocity comparison is invalid and Goodhart-prone. The right cross-ART signals are flow metrics, DORA, PI predictability (planned vs. achieved business value), and outcomes — harder to game and aligned to leadership's real question."
+    },
+    {
+      "subtopic": "Outcome vs output",
+      "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team's velocity and feature-shipping rate are both very high, yet the business is unhappy. Which statement best captures the underlying problem the reviewer warns about?",
+      "options": [
+        "High output does not imply outcome — you can have screaming velocity while building features nobody uses, so value (adoption, revenue, OKRs) must be measured separately",
+        "High velocity guarantees high value, so the dissatisfaction must be a reporting error",
+        "The team should raise velocity further until the business becomes satisfied",
+        "DORA metrics already capture customer value, so no additional outcome metric is needed"
+      ],
+      "answer": 0,
+      "explanation": "Output (velocity, features) is easy to count and game but does not imply outcome; you can ship a lot while creating no value. Outcome metrics (adoption, revenue, OKRs) measure value, and DORA measures delivery health — a different thing from product value."
+    }
+  ]
+}

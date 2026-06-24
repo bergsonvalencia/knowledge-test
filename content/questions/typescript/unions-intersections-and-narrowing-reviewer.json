@@ -1,0 +1,286 @@
+{
+  "topic": "typescript",
+  "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Union member access",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given a value of type `Bird | Fish`, which members can you access **without** narrowing?",
+      "options": [
+        "Only members present on every union member (the intersection of their member sets)",
+        "All members of both `Bird` and `Fish` (the combined member set)",
+        "Only members unique to `Bird`",
+        "No members at all until you cast the value"
+      ],
+      "answer": 0,
+      "explanation": "On a bare union the compiler only exposes members guaranteed on every branch, since at runtime the value could be either type. Accessing the combined set is what an intersection gives you, not a union."
+    },
+    {
+      "subtopic": "Intersection of conflicting primitives",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the type `string & number` evaluate to?",
+      "options": [
+        "`never`",
+        "`unknown`",
+        "`string | number`",
+        "`any`"
+      ],
+      "answer": 0,
+      "explanation": "No single value can be both a string and a number, so the intersection is empty — the bottom type `never`. `unknown` is the identity element of intersection, not the result of a conflicting one."
+    },
+    {
+      "subtopic": "Identity elements",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are the identity elements of union and intersection, respectively (the types that leave `T` unchanged)?",
+      "options": [
+        "`never` for union (`T | never` = `T`); `unknown` for intersection (`T & unknown` = `T`)",
+        "`unknown` for union; `never` for intersection",
+        "`any` for both",
+        "`null` for union; `undefined` for intersection"
+      ],
+      "answer": 0,
+      "explanation": "`T | never` collapses to `T` (never adds no new values), and `T & unknown` collapses to `T` (unknown adds no constraint). This swap is exactly why the `never`-based exhaustiveness pattern works."
+    },
+    {
+      "subtopic": "typeof null trap",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In JavaScript (and therefore for `typeof` narrowing), `typeof null` evaluates to `\"object\"`, so `typeof x === \"object\"` does **not** by itself exclude `null`.",
+      "answer": true,
+      "explanation": "`typeof null === \"object\"` is the classic trap; arrays also report `\"object\"`. You must add an explicit `x !== null` (and often `Array.isArray(x)`) check."
+    },
+    {
+      "subtopic": "Choosing a guard",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which built-in guard narrows a value to a class type such as `Date`, `Error`, or `RegExp` by checking its prototype chain?",
+      "options": [
+        "`instanceof`",
+        "`typeof`",
+        "`in`",
+        "A user-defined `x is T` predicate"
+      ],
+      "answer": 0,
+      "explanation": "`instanceof` narrows by prototype chain, ideal for classes and built-ins. `typeof` narrows primitives; `in` narrows by property presence; neither tests a constructor."
+    },
+    {
+      "subtopic": "Control-flow analysis fall-through",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the narrowed type of `value` at the point marked `(C)`?",
+      "code": "function f(value: string | number | undefined) {\n  if (value === undefined) return;            // (A)\n  if (typeof value === \"string\") {\n    value;                                    // (B)\n    return;\n  }\n  value;                                      // (C)\n}",
+      "lang": "typescript",
+      "options": [
+        "`number`",
+        "`string | number`",
+        "`string | number | undefined`",
+        "`undefined`"
+      ],
+      "answer": 0,
+      "explanation": "The first early return removes `undefined`; the second guard's branch returns for `string`, so the fall-through at (C) is whatever remains — `number`. Each guard peels one member off the union."
+    },
+    {
+      "subtopic": "Boolean discriminant",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For the `Result` type below, what happens with `return r.error.length` after the `if (r.ok) return r.value` guard?",
+      "code": "type Result =\n  | { ok: true; value: number }\n  | { ok: false; error: string };\n\nfunction unwrap(r: Result): number {\n  if (r.ok) return r.value;\n  return r.error.length;\n}",
+      "lang": "typescript",
+      "options": [
+        "It compiles: after the guard, `r` is narrowed to the `{ ok: false; error: string }` member",
+        "It errors: `error` is not accessible because `r` is still the full union",
+        "It errors: `ok` is a `boolean`, not a literal, so it can't discriminate",
+        "It compiles only if you add an explicit `as` cast on `r`"
+      ],
+      "answer": 0,
+      "explanation": "`ok: true | false` is itself a discriminated union. After `if (r.ok) return`, the complement narrows `r` to the `ok: false` member, so `r.error.length` is valid. Writing `r.value` there would instead error."
+    },
+    {
+      "subtopic": "Type predicate with filter",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the inferred type of `cleaned`?",
+      "code": "function isString(x: unknown): x is string {\n  return typeof x === \"string\";\n}\nconst raw: (string | number | null)[] = [\"a\", 1, null, \"b\"];\nconst cleaned = raw.filter(isString);",
+      "lang": "typescript",
+      "options": [
+        "`string[]`",
+        "`(string | number | null)[]`",
+        "`unknown[]`",
+        "`(string | null)[]`"
+      ],
+      "answer": 0,
+      "explanation": "`Array.prototype.filter` has an overload accepting a type predicate `(x: T) => x is S` and returning `S[]`. Because `isString` narrows to `string`, the element type is refined to `string`. A plain boolean-returning callback would leave the type unchanged."
+    },
+    {
+      "subtopic": "Truthiness falsy trap",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For `count: number | undefined`, you want a presence check that still treats `0` as valid data. Which condition is correct?",
+      "options": [
+        "`if (count !== undefined)` — `0` takes the THEN branch as a valid number",
+        "`if (count)` — `0` takes the THEN branch as a valid number",
+        "`if (!!count)` — coercion makes `0` truthy",
+        "`if (count || count === null)` — keeps `0` as present"
+      ],
+      "answer": 0,
+      "explanation": "`if (count)` (and `!!count`) sends `0` to the ELSE branch because `0` is falsy, silently treating real zero as absent. An explicit `count !== undefined` (or `count != null`) keeps `0` and `\"\"` as data."
+    },
+    {
+      "subtopic": "Assertion functions vs guards",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does an assertion function (`asserts x is T`) differ from a user-defined type guard (`x is T`) in terms of where narrowing applies?",
+      "options": [
+        "The assertion narrows `x` for the rest of the current scope after the call; the guard narrows only inside the `if` that calls it",
+        "Both narrow only inside the calling `if` block",
+        "The assertion narrows only inside the calling `if`; the guard narrows the rest of the scope",
+        "The assertion narrows globally for every reference to `x` in the file, including before the call"
+      ],
+      "answer": 0,
+      "explanation": "A guard narrows within its `if` branch only. An assertion function either returns or throws, so after the call the value is known to be `T` for the remainder of the scope — no surrounding `if` needed."
+    },
+    {
+      "subtopic": "catch variable typing",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Under TS strict mode (`useUnknownInCatchVariables`, on by default in TS 6.0 strict), what is the type of `e` in `catch (e)`, and why?",
+      "options": [
+        "`unknown`, because JavaScript can `throw` any value, so you must narrow before use",
+        "`any`, so you can immediately access `e.message`",
+        "`Error`, because almost everything thrown is an `Error`",
+        "`never`, because the catch only runs on failure"
+      ],
+      "answer": 0,
+      "explanation": "JS allows throwing any value (string, number, undefined), so the only sound assumption is `unknown`. You must narrow, e.g. `e instanceof Error`, before touching `.message`. Treating it as `any` reintroduces the unsafety the flag prevents."
+    },
+    {
+      "subtopic": "Equality narrows two variables",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Inside the `if (a === b)` branch, what are the narrowed types of `a` and `b`?",
+      "code": "function compare(a: string | number, b: string | boolean) {\n  if (a === b) {\n    a; // ?\n    b; // ?\n  }\n}",
+      "lang": "typescript",
+      "options": [
+        "Both `a` and `b` narrow to `string`",
+        "`a` stays `string | number`; `b` stays `string | boolean`",
+        "Both narrow to `string | number | boolean`",
+        "Both narrow to `never` because the unions don't fully overlap"
+      ],
+      "answer": 0,
+      "explanation": "Equality narrows two variables relative to each other to their common type. The only type both unions share is `string`, so inside the branch both `a` and `b` are `string`."
+    },
+    {
+      "subtopic": "Discriminated unions",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about discriminated (tagged) unions are correct? (Select all that apply.)",
+      "options": [
+        "The discriminant property must be a literal type (e.g. `\"loading\"`, `200`, `true`), not a general `string`/`number`",
+        "`switch (x.kind)` narrows the whole object `x`, not just `x.kind`, so each case sees that member's unique fields",
+        "They pair naturally with a `never` exhaustiveness check so adding a member breaks the build until handled",
+        "A general `string`-typed tag works just as well for distinguishing members"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The tag must be a distinct literal to discriminate; switching on it narrows the entire object; and the `never` exhaustiveness pattern makes a forgotten case a compile error. A general `string` tag can't distinguish members, so the last option is wrong."
+    },
+    {
+      "subtopic": "Built-in guards mapping",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which guard-to-job pairings are correct? (Select all that apply.)",
+      "options": [
+        "`typeof` — narrows primitives by their runtime type string",
+        "`in` — narrows a union by the presence of a property",
+        "`instanceof` — narrows plain object literals that match an interface",
+        "`instanceof` — narrows a value to a class/built-in via the prototype chain"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "`typeof` handles primitives, `in` handles property presence, and `instanceof` handles classes/built-ins by prototype chain. `instanceof` does nothing for plain interface shapes — interfaces have no runtime constructor."
+    },
+    {
+      "subtopic": "Intersection of conflicting object members",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the type of the `x` property in `type Conflict = { x: string } & { x: number }`?",
+      "options": [
+        "`string & number`, which reduces to `never` — the property is unusable",
+        "`string | number`, since either branch could supply it",
+        "`string`, because the first operand wins",
+        "`unknown`, because the two declarations conflict"
+      ],
+      "answer": 0,
+      "explanation": "For object intersections, overlapping property types are themselves intersected. `string & number` reduces to `never`, so you can never assign `Conflict.x` — a compile-time signal that the shapes clash."
+    },
+    {
+      "subtopic": "Exhaustiveness with never",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does adding a `triangle` member without a matching `case` make `default: return assertNever(s)` fail to compile?",
+      "code": "type Shape =\n  | { kind: \"circle\"; r: number }\n  | { kind: \"square\"; side: number }\n  | { kind: \"triangle\"; base: number; height: number };\n\nfunction assertNever(x: never): never { throw new Error(\"unhandled\"); }\n\nfunction area(s: Shape): number {\n  switch (s.kind) {\n    case \"circle\": return Math.PI * s.r ** 2;\n    case \"square\": return s.side ** 2;\n    default: return assertNever(s);\n  }\n}",
+      "lang": "typescript",
+      "options": [
+        "In `default`, the reachable type of `s` is the unhandled `triangle` member, which is not assignable to `assertNever`'s `never` parameter",
+        "`assertNever` can only be called once per file, and `area` already exhausted it",
+        "`switch` without a matching `case` is always a syntax error in strict mode",
+        "`s.kind` widens to `string` once three members exist, breaking narrowing"
+      ],
+      "answer": 0,
+      "explanation": "After handling circle and square, CFA leaves the triangle member as the reachable type in `default`. Passing a non-`never` value to a parameter typed `never` is an error, pointing exactly at the missing case."
+    },
+    {
+      "subtopic": "Narrowing reset by reassignment",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about how control-flow narrowing can be lost or limited are correct? (Select all that apply.)",
+      "options": [
+        "Reassigning a variable resets its narrowing to the declared type (or the assigned value's type)",
+        "`const` locals stay narrowed longer than `let`, because the compiler knows they can't be reassigned",
+        "A variable captured and possibly mutated by a later closure call is conservatively widened back inside the closure",
+        "Once narrowed, a `let` variable keeps that narrowed type for the rest of the function regardless of reassignment"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Reassignment resets narrowing; `const` retains narrowing longer than `let`; and closures that may mutate a captured variable cause conservative widening. The last option is false — a `let` reassignment discards the prior narrowing."
+    },
+    {
+      "subtopic": "User-defined guard trust model",
+      "source": "typescript/unions-intersections-and-narrowing-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "A user-defined type guard's predicate (`x is T`) is trusted by the compiler without verifying the function body, so a logically wrong implementation produces wrong narrowing with no runtime safety net.",
+      "answer": true,
+      "explanation": "The predicate is a promise the compiler trusts. If the boolean logic doesn't actually prove the asserted type, callers get an incorrect narrowed type and there is no runtime check to catch it — the body and asserted type must stay in lockstep."
+    }
+  ]
+}

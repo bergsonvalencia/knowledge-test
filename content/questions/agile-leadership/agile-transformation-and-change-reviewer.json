@@ -1,0 +1,282 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Transformation framing",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the single most useful reframe for an agile transformation ?",
+      "options": [
+        "It is a culture change to be grown and sustained, not a project you finish",
+        "It is a project with a fixed go-live date and a percent-complete dashboard",
+        "It is primarily a tooling rollout (Jira, boards, dashboards) that enables agility",
+        "It is a framework-selection decision between Scrum, Kanban, and SAFe"
+      ],
+      "answer": 0,
+      "explanation": "The throughline is that a transformation is a culture you grow and sustain, not a project with an end date. The fixed-date/dashboard option is exactly the failure mode the reviewer warns against; tooling and framework choice are the easy 20%."
+    },
+    {
+      "subtopic": "ADKAR sequence",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are the five ADKAR building blocks, in their correct order?",
+      "options": [
+        "Awareness, Desire, Knowledge, Ability, Reinforcement",
+        "Awareness, Knowledge, Desire, Ability, Reinforcement",
+        "Desire, Awareness, Ability, Knowledge, Reinforcement",
+        "Awareness, Desire, Ability, Knowledge, Reinforcement"
+      ],
+      "answer": 0,
+      "explanation": "ADKAR is Awareness, Desire, Knowledge, Ability, Reinforcement, and the order is strict. Knowledge (how to) precedes Ability (demonstrated practice), and Desire comes right after Awareness, which rules out the other orderings."
+    },
+    {
+      "subtopic": "Lewin model",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Lewin's three-phase model, which phase does the reviewer call the hardest, where you build readiness and challenge the status quo?",
+      "options": [
+        "Unfreeze",
+        "Change (Move/Transition)",
+        "Refreeze",
+        "Force-field analysis"
+      ],
+      "answer": 0,
+      "explanation": "Unfreeze is the hardest phase: it loosens the current equilibrium and creates the readiness Kotter calls urgency and ADKAR calls Awareness plus Desire. Change is the messy middle and Refreeze locks in the new normal; force-field analysis is a tool, not a phase."
+    },
+    {
+      "subtopic": "Satir change curve",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The Satir change curve's vital message is that performance gets worse before it gets better, and a change agent should announce this dip in advance.",
+      "answer": true,
+      "explanation": "Performance dips into the chaos trough before integration lifts it above the old baseline. Pre-committing to the dip is precisely what stops the panic revert when the inevitable drop arrives."
+    },
+    {
+      "subtopic": "Westrum typology",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Westrum's typology, which culture type does DORA/Accelerate research find statistically predictive of high software-delivery performance?",
+      "options": [
+        "Generative (performance-oriented)",
+        "Bureaucratic (rule-oriented)",
+        "Pathological (power-oriented)",
+        "Hierarchical (authority-oriented)"
+      ],
+      "answer": 0,
+      "explanation": "Accelerate found a generative culture (information actively shared, bad news welcomed, failure met with inquiry) predicts delivery performance. Bureaucratic and pathological are the lower-performing types, and 'hierarchical' is not one of Westrum's three categories."
+    },
+    {
+      "subtopic": "ADKAR diagnosis",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A manager fully understands why the org is going agile and could do the new behaviors, but privately does not want to lose their old control. Using ADKAR, where are they stuck and what is the right intervention?",
+      "options": [
+        "Stuck at Desire; work the personal stakes and involve them in shaping the change",
+        "Stuck at Knowledge; send them to more agile training",
+        "Stuck at Ability; give them hands-on coaching and time to practice",
+        "Stuck at Reinforcement; add recognition and accountability metrics"
+      ],
+      "answer": 0,
+      "explanation": "They have Awareness ('understand why') but not Desire ('and I'm willing'), so the first missing block is Desire. The reviewer stresses that more training (Knowledge) or coaching (Ability) is wasted on a Desire gap; you address it via personal stakes and co-creation."
+    },
+    {
+      "subtopic": "Velocity as a metric",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why should you avoid using velocity as a cross-team productivity metric to compare teams and push them to 'increase velocity'?",
+      "options": [
+        "It corrupts estimation and destroys psychological safety as teams inflate points and hide problems (Goodhart's Law)",
+        "Velocity cannot be measured reliably without a maturity score to normalize it",
+        "Velocity only works in Kanban, so it is meaningless in a Scrum transformation",
+        "It is the same as lead time, so it double-counts when added to the DORA keys"
+      ],
+      "answer": 0,
+      "explanation": "Velocity is an internal planning tool; weaponizing it as a productivity score is Goodhart's Law in action, corrupting estimation and destroying safety as teams inflate points and stop telling the truth. The other options misstate what velocity is and how it relates to other metrics."
+    },
+    {
+      "subtopic": "Middle-management squeeze",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Leadership mandated agile but middle managers are quietly blocking team autonomy. What does the reviewer identify as the most effective core of the fix?",
+      "options": [
+        "Give managers a new, valued enabler role and bring them into the coalition as co-owners, with executive air cover",
+        "Remove the managers from their positions since 'removing barriers' means removing people",
+        "Bypass the managers by having coaches work directly with teams until the managers comply",
+        "Tie the managers' bonuses to team velocity so they are motivated to deliver the change"
+      ],
+      "answer": 0,
+      "explanation": "The interview-gold answer recasts managers from task-assigners to enablers, involves them in designing the change, and secures executive backing so old controlling behavior is no longer rewarded. Removing them is a rare last resort, and bypassing or velocity-bonusing them makes the squeeze worse."
+    },
+    {
+      "subtopic": "Resistance as information",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The single most powerful antidote to resistance is involving the affected people in designing the change, because people support what they help build.",
+      "answer": true,
+      "explanation": "Co-creation is named as the single most powerful antidote: a change designed with the affected teams meets far less resistance than one imposed on them."
+    },
+    {
+      "subtopic": "Kotter sequencing",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In Kotter's 8-step model, what is the 'classic killer' that causes an otherwise-progressing change to snap back?",
+      "options": [
+        "Declaring victory too soon before the change is anchored",
+        "Building a guiding coalition that is too large and cross-functional",
+        "Generating short-term wins within the first 6-18 months",
+        "Communicating the vision through too many channels at once"
+      ],
+      "answer": 0,
+      "explanation": "Step 7 (sustain acceleration) warns that the classic killer is declaring victory too soon, when the change isn't anchored yet and reverts. Short-term wins and relentless multi-channel communication are recommended, not mistakes, and coalitions are meant to be cross-functional."
+    },
+    {
+      "subtopic": "DORA four keys",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are the DORA four key metrics named in the reviewer? (Select all that apply.)",
+      "options": [
+        "Deployment frequency",
+        "Lead time for changes",
+        "Change-failure rate",
+        "Time to restore service (MTTR)",
+        "Team velocity"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "The DORA four keys are deployment frequency, lead time for changes, change-failure rate, and time to restore service; the first two measure throughput and the last two stability. Velocity is explicitly rejected as a cross-team productivity metric, so it is not a DORA key."
+    },
+    {
+      "subtopic": "Transformation failure modes",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are described as standard agile-transformation failure modes in the reviewer? (Select all that apply.)",
+      "options": [
+        "Tooling and ceremony theater without behavior change",
+        "No leadership buy-in while leaders exempt themselves",
+        "Big-bang rollout with no slack to learn",
+        "Treating the transformation as a long-lived product with a backlog and vision",
+        "Building a guiding coalition with power and credibility"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Ceremony theater, no leadership buy-in, and a big-bang rollout with no slack are all listed failure modes. Treating the transformation as a product and building a credible coalition are the recommended practices, not failures."
+    },
+    {
+      "subtopic": "Maturity vs outcomes",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does the reviewer argue against tracking a transformation primarily with an 'agile maturity score' or 'percent of teams doing retros'?",
+      "options": [
+        "They measure compliance with rituals, not value; they are trivially gamed and can rise while real performance is flat",
+        "They are too expensive to compute compared to outcome metrics like lead time",
+        "They are proprietary to Prosci and cannot be used without a license",
+        "They only apply to bottom-up transformations, not top-down ones"
+      ],
+      "answer": 0,
+      "explanation": "Maturity scores measure ritual compliance rather than value, are easy to game, invite theater, and can climb while real performance stays flat (Goodhart's Law). Cost, licensing, and direction of the transformation are not the reasons given."
+    },
+    {
+      "subtopic": "Westrum messenger diagnostic",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The reviewer says the fastest single diagnostic of where an organization sits on the Westrum spectrum is to observe what?",
+      "options": [
+        "What happens to the messenger who brings bad news",
+        "How many teams have adopted story points and velocity",
+        "Whether the org has a documented agile maturity model",
+        "How quickly the PMO disbands after go-live"
+      ],
+      "answer": 0,
+      "explanation": "Watching one incident review reveals the culture: is bad news welcomed and learned from (generative), processed bureaucratically, or punished (pathological)? The other options measure ritual or structure, not how information and failure are handled."
+    },
+    {
+      "subtopic": "Satir chaos stage in code-like scenario",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The pseudocode below models a transformation's monthly performance. At the call site, what is the senior change-agent's correct interpretation and advice?",
+      "code": "// monthly performance index, baseline = 70\nperf = [70, 55, 30, 65, 90]\nmonth = 3            // 1-based\nif perf[month-1] < baseline:\n    decision = recommend()   // what should this return?",
+      "lang": "typescript",
+      "options": [
+        "It is the Chaos/dip stage; hold the line and increase support rather than revert, because Integration lifts performance above baseline next",
+        "The change has clearly failed; revert to the old way of working immediately to stop the loss",
+        "Performance is permanently lower; renegotiate the transformation's scope down to match the new ceiling",
+        "The dip proves the framework was wrong; switch frameworks and restart the rollout"
+      ],
+      "answer": 0,
+      "explanation": "Index 2 (value 30) is the Satir Chaos trough: old methods fail and new ones aren't mastered yet, so performance is below baseline before climbing to 90 (new, higher status quo). Reverting in the trough guarantees the org never reaches Integration, which is exactly the panic mistake to avoid."
+    },
+    {
+      "subtopic": "Kotter and ADKAR altitude",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A change program runs a textbook Kotter campaign (urgency, coalition, vision, communication) yet a specific team still won't move. What does the reviewer say is the right lens and why?",
+      "options": [
+        "Switch to ADKAR to diagnose the individual block the team is stuck at; a strong org campaign still fails if individuals are stuck personally",
+        "Add a ninth Kotter step, because eight steps were insufficient for this organization",
+        "Abandon Kotter entirely, since running two change models at once causes conflicts",
+        "Escalate to executives to mandate compliance, because the campaign proves resistance is irrational"
+      ],
+      "answer": 0,
+      "explanation": "Kotter mobilizes the system at the org level, but ADKAR diagnoses why a specific person or team won't move at the individual level. The two are complementary, not rivals; a brilliant org campaign can still fail if individuals are stuck at, say, Desire."
+    },
+    {
+      "subtopic": "Force-field analysis",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In Lewin's force-field analysis, the reviewer says you make the most durable progress primarily by doing what?",
+      "options": [
+        "Weakening the restraining forces (removing barriers) more than adding driving forces (pressure)",
+        "Maximizing driving forces so they overwhelm any restraining forces",
+        "Keeping driving and restraining forces in balance to preserve the equilibrium",
+        "Adding new restraining forces that block the old behavior"
+      ],
+      "answer": 0,
+      "explanation": "Force-field analysis progresses mainly by weakening restrainers (removing barriers) rather than just piling on pressure; removing barriers usually beats adding pressure. Simply maximizing drivers without reducing restrainers, or keeping forces balanced, does not move the equilibrium."
+    },
+    {
+      "subtopic": "Sustaining and anchoring",
+      "source": "agile-leadership/agile-transformation-and-change-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A high-performing agile team reverted six months after the external coaches left. Which change-theory diagnoses and prevention measures does the reviewer give? (Select all that apply.)",
+      "options": [
+        "It is Lewin's missing Refreeze, Kotter's 'declared victory too soon', and ADKAR's missing Reinforcement",
+        "Anchor the new way in hiring, onboarding, promotion criteria, reviews, and reward",
+        "Build internal capability (internal coaches, communities of practice, champions) so the change doesn't depend on a few people",
+        "Declare the transformation officially complete so the team stops over-investing in process",
+        "Replace inspect-and-adapt with a fixed annual change plan to add stability"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The reversion maps to a missing Refreeze, declaring victory too soon, and missing Reinforcement; prevention is anchoring in systems and building internal capability so it survives the coaches leaving. Declaring it complete is the very mistake that caused the snap-back, and inspect-and-adapt should continue, not be replaced."
+    }
+  ]
+}

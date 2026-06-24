@@ -1,0 +1,277 @@
+{
+  "topic": "angular",
+  "source": "angular/05-signals-and-reactivity.md",
+  "questions": [
+    {
+      "subtopic": "signal primitives",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement best describes a `computed()` signal?",
+      "options": [
+        "A read-only signal that is lazily evaluated and memoized, recomputing only after a tracked dependency changes",
+        "A writable signal whose value can be set with `set()` and `update()`",
+        "A side-effect runner that re-executes whenever a read signal changes",
+        "A signal that eagerly recomputes on every upstream write whether or not anyone reads it"
+      ],
+      "answer": 0,
+      "explanation": "`computed()` returns a read-only `Signal<T>` that is lazy (not evaluated until first read), memoized (cached until a dependency changes), and auto-tracked. `set`/`update` belong to `signal()` (writable), the side-effect runner is `effect()`, and computeds are pull-based — recomputed on read, never eagerly on every write."
+    },
+    {
+      "subtopic": "reading and writing signals",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `const count = signal(0);`, which call derives the new value from the previous one and writes it back?",
+      "options": [
+        "`count.update(n => n + 1)`",
+        "`count.set(count + 1)`",
+        "`count(count() + 1)`",
+        "`count.mutate(n => n + 1)`"
+      ],
+      "answer": 0,
+      "explanation": "`update(prev => next)` derives the next value from the current one. `set(v)` replaces the value (and `count + 1` is invalid — `count` is a function, not a number), calling `count(...)` only reads, and `mutate` is not part of the documented API here."
+    },
+    {
+      "subtopic": "effect injection context",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "An `effect()` must run in an injection context unless you explicitly pass it an `{ injector }`.",
+      "answer": true,
+      "explanation": "`effect()` requires an injection context (e.g. a constructor or field initializer) so it can tie its lifetime to a scope; the only escape hatch documented here is passing `{ injector }` explicitly."
+    },
+    {
+      "subtopic": "computed vs effect usage",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which task is the intended use of `effect()` rather than `computed()`?",
+      "options": [
+        "Syncing a value to `localStorage` whenever a signal changes",
+        "Deriving a `fullName` string from `firstName` and `lastName` signals",
+        "Producing a `doubled` value that the template reads",
+        "Caching an expensive derivation so the template re-reads it cheaply"
+      ],
+      "answer": 0,
+      "explanation": "`effect()` is for escaping reactivity — side effects like logging, syncing to `localStorage`, or driving a non-Angular widget. The other three are derived state that the template reads, which is exactly what `computed()` is for."
+    },
+    {
+      "subtopic": "RxJS Observable fundamentals",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "An RxJS Observable is lazy: its producer function does not run until something subscribes.",
+      "answer": true,
+      "explanation": "Observables are lazy and push-based — nothing happens until `subscribe()`, and for a cold Observable each subscriber triggers its own independent execution of the producer."
+    },
+    {
+      "subtopic": "untracked in effects",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Inside an `effect()`, why would you wrap a signal read in `untracked(() => mySignal())`?",
+      "options": [
+        "To read its current value without registering it as a dependency, so changes to it do not re-trigger the effect",
+        "To force the effect to re-run synchronously whenever that signal changes",
+        "To make the read return the previous value instead of the current one",
+        "To pause all dependency tracking permanently for the rest of the effect's life"
+      ],
+      "answer": 0,
+      "explanation": "`untracked(fn)` reads signals inside `fn` without creating dependency edges, so the effect can use that value without re-running when it changes. It does not force re-runs, return stale values, or permanently disable tracking — only the reads inside `fn` are untracked."
+    },
+    {
+      "subtopic": "effect cleanup",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the code below, when does the `clearInterval(id)` teardown run?",
+      "code": "effect((onCleanup) => {\n  const id = setInterval(() => console.log('tick', this.count()), 1000);\n  onCleanup(() => clearInterval(id));\n});",
+      "lang": "typescript",
+      "options": [
+        "Before each subsequent run of the effect and when the component is destroyed",
+        "Only once, when the component is destroyed",
+        "Immediately after `setInterval` is called, on the same run",
+        "Every 1000ms, each time the interval fires"
+      ],
+      "answer": 0,
+      "explanation": "The `onCleanup` callback runs before the next execution of the effect and on destroy — that is how it tears down the prior run's timer before establishing a new one. It is not limited to destroy-only, and it does not fire on the same run or on every interval tick."
+    },
+    {
+      "subtopic": "linkedSignal reset behavior",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `const selected = linkedSignal(() => shippingOptions()[0]);` print after the sequence below?",
+      "code": "const shippingOptions = signal(['Ground', 'Air', 'Sea']);\nconst selected = linkedSignal(() => shippingOptions()[0]);\nselected.set('Air');\nshippingOptions.set(['Express', 'Overnight']);\n// selected() === ?",
+      "lang": "typescript",
+      "options": [
+        "'Express'",
+        "'Air'",
+        "'Ground'",
+        "undefined"
+      ],
+      "answer": 0,
+      "explanation": "A `linkedSignal` is locally writable but resets to its computation whenever a tracked dependency changes. The local `set('Air')` is discarded once `shippingOptions` changes, so it re-derives `['Express','Overnight'][0]` = `'Express'`."
+    },
+    {
+      "subtopic": "resource params and abort",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When the reactive `params` of a `resource(...)` changes while a load is still in flight, what does Angular do?",
+      "options": [
+        "Aborts the in-flight request via `abortSignal` and re-runs the loader with the new params",
+        "Queues the new load and lets the in-flight request finish first",
+        "Ignores the new params until the current load resolves or errors",
+        "Runs both loaders concurrently and keeps whichever resolves last"
+      ],
+      "answer": 0,
+      "explanation": "A fresh `params` value aborts the previous request (via the `abortSignal` passed to the loader) and re-runs the loader. It does not queue, ignore, or run concurrently — abort-and-restart is the defined behavior."
+    },
+    {
+      "subtopic": "resource API naming history",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following correctly reflect the v20 option-name changes to the resource APIs? (Select all that apply.)",
+      "options": [
+        "`resource()` renamed its `request` option to `params`",
+        "`rxResource()` renamed its `loader` option to `stream`",
+        "`httpResource()` renamed its `map` option to `parse`",
+        "`resource()` renamed its `loader` option to `stream`",
+        "`rxResource()` renamed its `params` option back to `request`"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "In v20, `resource()` renamed `request` -> `params` (its loader stays `loader`), `rxResource()` renamed `request` -> `params` and `loader` -> `stream`, and `httpResource()` renamed `map` -> `parse`. `resource()` keeps `loader` (it is `rxResource` that uses `stream`), and the rename went `request` -> `params`, not the reverse."
+    },
+    {
+      "subtopic": "flattening operators",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For a typeahead search where only the latest query's results should ever be displayed, which flattening operator is the correct choice?",
+      "options": [
+        "`switchMap`, because it cancels the previous in-flight inner Observable when a new term arrives",
+        "`mergeMap`, because it runs all requests concurrently for speed",
+        "`concatMap`, because it queues requests and preserves emission order",
+        "`exhaustMap`, because it ignores new terms while a request is in flight"
+      ],
+      "answer": 0,
+      "explanation": "`switchMap` cancels the prior in-flight request when a new term arrives, so stale responses never reach the subscriber — ideal for search. `mergeMap` would race and can deliver stale results, `concatMap` queues (slow, still delivers stale), and `exhaustMap` would drop newer terms while one runs."
+    },
+    {
+      "subtopic": "async pipe behavior",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Angular's `async` pipe are correct? (Select all that apply.)",
+      "options": [
+        "It unsubscribes automatically when the host view is destroyed",
+        "It calls `markForCheck()` on each emission, so `OnPush` and zoneless components re-render",
+        "It returns `null` until the first value is emitted",
+        "A single `| async` binding shares one subscription across every `| async` of the same source in the template",
+        "It only works with Observables and cannot unwrap a Promise"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The async pipe auto-unsubscribes on view destroy, marks for check per emission (enabling OnPush/zoneless re-render), and returns `null` until the first emission. Each `| async` is an independent subscription — three on a cold HTTP source means three requests — and it unwraps both Observables and Promises."
+    },
+    {
+      "subtopic": "subscription leaks",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which of these is the genuine memory-leak risk when subscribed manually without teardown?",
+      "options": [
+        "`valueChanges` on a reactive form control, because it never completes on its own",
+        "A single `HttpClient.get()` request, because it emits forever",
+        "A `forkJoin` of two HTTP requests, because it replays old values",
+        "A `computed()` signal, because effects keep it alive after destroy"
+      ],
+      "answer": 0,
+      "explanation": "Streams like `valueChanges`, `interval`, `fromEvent`, `Router.events`, and any `Subject` never complete, so a manual subscription leaks. A single `HttpClient` request emits once then completes (so it technically doesn't leak), `forkJoin` completes after all sources complete, and `computed` is not an Observable subscription at all."
+    },
+    {
+      "subtopic": "toSignal initialization",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You bridge an `HttpClient.get()` Observable into a signal with `toSignal()`. Which option is appropriate, and why?",
+      "options": [
+        "Use `initialValue`, because an HTTP request is asynchronous and does not emit synchronously",
+        "Use `requireSync: true`, because `HttpClient` always emits before the first read",
+        "Pass neither; `toSignal` defaults to `null` for HTTP sources",
+        "Use `requireSync: true` together with `initialValue` for safety"
+      ],
+      "answer": 0,
+      "explanation": "An `HttpClient` request is asynchronous, so `requireSync: true` (which demands a synchronous first emission, as a `BehaviorSubject` provides) would throw. Use `initialValue` to define the pre-emission value; without any option `toSignal` returns `undefined`, not `null`."
+    },
+    {
+      "subtopic": "signals vs RxJS glitch-free derivation",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two source values change together inside one synchronous burst, and a derived value depends on both. What real correctness difference exists between `combineLatest` and a signal `computed`?",
+      "options": [
+        "`combineLatest` can emit an intermediate combination with one source already updated and one stale, while `computed` recomputes once, never showing an inconsistent state",
+        "`computed` emits an intermediate value first, while `combineLatest` is glitch-free by design",
+        "Both are glitch-free, so there is no observable difference",
+        "`combineLatest` recomputes lazily on read, while `computed` recomputes eagerly on every write"
+      ],
+      "answer": 0,
+      "explanation": "`combineLatest` can emit intermediate combinations during a synchronous burst (one updated input, one stale), whereas a signal `computed` is glitch-free and recomputes once with consistent inputs. This is a real correctness edge for derived state, and `computed` is the lazy/pull-based one, not the eager one."
+    },
+    {
+      "subtopic": "writing signals in effects",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Since v19, writing to a signal from inside an `effect()` is allowed by default, and the old `allowSignalWrites` option became a deprecated no-op rather than being removed.",
+      "answer": true,
+      "explanation": "Since v19, signal writes in effects are allowed by default; `allowSignalWrites` was deprecated and made a no-op (not removed). The guidance still prefers `computed`/`linkedSignal` over writing one signal from an effect to mirror another, but the write itself is permitted."
+    },
+    {
+      "subtopic": "toObservable scheduling",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A signal is updated several times synchronously, then `toObservable(sig)` is subscribed. What does the subscriber observe for that burst?",
+      "options": [
+        "Only the final value, because `toObservable` emits on signal stabilization via a scheduled effect",
+        "Each intermediate value in order, because it emits synchronously on every write",
+        "Nothing, because `toObservable` requires `requireSync` to emit",
+        "Only the first value, because the effect captures the initial state"
+      ],
+      "answer": 0,
+      "explanation": "`toObservable` propagates values using an `effect`, which is scheduled rather than synchronous, so it emits on stabilization — rapid synchronous updates collapse to the final value. It does not emit each intermediate, does not need `requireSync`, and does not freeze on the first value."
+    },
+    {
+      "subtopic": "httpResource constraints",
+      "source": "angular/05-signals-and-reactivity.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `httpResource` are correct? (Select all that apply.)",
+      "options": [
+        "Its request must be reactive (a function); a bare string literal is not accepted",
+        "A URL function issues a GET, and a request function allows any method",
+        "The docs advise against using it for POST/PUT mutations",
+        "It returns a raw `Observable` that you must subscribe to manually",
+        "It cannot expose HTTP-specific data like response headers or status code"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "`httpResource` requires a reactive request function (a bare string is rejected), a URL function does a GET while a request function allows any method, and the docs advise against POST/PUT (it is read-oriented). It exposes the response as signals — not a raw Observable — and surfaces HTTP-specific signals like `headers`, `statusCode`, and `progress`."
+    }
+  ]
+}

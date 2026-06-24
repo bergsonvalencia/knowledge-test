@@ -1,0 +1,208 @@
+{
+  "topic": "ai",
+  "source": "ai/ai-ml-glossary-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "AI/ML/DL hierarchy",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How do the terms AI, machine learning, and deep learning relate to one another?",
+      "options": [
+        "They are nested subsets: deep learning is part of machine learning, which is part of AI",
+        "They are three independent fields that occasionally overlap",
+        "Machine learning is the broadest umbrella, with AI and deep learning as subfields of it",
+        "Deep learning is the umbrella, with AI and machine learning as two of its branches"
+      ],
+      "answer": 0,
+      "explanation": "AI is the outermost umbrella, machine learning is the subset that learns from data, and deep learning is the subset of ML using many-layer neural networks. The other options invert or break this strict nesting."
+    },
+    {
+      "subtopic": "Parameter vs hyperparameter",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes a **parameter** from a **hyperparameter**?",
+      "options": [
+        "A parameter is learned from data by the optimizer; a hyperparameter is set by you before training",
+        "A parameter is set by you before training; a hyperparameter is learned by the optimizer",
+        "Both are learned by gradient descent, but parameters change faster",
+        "A hyperparameter is internal to the model, while a parameter governs the training process"
+      ],
+      "answer": 0,
+      "explanation": "Parameters (weights and biases) are learned from data; hyperparameters (learning rate, tree depth, batch size) are chosen before training. The clean tell is that gradient descent updates parameters but never hyperparameters."
+    },
+    {
+      "subtopic": "Accuracy on imbalanced data",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "On a dataset where 99% of cases are negative, a model that always predicts \"negative\" achieves about 99% accuracy yet may be useless, which is exactly when you switch to metrics like precision, recall, or F1.",
+      "answer": true,
+      "explanation": "Accuracy lies on imbalanced data: the majority-class baseline scores 99% while catching none of the rare class. Precision, recall, and F1 expose the rare-class performance that accuracy hides."
+    },
+    {
+      "subtopic": "Linear vs logistic regression",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Despite its name, **logistic regression** is fundamentally what kind of model?",
+      "options": [
+        "A classifier that outputs a probability via the sigmoid function",
+        "A regression model that predicts an unbounded continuous number",
+        "An unsupervised clustering algorithm",
+        "A dimensionality-reduction technique"
+      ],
+      "answer": 0,
+      "explanation": "Logistic regression passes a weighted sum through the sigmoid to produce a probability in [0, 1], making it a classifier. Linear regression is the one that predicts an unbounded continuous number."
+    },
+    {
+      "subtopic": "Training vs inference",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "During inference, the model runs only a forward pass with its parameters frozen, whereas training runs both forward and backward passes and updates the parameters.",
+      "answer": true,
+      "explanation": "Inference is the exam: parameters are fixed and you only do the forward pass. Training is the classroom: forward and backward passes update the parameters."
+    },
+    {
+      "subtopic": "Data leakage vs overfitting",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You compute feature scaling statistics (mean and standard deviation) over the entire dataset and then split into train and test. Your test accuracy is suspiciously high. What happened, and why is it worse than ordinary overfitting?",
+      "options": [
+        "Data leakage: test-set information contaminated preprocessing, inflating even the held-out metrics",
+        "Overfitting: the model memorized the training data, so only the training metric is inflated",
+        "Underfitting: the scaler was too simple to capture the data, so all metrics are deflated",
+        "Concept drift: the input-to-output relationship changed between train and test"
+      ],
+      "answer": 0,
+      "explanation": "Scaling with statistics from the whole dataset leaks test information into training. Unlike overfitting (which inflates only training performance), leakage inflates every metric including held-out ones, so the model collapses in production. The fix is to fit the scaler on the training split only."
+    },
+    {
+      "subtopic": "Bagging vs boosting",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which contrast between a **random forest** and **gradient boosting** is correct?",
+      "options": [
+        "Random forest trains trees independently in parallel (bagging, reduces variance); gradient boosting trains trees sequentially to correct prior errors (reduces bias)",
+        "Random forest trains trees sequentially to fix errors; gradient boosting trains independent trees in parallel",
+        "Both train trees sequentially, but random forest reduces bias and boosting reduces variance",
+        "Both train trees in parallel, differing only in how they sample features"
+      ],
+      "answer": 0,
+      "explanation": "Random forest is bagging: independent trees on bootstrap samples, averaged, reducing variance. Gradient boosting is sequential: each tree corrects the running residuals, reducing bias. The training strategies are opposite."
+    },
+    {
+      "subtopic": "L1 vs L2 regularization",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the headline difference in the weights produced by **L1 (Lasso)** versus **L2 (Ridge)** regularization?",
+      "options": [
+        "L1 drives some weights exactly to zero (sparse, doing feature selection); L2 shrinks weights smoothly toward zero but keeps them nonzero",
+        "L1 keeps all weights small but nonzero; L2 drives some weights exactly to zero",
+        "Both produce sparse weights, but L1 converges faster",
+        "L1 increases weight magnitudes while L2 decreases them"
+      ],
+      "answer": 0,
+      "explanation": "L1 penalizes the sum of absolute values and tends to zero out weights, performing feature selection; L2 penalizes squared weights and shrinks them smoothly without eliminating them. The sparsity of L1 is the defining distinction."
+    },
+    {
+      "subtopic": "Self-supervised learning",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does an LLM learn from a massive corpus of unlabeled text during pretraining?",
+      "options": [
+        "Self-supervised learning: the model hides the next token and trains to predict it, so the text supplies its own labels",
+        "Unsupervised clustering: it groups similar sentences together with no prediction target at all",
+        "Supervised learning: humans label the correct next token for every position in the corpus",
+        "Reinforcement learning: it receives a reward for every grammatically correct sentence it produces"
+      ],
+      "answer": 0,
+      "explanation": "Self-supervised learning generates labels from the input itself: predicting the hidden next token turns unlabeled text into a supervised next-token problem. It differs from unsupervised learning (no prediction target) and from human-labeled supervised learning."
+    },
+    {
+      "subtopic": "Fine-tuning vs prompting vs RAG",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about **fine-tuning**, **prompting/in-context learning**, and **RAG** are correct? (Select all that apply.)",
+      "options": [
+        "Fine-tuning updates the model's weights and the change persists across future calls",
+        "Prompting and in-context learning change only the input text and leave the weights frozen",
+        "RAG retrieves external documents and inserts them into the prompt at query time without changing weights",
+        "RAG permanently bakes the retrieved knowledge into the model's weights",
+        "In-context learning permanently updates the model so it remembers the examples in the next conversation"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Fine-tuning durably changes weights; prompting and RAG leave weights frozen and act per-request (RAG by inserting retrieved text into the prompt). Options 4 and 5 are wrong: RAG does not modify weights, and in-context learning vanishes after the prompt."
+    },
+    {
+      "subtopic": "Temperature vs top-p/top-k",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does the **temperature** setting differ in mechanism from **top-p / top-k** sampling when controlling an LLM's randomness?",
+      "options": [
+        "Temperature rescales the sharpness of the whole probability distribution; top-p/top-k truncate it to only the most likely tokens",
+        "Temperature truncates the distribution to the top tokens; top-p/top-k rescale the whole distribution",
+        "Temperature changes the model's weights; top-p/top-k change only the prompt",
+        "All three are identical knobs with different default values"
+      ],
+      "answer": 0,
+      "explanation": "Temperature scales the entire distribution's sharpness before sampling, while top-p/top-k cut the distribution down to the most probable tokens. They both affect randomness but by different mechanisms and are often combined."
+    },
+    {
+      "subtopic": "Softmax computation",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the logits below, which property must the resulting `softmax(z)` output satisfy?",
+      "code": "logits z = [2.0, 1.0, 0.1]\n# softmax exponentiates each score and divides by the sum of all exponentials",
+      "lang": "python",
+      "options": [
+        "All outputs are positive and sum to exactly 1, with the largest logit getting the largest probability",
+        "Each output is independently squashed into [0, 1] but the outputs need not sum to 1",
+        "The outputs preserve the original logit values, just shifted to be positive",
+        "The outputs sum to the number of classes (here, 3)"
+      ],
+      "answer": 0,
+      "explanation": "Softmax produces a probability distribution: positive values summing to 1, with the top logit getting the highest probability (here roughly 0.659, 0.242, 0.099). Independent [0, 1] squashing that need not sum to 1 describes applying sigmoid per score, not softmax."
+    },
+    {
+      "subtopic": "Vanishing gradients & ReLU",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A deep network's early layers barely learn while later layers train fine. This is the vanishing gradient problem. Which of the following are valid contributors or fixes mentioned in the reviewer? (Select all that apply.)",
+      "options": [
+        "Saturating activations like sigmoid squash gradients, contributing to the problem",
+        "Replacing sigmoid/tanh with ReLU helps because ReLU's gradient is 1 for positive inputs",
+        "Residual (skip) connections and normalization help the gradient propagate through many layers",
+        "Gradient clipping is the primary fix for vanishing gradients",
+        "Vanishing gradients only occur in shallow networks with a single hidden layer"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Saturating activations and multiplying many small numbers through deep stacks drive gradients toward zero; ReLU, residual connections, and normalization address it. Gradient clipping targets the opposite failure (exploding gradients), and vanishing gradients are a deep-network problem, not a single-hidden-layer one."
+    },
+    {
+      "subtopic": "Dropout at inference",
+      "source": "ai/ai-ml-glossary-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A neural network behaves correctly during training but gives noisy, non-deterministic predictions in production, with the output changing on identical inputs. Which bug best explains this?",
+      "options": [
+        "Dropout was left active at inference, randomly zeroing neurons instead of using the full network",
+        "The learning rate was set too high, so the model never converged",
+        "L2 regularization was applied at inference instead of training",
+        "The validation set overlapped with the training set, causing data leakage"
+      ],
+      "answer": 0,
+      "explanation": "Dropout should be active only during training; the full network (with scaling) is used at inference. Leaving dropout on adds random noise to predictions, making identical inputs yield different outputs. The other options would not produce per-call randomness on the same input."
+    }
+  ]
+}

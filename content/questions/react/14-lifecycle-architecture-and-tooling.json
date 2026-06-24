@@ -1,0 +1,283 @@
+{
+  "topic": "react",
+  "source": "react/14-lifecycle-architecture-and-tooling.md",
+  "questions": [
+    {
+      "subtopic": "Effect dependency arrays",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the difference between omitting the dependency array of a `useEffect` entirely and passing an empty array `[]`?",
+      "options": [
+        "Omitting the array runs the effect after every render; `[]` runs the setup only on mount (and cleanup on unmount).",
+        "Omitting the array runs the effect once on mount; `[]` runs it after every render.",
+        "Both forms behave identically; the empty array is only a lint convention.",
+        "Omitting the array skips the effect entirely; `[]` runs it on every render."
+      ],
+      "answer": 0,
+      "explanation": "No deps array means the effect runs after every render; `[]` means it runs setup only once on mount and cleans up on unmount. The other options invert or conflate these behaviors."
+    },
+    {
+      "subtopic": "Mapping class methods to hooks",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which hook construct is the equivalent of the class lifecycle method `componentWillUnmount`?",
+      "options": [
+        "The cleanup function returned from a `useEffect` setup",
+        "A `useEffect` with `[]` dependencies",
+        "`useState` with a lazy initializer",
+        "Computing a value during render instead of storing it"
+      ],
+      "answer": 0,
+      "explanation": "`componentWillUnmount` maps to the cleanup function `return () => {}` inside `useEffect`, which runs on unmount (and before each re-sync). `useEffect(setup, [])` corresponds to `componentDidMount`, not unmount."
+    },
+    {
+      "subtopic": "Dependency comparison",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When deciding whether a listed dependency has changed between renders, what comparison does React use?",
+      "options": [
+        "`Object.is`",
+        "Deep structural equality",
+        "The `==` loose-equality operator",
+        "JSON serialization equality"
+      ],
+      "answer": 0,
+      "explanation": "React compares each dependency with `Object.is`. It does not perform deep equality, so a new object/array literal with the same contents is treated as changed."
+    },
+    {
+      "subtopic": "Styling options",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which styling approach gives locally-scoped, hashed class names with no runtime cost, and is described as the common scoped default?",
+      "options": [
+        "CSS Modules (`*.module.css`)",
+        "CSS-in-JS (styled-components / Emotion)",
+        "Inline `style` objects",
+        "Global CSS (`import \"./app.css\"`)"
+      ],
+      "answer": 0,
+      "explanation": "CSS Modules produce locally-scoped hashed class names at build time with no runtime cost, the common scoped default. CSS-in-JS is scoped but adds a runtime; global CSS shares one flat namespace; inline styles are element-only."
+    },
+    {
+      "subtopic": "Project structure",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "React ships with a built-in router, data-fetching layer, and global store, so most apps do not need external libraries for these concerns.",
+      "answer": false,
+      "explanation": "React solves the view, not the app: it has no built-in router, data layer, or global store. You reach for focused libraries (React Router, TanStack Query, Redux Toolkit/Zustand) or a framework like Next.js."
+    },
+    {
+      "subtopic": "Effect lifecycle phases",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When a listed dependency of a `useEffect` changes on an update (re-render), in what order does React run the effect's work?",
+      "options": [
+        "Cleanup of the previous run first, then setup again",
+        "Setup again first, then cleanup of the previous run",
+        "Only setup; cleanup runs exclusively on unmount",
+        "Only cleanup; setup runs exclusively on mount"
+      ],
+      "answer": 0,
+      "explanation": "On an update where a dependency changed, React runs the previous run's cleanup first, then re-runs setup. Cleanup is not limited to unmount, and setup is not limited to mount."
+    },
+    {
+      "subtopic": "ChatRoom effect re-sync",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this component (StrictMode off), if `roomId` changes from \"general\" to \"random\", what happens?",
+      "code": "function ChatRoom({ roomId }) {\n  useEffect(() => {\n    const conn = createConnection(roomId);\n    conn.connect();\n    return () => conn.disconnect();\n  }, [roomId]);\n  return <h1>Welcome to {roomId}</h1>;\n}",
+      "lang": "tsx",
+      "options": [
+        "The old connection is disconnected (cleanup), then a new connection to \"random\" is created and connected.",
+        "A new connection to \"random\" is created and connected, but the old one is never disconnected.",
+        "Nothing happens because `roomId` is a prop, not state.",
+        "The effect runs only its cleanup, leaving no active connection."
+      ],
+      "answer": 0,
+      "explanation": "Because `roomId` is in the dependency array, the change triggers a re-sync: cleanup disconnects the old connection, then setup connects to the new room. Effects re-run for changed props, not only state."
+    },
+    {
+      "subtopic": "Minimal state — derived data",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the `Cart` example, why is `total = items.reduce(...)` computed during render instead of being stored with `useState`?",
+      "code": "function Cart({ items }) {\n  const [coupon, setCoupon] = useState(false);\n  const total = items.reduce((s, i) => s + i.price, 0);\n  const final = coupon ? total * 0.9 : total;\n  return <p>{final}</p>;\n}",
+      "lang": "tsx",
+      "options": [
+        "It is derivable from existing props/state, so storing it would risk the two copies drifting out of sync.",
+        "`useState` cannot hold numeric values like a running total.",
+        "Reducing the array inside `useState` would cause an infinite render loop.",
+        "Derived values must always live in a parent component, never the one that displays them."
+      ],
+      "answer": 0,
+      "explanation": "`total` can be computed from `items`, so it is derived, not state; storing derivable data risks the stored copy drifting out of sync with its source. `useState` can hold numbers, and deriving during render does not require a parent."
+    },
+    {
+      "subtopic": "Thinking in React — state location",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the Thinking in React method, where should a piece of state live?",
+      "options": [
+        "In the closest common parent of all components that read or write it (or above it).",
+        "In the root component, so any component can access it without lifting.",
+        "In the leaf component that displays it, to keep rendering local.",
+        "In a global store, since local state cannot be shared between siblings."
+      ],
+      "answer": 0,
+      "explanation": "Step 4 says to place each piece of state in the closest common parent of all components that read or write it. Defaulting everything to the root or a global store contradicts keeping state as local as possible; leaf placement fails when siblings must share it."
+    },
+    {
+      "subtopic": "Inverse data flow",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does a child component cause an update to state that lives in its parent?",
+      "options": [
+        "The parent passes a callback prop down; the child invokes it on an event to update state at the owner.",
+        "The child mutates the parent's state object directly through a shared reference.",
+        "The child calls the parent's `useState` setter, which it imports from the parent module.",
+        "The child dispatches a synthetic DOM event that React routes to the parent automatically."
+      ],
+      "answer": 0,
+      "explanation": "Step 5, inverse data flow: children can't write parent state directly, so the parent passes callback props (e.g. `onChange`) that the child calls on events to update state at the owner. Children do not mutate parent state or import setters directly."
+    },
+    {
+      "subtopic": "StrictMode behavior",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about React's `StrictMode` are correct? (Select all that apply.)",
+      "options": [
+        "It double-invokes render, effects, and reducers/state-updaters in development.",
+        "Immediately after initial mount it runs each effect as setup → cleanup → setup to simulate a remount.",
+        "It is dev-only and has zero behavior in production.",
+        "It renders a visible wrapper element around its children.",
+        "It permanently double-runs effects in production to harden against missing cleanup."
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "StrictMode double-invokes render, effects, and updaters in development, simulates an instant remount (setup→cleanup→setup) after mount, and is dev-only with no production behavior. It renders no UI, and the double-invocation does not happen in production."
+    },
+    {
+      "subtopic": "Tooling — ESLint hooks rules",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which checks does `eslint-plugin-react-hooks` enforce? (Select all that apply.)",
+      "options": [
+        "Only call Hooks at the top level of a component or custom hook.",
+        "Only call Hooks from React functions (components or custom hooks).",
+        "The `exhaustive-deps` rule flagging missing or stale dependencies in `useEffect`/`useCallback`/`useMemo`.",
+        "That every component is wrapped in `React.memo` to prevent re-renders.",
+        "That all CSS class names are locally scoped via CSS Modules."
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The plugin enforces the Rules of Hooks (top-level only, from React functions only) plus exhaustive-deps for hook dependency arrays. Wrapping components in `React.memo` and CSS scoping are unrelated to this plugin."
+    },
+    {
+      "subtopic": "TypeScript — useState generic",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When should you pass an explicit type parameter to `useState<T>()` rather than relying on inference?",
+      "options": [
+        "When the initial value is too narrow for the eventual state, e.g. `useState<User | null>(null)`.",
+        "Always, because `useState` cannot infer any type from its initial value.",
+        "Only when the state holds a primitive such as a `string` or `number`.",
+        "Never, because the generic parameter on `useState` is ignored at runtime."
+      ],
+      "answer": 0,
+      "explanation": "`useState` usually infers `T` from the initial value; you supply the generic when that value is too narrow, e.g. `useState<User | null>(null)` so the type isn't fixed to `null`. Inference works for primitives, so an explicit type is not required there."
+    },
+    {
+      "subtopic": "Vite tooling",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Create React App is deprecated, and react.dev now points new projects toward Vite or a framework.",
+      "answer": true,
+      "explanation": "The reviewer states CRA is deprecated and react.dev now points to Vite (native-ESM dev server, fast HMR, Rollup production build) or a framework."
+    },
+    {
+      "subtopic": "StrictMode effect double-invoke",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In development with `StrictMode` enabled, a `useEffect` with `[]` deps creates a WebSocket on setup but its cleanup never closes it. What symptom does StrictMode surface that production would hide?",
+      "options": [
+        "After the initial mount the effect runs setup → cleanup → setup, so a leaked second connection (or unbalanced setup) becomes visible immediately.",
+        "The component fails to mount at all until the cleanup function is added.",
+        "React throws a compile-time error refusing to render the component.",
+        "The effect silently runs only once, exactly as it would in production."
+      ],
+      "answer": 0,
+      "explanation": "StrictMode simulates an instant remount (setup → cleanup → setup) right after mount, so a missing/incomplete cleanup leaves a leaked connection or unbalanced state that is visible in dev but not in production. It does not block mounting or throw a compile error."
+    },
+    {
+      "subtopic": "getDerivedStateFromProps replacement",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The class method `getDerivedStateFromProps` maps to which modern approach, and why is the naive alternative discouraged?",
+      "options": [
+        "Compute the value directly from props during render; mirroring props into state risks the two copies drifting out of sync.",
+        "Use a `useEffect` with the prop in its deps to copy it into state, which keeps both copies authoritative.",
+        "Store the prop in a `useRef` on every render so the mirrored value persists across renders.",
+        "Wrap the component in `React.memo` so React derives the state for you automatically."
+      ],
+      "answer": 0,
+      "explanation": "Derive from props directly during render; avoid mirroring props into state, which creates two copies that can drift. Copying a prop into state via an effect is exactly the anti-pattern being avoided, and `React.memo`/`useRef` do not derive state."
+    },
+    {
+      "subtopic": "Inline style trade-offs",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which are genuine limitations or costs of using inline `style` objects in React? (Select all that apply.)",
+      "options": [
+        "They cannot express pseudo-classes (`:hover`) or media queries.",
+        "A new style object is allocated on every render.",
+        "They are best reserved for one-off truly dynamic values.",
+        "They are statically scoped at build time with no runtime cost.",
+        "Hashed class names prevent collisions across the app."
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Inline styles can't do pseudo-classes/media queries, create a new object each render, and suit one-off dynamic values. Build-time scoping with no runtime cost and hashed collision-free class names describe CSS Modules, not inline styles."
+    },
+    {
+      "subtopic": "ref as a prop in React 19",
+      "source": "react/14-lifecycle-architecture-and-tooling.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How is passing a `ref` to a function component handled in React 19, and what is the status of `forwardRef`?",
+      "options": [
+        "Function components accept `ref` directly via props; `forwardRef` still works but is slated for deprecation in a future version.",
+        "`forwardRef` is mandatory for any function component that receives a `ref`, exactly as before.",
+        "`ref` is now passed through the dependency array of `useEffect` instead of as a prop.",
+        "Function components can never receive a `ref`; only class components can."
+      ],
+      "answer": 0,
+      "explanation": "In React 19 a function component accepts `ref` directly via props with no `forwardRef` needed; `forwardRef` still works but is slated for future deprecation. It is therefore no longer mandatory, and refs are not routed through effect deps."
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+{
+  "topic": "angular",
+  "source": "angular/06-change-detection-and-di.md",
+  "questions": [
+    {
+      "subtopic": "Zone.js role",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a classic zone-based Angular app, what is Zone.js's actual role in change detection?",
+      "options": [
+        "It compares each binding's current value to its previous value and patches the DOM",
+        "It monkey-patches async APIs and notifies `NgZone` that *some* task ran, triggering a CD pass",
+        "It marks only the components whose inputs changed as dirty",
+        "It schedules a separate CD pass for each component in parallel"
+      ],
+      "answer": 1,
+      "explanation": "Zone.js is the trigger, not the checker: it patches async APIs and fires `onMicrotaskEmpty` so Angular runs a top-down CD pass. The actual diffing of bindings is Angular's CD work, and Zone has no idea what changed."
+    },
+    {
+      "subtopic": "CD pass mechanics",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How does a single Angular change-detection pass traverse the component tree?",
+      "options": [
+        "Bottom-up, child before parent, asynchronously",
+        "Top-down, parent before child, synchronously",
+        "Only over components whose signals changed, in registration order",
+        "In two concurrent passes, one for inputs and one for outputs"
+      ],
+      "answer": 1,
+      "explanation": "A CD pass is top-down and synchronous: Angular checks each component once per pass, parent before child, comparing each template expression to its previous value. This is what enforces unidirectional data flow."
+    },
+    {
+      "subtopic": "OnPush default",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Per this reviewer, what changed about change-detection strategies in Angular v22?",
+      "options": [
+        "`OnPush` became the default, and the old always-check `Default` was renamed `ChangeDetectionStrategy.Eager`",
+        "`Default` became mandatory and `OnPush` was removed",
+        "`Eager` became the new default while `OnPush` was deprecated",
+        "All strategies were removed in favor of signals-only detection"
+      ],
+      "answer": 0,
+      "explanation": "Since v22 `OnPush` is the default; the former always-check `Default` strategy was renamed `Eager` (with `Default` kept as a deprecated alias). `OnPush` was not removed and `Eager` is not the default."
+    },
+    {
+      "subtopic": "OnPush dirty triggers",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following will cause an `OnPush` component to be checked in the next CD pass? Select all that apply.",
+      "options": [
+        "An `@Input()` receives a new reference (Angular compares by reference identity)",
+        "An event fires from the component or one of its descendants",
+        "An `async` pipe in its template emits a new value",
+        "An input object is mutated in place without changing its reference",
+        "An unrelated sibling component re-renders"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`OnPush` is dirtied by a new input reference, an event from itself/a descendant, an async-pipe emission, a signal read producing a new value, or `markForCheck()`. Mutating an object in place keeps the same reference (skipped), and a sibling re-rendering does not dirty this view."
+    },
+    {
+      "subtopic": "markForCheck vs detectChanges",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key difference between `ChangeDetectorRef.markForCheck()` and `ChangeDetectorRef.detectChanges()`?",
+      "options": [
+        "`markForCheck()` runs a synchronous pass now; `detectChanges()` defers to the next pass",
+        "Both run a synchronous pass immediately, but on different views",
+        "`markForCheck()` flags the view (and ancestors) dirty for the *next* pass; `detectChanges()` runs a synchronous pass *now* on that view",
+        "`markForCheck()` detaches the view; `detectChanges()` reattaches it"
+      ],
+      "answer": 2,
+      "explanation": "`markForCheck()` only marks the view and its ancestors dirty so they are checked on the next pass; `detectChanges()` synchronously runs a CD pass on that view (and its children) immediately. `detach()`/`reattach()` are the methods that remove/restore a view."
+    },
+    {
+      "subtopic": "ExpressionChanged error",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer sees `ExpressionChangedAfterItHasBeenCheckedError` (NG0100) only in development, never in production. What does this indicate?",
+      "options": [
+        "A production build accidentally removed the binding entirely",
+        "Dev mode runs a second verification pass and a binding's value changed between the two checks; production skips that pass so the bug is silently hidden",
+        "The error is purely cosmetic and the values are actually identical",
+        "Production uses a different change-detection strategy that re-evaluates bindings twice"
+      ],
+      "answer": 1,
+      "explanation": "NG0100 is a dev-mode-only guard: Angular runs a second verification pass and throws if a binding changed between the two, catching state mutated during rendering. Production skips the second pass, so the underlying problem is masked, not fixed."
+    },
+    {
+      "subtopic": "Signals under OnPush",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "When a signal read in an `OnPush` component's template produces a new value, the view updates without any explicit `markForCheck()` call.",
+      "answer": true,
+      "explanation": "Reading a signal in a template registers that view as a consumer; when the signal changes it marks exactly that view dirty (and its ancestors for the pass), so the view updates under `OnPush` and zoneless without `markForCheck()`."
+    },
+    {
+      "subtopic": "Zoneless notifiers",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Under `provideZonelessChangeDetection()`, which of these schedule a change-detection pass? Select all that apply.",
+      "options": [
+        "A signal read in a template changing value",
+        "`ChangeDetectorRef.markForCheck()` (including the async pipe calling it on emission)",
+        "A template or host event firing",
+        "Any `setTimeout` callback completing",
+        "`ComponentRef.setInput()`"
+      ],
+      "answer": [0, 1, 2, 4],
+      "explanation": "Zoneless relies on explicit notifiers: signal changes, `markForCheck()`, template/host events, and `setInput()`. Without Zone.js a bare `setTimeout` callback no longer triggers a pass unless it itself writes a signal or calls `markForCheck()`."
+    },
+    {
+      "subtopic": "Zoneless status",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to this reviewer, what is the correct way to state zoneless change detection's status?",
+      "options": [
+        "Experimental since v18 and still experimental today",
+        "Stable since v20.2 and the default for new apps in v21+",
+        "Stable since v18 and removed in v21",
+        "Default since v18 for all existing applications"
+      ],
+      "answer": 1,
+      "explanation": "Zoneless was experimental in v18, developer preview in v20, became stable in v20.2, and is the default for new apps in v21+. The reviewer stresses stating it as a range (stable v20.2; default v21+), not a single version."
+    },
+    {
+      "subtopic": "Zoneless breakage",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "After migrating to zoneless, a non-Angular library's callback mutates a component field but the UI no longer updates. What is the correct explanation and fix?",
+      "options": [
+        "Zoneless disables all callbacks; move the logic into `ngOnInit`",
+        "The callback ran in an unpatched context so no notifier fired; fix by writing a signal or calling `markForCheck()`",
+        "Zoneless requires `Default` strategy; switch the component off `OnPush`",
+        "The library must be wrapped in `runOutsideAngular()` to make it update"
+      ],
+      "answer": 1,
+      "explanation": "Without Zone.js, mutating state inside an unpatched callback no longer triggers a pass because nothing notified Angular. The fix is to drive the update through a notifier — write a signal or call `markForCheck()`. `runOutsideAngular()` would suppress, not enable, detection."
+    },
+    {
+      "subtopic": "Zoneless clock code",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In this zoneless component, why does the displayed count update every second even though `setInterval` is no longer zone-patched?",
+      "code": "@Component({\n  selector: 'app-clock',\n  template: `<p>Ticks: {{ ticks() }}</p>`,\n})\nexport class Clock {\n  ticks = signal(0);\n  constructor() {\n    setInterval(() => this.ticks.update(n => n + 1), 1000);\n  }\n}",
+      "lang": "typescript",
+      "options": [
+        "`setInterval` is still patched in zoneless mode for timers under one minute",
+        "The signal write inside the callback is itself a notifier that schedules a CD pass",
+        "The template's interpolation polls the signal on a browser animation frame",
+        "Angular falls back to Zone.js automatically when it detects a timer"
+      ],
+      "answer": 1,
+      "explanation": "Although `setInterval` is unpatched in zoneless, calling `ticks.update(...)` writes a signal, and a signal change is a notifier that schedules a CD pass and refreshes the view. Angular does not fall back to Zone.js."
+    },
+    {
+      "subtopic": "DI resolution order",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When `inject(Token)` runs at a component element, in what order does Angular search the injector hierarchy?",
+      "options": [
+        "EnvironmentInjector chain first (root -> platform), then the ElementInjector chain",
+        "Only the root injector; component `providers` are ignored",
+        "ElementInjector chain bottom-up (element through ancestor components), then cross into the EnvironmentInjector chain (route -> root -> platform)",
+        "Platform injector first, descending toward the requesting element"
+      ],
+      "answer": 2,
+      "explanation": "Resolution walks the ElementInjector chain bottom-up from the requesting element through ancestor components first; if unresolved it crosses into the EnvironmentInjector chain (route -> root -> platform). The first match wins and the search stops."
+    },
+    {
+      "subtopic": "Missing provider",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "If no provider for a requested token exists anywhere in the injector hierarchy, what happens?",
+      "options": [
+        "Angular silently injects `undefined`",
+        "The search reaches `NullInjector`, which throws `NG0201: No provider for X` unless the request is optional",
+        "Angular auto-creates a singleton in the root injector",
+        "The component is skipped during change detection"
+      ],
+      "answer": 1,
+      "explanation": "The injector chain terminates at `NullInjector`, which throws `NG0201: No provider for X`. Marking the request optional (`@Optional()` / `{ optional: true }`) returns `null` instead of throwing."
+    },
+    {
+      "subtopic": "Injectable scope code",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this service, what is required for `CartScopedState` to be injectable?",
+      "code": "import { Injectable } from '@angular/core';\n\n@Injectable() // NOT providedIn\nexport class CartScopedState {}",
+      "lang": "typescript",
+      "options": [
+        "Nothing — `@Injectable()` alone makes it an app-wide root singleton",
+        "It must be listed in a `providers` array (e.g. a component or route) to exist; otherwise injecting it throws NG0201",
+        "It must be re-decorated with `@Service()` or it cannot compile",
+        "It is automatically tree-shaken into the root injector on first injection"
+      ],
+      "answer": 1,
+      "explanation": "`@Injectable()` without `providedIn` does not register the class with any injector; it must appear in a `providers` array to exist. Injecting it where no provider is configured reaches `NullInjector` and throws NG0201."
+    },
+    {
+      "subtopic": "Service vs Injectable",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Per this reviewer, which statement about the Angular v22 `@Service()` decorator is correct?",
+      "options": [
+        "It is a lazily-created tree-shakable root singleton, and classes using it must use `inject()` — constructor parameters are a compile error",
+        "It always creates a new instance per component and cannot be a singleton",
+        "It requires an explicit `providedIn: 'root'` to be tree-shakable",
+        "It only supports constructor injection, not `inject()`"
+      ],
+      "answer": 0,
+      "explanation": "`@Service()` is the modern shorthand for a lazily-created, tree-shakable root singleton with no `providedIn`. Its classes must use `inject()`; constructor parameters are a compile error. (`autoProvided: false` opts out of root provisioning.)"
+    },
+    {
+      "subtopic": "Injection context",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer moves an `inject(HttpClient)` call from a field initializer into `ngOnInit` and now gets `NG0203`. Why, and what is the correct fix?",
+      "options": [
+        "`ngOnInit` runs before construction; move the call into the constructor's `super()`",
+        "`ngOnInit` is outside the injection context; inject in a field initializer (or constructor) and capture the reference, or re-enter via `runInInjectionContext`",
+        "`HttpClient` is not provided in root; add it to the component's `providers`",
+        "NG0203 means the token is optional; add `{ optional: true }` to silence it"
+      ],
+      "answer": 1,
+      "explanation": "`inject()` is only valid inside an injection context — constructor, field initializers, factories, `runInInjectionContext`, and functional guards/resolvers/interceptors. `ngOnInit` runs after construction, outside that window, so it throws NG0203. Capture the dependency in a field initializer or re-enter with `runInInjectionContext`."
+    },
+    {
+      "subtopic": "runInInjectionContext",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "`runInInjectionContext(injector, fn)` lets you legally call `inject()` inside `fn` even when `fn` is invoked from post-construction code such as an event handler.",
+      "answer": true,
+      "explanation": "`runInInjectionContext` re-enters an injection context on demand using a captured `Injector`/`EnvironmentInjector`, so `inject()` calls inside the callback are valid again even though the surrounding method runs outside the construction-time context."
+    },
+    {
+      "subtopic": "Provider recipes",
+      "source": "angular/06-change-detection-and-di.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the key behavioral difference between `{ provide: OldApi, useExisting: NewApi }` and `{ provide: OldApi, useClass: NewApi }`?",
+      "options": [
+        "`useExisting` creates a brand-new instance; `useClass` aliases to an existing one",
+        "`useExisting` aliases `OldApi` to the *same already-registered* `NewApi` instance; `useClass` instantiates a *separate* `NewApi` for `OldApi`",
+        "Both create a single shared instance; only the token name differs",
+        "`useExisting` requires `deps`; `useClass` does not"
+      ],
+      "answer": 1,
+      "explanation": "`useExisting` is an alias: resolving `OldApi` returns the same already-registered `NewApi` singleton, no new object. `useClass` constructs a separate instance for `OldApi`, so the two tokens would point at distinct objects."
+    }
+  ]
+}

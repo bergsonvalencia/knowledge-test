@@ -1,0 +1,270 @@
+{
+  "topic": "ai",
+  "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Feature types and encoding",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "You have a `color` column with values {red, green, blue} fed to a **linear** model. Which encoding is the appropriate default?",
+      "options": [
+        "One-hot encoding, one binary column per category",
+        "Label encoding to integers 0, 1, 2 in alphabetical order",
+        "Robust scaling of the integer codes",
+        "Replacing each category with its target mean directly"
+      ],
+      "answer": 0,
+      "explanation": "Color is nominal (no order), so one-hot is the default — it avoids inventing a fake ranking. Label/integer encoding would make a linear model believe blue > green > red, and direct target-mean encoding leaks the target unless done out-of-fold."
+    },
+    {
+      "subtopic": "Feature scaling",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which group of models generally does **not** require feature scaling?",
+      "options": [
+        "Tree-based models — decision tree, random forest, gradient boosting",
+        "k-nearest neighbors and support vector machines",
+        "Neural networks and k-means clustering",
+        "Gradient-descent-trained linear and logistic regression"
+      ],
+      "answer": 0,
+      "explanation": "Tree models split on the order of values, which scaling preserves, so they are scale-invariant. The other three groups are distance- or gradient-based and are sensitive to feature magnitudes."
+    },
+    {
+      "subtopic": "Standardization formula",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Standardization (z-score scaling) transforms a value using which formula?",
+      "options": [
+        "z = (x − μ) / σ",
+        "x' = (x − min) / (max − min)",
+        "x' = (x − median) / IQR",
+        "z = (x − σ) / μ"
+      ],
+      "answer": 0,
+      "explanation": "Standardization subtracts the mean and divides by the standard deviation, centering at 0 with unit variance. (x − min)/(max − min) is min-max, and (x − median)/IQR is robust scaling."
+    },
+    {
+      "subtopic": "Data leakage",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "To avoid train/test contamination, you should fit a scaler or imputer on the entire dataset before splitting into train and test.",
+      "answer": false,
+      "explanation": "That is exactly the leakage trap. You must split first, then fit the transform on training rows only and apply the train-learned statistics to validation/test."
+    },
+    {
+      "subtopic": "Imbalanced data metrics",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For a fraud dataset with ~1% positives, why is **accuracy** a poor metric?",
+      "options": [
+        "A model that always predicts the majority class scores ~99% while catching zero positives",
+        "Accuracy cannot be computed when classes are imbalanced",
+        "Accuracy always overweights the minority class and understates performance",
+        "Accuracy requires probability outputs, which imbalanced models lack"
+      ],
+      "answer": 0,
+      "explanation": "With 1% positives, always predicting 'not fraud' yields 99% accuracy yet detects nothing useful, so accuracy hides total failure on the class you care about. Precision, recall, F1, or PR-AUC expose this."
+    },
+    {
+      "subtopic": "Missing data mechanisms",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "High earners systematically refuse to report their income. Which missing-data mechanism is this, and what is the recommended response?",
+      "options": [
+        "MNAR — the missingness is itself informative, so add a missingness indicator rather than silently imputing",
+        "MCAR — missingness is unrelated to anything, so dropping the rows is unbiased",
+        "MAR — missingness depends on other observed columns, so impute from those columns",
+        "MCAR — impute with the column mean and proceed"
+      ],
+      "answer": 0,
+      "explanation": "Missingness depends on the missing value itself (the high income), which is MNAR — the hardest case. The fact of being missing carries signal, so add a `was_missing` indicator instead of silently filling it in."
+    },
+    {
+      "subtopic": "Outlier detection trade-offs",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is IQR-based outlier detection often preferred over z-score detection on skewed or contaminated data?",
+      "options": [
+        "IQR uses quartiles, which are robust, while z-score's μ and σ are themselves inflated by the outliers being hunted",
+        "IQR assumes normally distributed data, making it more accurate on real columns",
+        "IQR flags more points than z-score, so it never misses an outlier",
+        "z-score cannot be computed unless the data is first min-max scaled"
+      ],
+      "answer": 0,
+      "explanation": "The z-score's mean and standard deviation are pulled by extreme values, so the very outliers you hunt distort the detector. The IQR is distribution-free and robust, which is why it underlies boxplot whiskers."
+    },
+    {
+      "subtopic": "Robust scaling",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A numeric column has heavy right-tail outliers and feeds an SVM. Which scaling choice best limits the outliers' influence on the scaler itself?",
+      "options": [
+        "Robust scaling: (x − median) / IQR",
+        "Min-max normalization: (x − min) / (max − min)",
+        "Standardization: (x − μ) / σ",
+        "Leave it unscaled because SVMs ignore scale"
+      ],
+      "answer": 0,
+      "explanation": "Robust scaling uses median and IQR, which barely move under heavy tails. Min-max is highly outlier-sensitive (one extreme crushes everything toward 0), standardization's μ/σ are inflated by the tail, and SVMs are distance-based so they do need scaling."
+    },
+    {
+      "subtopic": "Target encoding leakage",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Target (mean) encoding is attractive for high-cardinality categoricals but has a notorious hazard. What is it, and how do you mitigate it?",
+      "options": [
+        "It leaks the target; mitigate with out-of-fold means and smoothing for rare categories",
+        "It explodes the column count; mitigate by hashing into fixed buckets",
+        "It invents a false ordinal order; mitigate by one-hot encoding instead",
+        "It loses category identity on collisions; mitigate by switching to frequency encoding"
+      ],
+      "answer": 0,
+      "explanation": "Replacing a category with its target mean leaks the answer into the feature unless the means are computed out-of-fold on training data and smoothed for rare levels. Direct mean-encoding leaks the answer into the feature. Column explosion is a one-hot problem, and false ordering is a label-encoding problem."
+    },
+    {
+      "subtopic": "IQR outlier computation",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A column has values [4, 5, 6, 7, 8, 50] with Q1 = 5 and Q3 = 7. Using the standard 1.5·IQR rule, what is the upper fence and is 50 an outlier?",
+      "options": [
+        "Upper fence = 10; yes, 50 > 10 so it is flagged",
+        "Upper fence = 7; yes, 50 > 7 so it is flagged",
+        "Upper fence = 12; no, 50 is within the fence",
+        "Upper fence = 50; no, the max is never an outlier"
+      ],
+      "answer": 0,
+      "explanation": "IQR = Q3 − Q1 = 2, so the upper fence = Q3 + 1.5·IQR = 7 + 3 = 10. Since 50 > 10, it is flagged as an outlier while 4 through 8 stay inside the fences."
+    },
+    {
+      "subtopic": "Feature selection families",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about feature-selection families are correct? (Select all that apply.)",
+      "options": [
+        "Filter methods score features independently and are blind to feature interactions",
+        "Recursive Feature Elimination (RFE) is a wrapper method that refits the model after dropping the weakest feature",
+        "L1 / Lasso regularization is an embedded method that drives some coefficients to exactly 0",
+        "PCA is a filter-based feature-selection method that keeps a subset of original columns",
+        "Wrapper methods are cheap and model-agnostic"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Filter methods score features alone (blind to interactions), RFE is a wrapper that refits iteratively, and L1/Lasso is embedded selection by zeroing coefficients. PCA creates new combined axes (dimensionality reduction, not selecting original columns), and wrapper methods are expensive and model-driven, not cheap or model-agnostic."
+    },
+    {
+      "subtopic": "Cyclical datetime encoding",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why are cyclical datetime parts like hour-of-day often encoded with sin/cos rather than a raw integer 0–23?",
+      "options": [
+        "So that 23:00 and 00:00 are placed numerically close, reflecting their true adjacency",
+        "Because sin/cos guarantees the feature is bounded to [0, 1] like min-max scaling",
+        "Because tree models cannot split on integer hour values",
+        "Because it removes the need to standardize any other numeric feature"
+      ],
+      "answer": 0,
+      "explanation": "A raw integer makes hour 23 and hour 0 look 23 apart even though they are adjacent on the clock; sin/cos encoding maps the cycle so those values sit next to each other. The other options misstate the purpose."
+    },
+    {
+      "subtopic": "Min-max leakage behavior",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Full data is [2, 4, 6, 8, 100] where 100 is the test row. You correctly fit a min-max scaler on the **training** rows [2, 4, 6, 8] and then transform the test value 100. What scaled value does the test row get?",
+      "code": "x_scaled = (x - train_min) / (train_max - train_min)\n# train_min = 2, train_max = 8",
+      "lang": "python",
+      "options": [
+        "100 → 16.333, an out-of-range value, but honest because the test row never shaped the fit",
+        "100 → 1.0, because the scaler clips the maximum to 1.0",
+        "100 → 0.98, because the global max of 100 is used",
+        "100 → 0.0, because the value exceeds the training range and is set to the minimum"
+      ],
+      "answer": 0,
+      "explanation": "With train_min = 2 and train_max = 8, (100 − 2)/(8 − 2) = 98/6 ≈ 16.333. The value lands out of [0,1], which is fine: the test row did not influence the fitted min/max, so the estimate stays honest. Min-max does not clip by default."
+    },
+    {
+      "subtopic": "Dummy-variable trap",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "When one-hot encoding a nominal feature for a **tree-based** model with an intercept, you must drop one column to avoid the dummy-variable trap.",
+      "answer": false,
+      "explanation": "The dummy-variable trap (perfect collinearity from one-hot columns summing to 1 plus an intercept) only matters for linear models, which need a full-rank design matrix. Tree models are unaffected and do not require dropping a column."
+    },
+    {
+      "subtopic": "Target leakage identification",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Predicting whether a loan will default, you have features: `income`, `credit_score`, `num_late_payments_after_default`, `loan_amount`. Which is leakage and why?",
+      "options": [
+        "`num_late_payments_after_default` — it is recorded only after default, so it cannot exist at prediction time",
+        "`credit_score` — it is correlated with the target, so it must be removed to avoid leakage",
+        "`loan_amount` — larger loans default more, which biases the model",
+        "`income` — income is collected after approval, so it leaks future information"
+      ],
+      "answer": 0,
+      "explanation": "`num_late_payments_after_default` is populated only after the outcome occurs, so it would be unavailable at prediction time and encodes the answer directly — classic target leakage. Correlation with the target (credit_score) is legitimate signal, not leakage."
+    },
+    {
+      "subtopic": "Resampling and cross-validation",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why must SMOTE (or any oversampling) be applied **inside** cross-validation, on training folds only?",
+      "options": [
+        "Oversampling before the split places synthetic/duplicate minority points in both train and validation folds, so the model is tested on near-copies of its training data",
+        "SMOTE can only interpolate correctly once the validation fold is included in the neighbor search",
+        "Applying SMOTE before splitting makes the classes balanced, which removes the need for any metric other than accuracy",
+        "Cross-validation cannot run on a class-balanced dataset, so resampling must wait until after the folds are scored"
+      ],
+      "answer": 0,
+      "explanation": "Resampling before the split lets synthetic or duplicated minority points end up on both sides, so validation effectively tests on copies of training data — a leakage variant that inflates the score. Rebalance only the training fold."
+    },
+    {
+      "subtopic": "SMOTE interpolation",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A minority point A = (2, 2) and its minority neighbor B = (4, 6). SMOTE picks t = 0.5 and generates a synthetic point as A + t·(B − A). What is the new point?",
+      "code": "new = A + t * (B - A)\n# A = (2, 2), B = (4, 6), t = 0.5",
+      "lang": "python",
+      "options": [
+        "(3, 4)",
+        "(6, 8)",
+        "(3, 2)",
+        "(2, 4)"
+      ],
+      "answer": 0,
+      "explanation": "B − A = (2, 4); times t = 0.5 gives (1, 2); added to A = (2, 2) yields (3, 4). The synthetic point lands on the segment between the two real minority neighbors rather than duplicating either."
+    },
+    {
+      "subtopic": "Preprocessing pitfalls",
+      "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are genuine preprocessing pitfalls described in the reviewer? (Select all that apply.)",
+      "options": [
+        "Label-encoding a nominal feature, creating a fake ordering that linear and distance models obey",
+        "Mean-imputing a skewed column, since the mean is dragged by the tail",
+        "Reflexively deleting outliers, which can erase the rare positive class you want to predict",
+        "Standardizing a numeric feature before feeding it to an SVM",
+        "Frequency-encoding a high-cardinality column instead of one-hot"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Label-encoding nominal data, mean-imputing skewed columns, and reflexively deleting outliers are all listed pitfalls. Standardizing before an SVM is correct practice (SVMs need scaling), and frequency-encoding a high-cardinality column is a recommended fix, not a pitfall."
+    }
+  ]
+}

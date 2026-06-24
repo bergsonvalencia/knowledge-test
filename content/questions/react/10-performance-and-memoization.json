@@ -1,0 +1,272 @@
+{
+  "topic": "react",
+  "source": "react/10-performance-and-memoization.md",
+  "questions": [
+    {
+      "subtopic": "React.memo basics",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does wrapping a component in `React.memo` do?",
+      "options": [
+        "It skips re-rendering the component when its props are shallow-equal to the previous render",
+        "It caches the component's return value forever and never re-renders it again",
+        "It deep-clones the props on every render to detect nested changes",
+        "It moves the component's rendering onto a background thread"
+      ],
+      "answer": 0,
+      "explanation": "`React.memo` short-circuits the default behavior (children re-render when the parent does) by skipping the render when props are shallow-equal. It does not cache forever, deep-compare, or use a separate thread."
+    },
+    {
+      "subtopic": "Shallow comparison semantics",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "React's shallow prop comparison uses `Object.is` on each prop. How are objects, arrays, and functions compared?",
+      "options": [
+        "By reference — two distinct references are never considered equal",
+        "By structural deep equality of their contents",
+        "By JSON serialization of the value",
+        "By their `.toString()` output"
+      ],
+      "answer": 0,
+      "explanation": "Primitives compare by value, but objects/arrays/functions compare by reference under `Object.is`; two distinct references never match, which is why a fresh reference each render defeats `memo`."
+    },
+    {
+      "subtopic": "memo pitfall",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Passing a new inline arrow function as a prop to a `React.memo` child on every render defeats the memoization, so the child re-renders anyway.",
+      "answer": true,
+      "explanation": "A fresh function reference never matches the previous one under `Object.is`, so the shallow check fails and the memoized child re-renders despite identical data."
+    },
+    {
+      "subtopic": "useMemo vs useCallback",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the key difference between `useMemo` and `useCallback`?",
+      "options": [
+        "`useMemo` caches the value returned by calling the function; `useCallback` caches the function reference itself",
+        "`useMemo` runs after render while `useCallback` runs before render",
+        "`useMemo` is for async work and `useCallback` is for synchronous work",
+        "`useCallback` re-runs on every render while `useMemo` runs only once"
+      ],
+      "answer": 0,
+      "explanation": "`useMemo(() => compute(), deps)` caches the computed value; `useCallback(fn, deps)` caches the function reference and is equivalent to `useMemo(() => fn, deps)`."
+    },
+    {
+      "subtopic": "useCallback in memoized lists",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the `List`/`Row` example, why is `onSelect` wrapped in `useCallback((id) => ..., [])`?",
+      "code": "const Row = React.memo(function Row({ item, onSelect }) {\n  return <li onClick={() => onSelect(item.id)}>{item.label}</li>;\n});\nfunction List({ items }) {\n  const onSelect = useCallback((id) => console.log(id), []);\n  return <ul>{items.map((i) => <Row key={i.id} item={i} onSelect={onSelect} />)}</ul>;\n}",
+      "lang": "tsx",
+      "options": [
+        "To give `onSelect` a stable identity so the memoized `Row` components can skip re-rendering",
+        "Because `console.log` cannot be called from an inline function in JSX",
+        "To memoize the result of clicking each row so clicks are not double-handled",
+        "Because `useCallback` is required whenever a function is defined inside a component"
+      ],
+      "answer": 0,
+      "explanation": "Without `useCallback`, `onSelect` is a new function reference each render, defeating `memo` on every `Row`. The stable identity lets the memoized rows skip re-rendering when data is unchanged."
+    },
+    {
+      "subtopic": "Custom comparison function",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When you pass a custom comparison function as `memo(Comp, (prev, next) => ...)`, what does returning `true` mean?",
+      "options": [
+        "Treat the props as equal and SKIP the re-render",
+        "Treat the props as changed and force a re-render",
+        "Fall back to React's default shallow comparison",
+        "Throw away the previous render and remount the component"
+      ],
+      "answer": 0,
+      "explanation": "In the custom comparator, `true` means \"equal, skip the render\" and `false` means \"re-render\" — the opposite intuition of an event handler, which is why forgetting a prop ships stale UI."
+    },
+    {
+      "subtopic": "memo overuse trade-off",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is wrapping every component in `React.memo` not recommended?",
+      "options": [
+        "`memo` adds a prop-comparison cost on every render, so it only pays off for components that render often with the same props or are expensive to render",
+        "`memo` permanently freezes a component so it can never receive new props again",
+        "`memo` disables React's reconciliation and breaks the virtual DOM diff",
+        "`memo` forces all child components to also be wrapped in `memo` or they error"
+      ],
+      "answer": 0,
+      "explanation": "Memoization is not free: the shallow comparison runs every render. For cheap components that rarely benefit, the comparison cost and added noise outweigh the savings — measure and target the hot path."
+    },
+    {
+      "subtopic": "exhaustive-deps trade-offs",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the consequence of a MISSING dependency in a `useMemo`/`useCallback` dependency array?",
+      "options": [
+        "The cached function/value can read stale values via an out-of-date closure",
+        "React throws a runtime error and unmounts the component",
+        "The cache is recomputed on every single render, defeating memoization",
+        "The dependency is automatically inferred at build time, so nothing happens"
+      ],
+      "answer": 0,
+      "explanation": "A missing dep means the memoized closure keeps a stale view of that value. (An over-eager/extra dep is the opposite problem — it changes too often and defeats the cache.) The `react-hooks/exhaustive-deps` lint rule enforces honest deps."
+    },
+    {
+      "subtopic": "memoization is a hint",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "It is safe to rely on `useMemo` for program correctness, because React guarantees the cached value is preserved across renders as long as the dependencies are unchanged.",
+      "answer": false,
+      "explanation": "`useMemo`/`useCallback` are performance hints, not guarantees — React may discard a cached value (e.g. to free memory) and recompute. Never rely on them for correctness, only for performance."
+    },
+    {
+      "subtopic": "React Compiler basics",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does the React Compiler do, and when does it run?",
+      "options": [
+        "It auto-memoizes components and the values inside them at build time, doing automatically what `memo`/`useMemo`/`useCallback` do by hand",
+        "It rewrites class components into function components at runtime",
+        "It strips all `useMemo`/`useCallback` calls and replaces them with `setTimeout` scheduling",
+        "It compiles JSX into WebAssembly for faster rendering in the browser"
+      ],
+      "answer": 0,
+      "explanation": "The React Compiler is an opt-in, build-time optimizing compiler that inserts fine-grained memoization automatically, making most hand-written memoization unnecessary. It does not run at runtime or target WebAssembly."
+    },
+    {
+      "subtopic": "React Compiler purity requirement",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A component mutates a prop during render, violating the Rules of React. With the React Compiler enabled, what happens to that component?",
+      "options": [
+        "The compiler skips it (leaves it un-optimized) rather than miscompiling it",
+        "The compiler silently rewrites the mutation into immutable state and optimizes it",
+        "The build fails because the compiler refuses to emit any output",
+        "The compiler memoizes it anyway, which can produce incorrect rendering"
+      ],
+      "answer": 0,
+      "explanation": "The compiler can only memoize safely when code is pure. Code that breaks the Rules of React is skipped (left un-optimized) rather than miscompiled — so you lose the optimization but not correctness. The ESLint plugin flags such code so you can fix the purity violation."
+    },
+    {
+      "subtopic": "React Compiler facts",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about the React Compiler are correct? (Select all that apply.)",
+      "options": [
+        "It reached a stable 1.0 release in 2025 and is opt-in (e.g. via `babel-plugin-react-compiler` or a build-tool integration)",
+        "It is additive — existing `useMemo`/`useCallback`/`memo` keep working alongside it",
+        "`eslint-plugin-react-hooks` ships compiler rules (in `recommended-latest`) that flag code the compiler can't optimize",
+        "Once enabled it guarantees every component in the app is fully optimized with no measurement needed",
+        "It only works on class components and ignores function components"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The compiler is a stable-1.0 (2025), opt-in, additive tool whose ESLint guardrail flags un-optimizable code. It does NOT guarantee universal optimization (you should still measure), and it targets function components, not classes."
+    },
+    {
+      "subtopic": "useTransition semantics",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the `Search` example, why is `setQuery(next)` called directly while `setResults(filter(next))` is wrapped in `startTransition`?",
+      "code": "function onChange(e) {\n  const next = e.target.value;\n  setQuery(next);                                   // ?\n  startTransition(() => setResults(filter(next)));  // ?\n}",
+      "lang": "tsx",
+      "options": [
+        "The input value is an urgent update that must stay responsive; the heavy list update is marked non-urgent so it renders at low priority without blocking typing",
+        "`startTransition` is required for any function that calls another function",
+        "`setQuery` cannot be wrapped in `startTransition` because it updates a string",
+        "Wrapping `setQuery` would make the input read-only until the list finishes"
+      ],
+      "answer": 0,
+      "explanation": "Updates inside `startTransition` are marked non-urgent (low priority). Keeping `setQuery` urgent keeps the controlled input responsive, while the expensive `setResults` renders in the background."
+    },
+    {
+      "subtopic": "isPending",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the `isPending` boolean from `useTransition` used for?",
+      "options": [
+        "To show a subtle pending indicator while the low-priority transition render is in flight, without blocking input",
+        "To prevent the user from typing until the transition completes",
+        "To indicate that a network request triggered by the transition has failed",
+        "To force the transition to run synchronously and finish immediately"
+      ],
+      "answer": 0,
+      "explanation": "`isPending` is true while the non-urgent render is in flight, letting you display a spinner/dimmed state without freezing the urgent input. It does not block input or relate to network errors."
+    },
+    {
+      "subtopic": "useTransition vs useDeferredValue",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You receive a `query` only as a prop from a parent — you do NOT own the state setter. Which API lets you make the expensive derived render trail behind without freezing the UI?",
+      "options": [
+        "`useDeferredValue(query)`",
+        "`useTransition()` wrapping the parent's setter",
+        "`React.memo` with a custom comparator on `query`",
+        "`useCallback` keyed on `query`"
+      ],
+      "answer": 0,
+      "explanation": "Use `useTransition` when you own the state setter (you can wrap the `set` call); use `useDeferredValue` when you only hold the value (e.g. a prop) and want it to lag behind. Here you only have the prop, so `useDeferredValue` is correct."
+    },
+    {
+      "subtopic": "useDeferredValue first-render behavior",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "On the first render where `query` changes to a brand-new value, what does `useDeferredValue(query)` return, and what is the `query !== deferredQuery` idiom for?",
+      "code": "const deferredQuery = useDeferredValue(query);\nconst isStale = query !== deferredQuery;",
+      "lang": "tsx",
+      "options": [
+        "It returns the PREVIOUS value and schedules a low-priority re-render to catch up; `query !== deferredQuery` means results are stale, so show a dimmed/pending state",
+        "It returns the NEW value immediately; `query !== deferredQuery` can never be true",
+        "It returns `undefined` until the deferred render finishes; the comparison guards against that",
+        "It returns a debounced value after a fixed delay; the comparison checks if the timer is still running"
+      ],
+      "answer": 0,
+      "explanation": "On a new value, `useDeferredValue` returns the previous value and schedules a low-priority re-render to catch up. While they differ, a fresh render is pending — the `query !== deferredQuery` check is the idiom for showing a stale/dimmed UI. It is not a timer-based debounce."
+    },
+    {
+      "subtopic": "why deferred subtree must be memoized",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the `useDeferredValue` example, the heavy `expensiveFilter(deferredQuery)` is wrapped in `useMemo([deferredQuery])`. Why is this memoization essential rather than optional?",
+      "options": [
+        "Deferring only helps if the heavy subtree can skip re-rendering until `deferredQuery` catches up; without memoization the expensive work runs on every render and the deferral buys nothing",
+        "`useDeferredValue` throws unless its consumer is wrapped in `useMemo`",
+        "`useMemo` is what makes `deferredQuery` actually lag behind `query`",
+        "Without `useMemo`, `deferredQuery` would equal `query` and the dimming would never trigger"
+      ],
+      "answer": 0,
+      "explanation": "Concurrent APIs reschedule work, they don't make it faster. If the expensive subtree re-runs on every render anyway, deferral provides no benefit — memoization (or the Compiler) is what lets the subtree skip redundant work until the deferred value catches up."
+    },
+    {
+      "subtopic": "concurrent rendering nature",
+      "source": "react/10-performance-and-memoization.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `useTransition`/`useDeferredValue` and concurrent rendering are correct? (Select all that apply.)",
+      "options": [
+        "A low-priority render can be paused, aborted, and restarted if a more urgent update arrives, throwing away stale in-progress work",
+        "They reschedule expensive work by priority but do not make the work itself faster",
+        "Pairing them with `memo`/`useMemo` (or the Compiler) helps avoid redoing work in the deferred subtree",
+        "They run the expensive render on a separate OS thread so the main thread is never touched",
+        "They convert the expensive computation into an asynchronous network call automatically"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Concurrent rendering is interruptible (pause/abort/restart) and reprioritizes rather than accelerates work, so it pairs with memoization. It does NOT use a separate OS thread, nor does it turn computation into a network request."
+    }
+  ]
+}

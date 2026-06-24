@@ -1,0 +1,279 @@
+{
+  "topic": "system-design",
+  "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Secret-free service auth",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the recommended Azure pattern for letting an App Service call Key Vault, SQL, and Storage **without storing any secrets in code or config**?",
+      "options": [
+        "A system-assigned **Managed Identity** plus **Microsoft Entra ID**, granting that identity RBAC on each target",
+        "A connection string per service kept in App Service application settings",
+        "A shared service-principal client secret rotated weekly via a pipeline",
+        "A SAS token embedded in the deployment Bicep and read at startup"
+      ],
+      "answer": 0,
+      "explanation": "Managed Identity backed by Entra ID issues the service an identity and you grant it RBAC on the target; the app fetches a token at runtime with no credential in code. The distractors all still store a secret (connection string, client secret, SAS token), which the reviewer calls a basic-level red flag."
+    },
+    {
+      "subtopic": "Front Door is the CDN",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which service is the modern Azure CDN that you should build new systems on?",
+      "options": [
+        "Azure Front Door",
+        "Azure CDN from Edgio",
+        "Azure Traffic Manager",
+        "Azure Application Gateway"
+      ],
+      "answer": 0,
+      "explanation": "Front Door *is* the CDN now. Azure CDN from Edgio already retired (Jan 2025); Traffic Manager is DNS-only with no data path; Application Gateway is a regional L7 load balancer, not a CDN."
+    },
+    {
+      "subtopic": "Stateless app tier",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "To let the platform recycle and horizontally scale instances freely, a basic-level Azure app should keep its app tier stateless and externalize session/state to Redis or the database.",
+      "answer": true,
+      "explanation": "The reviewer's core basic-level rule is to externalize state so the platform can recycle and scale instances; stateful app servers are listed as a red flag."
+    },
+    {
+      "subtopic": "Recommended Functions plan",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For a new serverless API on Azure Functions, which hosting plan is recommended?",
+      "options": [
+        "Flex Consumption plan",
+        "App Service (Dedicated) plan",
+        "Premium (Elastic Premium) plan",
+        "Classic Consumption plan"
+      ],
+      "answer": 0,
+      "explanation": "Flex Consumption is named as the recommended serverless plan (scale to zero, VNet integration, always-ready instances, per-function scaling). The others exist but are not the recommended default for a new serverless API."
+    },
+    {
+      "subtopic": "Availability Zones vs paired regions",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the **primary intra-region high-availability mechanism** the reviewer says to lead with on Azure?",
+      "options": [
+        "Availability Zones (zone-redundant deployments)",
+        "Paired regions with Microsoft-managed failover",
+        "Geo-redundant storage (GRS)",
+        "Active geo-replication to a second region"
+      ],
+      "answer": 0,
+      "explanation": "Availability Zones survive a datacenter-level failure and are the modern primary intra-region HA mechanism. Paired-region failover, GRS, and geo-replication are regional-DR mechanisms that come *after* multi-AZ, and Microsoft warns against relying on paired-region failover."
+    },
+    {
+      "subtopic": "Front Door Standard vs Premium",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which capabilities are **Premium-only** on Azure Front Door (not available on Standard)? Select all that apply.",
+      "options": [
+        "The Microsoft-managed WAF rule set (DRS)",
+        "Bot protection",
+        "Private Link to a private origin",
+        "Custom WAF rules",
+        "Edge TLS termination and anycast routing"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The managed DRS rule set, bot protection, and Private Link to origin are the Premium-only features and a common exam trap. Custom WAF rules and edge TLS/anycast routing are available on both Standard and Premium."
+    },
+    {
+      "subtopic": "WAF attachment points",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A candidate proposes attaching a Web Application Firewall to an **Azure Load Balancer (Standard SKU)**. Why is this wrong?",
+      "options": [
+        "Load Balancer is an L4 TCP/UDP service with no payload awareness, so a WAF cannot attach to it; a WAF runs only on Front Door or Application Gateway",
+        "Load Balancer supports WAF only in the Premium SKU, which the candidate didn't specify",
+        "A WAF on Load Balancer requires DDoS Network Protection to be enabled first",
+        "Load Balancer can host a WAF, but only for outbound traffic, not inbound"
+      ],
+      "answer": 0,
+      "explanation": "A WAF is an L7 (HTTP-aware) control and attaches only to Front Door (global) or Application Gateway WAF_v2 (regional). Azure Load Balancer is L4 with no payload inspection, so there is no Premium-SKU WAF option and the other claims are fabricated."
+    },
+    {
+      "subtopic": "Messaging service selection",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need a **high-throughput, replayable telemetry stream** with a Kafka-compatible endpoint that can be re-read by multiple consumers. Which Azure service fits?",
+      "options": [
+        "Azure Event Hubs",
+        "Azure Service Bus",
+        "Azure Event Grid",
+        "Azure Storage Queues"
+      ],
+      "answer": 0,
+      "explanation": "Event Hubs is the replayable streaming log with a Kafka-compatible surface. Service Bus is a durable work/command queue (consumed, not replayed), Event Grid does reactive event routing, and Storage Queues is a simple cheap queue, none of which are replayable streaming logs."
+    },
+    {
+      "subtopic": "Cosmos DB consistency vs multi-write",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "On Azure Cosmos DB you can configure **Strong** consistency together with **multiple write regions** (multi-region writes).",
+      "answer": false,
+      "explanation": "Strong consistency is incompatible with multiple write regions. Multi-region writes give an active-active data tier, but you must choose a weaker consistency level than Strong to use them."
+    },
+    {
+      "subtopic": "SQL read scale-out tiers",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For a very large, read-heavy Azure SQL workload that needs the most read scale-out (many named read replicas and storage well beyond a few TB), which service tier is the answer?",
+      "options": [
+        "Hyperscale (up to 30 named read replicas, up to 128 TB)",
+        "Business Critical (one free readable secondary)",
+        "General Purpose (single primary)",
+        "PostgreSQL Single Server with read replicas"
+      ],
+      "answer": 0,
+      "explanation": "Hyperscale scales storage to 128 TB and adds up to 30 named read replicas for read scale-out. Business Critical gives only one free readable secondary, General Purpose has no read replica, and Postgres Single Server is retired (and is not Azure SQL)."
+    },
+    {
+      "subtopic": "Container Apps cold-start trade-off",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A latency-sensitive synchronous microservice chain runs on Azure Container Apps with scale-to-zero enabled. What is the specific gotcha the reviewer flags, and the mitigation?",
+      "options": [
+        "Scale-to-zero adds cold-start latency that compounds across the synchronous call chain; keep a minimum number of instances warm",
+        "KEDA cannot scale on HTTP traffic, so you must switch to AKS Standard",
+        "Container Apps lacks Dapr, so synchronous calls fail; enable Envoy instead",
+        "Scale-to-zero drops in-flight requests; enable session affinity to retain them"
+      ],
+      "answer": 0,
+      "explanation": "Scaling from zero incurs cold-start latency that compounds across synchronous hops; the reviewer's mitigation is to keep min instances warm. The other options misstate KEDA/Dapr/Envoy capabilities and the failure mode."
+    },
+    {
+      "subtopic": "Service Bus tiers and limits",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Azure Service Bus tiers and limits are correct? Select all that apply.",
+      "options": [
+        "Topics/subscriptions and sessions require the Standard or Premium tier (not Basic)",
+        "Premium (AMQP) raises the max message size to 100 MB versus 256 KB on Standard",
+        "Basic supports only queues",
+        "Basic supports topics but not sessions",
+        "Standard supports 100 MB messages just like Premium"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Basic = queues only; topics/subscriptions and sessions need Standard/Premium; Premium/AMQP allows 100 MB messages while Standard caps at 256 KB. So Basic does not support topics, and Standard does not support 100 MB messages."
+    },
+    {
+      "subtopic": "Front Door routing methods",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which Azure Front Door routing method implements an **active-passive** multi-region design (traffic to a warm standby only on primary failure)?",
+      "options": [
+        "Priority routing",
+        "Weighted routing",
+        "Latency routing",
+        "Geographic routing"
+      ],
+      "answer": 0,
+      "explanation": "Priority routing sends traffic to the highest-priority origin and fails over to a warm standby (active-passive). Weighted routing distributes live traffic across regions, which is the active-active design."
+    },
+    {
+      "subtopic": "Well-Architected pillar naming",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which is the exact, correct set of the five Azure Well-Architected Framework pillars?",
+      "options": [
+        "Reliability, Security, Cost Optimization, Operational Excellence, Performance Efficiency",
+        "Reliability, Security, Cost, Operations, Performance",
+        "Availability, Security, Cost Optimization, DevOps, Scalability",
+        "Reliability, Security, Cost Optimization, Operational Excellence, Sustainability"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer stresses the exact names: Reliability, Security, Cost Optimization, Operational Excellence, Performance Efficiency. 'Cost' (not 'Cost Optimization') and renamed/added pillars like Sustainability or Scalability are the traps."
+    },
+    {
+      "subtopic": "CAF methodologies sequencing",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the Cloud Adoption Framework's seven methodologies, which three run **in parallel** once workloads are live (rather than in the sequential Strategy → Plan → Ready → Adopt flow)?",
+      "options": [
+        "Govern, Secure, Manage",
+        "Strategy, Plan, Ready",
+        "Ready, Adopt, Manage",
+        "Govern, Plan, Secure"
+      ],
+      "answer": 0,
+      "explanation": "Strategy → Plan → Ready → Adopt are sequential; Govern, Secure, and Manage run in parallel once workloads are live. The other groupings mix sequential methodologies into the parallel set."
+    },
+    {
+      "subtopic": "Virtual WAN shared-services placement",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When using Azure Virtual WAN as the platform network topology, where do shared services such as DNS and custom NVAs belong?",
+      "options": [
+        "In a dedicated shared-services spoke — you cannot deploy them inside the Virtual WAN hub itself",
+        "Inside the Microsoft-managed Virtual WAN hub, alongside the managed routing",
+        "In every workload spoke, duplicated per workload",
+        "In the Decommissioned management group for isolation"
+      ],
+      "answer": 0,
+      "explanation": "The Virtual WAN hub is Microsoft-managed; you place shared services (DNS, custom NVAs) in a spoke, not inside the hub. Duplicating per workload or placing them in a management group are not the topology pattern described."
+    },
+    {
+      "subtopic": "Paired regions and DR ownership",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about Azure region pairs and disaster recovery are correct per the reviewer? Select all that apply.",
+      "options": [
+        "Deploying to a paired region does not automatically make resources resilient",
+        "Microsoft advises against relying on Microsoft-managed paired-region failover as your DR strategy",
+        "Many newer Azure regions are not paired and use Availability Zones as their primary redundancy",
+        "Region pairs no longer exist and have been fully replaced by Availability Zones",
+        "Paired-region failover is automatic, so you do not need to design failover yourself"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Paired regions don't auto-make resources resilient, Microsoft warns against relying on managed paired-region failover, and many newer regions are unpaired and lead with AZs. Region pairs still exist (benefiting GRS, sequential updates, data residency), and you must own failover yourself, so the last two are wrong."
+    },
+    {
+      "subtopic": "Deployment slots vs Functions Flex",
+      "source": "system-design/system-design-building-blocks-azure-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team wants zero-downtime deploys via **deployment slots + slot-swap**. Which statement is correct given the hosts in the reviewer?",
+      "options": [
+        "App Service supports deployment slots on Standard tier and above, but Functions on the Flex Consumption plan does not support slots — use rolling site updates there",
+        "Both App Service Free tier and Functions Flex Consumption support deployment slots out of the box",
+        "Deployment slots are available only on Functions Flex Consumption, not on App Service",
+        "Slot-swap requires Azure Front Door Premium to route between the slots"
+      ],
+      "answer": 0,
+      "explanation": "App Service deployment slots require Standard or higher, and Functions on the Flex Consumption plan has no slots (use rolling site updates). Free-tier App Service lacks slots, slots are an App Service feature (not Flex-only), and slot-swap is internal to App Service, not dependent on Front Door."
+    }
+  ]
+}

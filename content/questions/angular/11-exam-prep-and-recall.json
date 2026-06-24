@@ -1,0 +1,270 @@
+{
+  "topic": "angular",
+  "source": "angular/11-exam-prep-and-recall.md",
+  "questions": [
+    {
+      "subtopic": "Framework vs library",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What best describes the architectural difference between Angular and React as characterized in the reviewer?",
+      "options": [
+        "Angular is an opinionated, batteries-included framework using inversion of control (router/DI/lifecycle call your code), while React is a focused view library you compose with separate routing/state libraries",
+        "Both are full frameworks, but Angular renders on the server only and React renders on the client only",
+        "Angular is a view library you compose, while React ships routing, forms, and HttpClient in-box",
+        "They are functionally identical; the only difference is that Angular uses TypeScript and React uses JavaScript"
+      ],
+      "answer": 0,
+      "explanation": "Angular ships the stack (routing, forms, HttpClient, DI, CLI, SSR) and uses inversion of control; React is a focused view library that owns rendering and leaves the rest to separate libraries. Option 3 reverses the two roles."
+    },
+    {
+      "subtopic": "Standalone default",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Since Angular v19, components are standalone by default, so you no longer need to write `standalone: true`, and `standalone: false` is the explicit opt-out for a declaration still owned by an NgModule.",
+      "answer": true,
+      "explanation": "Standalone became the default in v19; the redundant `standalone: true` is removed by migration, and `standalone: false` marks legacy NgModule-declared components/directives/pipes."
+    },
+    {
+      "subtopic": "Reading signals in templates",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A counter's click handler runs and calls `count.update(n => n + 1)`, but the template `{{ count }}` never updates on screen. Why?",
+      "options": [
+        "Binding `count` without parentheses binds the signal function object, which never registers the template as a dependency, so the view is never refreshed",
+        "`signal()` is not reactive; you must use `BehaviorSubject` with the async pipe to update the view",
+        "`update()` does not mutate the signal; only `set()` triggers change detection",
+        "The component must use `ChangeDetectionStrategy.Default` for signal reads to refresh"
+      ],
+      "answer": 0,
+      "explanation": "Reading a signal means invoking it: `{{ count() }}` returns the value and registers the template as a reactive dependency. Binding `{{ count }}` binds the function object itself, which never updates. `update()` is a valid writer, and signals drive change detection regardless of strategy."
+    },
+    {
+      "subtopic": "@for track requirement",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does the `@for` block require a `track` expression when `*ngFor`'s `trackBy` was optional?",
+      "options": [
+        "`track` gives each item a stable identity so Angular can move and reuse existing DOM nodes instead of destroying and recreating them; making it mandatory prevents the common untracked-list re-render bug",
+        "`track` is required only to enable the `$index` contextual variable, which `*ngFor` lacked",
+        "`track` tells the compiler the array length so it can pre-allocate DOM nodes for performance",
+        "`track` is required because `@for` cannot iterate over arrays without an explicit numeric counter"
+      ],
+      "answer": 0,
+      "explanation": "`track` provides stable item identity for efficient DOM reuse; omitting it raises compiler error NG5002. The other options misstate its purpose."
+    },
+    {
+      "subtopic": "Async pipe behaviors",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "multi",
+      "question": "Which behaviors does the `async` pipe provide for free? (Select all that apply.)",
+      "options": [
+        "Automatically subscribes and unsubscribes when the view is destroyed",
+        "Unwraps the latest emitted value, returning `null` until the first emission",
+        "Calls `markForCheck()` on every emission so OnPush and zoneless components re-render",
+        "Converts a cold HTTP Observable into a hot one shared across all subscribers",
+        "Retries a failed Observable up to three times before surfacing the error"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The async pipe auto-subscribes/unsubscribes, unwraps the latest value (null until first emit), and calls markForCheck() on each emission. It does not multicast cold Observables nor add automatic retry behavior."
+    },
+    {
+      "subtopic": "Required inputs and transform",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `@Input({ required: true }) prop` do, and what is `transform` for?",
+      "options": [
+        "`required: true` makes Angular emit a build error if the parent omits the binding; `transform` coerces the bound value before assignment (built-ins `booleanAttribute`, `numberAttribute`)",
+        "`required: true` throws a runtime exception during change detection if the value is `null`; `transform` validates the value against a schema",
+        "`required: true` forces the input to be passed as a signal; `transform` converts an Observable input into a signal",
+        "`required: true` marks the input for two-way binding; `transform` generates the matching `propChange` output"
+      ],
+      "answer": 0,
+      "explanation": "Required decorator inputs (v16+) produce a compile-time error when the binding is omitted, and `transform` coerces the incoming value (booleanAttribute/numberAttribute since v16.1). The other options describe behaviors that do not exist."
+    },
+    {
+      "subtopic": "output() return type",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The `output()` function returns an `EventEmitter`, the same type returned by the `@Output()` decorator.",
+      "answer": false,
+      "explanation": "`output()` returns an `OutputEmitterRef<T>` (with `emit()` and `subscribe()` via `OutputRef`), which is neither an `EventEmitter` nor an RxJS Observable. Only the older `@Output()` decorator uses `EventEmitter`."
+    },
+    {
+      "subtopic": "OnPush dirty triggers",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "An OnPush component is checked during a change-detection pass on which of the following? (Select all that apply.)",
+      "options": [
+        "Its input receives a new reference for an object value",
+        "An event fires from it or one of its descendants",
+        "A signal read in its template changes",
+        "An input object is mutated in place while keeping the same reference",
+        "A sibling component (not an ancestor or descendant) re-renders"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "OnPush re-checks on a new input reference, an own/descendant event, an async-pipe emit, a template signal change, or an explicit markForCheck(). In-place mutation keeps the same reference so it is not detected, and an unrelated sibling's render does not dirty this view."
+    },
+    {
+      "subtopic": "inject() injection context",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does calling `inject(SomeService)` inside `ngOnInit` throw NG0203, while the same call in a field initializer works?",
+      "options": [
+        "`inject()` requires an active injection context, which exists during construction (field initializers) but not later when `ngOnInit` runs; wrap the later call in `runInInjectionContext()` to fix it",
+        "`ngOnInit` runs before the injector tree is built, so no providers are registered yet",
+        "Field initializers run on a different microtask where the injector is globally available, unlike lifecycle hooks",
+        "`inject()` only works for services provided in `root`; `ngOnInit` cannot resolve route-level providers"
+      ],
+      "answer": 0,
+      "explanation": "`inject()` needs an active injection context. Field initializers run during construction while that context is active; `ngOnInit` runs after construction when no context is active, hence NG0203. The fix is to inject in a field initializer or use runInInjectionContext."
+    },
+    {
+      "subtopic": "Flattening operators",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "This typeahead occasionally displays results for an older query under fast typing and variable latency. Which operator replaces `mergeMap` to fix it, and why?",
+      "code": "this.query.valueChanges.pipe(\n  debounceTime(300),\n  distinctUntilChanged(),\n  mergeMap(q => this.http.get<Result[]>(`/api/search?q=${q}`)),\n  takeUntilDestroyed(),\n).subscribe(r => this.results.set(r));",
+      "lang": "typescript",
+      "options": [
+        "`switchMap`, because it cancels the previous inner Observable the moment a new term arrives, so only the latest query's response reaches the subscriber",
+        "`concatMap`, because it queues requests and runs them strictly in order, guaranteeing the last typed query resolves last",
+        "`exhaustMap`, because it ignores the newest query until the in-flight request completes, ensuring freshness",
+        "`mergeMap` with a higher `concurrent` limit, because limiting concurrency prevents out-of-order resolution"
+      ],
+      "answer": 0,
+      "explanation": "`switchMap` cancels the prior inner request when a new value arrives, so stale responses never overwrite newer ones. `concatMap` preserves order but still resolves stale requests; `exhaustMap` would drop the newest (most relevant) query; limiting `mergeMap` concurrency does not prevent stale ordering."
+    },
+    {
+      "subtopic": "CanMatch vs CanActivate",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the practical difference between `CanMatch` and `CanActivate` that makes `CanMatch` the right tool for feature flags and conditional lazy loading?",
+      "options": [
+        "`CanMatch` runs during route matching, so returning `false` skips the route (the router tries the next) and gates whether the lazy bundle is fetched at all; `CanActivate` runs after the route is matched",
+        "`CanMatch` runs only on the client and `CanActivate` runs only during SSR, so feature flags must use `CanMatch`",
+        "`CanActivate` can return a `UrlTree` to redirect but `CanMatch` cannot, so `CanMatch` is used only to block navigation",
+        "`CanMatch` runs after the component is created and `CanActivate` runs before, so `CanMatch` sees resolved data"
+      ],
+      "answer": 0,
+      "explanation": "CanMatch participates in matching: a false result skips the route and prevents the lazy loadChildren/loadComponent bundle from being fetched, ideal for feature flags. CanActivate runs after a route is matched to decide entry."
+    },
+    {
+      "subtopic": "Typed reactive forms",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With strictly typed reactive forms (v14+), what are the two value-type gotchas and their remedies?",
+      "options": [
+        "A control's value type includes `null` (because `reset()` sets `null`) — drop it with `nonNullable: true`; a group's `.value` is a `Partial` because disabled controls are omitted — use `getRawValue()` for the full shape",
+        "A control's value is always `any` until validated — cast it manually; a group's `.value` excludes pristine controls — use `markAllAsTouched()`",
+        "A control's value type is `string` regardless of declared type — set the type via a generic on `FormControl`; disabled controls throw — re-enable them before reading",
+        "A control's value includes `undefined` after `reset()` — use `nonNullable: true`; a group's `.value` includes disabled controls by default — use `value` directly"
+      ],
+      "answer": 0,
+      "explanation": "Control values are `T | null` by default because reset() sets null (fixed with nonNullable), and a group's `.value` is a Partial because disabled controls are omitted (use getRawValue() for the complete, non-partial value)."
+    },
+    {
+      "subtopic": "Interceptor ordering and immutability",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In what order do HTTP interceptors execute, and why must you clone the request before adding headers?",
+      "options": [
+        "Requests pass through interceptors in array order toward the backend and responses flow back in reverse; `HttpRequest` is immutable (it may be re-emitted on retry), so you must `req.clone({ headers })` and pass the clone to `next()`",
+        "Interceptors run in reverse array order on the request and forward order on the response; cloning is required only to avoid sharing headers between concurrent requests",
+        "All interceptors run concurrently; cloning is required because `next()` mutates the original request object in place",
+        "Requests and responses both flow in array order; cloning is optional and only improves performance by avoiding object allocation"
+      ],
+      "answer": 0,
+      "explanation": "Interceptors form nested middleware: request flows first-to-last toward the backend, response flows back in reverse. HttpRequest is immutable and may be re-emitted on retry, so headers must be added via clone() and the clone passed to next()."
+    },
+    {
+      "subtopic": "@defer bundle behavior",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer wraps `<app-chart>` in a `@defer` block to lazy-load a heavy charting library, but the initial bundle does not shrink. `<app-chart>` is also rendered eagerly elsewhere in the same template. Why?",
+      "options": [
+        "`@defer` only splits a dependency into a lazy chunk if it is referenced solely inside `@defer` blocks in that file; because `<app-chart>` is also used eagerly, the compiler must keep it in the main chunk",
+        "`@defer` cannot lazy-load components, only modules; charting libraries require a dynamic `import()` in the component class instead",
+        "`@defer` requires the `on viewport` trigger to actually split the bundle; the default `on idle` trigger keeps dependencies eager",
+        "The chart component is not marked `standalone`, so `@defer` silently falls back to eager loading without warning"
+      ],
+      "answer": 0,
+      "explanation": "A deferred dependency is only emitted as a separate chunk when it is used exclusively inside @defer blocks. Any eager usage forces it into the main bundle, so the deferred reference adds nothing. Trigger choice does not change this rule, and @defer does lazy-load standalone components."
+    },
+    {
+      "subtopic": "linkedSignal vs effect",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer mirrors an input into editable local state using an effect that reads `options()` and writes `selected`, resetting on every options change — but the user's edit is wiped each time options change for any reason. What is the idiomatic fix?",
+      "options": [
+        "Use `linkedSignal(() => this.options()[0])`: it derives the initial value, stays writable for edits, and resets only when `options` actually changes — no effect or manual reset bookkeeping",
+        "Move the reset into `ngOnChanges` so it only fires when the input reference changes",
+        "Wrap the effect body in `untracked()` so it stops re-running when `options` changes",
+        "Replace the effect with a `computed()` so the value becomes read-only and cannot be wiped"
+      ],
+      "answer": 0,
+      "explanation": "linkedSignal is purpose-built for writable-derived-with-reset state: it derives an initial value, remains writable, and resets only when the source changes. An effect-driven mirror is the anti-pattern; computed() would make the value read-only (not editable), and untracked() would break the reset semantics."
+    },
+    {
+      "subtopic": "Injector resolution and skipSelf",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "`Cache` is provided as `RedisCache` in root and as `MemoryCache` in a lazy route's `providers`. A component under that route calls `inject(Cache)`. Which instance does it get, and how can it reach the root one?",
+      "options": [
+        "It gets `MemoryCache` because resolution walks bottom-up and the first matching provider (route-level) wins; reach root with `inject(Cache, { skipSelf: true })` at the right boundary or by not providing it at the route",
+        "It gets `RedisCache` because root providers always take precedence over route providers for singletons",
+        "It throws NG0201 because two providers for the same token in different injectors is a conflict",
+        "It gets `MemoryCache`, and the only way to reach root is to re-provide `RedisCache` again inside the component"
+      ],
+      "answer": 0,
+      "explanation": "Resolution walks the ElementInjector chain up through the route-level EnvironmentInjector before reaching root, and the first match wins — so the route's MemoryCache shadows root. skipSelf bypasses the nearest injector to reach the ancestor. Two providers in different injectors is legal, not NG0201."
+    },
+    {
+      "subtopic": "Testing OnPush inputs under zoneless",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In a unit test for an OnPush component running under the zoneless default, what is the correct way to set an input and flush the resulting change detection?",
+      "code": "// component is OnPush, app is zoneless\nfixture.componentRef.setInput('user', updatedUser);\nawait fixture.whenStable();\nexpect(el.textContent).toContain('Bea');",
+      "lang": "typescript",
+      "options": [
+        "Use `fixture.componentRef.setInput('user', value)` so the input pipeline marks the OnPush view dirty, then `await fixture.whenStable()` to flush rather than calling `detectChanges()` manually",
+        "Assign `fixture.componentInstance.user = value` directly, then call `fixture.detectChanges()` to flush",
+        "Mutate the existing input object in place, then call `tick()` inside `fakeAsync` to flush",
+        "Use `setInput()` and then call `fixture.detectChanges()`, which is the only flush method that works without Zone.js"
+      ],
+      "answer": 0,
+      "explanation": "setInput() drives the real input pipeline so the OnPush view is marked dirty (a direct property assignment would not), and under the zoneless default you flush with await fixture.whenStable(); manually calling detectChanges() can even throw NG0100."
+    },
+    {
+      "subtopic": "XSS sanitization and bypass",
+      "source": "angular/11-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does Angular defend against XSS by default, and what is the risk of `DomSanitizer.bypassSecurityTrust*`?",
+      "options": [
+        "Interpolation escapes text and bindings to sensitive sinks (`[innerHTML]`, `[href]`, `[style]`) are sanitized per `SecurityContext`; `bypassSecurityTrust*` disables sanitization and is safe only for values you fully control, never user input",
+        "Angular blocks all `[innerHTML]` bindings outright; `bypassSecurityTrust*` is the standard, safe way to render any HTML including user input",
+        "Sanitization happens only during SSR; on the client you must call `bypassSecurityTrust*` to re-enable it after hydration",
+        "Interpolation runs scripts but strips them at runtime; `bypassSecurityTrust*` simply caches the sanitized result for performance"
+      ],
+      "answer": 0,
+      "explanation": "Angular escapes interpolated text and sanitizes bindings to sensitive sinks by SecurityContext, stripping scripts and unsafe URLs/CSS. bypassSecurityTrust* turns sanitization off, so it must only be used on fully trusted values, never user-supplied input."
+    }
+  ]
+}

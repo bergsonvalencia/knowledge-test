@@ -1,0 +1,264 @@
+{
+  "topic": "sql",
+  "source": "sql/data-modification-and-merge-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "INSERT and identity",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "You insert a single row into a table whose primary key is an `IDENTITY` column, and a trigger on that table also inserts into a second `IDENTITY` table. Which function safely returns the identity value generated for *your* row?",
+      "options": [
+        "`SCOPE_IDENTITY()`",
+        "`@@IDENTITY`",
+        "`IDENT_CURRENT('dbo.OtherTable')`",
+        "`@@ROWCOUNT`"
+      ],
+      "answer": 0,
+      "explanation": "`SCOPE_IDENTITY()` returns the last identity generated in the current scope, ignoring the trigger's insert. `@@IDENTITY` is session-wide and would leak the value the trigger generated on the other table; `@@ROWCOUNT` returns a row count, not an identity."
+    },
+    {
+      "subtopic": "SELECT INTO vs INSERT SELECT",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `SELECT ... INTO dbo.NewTable` do that `INSERT INTO dbo.NewTable ... SELECT` does not?",
+      "options": [
+        "It creates a brand-new table from the query's shape; the target must not already exist",
+        "It copies the source table's indexes and constraints onto the new table",
+        "It appends rows to an existing table while preserving its defaults",
+        "It runs row-by-row, making it slower than an equivalent INSERT"
+      ],
+      "answer": 0,
+      "explanation": "`SELECT INTO` creates a new table (which must not already exist) and bulk-loads it. It inherits only column names, types, nullability, and IDENTITY — no indexes, constraints, or defaults — and is set-based, often minimally logged, so not slower."
+    },
+    {
+      "subtopic": "DELETE vs TRUNCATE",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly contrasts `TRUNCATE TABLE` with `DELETE` (no `WHERE`)?",
+      "options": [
+        "`TRUNCATE` deallocates pages (minimally logged) and resets the IDENTITY seed; `DELETE` is fully logged per row and leaves IDENTITY unchanged",
+        "`TRUNCATE` fires DELETE triggers for each affected row, while `DELETE` does not",
+        "`DELETE` cannot be rolled back, but `TRUNCATE` can",
+        "`TRUNCATE` accepts a `WHERE` clause to delete a filtered subset of rows"
+      ],
+      "answer": 0,
+      "explanation": "TRUNCATE deallocates pages (minimal logging) and resets the IDENTITY seed; DELETE is fully logged and leaves IDENTITY. TRUNCATE fires no triggers, both are rollback-able inside a transaction in SQL Server, and TRUNCATE cannot take a WHERE filter."
+    },
+    {
+      "subtopic": "OUTPUT virtual tables",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "During an `UPDATE`, which virtual tables does the `OUTPUT` clause expose, and what does each hold?",
+      "options": [
+        "`deleted` holds the old (pre) image and `inserted` holds the new (post) image, per affected row",
+        "`inserted` holds the old image and `deleted` holds the new image, per affected row",
+        "Only `inserted` is populated; `deleted` is always empty for UPDATE",
+        "`updated` holds both old and new column values in a single virtual table"
+      ],
+      "answer": 0,
+      "explanation": "For an UPDATE, OUTPUT exposes both pseudo-tables: `deleted` is the pre-image and `inserted` is the post-image, per row. There is no `updated` table, and for UPDATE neither pseudo-table is empty."
+    },
+    {
+      "subtopic": "MERGE caveats",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Every `MERGE` statement in T-SQL must be terminated with a semicolon.",
+      "answer": true,
+      "explanation": "A terminating semicolon is a documented, mandatory requirement for MERGE; omitting it is a common error."
+    },
+    {
+      "subtopic": "UPDATE FROM nondeterminism",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An `UPDATE ... FROM ... JOIN` joins a target to a source where the join produces several source rows per target row. What does SQL Server do?",
+      "options": [
+        "Silently applies one arbitrary matching value per target row and discards the rest, with no error",
+        "Raises an error because the source is not unique for the target",
+        "Applies all matching values, leaving the column set to the last one alphabetically",
+        "Sums or aggregates the matching source values into the target column"
+      ],
+      "answer": 0,
+      "explanation": "`UPDATE ... FROM` does not error on a multi-match; it applies one arbitrary value per target row and discards the rest — a non-deterministic data-corruption bug. MERGE, by contrast, raises an error in that situation."
+    },
+    {
+      "subtopic": "DELETE FROM JOIN semantics",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the statement below, whose rows are deleted?",
+      "code": "DELETE o\nFROM dbo.Orders AS o\nJOIN dbo.Customers AS c ON c.CustomerId = o.CustomerId\nWHERE c.IsClosed = 1;",
+      "lang": "sql",
+      "options": [
+        "Rows of `dbo.Orders` (the alias `o` named right after `DELETE`)",
+        "Rows of `dbo.Customers`, because the WHERE filters on `c`",
+        "Rows from both `Orders` and `Customers` that satisfy the join",
+        "No rows — `DELETE` cannot be combined with a `JOIN`"
+      ],
+      "answer": 0,
+      "explanation": "In `DELETE ... FROM ... JOIN`, the table named immediately after `DELETE` (here alias `o` = Orders) is the one whose rows are removed; the join and WHERE just qualify which Orders rows go."
+    },
+    {
+      "subtopic": "TRUNCATE and foreign keys",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why might an application login that can successfully run `DELETE FROM dbo.Stage;` be unable to run `TRUNCATE TABLE dbo.Stage;`?",
+      "options": [
+        "TRUNCATE is DDL and requires `ALTER` permission on the table, whereas DELETE only needs the `DELETE` permission",
+        "TRUNCATE requires the login to be a member of `sysadmin`, which DELETE does not",
+        "TRUNCATE can only be run by the table's original creator",
+        "TRUNCATE requires `SELECT` permission in addition to `DELETE`"
+      ],
+      "answer": 0,
+      "explanation": "TRUNCATE is DDL and needs `ALTER` on the table; DELETE needs only the `DELETE` permission. So a login granted DELETE but not ALTER can delete rows yet cannot truncate. (A separate blocker is any enabled incoming FK.)"
+    },
+    {
+      "subtopic": "MERGE ON clause filter bug",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is putting a source-filtering predicate (e.g. `AND src.Region = 'EU'`) directly in a `MERGE`'s `ON` clause considered a bug?",
+      "options": [
+        "`ON` defines the match, not a filter; a predicate there changes which rows count as 'not matched' and can cause spurious INSERTs or DELETEs",
+        "Predicates in `ON` are silently ignored, so the filter has no effect at all",
+        "It forces the MERGE to run row-by-row instead of set-based",
+        "It makes the terminating semicolon optional, masking other syntax errors"
+      ],
+      "answer": 0,
+      "explanation": "The `ON` clause determines matches, not filtering. A filter there alters which rows are 'not matched by target/source', producing spurious INSERTs or DELETEs. The fix is to filter the source in a CTE/derived table and keep `ON` to join keys only."
+    },
+    {
+      "subtopic": "Multi-row identity capture",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You insert several rows in one statement into an `IDENTITY` table and need every generated key, not just the last. What is the correct approach?",
+      "options": [
+        "Use `OUTPUT inserted.<idcol>` to return or capture all generated keys",
+        "Call `SCOPE_IDENTITY()` once after the INSERT to get all of them",
+        "Call `@@IDENTITY` once after the INSERT to get all of them",
+        "Call `IDENT_CURRENT()` repeatedly until the values stop changing"
+      ],
+      "answer": 0,
+      "explanation": "`OUTPUT inserted.<idcol>` exposes the new rows and works for multi-row inserts. Scalar functions like `SCOPE_IDENTITY()`/`@@IDENTITY` only return a single (last) value, and `IDENT_CURRENT()` is unsafe under concurrency."
+    },
+    {
+      "subtopic": "Set-based batching",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "If set-based DML is preferred over cursors, why split a single `DELETE` of 50 million rows into committed `DELETE TOP (5000)` batches in a loop?",
+      "options": [
+        "One huge transaction can escalate to a table lock and bloat the log; short committed batches release locks and let the log truncate",
+        "Batching converts the operation to row-by-row, which is always faster than set-based",
+        "`DELETE TOP (N)` is the only DELETE form that can use a `WHERE` clause",
+        "A single large DELETE cannot be rolled back, but batches can"
+      ],
+      "answer": 0,
+      "explanation": "A single massive DELETE is one long transaction that can escalate to a table lock (around 5,000 locks per object) and balloon the log. Committed batches keep each transaction short, release locks, and allow log truncation. Each batch is still set-based."
+    },
+    {
+      "subtopic": "OUTPUT for MERGE",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "When using `OUTPUT` with a `MERGE`, the `$action` column tells you whether each affected row was an `'INSERT'`, `'UPDATE'`, or `'DELETE'`.",
+      "answer": true,
+      "explanation": "MERGE's OUTPUT exposes `inserted`, `deleted`, and additionally `$action`, which reports per row whether it was an INSERT, UPDATE, or DELETE — invaluable for auditing what the merge did."
+    },
+    {
+      "subtopic": "Upsert implementations",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are valid implementations of an upsert (insert-if-absent, update-if-present) as presented in the reviewer? Select all that apply.",
+      "options": [
+        "A `MERGE` with `WHEN MATCHED THEN UPDATE` and `WHEN NOT MATCHED THEN INSERT`",
+        "An `UPDATE` first, then `INSERT` only when `@@ROWCOUNT = 0`",
+        "`INSERT ... SELECT ... WHERE NOT EXISTS (...)` (paired with an UPDATE for the full upsert)",
+        "A `TRUNCATE TABLE` followed by a single `INSERT`",
+        "A `SELECT ... INTO` that recreates the table on each call"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The three implementations covered are MERGE upsert, UPDATE-then-conditional-INSERT, and INSERT WHERE NOT EXISTS. TRUNCATE+INSERT empties the whole table rather than upserting a key, and SELECT INTO creates a new table (and fails if it already exists)."
+    },
+    {
+      "subtopic": "Upsert race condition",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two sessions run the same check-then-insert upsert for one key under the default read committed isolation. Why can the second session get a duplicate-key error, and what fixes it?",
+      "options": [
+        "The `SELECT`/`NOT EXISTS` does not hold a lock long enough to reserve the key; a key-range lock via `WITH (UPDLOCK, HOLDLOCK)` (or SERIALIZABLE) makes the second session wait",
+        "Read committed blocks all writes, so the error is a deadlock; raising to READ UNCOMMITTED removes it",
+        "The identity seed advances twice; resetting it with TRUNCATE prevents the collision",
+        "The `INSERT` ignores the primary key under read committed; adding `WITH (NOLOCK)` enforces it"
+      ],
+      "answer": 0,
+      "explanation": "Under read committed, the shared lock from the existence check is released immediately, so both sessions see 'absent' and both insert. A key-range lock (`UPDLOCK, HOLDLOCK` / SERIALIZABLE) holds the range until commit so the second session waits and then updates instead. NOLOCK/READ UNCOMMITTED would make it worse."
+    },
+    {
+      "subtopic": "Multi-row-safe triggers",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An `AFTER UPDATE` trigger contains `SELECT @id = OrderId FROM inserted;` and then uses `@id`. Why is this a classic bug?",
+      "options": [
+        "An AFTER trigger fires once per statement, so `inserted` can hold many rows; assigning to a scalar keeps only one arbitrary row and silently ignores the rest",
+        "The `inserted` table is empty inside an AFTER trigger, so `@id` is always NULL",
+        "`inserted` is only available in INSTEAD OF triggers, so the statement raises a runtime error",
+        "AFTER triggers fire before constraints are checked, so the data in `inserted` is invalid"
+      ],
+      "answer": 0,
+      "explanation": "An AFTER trigger runs once per statement, not per row, so `inserted`/`deleted` may contain many rows. Assigning a scalar from a multi-row table grabs one arbitrary row. Correct triggers use set-based logic joining `inserted` and `deleted`. AFTER triggers fire after constraints pass and `inserted` is fully populated."
+    },
+    {
+      "subtopic": "Composable DML with OUTPUT",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In SQL Server, an outer `INSERT ... SELECT` can consume the `OUTPUT` of an inner DML statement (e.g. an inner `UPDATE`), but only an outer `INSERT` may wrap another DML statement's OUTPUT this way.",
+      "answer": true,
+      "explanation": "Composable DML lets an outer INSERT feed from an inner DML's OUTPUT (e.g. capturing an UPDATE's changes and filtering them before logging). The reviewer notes only INSERT may serve as the outer statement in this construction."
+    },
+    {
+      "subtopic": "TRUNCATE rollback and identity",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `TRUNCATE TABLE` in SQL Server are correct? Select all that apply.",
+      "options": [
+        "It can be rolled back inside an explicit transaction because it logs the page deallocations",
+        "It resets the table's IDENTITY seed back to its original value",
+        "It is blocked if the table is referenced by any enabled foreign key, even one with no rows",
+        "It fires `DELETE` triggers once per affected row",
+        "It accepts a `WHERE` clause to remove only a subset of rows"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "TRUNCATE is rollback-able in SQL Server (it logs page deallocations), resets the IDENTITY seed, and is blocked by any enabled incoming FK regardless of row count. It fires no triggers and cannot take a WHERE clause (all-or-nothing)."
+    },
+    {
+      "subtopic": "MERGE branch routing",
+      "source": "sql/data-modification-and-merge-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given this MERGE applying `SourceDelta` onto `TargetInventory` on `Sku`, what happens to a `Sku` that is present in the target but absent from the source?",
+      "code": "MERGE dbo.TargetInventory AS tgt\nUSING dbo.SourceDelta AS src ON tgt.Sku = src.Sku\nWHEN MATCHED AND tgt.Qty <> src.Qty THEN UPDATE SET tgt.Qty = src.Qty\nWHEN NOT MATCHED BY TARGET THEN INSERT (Sku, Qty) VALUES (src.Sku, src.Qty)\nWHEN NOT MATCHED BY SOURCE THEN DELETE;",
+      "lang": "sql",
+      "options": [
+        "It is deleted from the target by the `WHEN NOT MATCHED BY SOURCE` branch",
+        "It is inserted into the source by the `WHEN NOT MATCHED BY TARGET` branch",
+        "It is left unchanged because no branch can match a target-only row",
+        "The MERGE raises an error because the row exists only in the target"
+      ],
+      "answer": 0,
+      "explanation": "A target-only row (in target, absent from source) is handled by `WHEN NOT MATCHED BY SOURCE`, which here performs a DELETE — exactly what makes a MERGE a full mirror sync. `NOT MATCHED BY TARGET` covers source-only rows, the opposite case."
+    }
+  ]
+}

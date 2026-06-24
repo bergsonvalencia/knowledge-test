@@ -1,0 +1,266 @@
+{
+  "topic": "typescript",
+  "source": "typescript/utility-types-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Partial definition",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How is the built-in `Partial<T>` actually implemented in `lib.es5.d.ts`?",
+      "options": [
+        "`{ [P in keyof T]?: T[P] }`",
+        "`{ [P in keyof T]-?: T[P] }`",
+        "`{ readonly [P in keyof T]: T[P] }`",
+        "A compiler intrinsic with no TypeScript source"
+      ],
+      "answer": 0,
+      "explanation": "`Partial<T>` is a homomorphic mapped type that iterates `keyof T` and stamps the `?` modifier on each property. `{ [P in keyof T]-?: T[P] }` is `Required` (it removes `?`), and there is no intrinsic behind `Partial` — it is one line of TypeScript."
+    },
+    {
+      "subtopic": "Required modifier",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which mapping modifier does `Required<T>` use to make every property required?",
+      "options": [
+        "`-?` (removes the optional marker)",
+        "`+?` (adds the optional marker)",
+        "`-readonly` (removes readonly)",
+        "`?` (adds the optional marker)"
+      ],
+      "answer": 0,
+      "explanation": "`Required<T>` is `{ [P in keyof T]-?: T[P] }`; the `-?` modifier strips the optional marker. Adding `?` would make properties optional (that is `Partial`), and `-readonly` strips readonly (that is the user-land `Mutable`)."
+    },
+    {
+      "subtopic": "Shallow vs deep",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "`Partial<T>`, `Required<T>`, and `Readonly<T>` recurse into nested objects, making the entire object tree optional/required/readonly.",
+      "answer": false,
+      "explanation": "All three are shallow — they touch only the top level. A nested object stays mutable/required, which is why you write a `DeepPartial` when you need recursion."
+    },
+    {
+      "subtopic": "Omit in terms of Pick",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "`Omit<T, K>` is defined in terms of other utilities. Which definition is correct?",
+      "options": [
+        "`Pick<T, Exclude<keyof T, K>>`",
+        "`Pick<T, Extract<keyof T, K>>`",
+        "`Exclude<Pick<T, K>, keyof T>`",
+        "`{ [P in keyof T as P extends K ? never : P]: T[P] }` is the only possible definition"
+      ],
+      "answer": 0,
+      "explanation": "`Omit<T, K> = Pick<T, Exclude<keyof T, K>>` — compute the surviving keys with `Exclude` (everything in `keyof T` not in `K`), then `Pick` those. Using `Extract` would keep only `K` rather than drop it, inverting the meaning."
+    },
+    {
+      "subtopic": "Intrinsics",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which group of utilities are true compiler intrinsics with no readable TypeScript source you could reproduce yourself?",
+      "options": [
+        "`Uppercase`, `Lowercase`, `Capitalize`, `Uncapitalize`, and `NoInfer`",
+        "`Partial`, `Required`, `Readonly`, and `Pick`",
+        "`Exclude`, `Extract`, and `NonNullable`",
+        "`Parameters`, `ReturnType`, and `Awaited`"
+      ],
+      "answer": 0,
+      "explanation": "The four string-case types plus `NoInfer<T>` are genuine intrinsics. Everything else listed — reshapers, union filters, and `infer`-based extractors — is ordinary TypeScript you can read and rewrite."
+    },
+    {
+      "subtopic": "Omit key validation gotcha",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `interface User { id: number; name: string }`, what does `type Oops = Omit<User, \"naem\">` evaluate to, and does it error?",
+      "options": [
+        "No error; `Oops` equals the full `User` (`{ id: number; name: string }`)",
+        "A compile error: `\"naem\"` is not assignable to `keyof User`",
+        "No error; `Oops` is `{ id: number }` (the closest key is removed)",
+        "No error; `Oops` is `{}` because the whole type is dropped"
+      ],
+      "answer": 0,
+      "explanation": "`Omit`'s `K` is constrained only to `keyof any`, not `keyof T`, so a typo'd key is simply absent from `Exclude<keyof T, K>` and nothing is removed — the result is the full type, with no error. `Pick` would error here because its `K extends keyof T`."
+    },
+    {
+      "subtopic": "Pick/Omit vs Exclude/Extract",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A teammate writes `type Live = Omit<\"draft\" | \"published\" | \"deleted\", \"deleted\">` expecting `\"draft\" | \"published\"`. Why is this the wrong tool?",
+      "options": [
+        "`Omit` operates on object keys, not union members; to remove a union member you need `Exclude`",
+        "`Omit` only accepts a single string key, so passing a union of keys is the error",
+        "It works correctly; `Omit` and `Exclude` are interchangeable on unions",
+        "`Omit` distributes over the union, so it would yield `never` instead"
+      ],
+      "answer": 0,
+      "explanation": "`Exclude`/`Extract` work on union members; `Pick`/`Omit` work on object keys. `Omit` over a string-literal union does not filter members the way intended — the correct tool for removing a union member is `Exclude<U, E>`."
+    },
+    {
+      "subtopic": "typeof type query",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Given `function make(x: number) { return x; }`, the annotation `const r: ReturnType<make> = 1` compiles fine.",
+      "answer": false,
+      "explanation": "`make` is a value, but `ReturnType` operates in type space and needs a type. You must write `ReturnType<typeof make>`, using the `typeof` type query to lift the function into type space; `ReturnType<make>` is a type-space-vs-value-space error."
+    },
+    {
+      "subtopic": "Awaited recursion",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is `Awaited<Promise<Promise<number>>>`, and why?",
+      "options": [
+        "`number`, because `Awaited` is a recursive conditional type that peels every Promise layer, matching runtime `await`",
+        "`Promise<number>`, because a single `infer` match unwraps exactly one layer",
+        "`Promise<Promise<number>>`, because `Awaited` only affects non-Promise types",
+        "`never`, because nested Promises are not assignable to `Promise<infer U>`"
+      ],
+      "answer": 0,
+      "explanation": "`Awaited<T>` recurses (`T extends Promise<infer U> ? Awaited<U> : T`), so nested Promises collapse to the innermost value type — exactly what runtime `await` does. A naive one-level `infer` would stop at the outer Promise and yield `Promise<number>`."
+    },
+    {
+      "subtopic": "NonNullable mechanics",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Modern libs define `NonNullable<T>` as `T & {}`. Why does intersecting with the empty object type `{}` drop `null` and `undefined`?",
+      "options": [
+        "`null` and `undefined` are not assignable to `{}`, so for those union members `T & {}` is `never` and they vanish",
+        "`{}` is a special token the compiler recognizes as 'strip nullish'",
+        "Intersection always discards the left operand's primitive members",
+        "`{}` is equivalent to `object`, which excludes all primitives including strings"
+      ],
+      "answer": 0,
+      "explanation": "Distributing over the union, each non-nullish member intersected with `{}` is itself, but `null & {}` and `undefined & {}` are `never` (they are not assignable to `{}`), so the nullish members drop out. `{}` is not `object` — it accepts any non-null value, including strings and numbers."
+    },
+    {
+      "subtopic": "Record vs index signature",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is `Record<string, number>` a weaker choice than `Record<\"a\" | \"b\", number>` when the keys are actually a known, finite set?",
+      "options": [
+        "`Record<string, number>` is effectively an index signature: any string key is allowed and (without `noUncheckedIndexedAccess`) reads of absent keys are still typed `number`",
+        "`Record<string, number>` forbids reading any key unless it was explicitly assigned first",
+        "`Record<string, number>` makes all values optional, while the finite version makes them required",
+        "`Record<string, number>` is deep/recursive while the finite version is shallow"
+      ],
+      "answer": 0,
+      "explanation": "`Record<string, V>` loses key safety — it behaves like a string index signature, allowing any key and typing absent-key reads as `V` (unless `noUncheckedIndexedAccess` is on). A finite key union requires exactly those keys and catches typos."
+    },
+    {
+      "subtopic": "Parameters and ReturnType behavior",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Select all true statements about the function/class extractor utilities.",
+      "options": [
+        "`Parameters<F>` captures the parameter list as a tuple type",
+        "`InstanceType<C>` produces the type a `new C(...)` call returns",
+        "`ReturnType<any>` is `any` — `any` flows straight through the extractor",
+        "`ReturnType<F>` returns a tuple of the function's parameters",
+        "`Parameters` and `ReturnType` require a value, so you pass `Parameters<fn>` directly"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`Parameters` yields a (labeled) tuple of params; `InstanceType` yields what `new` produces; and `any` defeats the extractors quietly (`ReturnType<any>` is `any`). `ReturnType` returns the return type, not a param tuple, and these utilities want a type — you write `Parameters<typeof fn>`, not `Parameters<fn>`."
+    },
+    {
+      "subtopic": "Exclude distribution",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Reading the code, what is the resolved type of `Keys`?",
+      "code": "type Obj = { a: 1; b: 2; c: 3 };\ntype Keys = Exclude<keyof Obj, \"b\">;",
+      "lang": "typescript",
+      "options": [
+        "`\"a\" | \"c\"`",
+        "`\"a\" | \"b\" | \"c\"`",
+        "`\"b\"`",
+        "`never`"
+      ],
+      "answer": 0,
+      "explanation": "`keyof Obj` is `\"a\" | \"b\" | \"c\"`. `Exclude<U, \"b\">` distributes: `\"a\"` and `\"c\"` survive, `\"b\" extends \"b\"` maps to `never`, and `never` is absorbed by the union — leaving `\"a\" | \"c\"`."
+    },
+    {
+      "subtopic": "NoInfer behavior",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Reading the code, what happens at the two call sites?",
+      "code": "declare function choose<C extends string>(opts: C[], fallback: NoInfer<C>): C;\nconst b = choose([\"red\", \"green\"], \"blue\");\nconst c = choose([\"red\", \"green\"], \"red\");",
+      "lang": "typescript",
+      "options": [
+        "`b` errors because `C` is inferred as `\"red\" | \"green\"` from `opts` alone and `\"blue\"` is not assignable; `c` compiles with `C = \"red\" | \"green\"`",
+        "Both compile; `NoInfer` only affects readability and never changes assignability",
+        "`b` compiles with `C = \"red\" | \"green\" | \"blue\"`; `c` compiles with `C = \"red\" | \"green\"`",
+        "Both error because `NoInfer<C>` removes `fallback` from inference, leaving `C` unconstrained"
+      ],
+      "answer": 0,
+      "explanation": "`NoInfer<C>` removes `fallback` from the inference candidate set, so `C` is decided by `opts` alone (`\"red\" | \"green\"`). `fallback` is then merely checked: `\"blue\"` is not assignable, so `b` errors, while `\"red\"` is fine. Without `NoInfer`, `fallback` would widen `C` to include `\"blue\"`."
+    },
+    {
+      "subtopic": "Distribution suppression",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "`Exclude`, `Extract`, and `NonNullable` distribute over a union only because the checked type is a naked type parameter; wrapping the checked type in a 1-tuple would block distribution and change the result.",
+      "answer": true,
+      "explanation": "Distribution happens when the checked type is a naked type parameter and the argument is a union. Blocking distribution (e.g. wrapping in a 1-tuple) makes the conditional evaluate the union as a whole, generally producing a different — usually useless — answer."
+    },
+    {
+      "subtopic": "Required removes undefined",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given `interface User { id: number; email?: string }`, what is the type of the `email` property in `Required<User>`?",
+      "options": [
+        "`string` — the `-?` modifier removes both the optional marker and the implicit `| undefined`",
+        "`string | undefined` — the marker is removed but the union member stays",
+        "`string?` — the property type keeps the optional marker",
+        "`unknown` — `Required` widens unspecified property types"
+      ],
+      "answer": 0,
+      "explanation": "`Required` applies the `-?` mapping modifier, which removes the optional marker; the implicit `| undefined` that the optional contributed is also gone, so `email` becomes exactly `string` and a `Required<User>` value must supply a real email."
+    },
+    {
+      "subtopic": "PickByValue key remapping",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Reading the code, what is the resolved type of `Numbers`?",
+      "code": "type PickByValue<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };\ninterface Row { id: number; name: string; active: boolean; score: number }\ntype Numbers = PickByValue<Row, number>;",
+      "lang": "typescript",
+      "options": [
+        "`{ id: number; score: number }`",
+        "`{ id: number; name: string; active: boolean; score: number }`",
+        "`{ name: string; active: boolean }`",
+        "`{ id: never; name: never; active: never; score: never }`"
+      ],
+      "answer": 0,
+      "explanation": "The `as` key-remapping clause renames each key to itself when `T[K] extends number` and to `never` otherwise; keys remapped to `never` are dropped entirely. Only `id` and `score` have value type `number`, so they survive."
+    },
+    {
+      "subtopic": "Roll-your-own utilities",
+      "source": "typescript/utility-types-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Select all correct statements about writing your own utility types as described in the reviewer.",
+      "options": [
+        "`Mutable<T>` strips readonly using the `-readonly` mapping modifier",
+        "`DeepPartial<T>` is a recursive conditional type that re-applies itself to each property's type",
+        "`PickByValue<T, V>` filters keys by value type using an `as` clause that maps non-matching keys to `never`",
+        "`Mutable<T>` must be a compiler intrinsic because `-readonly` cannot be written in user-land",
+        "`DeepPartial<T>` can be written as a single non-recursive mapped type"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`Mutable` uses the `-readonly` modifier, `DeepPartial` recurses through nested objects, and `PickByValue` uses key remapping to `never`. `-readonly` is ordinary user-land syntax (not an intrinsic), and achieving depth inherently requires recursion, so the last two are false."
+    }
+  ]
+}

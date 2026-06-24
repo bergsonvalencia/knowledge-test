@@ -61,7 +61,7 @@
       "source": "dotnet/dependency-injection-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "When resolving a service manually from an `IServiceProvider`, why does the reviewer prefer `GetRequiredService<T>()` over `GetService<T>()`?",
+      "question": "When resolving a service manually from an `IServiceProvider`, why is `GetRequiredService<T>()` preferred over `GetService<T>()`?",
       "options": [
         "`GetRequiredService<T>()` throws if `T` isn't registered, so a missing registration fails loudly instead of returning `null`",
         "`GetRequiredService<T>()` is faster because it skips the container's lifetime checks",
@@ -153,14 +153,18 @@
       "source": "dotnet/dependency-injection-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "In which scenarios does the reviewer recommend `AddDbContextFactory` instead of the default `AddDbContext`? (Select all that apply.)",
+      "question": "In which scenarios should you use `AddDbContextFactory` instead of the default `AddDbContext`? (Select all that apply.)",
       "options": [
         "Blazor Server, where a circuit/component can outlive a request and concurrent renders may overlap",
         "Singletons or background services that need a `DbContext` outside a request scope",
         "Standard request-scoped controller actions in a typical ASP.NET Core API",
         "Anywhere you want short, explicitly-owned contexts you dispose deterministically"
       ],
-      "answer": [0, 1, 3],
+      "answer": [
+        0,
+        1,
+        3
+      ],
       "explanation": "The factory fits Blazor Server, singletons/background services, and any place you want short, explicitly-owned contexts you dispose yourself. Standard request-scoped controller actions are the normal case where `AddDbContext` (Scoped) is correct."
     },
     {
@@ -168,7 +172,7 @@
       "source": "dotnet/dependency-injection-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Why does the reviewer warn against calling `services.BuildServiceProvider()` yourself inside `Program.cs` to grab a service during registration?",
+      "question": "Why should you avoid calling `services.BuildServiceProvider()` yourself inside `Program.cs` to grab a service during registration?",
       "options": [
         "It builds a second, separate container with duplicate singletons and no scope validation (analyzer warning ASP0000)",
         "It permanently disables constructor injection for the rest of the app",
@@ -214,7 +218,11 @@
         "The container disposes an instance you supplied via `AddSingleton(new MyService())`",
         "The container disposes Transient disposables it created, tracked by the scope that resolved them"
       ],
-      "answer": [0, 1, 3],
+      "answer": [
+        0,
+        1,
+        3
+      ],
       "explanation": "The container owns disposal of the instances it creates: Scoped at scope end, Singleton at shutdown, and container-created Transients tracked by the resolving scope. It does NOT dispose an instance you constructed and registered yourself via `AddSingleton(new T())` — you own that object's lifetime."
     },
     {
@@ -222,7 +230,7 @@
       "source": "dotnet/dependency-injection-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Why does the reviewer recommend explicitly enabling `ValidateScopes` in **all** environments rather than relying on the defaults?",
+      "question": "Why is it recommended to explicitly enabling `ValidateScopes` in **all** environments rather than relying on the defaults?",
       "options": [
         "In non-Development environments scope validation is off by default, so a captive dependency is created silently and ships as a latent bug",
         "In all environments scope validation is off by default, so captive dependencies are never caught automatically",

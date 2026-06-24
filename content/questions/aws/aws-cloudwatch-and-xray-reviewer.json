@@ -1,0 +1,270 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Three pillars",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which AWS service is the native store for **traces** (the causal path of one request across services as a tree of segments/subsegments)?",
+      "options": [
+        "AWS X-Ray",
+        "CloudWatch Logs",
+        "CloudWatch Metrics",
+        "Amazon EventBridge"
+      ],
+      "answer": 0,
+      "explanation": "Traces live in AWS X-Ray (or any OTel backend via ADOT). CloudWatch Metrics holds aggregated numbers and CloudWatch Logs holds discrete timestamped events; EventBridge is an event bus, not an observability store."
+    },
+    {
+      "subtopic": "Metric identity",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A CloudWatch metric is uniquely identified by which combination?",
+      "options": [
+        "Namespace + metric name + the full set of dimensions",
+        "Metric name + region only",
+        "Namespace + a single primary dimension",
+        "Metric name + statistic + period"
+      ],
+      "answer": 0,
+      "explanation": "Identity is namespace + name + the complete dimension set; querying a different dimension combination is a different metric. Statistic and period are query-time aggregations, not part of the metric's identity."
+    },
+    {
+      "subtopic": "Metric resolution",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the storage granularity of a **standard-resolution** CloudWatch metric versus a **high-resolution** custom metric?",
+      "options": [
+        "Standard = 1 minute; high-resolution = 1 second",
+        "Standard = 5 minutes; high-resolution = 1 minute",
+        "Standard = 1 second; high-resolution = 1 millisecond",
+        "Standard = 1 minute; high-resolution = 100 milliseconds"
+      ],
+      "answer": 0,
+      "explanation": "Standard resolution stores at 1-minute granularity; high-resolution custom metrics store at 1-second granularity (at extra cost). 5-minute vs 1-minute describes basic vs detailed EC2 monitoring, not metric resolution."
+    },
+    {
+      "subtopic": "Percentiles",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For a user-facing latency SLO, why alarm on **p99** rather than `Average`?",
+      "options": [
+        "The average is dominated by fast requests and hides the slow tail that p99 exposes",
+        "Average cannot be used as an alarm statistic in CloudWatch",
+        "p99 is cheaper to compute and store than Average",
+        "Average requires high-resolution metrics while p99 does not"
+      ],
+      "answer": 0,
+      "explanation": "An average is pulled down by the bulk of fast requests, so a static-threshold Average alarm looks healthy while the slowest 1% time out; p99 reflects what those users actually experience. Average is a perfectly valid alarm statistic and is not inherently more expensive."
+    },
+    {
+      "subtopic": "EventBridge naming",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "CloudWatch Events and Amazon EventBridge are two separate products that must be wired together.",
+      "answer": false,
+      "explanation": "They are the same service; EventBridge is simply the current name for what used to be called CloudWatch Events. Treating them as two distinct products is a known trap."
+    },
+    {
+      "subtopic": "PutMetricData vs EMF",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A high-throughput .NET Lambda already writes structured JSON logs and needs to emit an `OrdersPlaced` count and `LatencyMs` per invocation **without** adding latency or an extra API call on the hot path, keeping each metric correlated to its log line. What should it use?",
+      "options": [
+        "Embedded Metric Format (EMF) — write one structured log line and let CloudWatch extract the metric",
+        "A synchronous `PutMetricData` call per invocation",
+        "A metric filter applied to the function's log group",
+        "A subscription filter forwarding events to Kinesis Data Streams"
+      ],
+      "answer": 0,
+      "explanation": "EMF emits one structured log line from which CloudWatch extracts the metric asynchronously — no hot-path API call, no added latency, and the metric shares dimensions/properties with its log line. `PutMetricData` adds a synchronous call per invocation; metric/subscription filters are downstream of logs and don't solve the per-invocation emission."
+    },
+    {
+      "subtopic": "Metric vs subscription filters",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key difference between a CloudWatch Logs **metric filter** and a **subscription filter**?",
+      "options": [
+        "A metric filter produces a CloudWatch metric (a number you can alarm on); a subscription filter streams raw matching log events to Lambda/Kinesis/Firehose/OpenSearch",
+        "A metric filter streams events to OpenSearch; a subscription filter produces a metric",
+        "Both produce metrics, but the subscription filter does it in real time and the metric filter in batch",
+        "A metric filter forwards events to SNS; a subscription filter forwards them to SQS"
+      ],
+      "answer": 0,
+      "explanation": "A metric filter distills matching log patterns into an alarmable metric; a subscription filter fans raw matching events out to Lambda, Kinesis Data Streams, Firehose, or OpenSearch. They are not interchangeable — one makes a number, the other forwards events."
+    },
+    {
+      "subtopic": "Alarm types",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A p99 latency alarm pages constantly during predictable 9 a.m. and 5 p.m. traffic peaks (users are fine) yet misses a real midnight regression. Which alarm type best fixes this?",
+      "options": [
+        "Anomaly-detection alarm",
+        "Static-threshold alarm with more evaluation periods",
+        "Composite alarm over the latency alarm",
+        "A high-resolution version of the same static alarm"
+      ],
+      "answer": 0,
+      "explanation": "An anomaly-detection alarm trains a band from history and fires when the metric leaves it, handling daily/weekly seasonality that a single static threshold gets wrong at both peak and trough. A composite alarm reduces storms but still depends on a poorly-fitting underlying threshold."
+    },
+    {
+      "subtopic": "Composite alarms",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does a **composite alarm** reduce alert fatigue when a latency alarm, an error-rate alarm, and an unhealthy-host alarm all fire together during one outage?",
+      "options": [
+        "It evaluates a boolean expression over the child alarms and notifies only when their combination signals a real incident, and can suppress the children's own notifications while active",
+        "It deletes the child alarms automatically once an incident is detected",
+        "It increases each child alarm's evaluation periods so they fire less often",
+        "It routes every child alarm's notification through a single SNS topic without changing when they fire"
+      ],
+      "answer": 0,
+      "explanation": "A composite alarm is a boolean expression over other alarms (e.g. ALARM(latency) AND ALARM(errors) AND ALARM(unhealthyHosts)); it pages once when the combination indicates a real incident and can mute the children while it is active. It does not delete children or merely re-route their independent notifications."
+    },
+    {
+      "subtopic": "Annotations vs metadata",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "During an incident you must find only the X-Ray traces from gold-tier customers that hit a fault, using a filter expression like `annotation.customerTier = \"gold\" AND fault`. How should `customerTier` be recorded on the segment?",
+      "options": [
+        "As an annotation, because annotations are indexed and filterable",
+        "As metadata, because metadata supports arbitrary JSON",
+        "As a high-cardinality metric dimension",
+        "As a subsegment name so the service map can group it"
+      ],
+      "answer": 0,
+      "explanation": "Only annotations are indexed/searchable, so filter expressions can query them; metadata rides along for context but is not searchable. Annotations are limited to strings/numbers/booleans, which `customerTier` satisfies."
+    },
+    {
+      "subtopic": "Sampling rules",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given the X-Ray sampling rule below plus a default rule of `{ \"fixed_target\": 1, \"rate\": 0.05 }`, what happens to `/checkout` requests?",
+      "code": "{ \"service_name\": \"checkout-service\", \"url_path\": \"/checkout*\",\n  \"fixed_target\": 2, \"rate\": 1.0, \"priority\": 100 }",
+      "lang": "json",
+      "options": [
+        "Every `/checkout` request is sampled, because the higher-priority rule matches and its rate is 1.0",
+        "Only about 5% of `/checkout` requests are sampled, because the default rule overrides named rules",
+        "`/checkout` requests are never sampled, because two rules conflict and cancel out",
+        "Exactly 2 `/checkout` requests per second are sampled and the rest are dropped"
+      ],
+      "answer": 0,
+      "explanation": "The lower priority number wins and the first matching rule applies, so `/checkout*` matches the priority-100 rule with `rate: 1.0` and is always sampled (the `fixed_target` reservoir of 2/sec is captured first, then 100% of the remainder). The default 5% rule applies only to non-matching paths."
+    },
+    {
+      "subtopic": "Trace context propagation",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Inside a Lambda function, how do you obtain the active X-Ray trace id so you can log it as a correlation id that joins logs to traces?",
+      "options": [
+        "Read the `_X_AMZN_TRACE_ID` environment variable",
+        "Read the `X-Amzn-Trace-Id` value from the SNS message body",
+        "Call `PutMetricData` and read the returned trace id",
+        "Parse the W3C `traceparent` from the Lambda response headers"
+      ],
+      "answer": 0,
+      "explanation": "Lambda exposes the active trace id via the `_X_AMZN_TRACE_ID` environment variable; logging it ties the function's logs to its trace. `X-Amzn-Trace-Id` is the propagation header on HTTP hops, not something pulled from an SNS body, and `PutMetricData` returns no trace id."
+    },
+    {
+      "subtopic": "Unified CloudWatch agent",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about the **unified CloudWatch agent** on EC2 are correct? (Select all that apply.)",
+      "options": [
+        "It is required to collect in-guest memory and disk-used metrics, which the hypervisor cannot see from outside",
+        "It collects both host metrics and logs from a single agent and config file",
+        "It can collect StatsD and collectd metrics and emit EMF",
+        "Enabling detailed EC2 monitoring alone reports in-guest memory and disk-used without the agent",
+        "It only works on EC2 and cannot run on-premises or in containers"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The unified agent is one daemon/config that collects host metrics and logs, supports StatsD/collectd and EMF, and is the only way to get guest-OS memory/disk metrics. Detailed monitoring just makes existing metrics 1-minute (not in-guest memory), and the agent also runs on-prem and in containers."
+    },
+    {
+      "subtopic": "Insights family",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What distinguishes CloudWatch **Synthetics canaries** from **RUM**?",
+      "options": [
+        "Canaries are proactive scripted checks that hit an endpoint on a schedule; RUM is real-user telemetry reported from the browser",
+        "Canaries report telemetry from real users; RUM runs scripted checks on a schedule",
+        "Both are proactive synthetic checks, differing only in language (Node vs Python)",
+        "Canaries collect traces while RUM collects metrics, but neither involves real users"
+      ],
+      "answer": 0,
+      "explanation": "Synthetics canaries proactively exercise an endpoint from outside before a real user hits a broken path; RUM is reactive/real, measuring what actual users experienced via browser JS. The proactive-vs-real distinction is the discriminator."
+    },
+    {
+      "subtopic": "EMF cardinality",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "After a deploy, log ingestion is flat but the custom-metric count exploded and the bill jumped. In this EMF snippet, which change most likely caused it?",
+      "code": "metrics.SetDimensions(new DimensionSet(\"Service\", \"checkout\"));\nmetrics.PutMetric(\"LatencyMs\", 87, Unit.MILLISECONDS);\n// added in the deploy:\nmetrics.SetDimensions(new DimensionSet(\"Service\", \"checkout\", \"OrderId\", \"ord-9f3a\"));",
+      "lang": "csharp",
+      "options": [
+        "`OrderId` was promoted into a dimension set, so every unique order id became a separate billable custom metric",
+        "`PutMetric` was called with milliseconds instead of count, doubling the metric charge",
+        "Two `SetDimensions` calls are not allowed and silently duplicate every metric",
+        "Adding a second dimension set disables EMF extraction, forcing fallback to `PutMetricData`"
+      ],
+      "answer": 0,
+      "explanation": "Cardinality is the cost driver: every unique combination of dimension values is a separate billable custom metric, so putting a high-cardinality `OrderId` into a dimension multiplies metrics. High-cardinality ids belong in EMF properties (searchable in logs), not dimensions; the unit and multiple dimension sets are not the cause."
+    },
+    {
+      "subtopic": "X-Ray daemon vs ADOT",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A new microservice must export to X-Ray today but the org may switch to a third-party tracing backend next year. Which statements support choosing **OpenTelemetry + the ADOT Collector** over the X-Ray SDK + daemon? (Select all that apply.)",
+      "options": [
+        "ADOT is OpenTelemetry-standard, so swapping backends is a collector-config change rather than a code rewrite",
+        "One ADOT Collector can ingest traces, metrics, and logs and export to X-Ray, CloudWatch, AMP, or third parties",
+        "The X-Ray daemon is trace-only and X-Ray-proprietary, locking instrumentation to X-Ray",
+        "The X-Ray daemon can export OTLP to any third-party backend, so it is equally portable",
+        "ADOT cannot export to X-Ray, so it forces an immediate migration away from AWS"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "ADOT is the vendor-neutral, multi-signal, multi-backend path, so a backend swap is a config change; the X-Ray daemon is trace-only, X-Ray-proprietary, and not OTLP-exporting. ADOT does export to X-Ray today, so no forced migration."
+    },
+    {
+      "subtopic": "Percentile support",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "CloudWatch can compute a meaningful p99 from a custom metric that was published as only a pre-rolled `Average` value with no underlying distribution or sample count.",
+      "answer": false,
+      "explanation": "Percentiles require CloudWatch to retain the underlying distribution; they are supported when metrics are published with full data points or with `StatisticValues` (which carries sample count), but not when only a pre-rolled `Average` is available."
+    },
+    {
+      "subtopic": "Mixed propagators",
+      "source": "aws/aws-cloudwatch-and-xray-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A fleet mixes services that propagate the X-Ray `X-Amzn-Trace-Id` header with services that propagate W3C `traceparent`, and traces break at the boundary between them. What is the correct senior fix?",
+      "options": [
+        "Standardize on one propagator across the fleet, using ADOT to translate between W3C trace context and X-Ray ids",
+        "Disable sampling so every request is captured and the broken edges disappear",
+        "Move all annotations to metadata so the trace ids stop conflicting",
+        "Switch every service to high-resolution metrics so the trace ids align on a 1-second boundary"
+      ],
+      "answer": 0,
+      "explanation": "Mixed propagators break traces at the boundary; the fix is to choose one propagator consistently, and ADOT can translate between W3C trace context and X-Ray ids so mixed fleets interoperate. Sampling, annotations/metadata, and metric resolution are unrelated to header propagation."
+    }
+  ]
+}

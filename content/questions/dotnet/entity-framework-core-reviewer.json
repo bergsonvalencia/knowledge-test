@@ -146,7 +146,7 @@
       "source": "dotnet/entity-framework-core-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "For a production app running **multiple instances**, which migration approach does the reviewer recommend, and why?",
+      "question": "For a production app running **multiple instances**, which migration approach is recommended, and why?",
       "options": [
         "Generate an idempotent SQL script (`dotnet ef migrations script --idempotent`) and apply it through the deployment pipeline, because multiple instances racing `Database.Migrate()` on boot can conflict",
         "Call `Database.Migrate()` at startup in every instance, because EF serializes concurrent migrations automatically",
@@ -199,7 +199,11 @@
         "Lazy loading is enabled by default and must be turned off to use `Include`",
         "Lazy loading guarantees a single JOIN per parent entity"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "Lazy loading is off by default and needs `UseLazyLoadingProxies()` plus `virtual` navs. When it's off and you don't `Include`, an un-loaded reference nav is null and a collection nav is empty. It is not on by default, and it produces extra per-access queries, not a single JOIN."
     },
     {
@@ -215,7 +219,11 @@
         "Default every navigation to lazy loading so data loads only when touched",
         "Call `ToListAsync()` early and filter the list in memory for flexibility"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "Projecting with `Select`, using `AsNoTracking` for reads, and diagnosing with `ToQueryString()` are all on the checklist. Defaulting to lazy loading invites N+1, and materializing then filtering in memory is the anti-pattern the reviewer warns against."
     },
     {

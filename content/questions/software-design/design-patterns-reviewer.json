@@ -1,0 +1,280 @@
+{
+  "topic": "software-design",
+  "source": "software-design/design-patterns-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Pattern families",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "The reviewer groups the ten patterns into three families with the mnemonic **Create, Compose, Communicate**. Which family is concerned with *how objects are composed into larger structures while staying flexible*?",
+      "options": [
+        "Structural",
+        "Creational",
+        "Behavioral",
+        "Concurrency"
+      ],
+      "answer": 0,
+      "explanation": "Structural patterns (Adapter, Proxy, Facade) are about how objects are composed. Creational is about how objects are created; Behavioral is about how they communicate; 'Concurrency' is not one of the three families."
+    },
+    {
+      "subtopic": "Singleton",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the C# Singleton example, why is the `Logger` constructor declared `private`?",
+      "options": [
+        "So external callers cannot `new` the class and must go through the single static access point",
+        "So the class can be inherited but not instantiated directly",
+        "To make the type thread-safe without any further mechanism",
+        "Because `Lazy<T>` requires the constructor to be private"
+      ],
+      "answer": 0,
+      "explanation": "A private constructor blocks external `new`, forcing all callers through `Instance` so there is exactly one shared instance. A private constructor actually prevents inheritance-based instantiation rather than enabling it, and `Lazy<T>` does not require a private constructor."
+    },
+    {
+      "subtopic": "Builder vs Factory",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to the distinguishing question, what is the core difference between Factory and Builder?",
+      "options": [
+        "Factory chooses *which* type to instantiate in one step; Builder assembles *one* complex object step by step",
+        "Factory produces immutable objects; Builder produces mutable objects",
+        "Factory is a Structural pattern; Builder is a Behavioral pattern",
+        "Factory always uses subclassing; Builder always uses a static method"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer frames it as 'Am I choosing a type, or assembling parts?' — Factory picks a concrete type in one step, Builder assembles one object piece by piece. Both are Creational, and neither is tied to mutability or a fixed implementation mechanism."
+    },
+    {
+      "subtopic": "Strategy",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In the Strategy pattern, the Context delegates the work to a strategy reference without knowing which concrete strategy implementation it received.",
+      "answer": true,
+      "explanation": "The reviewer states the Context 'holds a strategy reference and delegates the work to it, oblivious to which concrete one it got' — the concrete choice is made by the client/DI container at composition time."
+    },
+    {
+      "subtopic": "Facade",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which .NET type does the reviewer cite as a Facade that fronts the change tracker, query pipeline, and connection management?",
+      "options": [
+        "`DbContext`",
+        "`StringBuilder`",
+        "`Lazy<T>`",
+        "`IComparer<T>`"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer names `DbContext` (and `HttpClient`) as Facades over complex subsystems. `StringBuilder` is the Builder example, `Lazy<T>` is used for Singleton, and `IComparer<T>` is the Strategy example."
+    },
+    {
+      "subtopic": "Singleton trade-offs",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The reviewer recommends that, in modern .NET, you usually get your single shared instance not via a static `Instance` property but by registering the type with a Singleton lifetime in the DI container. What is the primary advantage of doing so?",
+      "options": [
+        "The dependency becomes injected and mockable instead of hidden global state that is hard to test and defeats DIP",
+        "The DI container guarantees the object is created eagerly at startup, improving cold-start latency",
+        "It removes the need for the type to be thread-safe, since the container serializes all access",
+        "It allows multiple instances to be created on demand while still appearing as one"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer's point is that a static `Instance` is hidden global state that hard-wires dependencies, defeats DIP, and is hard to mock; a DI-registered singleton is injected and mockable. The container does not eager-create by default, does not make the type inherently thread-safe for its own state, and a singleton still means one instance."
+    },
+    {
+      "subtopic": "Adapter scope creep",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The reviewer warns that an Adapter that does more than translate has 'drifted into Decorator or Proxy territory'. Which added responsibility would still be legitimate for an Adapter?",
+      "options": [
+        "Reshaping a method signature, e.g. converting a dollars-based call into the adaptee's cents-based call",
+        "Caching the results of the wrapped object's calls",
+        "Enforcing access control before delegating to the wrapped object",
+        "Adding logging behavior around the wrapped object's calls"
+      ],
+      "answer": 0,
+      "explanation": "Pure interface/signature translation (dollars to cents, like `StripeAdapter`) is the Adapter's job. Caching and access control are Proxy concerns; adding behavior such as logging is Decorator territory — the reviewer explicitly flags these as drift."
+    },
+    {
+      "subtopic": "Proxy vs Decorator",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Proxy 'shares Decorator's exact shape'. What distinguishes Proxy from Decorator?",
+      "options": [
+        "Intent: Proxy's purpose is to *control access* (lazy, security, caching, remoting), whereas Decorator's is to *add behavior*",
+        "Proxy implements a different interface than the wrapped object; Decorator keeps the same interface",
+        "Proxy can only wrap one object, while a Decorator can wrap many",
+        "Proxy is a Creational pattern, while Decorator is Structural"
+      ],
+      "answer": 0,
+      "explanation": "Both keep the same interface and wrap a single object, so the difference is intent: Proxy controls access; Decorator adds behavior. Proxy keeps the same interface (it doesn't convert it like Adapter), and Decorator is not Creational."
+    },
+    {
+      "subtopic": "Observer pitfalls",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are genuine pitfalls or characteristics of the Observer pattern? (Select all that apply.)",
+      "options": [
+        "Forgetting to unsubscribe can leak memory because the subject keeps observers alive",
+        "Notification order across observers is non-deterministic",
+        "A slow or throwing observer can stall or break the whole broadcast",
+        "The subject must hold a direct reference to each concrete observer type",
+        "Communication is many-to-many, with observers coordinating each other"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The reviewer lists the memory leak from missed unsubscription, non-deterministic notification order, and a slow/throwing observer stalling the broadcast. The subject depends only on the observer abstraction (not concrete types), and Observer is one-to-many broadcast — not many-to-many coordination (that is Mediator)."
+    },
+    {
+      "subtopic": "Command pattern code reading",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the Command example, what is the content of `doc` after this sequence runs?",
+      "code": "var doc = new StringBuilder();\nvar editor = new Editor();\neditor.Run(new AppendTextCommand(doc, \"Hello\"));\neditor.Run(new AppendTextCommand(doc, \" World\"));\neditor.Undo();\n// AppendTextCommand.Undo() removes the last 'text.Length' chars",
+      "lang": "csharp",
+      "options": [
+        "`Hello`",
+        "`Hello World`",
+        "`World`",
+        "`` (empty)"
+      ],
+      "answer": 0,
+      "explanation": "Two appends produce 'Hello World'; `Undo()` pops the most recent command (' World', length 6) and removes those 6 characters, leaving 'Hello'. Only one undo runs, so 'Hello' remains rather than the empty string."
+    },
+    {
+      "subtopic": "Factory variants",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The reviewer distinguishes Factory variants. Which description correctly matches **Abstract Factory**?",
+      "options": [
+        "One factory builds a *family* of related products",
+        "A subclass overrides the creation step to decide the concrete type",
+        "A single static method returns a concrete product based on a string argument",
+        "A fluent chain assembles one complex product step by step"
+      ],
+      "answer": 0,
+      "explanation": "Abstract Factory builds a family of related products. The subclass-overrides-creation description is Factory Method; the static string-switch is a simple/static factory; the fluent step-by-step assembly is Builder, not a Factory at all."
+    },
+    {
+      "subtopic": "Mediator code reading",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the `ChatRoom` Mediator, `Send` iterates `_users.Where(u => u.Name != from)`. When `alice.Send(\"hi\")` runs after both Alice and Bob are registered, what happens?",
+      "code": "public void Send(string from, string message)\n{\n    foreach (var u in _users.Where(u => u.Name != from))\n        u.Receive(from, message);\n}",
+      "lang": "csharp",
+      "options": [
+        "Bob receives the message; Alice (the sender) is excluded",
+        "Both Alice and Bob receive the message",
+        "Only Alice receives the message",
+        "No one receives the message because the filter excludes everyone"
+      ],
+      "answer": 0,
+      "explanation": "The `u.Name != from` filter excludes the sender, so Alice does not receive her own message while Bob does. The hub routes the message; senders stay decoupled and never reference each other directly."
+    },
+    {
+      "subtopic": "Builder Build() responsibility",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "In the Builder example, `Build()` is the terminal step that validates the accumulated parts (e.g. throwing if the URL is empty) and returns the finished, often immutable, product.",
+      "answer": true,
+      "explanation": "The reviewer describes `Build()` as the terminal step that validates and returns the finished product; the example throws `InvalidOperationException` when the URL is missing and returns an immutable `record`."
+    },
+    {
+      "subtopic": "Mediator vs Observer vs Facade",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team has many UI components that must react to each other's changes — selecting a value in one re-filters several others, and toggles enable/disable still more, with the rules spread across pairwise event handlers. Per the distinctions, which pattern best replaces this tangle?",
+      "options": [
+        "Mediator — centralize the many-to-many coordination logic in one hub the colleagues talk through",
+        "Observer — have each component broadcast one-to-many to subscribers",
+        "Facade — put a single simplified entry point in front of the components",
+        "Strategy — inject interchangeable algorithms for each component's behavior"
+      ],
+      "answer": 0,
+      "explanation": "The scenario is many-to-many peer coordination with interaction rules, which is exactly Mediator's job (the hub colleagues talk through). Observer is one-directional broadcast (no coordination), Facade only simplifies entry into a subsystem, and Strategy swaps algorithms — neither coordinates peers."
+    },
+    {
+      "subtopic": "Singleton thread-safety",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The `Logger` uses `private static readonly Lazy<Logger> _lazy = new(() => new Logger());`. Why does this give thread-safe lazy initialization without hand-written double-checked locking?",
+      "options": [
+        "`Lazy<T>` uses thread-safe publication by default, so the runtime serializes the factory and ensures the value is created at most once",
+        "`static readonly` fields are inherently immutable, so no synchronization of the instance is ever needed",
+        "Marking the class `sealed` prevents subclasses from racing on construction",
+        "`Console.WriteLine` inside `Log` acquires a lock that protects the instance"
+      ],
+      "answer": 0,
+      "explanation": "`Lazy<T>` defaults to `LazyThreadSafetyMode.ExecutionAndPublication`, so the runtime serializes the value factory and guarantees a single instance — replacing hand-written double-checked locking. `static readonly` only fixes the `Lazy<T>` reference, not the lazy creation of the inner value; `sealed` and `Console.WriteLine`'s locking are irrelevant to instance creation safety."
+    },
+    {
+      "subtopic": "Proxy code behavior",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Consider the `ReportProxy`. Given `IReport report = new ReportProxy([\"cfo\"]);`, what happens for the call `report.Read(\"intern\")`, and what does it imply about when `RealReport` is constructed?",
+      "code": "public string Read(string user)\n{\n    if (!allowed.Contains(user)) throw new UnauthorizedAccessException(user);\n    _real ??= new RealReport();   // lazy: no DB hit until someone is let in\n    return _real.Read(user);\n}",
+      "lang": "csharp",
+      "options": [
+        "It throws `UnauthorizedAccessException` before `_real` is assigned, so `RealReport` (the DB load) is never constructed for an unauthorized caller",
+        "It constructs `RealReport` first, then throws, so the DB is hit even for unauthorized callers",
+        "It returns `\"Q2 financials\"` because the proxy delegates regardless of the allow-list",
+        "It throws a `NullReferenceException` because `_real` is still null"
+      ],
+      "answer": 0,
+      "explanation": "The guard runs first and throws for a disallowed user, so the `_real ??= new RealReport()` line is never reached — the expensive load is skipped. This is the point of combining the protection and virtual proxy: no DB hit until an authorized caller arrives."
+    },
+    {
+      "subtopic": "Strategy vs State vs Command",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "The reviewer disambiguates Strategy, State, and Command (noting State is not one of the 10). Which statements are accurate per the reviewer? (Select all that apply.)",
+      "options": [
+        "Strategy is an interchangeable *algorithm* the client picks at composition time",
+        "State is behavior that changes as the object's internal state transitions — the object swaps its *own* strategy",
+        "Command packages a *request* as an object that can be parameterized, queued, and undone",
+        "Strategy inherently provides undo/redo via a history stack",
+        "Command's purpose is to select among interchangeable sorting algorithms"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The reviewer defines Strategy as a client-picked algorithm, State as self-changing behavior across transitions, and Command as a storable/undoable request. Undo/redo via a history stack is a Command benefit, not Strategy; and selecting among sorting algorithms is Strategy's job, not Command's."
+    },
+    {
+      "subtopic": "Factory and DIP",
+      "source": "software-design/design-patterns-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The reviewer says Factory 'pairs so naturally with DI and DIP' and that a DI container 'is itself just a configurable factory'. Which statement best captures the shared principle that makes this pairing natural?",
+      "options": [
+        "Both keep callers depending on an abstraction and never on a `new` of a concrete type",
+        "Both guarantee exactly one instance of each registered type is ever created",
+        "Both eliminate the need for interfaces by resolving concrete types directly",
+        "Both assemble a single complex object step by step before returning it"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer's point is that Factory and DI/DIP both keep callers depending on an abstraction rather than on a `new ConcreteType()`. Singleton lifetime (one instance) is a separate concern, DI relies on abstractions rather than eliminating interfaces, and step-by-step assembly is Builder."
+    }
+  ]
+}

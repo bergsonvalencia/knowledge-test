@@ -1,0 +1,271 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-functions-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "triggers vs bindings",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How many triggers can a single Azure Function have, and are bindings required?",
+      "options": [
+        "Exactly one trigger; bindings are optional",
+        "One or more triggers; bindings are required",
+        "Exactly one trigger; at least one input binding is required",
+        "Zero or more triggers; bindings are optional"
+      ],
+      "answer": 0,
+      "explanation": "A function has exactly one trigger (what causes it to run), and bindings are optional. If you need several event sources you write several functions; an input binding is never mandatory."
+    },
+    {
+      "subtopic": "serverless model",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A Function App is the unit of deployment and scale: all functions in the app share the same host process and plan and scale together.",
+      "answer": true,
+      "explanation": "The Function App is the deployment/scale unit. All functions in it share configuration, runtime, and plan, and scale out together as a whole app."
+    },
+    {
+      "subtopic": "input vs output bindings",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly describes input versus output bindings?",
+      "options": [
+        "Input bindings read data into the function; output bindings write data out of it",
+        "Input bindings write results out; output bindings read source data in",
+        "Both input and output bindings only read data; the trigger writes",
+        "Input bindings invoke the function; output bindings cannot supply data"
+      ],
+      "answer": 0,
+      "explanation": "Input bindings declaratively read data into the function (e.g. a blob or Cosmos lookup); output bindings write data out (e.g. a queue message or table row)."
+    },
+    {
+      "subtopic": "Consumption plan timeout",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the default and maximum function execution timeout on the Consumption plan?",
+      "options": [
+        "5 minutes default, 10 minutes maximum",
+        "1 minute default, 5 minutes maximum",
+        "10 minutes default, 30 minutes maximum",
+        "5 minutes default, unbounded maximum"
+      ],
+      "answer": 0,
+      "explanation": "On Consumption the default timeout is 5 minutes and the maximum is 10 minutes. Effectively unbounded runs require Premium/Dedicated with functionTimeout configured."
+    },
+    {
+      "subtopic": "in-process end of support",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For modern .NET Azure Functions, which execution model is the recommended path forward, and what is the key reason to migrate off the other?",
+      "options": [
+        "Isolated worker; in-process support ends Nov 10, 2026",
+        "In-process; isolated worker support ends Nov 10, 2026",
+        "Isolated worker; in-process has higher per-execution billing",
+        "In-process; isolated worker cannot use dependency injection"
+      ],
+      "answer": 0,
+      "explanation": "The isolated worker model is the path forward; in-process .NET support ends Nov 10, 2026. Isolated also gives runtime independence, own DI/middleware, and avoids assembly-version conflicts."
+    },
+    {
+      "subtopic": "isolated worker trade-offs",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are genuine advantages of the isolated worker model over in-process? (Select all that apply.)",
+      "options": [
+        "It decouples your assembly/runtime from the host, avoiding assembly-version conflicts",
+        "It lets you own Program.cs with a custom middleware pipeline and DI lifecycle",
+        "It can run .NET versions decoupled from the host, including .NET Framework 4.8",
+        "It has lower cold start than in-process",
+        "It gives direct access to rich host types like HttpRequest and IActionResult"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Isolated decouples the runtime (avoiding assembly conflicts), gives full Program.cs/middleware/DI control, and can target versions including .NET Framework 4.8. It has slightly HIGHER cold start, and rich host types like HttpRequest/IActionResult belong to the in-process model (isolated uses HttpRequestData/HttpResponseData)."
+    },
+    {
+      "subtopic": "plan selection",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need serverless economics (scale to zero, pay-per-use) PLUS VNet integration and always-ready instances to eliminate cold start. Which hosting plan is the modern recommendation?",
+      "options": [
+        "Flex Consumption",
+        "Consumption",
+        "Dedicated (App Service) with Always On",
+        "Container Apps"
+      ],
+      "answer": 0,
+      "explanation": "Flex Consumption is the modern default: serverless economics with VNet integration and always-ready instances to kill cold start. Plain Consumption lacks VNet and warm instances; Dedicated does not scale to zero."
+    },
+    {
+      "subtopic": "throughput formula",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is instance count alone an incomplete picture of a Function App's throughput?",
+      "options": [
+        "Each instance runs many invocations in parallel, so throughput = instances × per-instance concurrency",
+        "Instances are billed per-second, so count only affects cost, not throughput",
+        "The scale controller caps every instance to exactly one invocation at a time",
+        "Throughput is determined solely by the storage account's IOPS, not instances"
+      ],
+      "answer": 0,
+      "explanation": "Throughput equals instances multiplied by per-instance concurrency. Each instance processes many invocations concurrently, so tuning maxConcurrentCalls/batchSize matters as much as how many instances exist."
+    },
+    {
+      "subtopic": "at-least-once idempotency",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Most Azure Functions triggers deliver at-least-once. What is the correct way to handle the resulting risk of duplicate processing?",
+      "options": [
+        "Make the handler idempotent (dedup on a stable id, upserts, or conditional/ETag writes)",
+        "Disable retries so a message is only ever delivered once",
+        "Rely on host-level in-process retry policies to guarantee exactly-once",
+        "Set maxDeliveryCount to 1 so duplicates are impossible"
+      ],
+      "answer": 0,
+      "explanation": "You cannot prevent at-least-once redelivery, so handlers must be idempotent (stable-id dedup, upserts, conditional/ETag writes). In-process retry policies are best-effort, not a delivery or exactly-once guarantee, and lowering maxDeliveryCount does not stop redelivery before that limit."
+    },
+    {
+      "subtopic": "poison and dead-letter destinations",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "After repeated failures, where do failed messages go for Service Bus versus Azure Storage queues?",
+      "options": [
+        "Service Bus dead-letters after maxDeliveryCount; Storage queues move to a `<queue>-poison` queue",
+        "Both go to a `<queue>-poison` queue",
+        "Service Bus moves to `<queue>-poison`; Storage queues dead-letter",
+        "Both are dropped silently once maxDeliveryCount is exceeded"
+      ],
+      "answer": 0,
+      "explanation": "Service Bus has a dead-letter queue (DLQ) reached after maxDeliveryCount; Azure Storage queues move the message to a `<queue>-poison` queue. They are durable destinations, not silent drops."
+    },
+    {
+      "subtopic": "bindings vs SDK",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "When would you drop from declarative bindings down to using the SDK directly in code? (Select all that apply.)",
+      "options": [
+        "You need multi-message transactions across entities",
+        "You need streaming of large payloads or custom retry/backoff",
+        "You need a feature newer than what the binding exposes",
+        "You want the host to manage connection pooling and batching for you",
+        "You want plain types so the function body is easy to unit-test"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Use the SDK for control bindings don't expose: cross-entity transactions, streaming, custom retry, dynamic targets, or newer features. Host-managed connection pooling/batching and easy-to-test plain types are advantages of bindings, not reasons to abandon them."
+    },
+    {
+      "subtopic": "blob trigger reliability",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The classic polling blob trigger on Consumption can miss blobs at high scale, so the Event Grid-based blob trigger source is the recommended production option for low latency and reliable delivery.",
+      "answer": true,
+      "explanation": "The classic blob trigger polls the container (latency and possible misses at high scale). The Event Grid-based source pushes events, giving low latency and reliable delivery, and is the recommended production approach."
+    },
+    {
+      "subtopic": "SDK client reuse",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is it a problem to `new` up an SDK client (e.g. a Service Bus or HTTP client) per function invocation under scale, and what is the fix?",
+      "options": [
+        "It exhausts sockets/connections; register the client as a singleton and reuse it",
+        "It increases GB-second billing; create the client in a static constructor per call",
+        "It breaks idempotency; create a fresh client for every retry",
+        "It forces a cold start on each call; disable connection pooling"
+      ],
+      "answer": 0,
+      "explanation": "Creating a client per invocation exhausts sockets/connections at scale. Register clients as singletons (e.g. via AddAzureClients/DI) and reuse them — which is exactly what bindings already do for you."
+    },
+    {
+      "subtopic": "Durable orchestrator determinism",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An orchestrator function behaves inconsistently across runs. It calls `Guid.NewGuid()` and branches on `DateTime.UtcNow.Hour`. What is the root cause and the correct fix?",
+      "code": "[Function(\"Orch\")]\npublic async Task Run([OrchestrationTrigger] TaskOrchestrationContext ctx)\n{\n    var id = Guid.NewGuid();\n    if (DateTime.UtcNow.Hour < 9)\n        await ctx.CallActivityAsync(\"Defer\", id);\n    else\n        await ctx.CallActivityAsync(\"Process\", id);\n}",
+      "lang": "csharp",
+      "options": [
+        "Both calls are non-deterministic and break replay; use `ctx.NewGuid()` and `ctx.CurrentUtcDateTime`",
+        "The orchestrator is missing an [ActivityTrigger]; add one to make it deterministic",
+        "Guid.NewGuid() is fine, but DateTime.UtcNow must be awaited as an activity",
+        "Both are fine; the inconsistency is caused by missing retry policies on the activities"
+      ],
+      "answer": 0,
+      "explanation": "Orchestrators are replayed from history on every await, so Guid.NewGuid() and DateTime.UtcNow produce different values each replay, corrupting the workflow. Use the deterministic ctx.NewGuid() and ctx.CurrentUtcDateTime; any real randomness or I/O must move into an activity."
+    },
+    {
+      "subtopic": "Durable function types",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In Durable Functions, where do side effects (I/O, external calls) belong, and how are Durable Entities processed?",
+      "options": [
+        "Side effects belong in activity functions; each entity processes one message at a time (serialized)",
+        "Side effects belong in the orchestrator; entities process messages in parallel for throughput",
+        "Side effects belong in the client function; entities are stateless and non-addressable",
+        "Side effects belong in activities; entities process all messages concurrently per key"
+      ],
+      "answer": 0,
+      "explanation": "Activities are the only place side effects belong (orchestrators must stay deterministic and side-effect-free). Durable Entities hold addressable per-key state and process one operation at a time, serialized per entity."
+    },
+    {
+      "subtopic": "fan-out/fan-in",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In this Durable Functions snippet, what does the framework guarantee about the parallel work, and what is `Task.WhenAll` providing here?",
+      "code": "var tasks = new List<Task<long>>();\nforeach (var file in await context.CallActivityAsync<string[]>(nameof(GetFileList), dir))\n    tasks.Add(context.CallActivityAsync<long>(nameof(CopyFile), file));\n\nlong[] results = await Task.WhenAll(tasks);\nlong total = results.Sum();",
+      "lang": "csharp",
+      "options": [
+        "It is fan-out/fan-in: activities run in parallel and the framework durably tracks completion across instance recycles, with WhenAll as the durable join",
+        "It runs the activities strictly sequentially; WhenAll just collects the return values",
+        "It runs the activities on the client function and blocks the orchestrator thread until all finish",
+        "Task.WhenAll forces all activities onto a single instance to preserve ordering"
+      ],
+      "answer": 0,
+      "explanation": "Adding tasks without awaiting fans out the CopyFile activities in parallel; await Task.WhenAll is the fan-in/durable join. The framework durably tracks completion even across instance recycles, so progress survives restarts."
+    },
+    {
+      "subtopic": "ordering vs scale",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Scaling a Function App out to many instances breaks global message ordering. Which approach preserves ordering while still allowing some parallelism?",
+      "options": [
+        "Use Service Bus sessions (one session processed by one instance at a time) or Event Hubs partitions",
+        "Raise maxConcurrentCalls so each instance processes messages faster in arrival order",
+        "Switch to Storage queues, which guarantee strict global FIFO across instances",
+        "Set the functions scale limit to its maximum so all instances see the same order"
+      ],
+      "answer": 0,
+      "explanation": "Scaling out breaks global ordering. Service Bus sessions (one session per instance at a time) or Event Hubs partitions preserve per-session/per-partition order while still parallelizing across keys. Raising concurrency or switching to Storage queues does not provide ordering guarantees."
+    },
+    {
+      "subtopic": "downstream protection under scale",
+      "source": "azure/azure-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A queue-triggered function scales to ~200 instances and overwhelms a backing SQL database. Without removing the function, which measures protect the database? (Select all that apply.)",
+      "options": [
+        "Lower per-instance concurrency via batchSize/maxConcurrentCalls in host.json",
+        "Set a functions scale limit to cap the maximum number of instances",
+        "Apply resiliency patterns toward the DB (retry with backoff, circuit breaker, bulkhead) with a bounded connection pool",
+        "Increase per-instance concurrency so each instance finishes faster and disconnects sooner",
+        "Remove all retry policies so failed calls are dropped immediately"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Throughput = instances × concurrency, so lowering per-instance concurrency, capping instance count with a scale limit, and adding bounded pooling plus resiliency patterns all reduce load on the DB. Increasing concurrency makes the overload worse, and dropping retries harms correctness without protecting the database."
+    }
+  ]
+}

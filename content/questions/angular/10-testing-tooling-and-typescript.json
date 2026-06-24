@@ -1,0 +1,272 @@
+{
+  "topic": "angular",
+  "source": "angular/10-testing-tooling-and-typescript.md",
+  "questions": [
+    {
+      "subtopic": "TestBed standalone config",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When testing a **standalone** component with `TestBed.configureTestingModule(...)`, where does the component itself go?",
+      "options": [
+        "In the `imports` array",
+        "In the `declarations` array",
+        "In the `providers` array",
+        "In the `bootstrap` array"
+      ],
+      "answer": 0,
+      "explanation": "Standalone components/directives/pipes go in `imports`, not `declarations`. `declarations` was the NgModule-era mechanism and is not used for standalone testing."
+    },
+    {
+      "subtopic": "Default unit-test runner",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "As of Angular v21, what is the default unit-test runner for **new** projects?",
+      "options": [
+        "Vitest",
+        "Karma",
+        "Jest",
+        "Playwright"
+      ],
+      "answer": 0,
+      "explanation": "Vitest is the stable default unit-test runner for new v21 projects, running in Node with DOM emulation. Karma was deprecated in 2023; Playwright is an e2e runner, not the unit-test default."
+    },
+    {
+      "subtopic": "Fixture stabilization",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Under the v21 zoneless default, what is the recommended way to flush signal/async updates before assertions in a `ComponentFixture` test?",
+      "options": [
+        "`await fixture.whenStable()`",
+        "Call `fixture.detectChanges()` manually after every state change",
+        "Wrap assertions in `setTimeout`",
+        "Call `TestBed.flushEffects()` directly"
+      ],
+      "answer": 0,
+      "explanation": "`await fixture.whenStable()` runs change detection and waits for the fixture to settle, the pattern the docs use under the zoneless default. Manual `detectChanges()` is the legacy/zoneful approach and can throw `NG0100` under zoneless."
+    },
+    {
+      "subtopic": "Setting inputs in tests",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which API correctly sets a signal input on an OnPush/zoneless component under test so the input pipeline runs and the component is marked dirty?",
+      "options": [
+        "`fixture.componentRef.setInput('name', value)`",
+        "`fixture.componentInstance.name = value`",
+        "`fixture.debugElement.setInput('name', value)`",
+        "`TestBed.setInput(Comp, 'name', value)`"
+      ],
+      "answer": 0,
+      "explanation": "`fixture.componentRef.setInput('name', value)` goes through the input pipeline and marks OnPush dirty correctly. Assigning directly to `componentInstance` bypasses the input pipeline and dirty-marking."
+    },
+    {
+      "subtopic": "CDK harness purpose",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "CDK component harnesses let you interact with components through a supported, user-facing API (e.g. `getHarness`) instead of asserting on raw DOM structure, so tests survive internal DOM refactors.",
+      "answer": true,
+      "explanation": "True. Harnesses from `@angular/cdk/testing` drive components like a user via `getHarness`/`getAllHarnesses`, making tests resilient to DOM-structure refactors rather than coupled to brittle CSS selectors."
+    },
+    {
+      "subtopic": "HttpTestingController flow",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In this `HttpTestingController` test, what does the final `http.verify()` call assert?",
+      "code": "TestBed.configureTestingModule({\n  providers: [provideHttpClient(), provideHttpClientTesting(), UserApi],\n});\nconst http = TestBed.inject(HttpTestingController);\napi.getUser(1).subscribe(u => (result = u));\nconst req = http.expectOne('/api/users/1');\nreq.flush({ id: 1, name: 'Ana' });\nhttp.verify();",
+      "lang": "typescript",
+      "options": [
+        "That no outstanding (unmatched/unflushed) HTTP requests remain",
+        "That the response body equals `{ id: 1, name: 'Ana' }`",
+        "That the request used the GET method",
+        "That `provideHttpClientTesting()` was registered correctly"
+      ],
+      "answer": 0,
+      "explanation": "`verify()` asserts there are no outstanding requests left — every issued request was expected and flushed. Body and method assertions are done separately via `expect(...)` and `req.request.method`."
+    },
+    {
+      "subtopic": "detectChanges under zoneless",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why should you avoid manually calling `fixture.detectChanges()` under the v21 zoneless default?",
+      "options": [
+        "It forces a CD pass when Angular has not scheduled one and can throw `NG0100`",
+        "It is removed from the API in zoneless mode and throws a `not a function` error",
+        "It only works inside `fakeAsync` zones, which zoneless apps cannot use",
+        "It silently skips OnPush components, so assertions read stale values"
+      ],
+      "answer": 0,
+      "explanation": "Under zoneless CD, manually forcing change detection when Angular has not scheduled it can throw `NG0100` (expression changed after it was checked). `detectChanges()` still exists; it is simply legacy/zoneful, so `await fixture.whenStable()` is preferred."
+    },
+    {
+      "subtopic": "Authoring APIs vs runner",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The authoring APIs — `TestBed`, `ComponentFixture`, `HttpTestingController`, and CDK harnesses — are runner-agnostic and behave the same whether the spec runs under Vitest or the legacy Karma+Jasmine stack.",
+      "answer": true,
+      "explanation": "True. The reviewer states the authoring APIs are runner-agnostic; the configure → create → stabilize → query/harness pipeline is identical under Vitest or Karma+Jasmine. Only the runner changes."
+    },
+    {
+      "subtopic": "Vitest migration status",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the status of moving an **existing** Karma/Jasmine project to Vitest via `ng g @schematics/angular:refactor-jasmine-vitest`?",
+      "options": [
+        "The migration schematic for existing projects is currently marked experimental, even though the new-project runner is stable",
+        "Both the new-project runner and the migration schematic are stable",
+        "Migration is impossible; existing projects must stay on Karma forever",
+        "The migration schematic is stable but the new-project Vitest runner is still experimental"
+      ],
+      "answer": 0,
+      "explanation": "The new-project Vitest runner is stable in v21, but the migration schematic for existing projects is currently marked experimental — a distinction the reviewer calls out explicitly."
+    },
+    {
+      "subtopic": "ng update migrations",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What makes `ng update` more than a simple package-version bump?",
+      "options": [
+        "It runs migration schematics that rewrite your code (e.g. NgModule→standalone, `*ngIf`→`@if`)",
+        "It re-runs your unit tests and blocks the upgrade if any fail",
+        "It regenerates `angular.json` from scratch using the latest defaults",
+        "It compiles your app AOT and rejects the upgrade on any template type error"
+      ],
+      "answer": 0,
+      "explanation": "`ng update` upgrades packages and runs migration schematics that automatically rewrite source code (NgModule→standalone, control-flow syntax, legacy decorators→signal APIs). It does not run tests or regenerate the whole workspace manifest."
+    },
+    {
+      "subtopic": "CLI e2e runner",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `ng e2e` provide out of the box?",
+      "options": [
+        "A hook for a third-party runner you `ng add` (e.g. Playwright, Cypress) — Angular ships no built-in e2e runner",
+        "A built-in Protractor-based end-to-end runner that ships with the CLI",
+        "Vitest configured in browser mode for end-to-end specs",
+        "A headless Karma session that drives the full app"
+      ],
+      "answer": 0,
+      "explanation": "Angular ships no built-in e2e runner; `ng e2e` is a hook for a third-party runner you `ng add` such as Playwright or Cypress. `ng test` (not `ng e2e`) is the unit runner, defaulting to Vitest in v21."
+    },
+    {
+      "subtopic": "angular.json budgets",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this `angular.json` snippet, what happens when the initial bundle reaches 700kB?",
+      "code": "\"budgets\": [\n  { \"type\": \"initial\", \"maximumWarning\": \"500kB\", \"maximumError\": \"1MB\" },\n  { \"type\": \"anyComponentStyle\", \"maximumWarning\": \"4kB\", \"maximumError\": \"8kB\" }\n]",
+      "lang": "json",
+      "options": [
+        "The build emits a warning (over `maximumWarning`) but still succeeds (under `maximumError`)",
+        "The build fails because 700kB exceeds the warning threshold",
+        "Nothing happens; budgets only apply to component styles",
+        "The build silently tree-shakes the bundle down below 500kB"
+      ],
+      "answer": 0,
+      "explanation": "700kB is above `maximumWarning` (500kB) so a warning is emitted, but below `maximumError` (1MB) so the build still succeeds. Only crossing `maximumError` fails the build."
+    },
+    {
+      "subtopic": "application builder and AOT",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about the modern `application` builder and AOT compilation (default since v17) are correct? Select all that apply.",
+      "options": [
+        "AOT compiles templates to JS at build time, surfacing template type errors early",
+        "AOT ships no template compiler to the browser",
+        "The `application` builder uses esbuild for bundling and a Vite-powered dev server",
+        "AOT compiles templates in the browser at first load for faster cold start",
+        "JIT is the recommended production default; AOT is dev-only"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "AOT compiles templates to JS at build time (early errors, no template compiler shipped to the browser), and the `application` builder is esbuild-based with a Vite dev server. AOT is explicitly not browser-time, and it is the production default — JIT is dev-only legacy."
+    },
+    {
+      "subtopic": "Class vs member decorators",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does the reviewer characterize Angular's modern decorator trajectory?",
+      "options": [
+        "Member decorators (`@Input`/`@Output`/`@ViewChild`) migrate to signal functions, but class decorators (`@Component`/`@Injectable`/`@Directive`/`@Pipe`) stay as the declaration mechanism",
+        "All decorators, including `@Component`, are being removed in favor of plain functions",
+        "Class decorators are deprecated, but member decorators like `@Input` remain the recommended approach",
+        "Both class and member decorators are now the standardized TC39 stage-3 form executed natively at runtime"
+      ],
+      "answer": 0,
+      "explanation": "The shift is 'fewer decorators inside the class': member decorators move to `input()`/`output()`/`viewChild()`/`inject()`, while class decorators remain how you declare building blocks. Nothing replaces `@Component`/`@Injectable`/`@Directive`/`@Pipe`."
+    },
+    {
+      "subtopic": "Angular vs TC39 decorators",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Angular's decorators are the legacy/experimental-stage TC39 form compiled by the Angular compiler with its own metadata; they are not identical to the now-standardized TC39 decorators, and Angular relies on its compiler rather than native runtime decorators.",
+      "answer": true,
+      "explanation": "True. The reviewer explicitly notes Angular's decorators use its own compiler-emitted metadata and differ from the standardized TC39 decorators, so decorator behavior should be treated as Angular-defined, not stage-3 JS semantics."
+    },
+    {
+      "subtopic": "Why signal functions win",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Why are signal-based member functions (`input()`, `output()`, `model()`, `viewChild()`, `inject()`) preferred over the legacy member decorators? Select all that apply.",
+      "options": [
+        "They return typed signals that are reactive and work under zoneless change detection",
+        "They support required inputs, transforms, and aliases without decorator metadata",
+        "They remove `ngOnChanges`-style plumbing for reacting to input changes",
+        "They are required in order to declare a component (replacing `@Component`)",
+        "They disable AOT template type-checking to speed up builds"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Signal functions return typed reactive signals that work zoneless, support required inputs/transforms/aliases, and drop `ngOnChanges` plumbing. They do not replace `@Component` (a class decorator that still declares the component), and they have nothing to do with disabling AOT type-checking."
+    },
+    {
+      "subtopic": "v20 naming style guide",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Under the v20 style-guide refresh, how is a `UserProfile` component file and class named, and how should folders be organized?",
+      "options": [
+        "File `user-profile.ts` exporting class `UserProfile` (kebab file, PascalCase class), with folders grouped by feature rather than by type",
+        "File `user-profile.component.ts` exporting class `UserProfileComponent`, with a top-level `components/` folder",
+        "File `UserProfile.ts` exporting class `userProfile`, grouped under a `services/` folder",
+        "File `user-profile.comp.ts` exporting class `UserProfileComp`, grouped by type into `pages/`"
+      ],
+      "answer": 0,
+      "explanation": "The v20 style guide drops type suffixes: `user-profile.ts` (kebab file) exports class `UserProfile` (PascalCase), and the guide recommends grouping folders by feature, explicitly avoiding `components/`/`services/` type buckets."
+    },
+    {
+      "subtopic": "Runtime config vs environments",
+      "source": "angular/10-testing-tooling-and-typescript.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For configuration that must vary at **runtime**, what is recommended over compile-time `environment.ts` constants swapped via `fileReplacements`?",
+      "options": [
+        "DI-provided tokens that supply the values at runtime",
+        "Hardcoding a second copy of the value in `angular.json` budgets",
+        "Inlining the value into every component template with `$localize`",
+        "A global `window` variable read directly from each service"
+      ],
+      "answer": 0,
+      "explanation": "`environment.ts`/`environment.prod.ts` are swapped at build time via `fileReplacements`, so they are compile-time constants. For true runtime config the reviewer prefers DI-provided tokens, which can supply values determined at runtime."
+    }
+  ]
+}

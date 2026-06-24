@@ -1,0 +1,250 @@
+{
+  "topic": "ai",
+  "source": "ai/neural-networks-fundamentals-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Single neuron",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A single artificial neuron computes a weighted sum of its inputs plus a bias and then applies an activation `φ`. With which activation does that single neuron become exactly **logistic regression**?",
+      "options": ["Sigmoid", "Linear (identity)", "ReLU", "Softmax over the single output"],
+      "answer": 0,
+      "explanation": "A sigmoid neuron squashes the affine map `w·x + b` to (0,1), which is precisely logistic regression. A linear activation makes it linear regression; ReLU is neither; softmax over a single logit is degenerate."
+    },
+    {
+      "subtopic": "Non-linearity",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "If every layer of a 50-layer network used a purely linear activation, the whole network would be algebraically equivalent to a single linear layer and could not solve XOR.",
+      "answer": true,
+      "explanation": "Composing linear maps yields another linear map, so depth adds no expressive power without a non-linear activation between layers — the network collapses to one linear transform, which cannot represent XOR."
+    },
+    {
+      "subtopic": "Perceptron / XOR",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why can a single perceptron solve AND and OR but not XOR?",
+      "options": [
+        "AND and OR are linearly separable (one straight-line boundary suffices); XOR's classes interleave so no single line separates them",
+        "XOR requires floating-point inputs while AND/OR use only binary inputs",
+        "The perceptron's step activation cannot output the value 1, which XOR needs",
+        "XOR has four input combinations and a perceptron can only handle three"
+      ],
+      "answer": 0,
+      "explanation": "A perceptron's decision boundary is a single hyperplane, so it handles only linearly separable problems. AND/OR are linearly separable; XOR puts its two 1-cases on opposite corners, so no single line separates the classes — a hidden layer is required."
+    },
+    {
+      "subtopic": "Activation functions",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the maximum value of the sigmoid's derivative `σ'(z) = σ(z)(1−σ(z))`, and where does it occur?",
+      "options": ["0.25, at z = 0", "1.0, at z = 0", "0.5, at z = 0", "0.25, in the saturated tails"],
+      "answer": 0,
+      "explanation": "`σ'(z)` peaks where `σ(z)=0.5` (i.e. z=0), giving 0.5·0.5 = 0.25. It decays toward 0 in the tails — exactly why stacking many sigmoid layers causes vanishing gradients."
+    },
+    {
+      "subtopic": "Output activation",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "You are building a classifier where each example belongs to exactly one of 5 mutually exclusive classes. Which output activation is the correct choice?",
+      "options": [
+        "Softmax over the 5 logits",
+        "Five independent sigmoids, one per class",
+        "A single sigmoid",
+        "ReLU on each of the 5 logits"
+      ],
+      "answer": 0,
+      "explanation": "Mutually exclusive multiclass needs one probability distribution summing to 1, which softmax produces. Independent sigmoids are for multi-label (non-exclusive) outputs; a single sigmoid is for binary; ReLU does not produce probabilities."
+    },
+    {
+      "subtopic": "Dense layer parameters",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A fully connected (dense) network has layer sizes 4 → 8 → 8 → 3. How many trainable parameters does it have in total?",
+      "options": ["139", "131", "112", "147"],
+      "answer": 0,
+      "explanation": "Each dense layer m→n has m·n + n params. (4·8+8) + (8·8+8) + (8·3+3) = 40 + 72 + 27 = 139. Forgetting the bias terms gives the wrong 112."
+    },
+    {
+      "subtopic": "Backprop output error",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For a softmax output with one-hot target `y = (0, 1, 0)` and predictions `ŷ = (0.2, 0.7, 0.1)`, what is the output-layer error `δ = ∂L/∂z`?",
+      "options": ["(0.2, −0.3, 0.1)", "(−0.2, 0.3, −0.1)", "(0.2, 0.7, 0.1)", "(0.0, −0.356, 0.0)"],
+      "answer": 0,
+      "explanation": "For softmax + cross-entropy the output error collapses to `δ = ŷ − y` = (0.2−0, 0.7−1, 0.1−0) = (0.2, −0.3, 0.1). The (−)0.356 value is the scalar cross-entropy loss `−ln(0.7)`, not the error vector."
+    },
+    {
+      "subtopic": "Backprop update sign",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the bug in this weight-update loop?",
+      "code": "for each weight w_i:\n    grad_i = dL/dw_i\n    w_i = w_i + learning_rate * grad_i   # update",
+      "lang": "text",
+      "options": [
+        "The sign is wrong: it adds the gradient (ascent) instead of subtracting it, so it increases the loss and diverges",
+        "It forgets to divide the gradient by the number of weights",
+        "`learning_rate` should multiply `w_i`, not `grad_i`",
+        "The gradient should be `dw_i/dL`, the reciprocal of what is written"
+      ],
+      "answer": 0,
+      "explanation": "Gradient descent moves *against* the gradient: `w_i = w_i − learning_rate * grad_i`. As written it performs gradient ascent, raising the loss. The other options describe operations that are not part of a standard SGD step."
+    },
+    {
+      "subtopic": "Forward pass shapes",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the vectorized forward pass `z^(ℓ) = W^(ℓ)·a^(ℓ−1) + b^(ℓ)`, if layer ℓ has n neurons and layer ℓ−1 has m neurons (single example), what are the shapes of `W^(ℓ)` and `z^(ℓ)`?",
+      "options": [
+        "W is n×m and z is n×1",
+        "W is m×n and z is m×1",
+        "W is n×m and z is m×1",
+        "W is m×m and z is n×1"
+      ],
+      "answer": 0,
+      "explanation": "To map an m×1 activation to n neurons, `W` must be n×m so that `W·a` is n×1; adding the n×1 bias keeps `z` at n×1. Swapping the dimensions is the classic shape-mismatch forward-pass bug."
+    },
+    {
+      "subtopic": "Vanishing gradients",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A 12-layer network uses sigmoid activations throughout, trains extremely slowly, and the first layers' weights barely change. What is the diagnosis and the most directly relevant fix?",
+      "options": [
+        "Vanishing gradients; switch hidden activations to ReLU, use He init, add normalization, and consider skip connections",
+        "Exploding gradients; apply gradient clipping and raise the learning rate",
+        "Overfitting; add dropout and L2 regularization to the early layers",
+        "A learning rate that is too small; multiply it by 100 across all layers"
+      ],
+      "answer": 0,
+      "explanation": "Each sigmoid layer multiplies the backpropagated gradient by at most 0.25, so across ~12 layers the early-layer gradient is scaled by ~0.25¹² ≈ 6×10⁻⁸ — vanishing gradients. ReLU, He init, normalization, and residual paths are the standard fixes; clipping addresses the opposite (exploding) problem."
+    },
+    {
+      "subtopic": "Initialization",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why must you avoid initializing all the weights in a layer to the same value?",
+      "options": [
+        "Every neuron would compute the same output and receive the same gradient, so they update identically and never specialize (symmetry is never broken)",
+        "Equal weights make the forward pass produce NaNs immediately",
+        "Equal weights force the loss to be exactly zero, so no gradient exists",
+        "The optimizer cannot represent identical floating-point values across neurons"
+      ],
+      "answer": 0,
+      "explanation": "Identical weights create symmetric neurons that stay identical forever because they get identical gradients — they never differentiate. Random init breaks the symmetry. Equal weights don't inherently produce NaNs or a zero loss."
+    },
+    {
+      "subtopic": "He vs Xavier init",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "He initialization (variance ≈ 2/n_in) uses a larger scaling factor than Xavier (≈ 1/n_in) because ReLU zeros out roughly half the activations and needs the extra variance to keep the signal alive.",
+      "answer": true,
+      "explanation": "ReLU sets negative pre-activations to 0, halving the effective signal variance, so He compensates with the larger 2/n_in factor. Xavier (1/n_in) targets tanh/sigmoid, which keep signal on both sides."
+    },
+    {
+      "subtopic": "Numeric backprop trace",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the 2-2-1 sigmoid trace, the forward pass gives `ŷ = 0.6746` with target `y = 1`. After computing every gradient, all of them are negative and the update is `θ := θ − η·∂L/∂θ`. What happens to the weights and to `ŷ`?",
+      "options": [
+        "The weights increase, pushing `ŷ` up toward the target 1",
+        "The weights decrease, pushing `ŷ` down away from the target",
+        "The weights stay fixed because `δ_o = ŷ − y` is negative",
+        "The weights increase but `ŷ` decreases, since the gradient sign is inverted in the hidden layer"
+      ],
+      "answer": 0,
+      "explanation": "Subtracting a negative gradient (`θ − η·(negative)`) increases each weight, which raises `ŷ` toward the target of 1 — the expected direction since the prediction 0.6746 was below 1. The sign logic is consistent through both layers."
+    },
+    {
+      "subtopic": "Backprop cost / multi",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about backpropagation are correct? (Select all that apply.)",
+      "options": [
+        "It computes the gradient of the loss with respect to every weight in roughly the cost of one forward pass, not one pass per weight",
+        "It is the chain rule organized to reuse shared intermediate derivatives in a single backward sweep",
+        "The error recurrence is `δ^(ℓ) = ((W^(ℓ+1))ᵀ·δ^(ℓ+1)) ⊙ φ′(z^(ℓ))`",
+        "It requires a separate forward pass for each parameter to estimate its partial derivative",
+        "The weight gradient is `∂L/∂W^(ℓ) = δ^(ℓ)·(a^(ℓ−1))ᵀ`"
+      ],
+      "answer": [0, 1, 2, 4],
+      "explanation": "Backprop is reverse-mode autodiff: one backward sweep reusing prefixes, with `δ^(ℓ) = ((W^(ℓ+1))ᵀδ^(ℓ+1)) ⊙ φ′(z^(ℓ))` and `∂L/∂W = δ·(a_prev)ᵀ`, all at about forward-pass cost. Option 4 describes naive finite-difference gradients, which backprop explicitly avoids."
+    },
+    {
+      "subtopic": "Universal approximation",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does the universal approximation theorem actually guarantee about a single-hidden-layer network with a non-polynomial activation?",
+      "options": [
+        "That a network of sufficient width exists which approximates any continuous function on a bounded domain to arbitrary accuracy — existence only, with no bound on width or guarantee that training finds it",
+        "That gradient descent will always converge to such an approximation given enough epochs",
+        "That a single hidden layer is at least as parameter-efficient as any deep network for the same function",
+        "That any function whatsoever (continuous or not) can be represented exactly with finitely many neurons"
+      ],
+      "answer": 0,
+      "explanation": "The theorem is an existence result for continuous functions on a bounded region; it says nothing about the required width (which can be astronomical), whether SGD finds the solution, or efficiency — indeed deep nets often need exponentially fewer neurons than a shallow one."
+    },
+    {
+      "subtopic": "Activation properties / multi",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Per the activation cheat-sheet and discussion, which statements are TRUE? (Select all that apply.)",
+      "options": [
+        "Tanh is zero-centered with range (−1, 1) and a derivative that maxes at 1.0, but still saturates at the tails",
+        "Leaky ReLU keeps a non-zero slope α for z < 0, which prevents the 'dead ReLU' failure mode",
+        "ReLU saturates on the positive side, which is why gradients vanish through deep ReLU stacks",
+        "GELU (z·Φ(z)) is the common activation choice in transformers",
+        "A standard ReLU outputs a small negative value for large-negative z"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Tanh is zero-centered (max derivative 1.0) but saturates; Leaky ReLU's negative-side slope cures dead ReLUs; GELU is the transformer default. ReLU does NOT saturate on the positive side (derivative is exactly 1 there), and standard ReLU outputs exactly 0 — not a negative value — for z < 0."
+    },
+    {
+      "subtopic": "BatchNorm vs LayerNorm",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is **layer normalization**, rather than batch normalization, the variant used in transformers?",
+      "options": [
+        "LayerNorm normalizes across features within a single example, so it doesn't depend on mini-batch statistics that are awkward in that setting",
+        "LayerNorm has no learnable scale/shift parameters, making it cheaper for large models",
+        "BatchNorm cannot be combined with residual connections, but LayerNorm can",
+        "LayerNorm normalizes over the mini-batch, which gives more stable statistics for long sequences"
+      ],
+      "answer": 0,
+      "explanation": "LayerNorm normalizes across features within one example, sidestepping the per-mini-batch statistics that BatchNorm relies on and that are awkward for transformers. Both norms have learnable γ/β; option 4 actually describes BatchNorm's behavior, not LayerNorm's."
+    },
+    {
+      "subtopic": "Forward-pass + BCE computation",
+      "source": "ai/neural-networks-fundamentals-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For a single sigmoid neuron with inputs `x = (1.0, 2.0)`, weights `w = (0.5, −0.5)`, bias `b = 0.0`, target `y = 0`, and binary cross-entropy loss, what are `z` and the loss `L` (to ~3 decimals)?",
+      "code": "ŷ = σ(z) = 1/(1+e^(−z))\nBCE(y=0) = −ln(1−ŷ)",
+      "lang": "text",
+      "options": [
+        "z = −0.5, L ≈ 0.474",
+        "z = −0.5, L ≈ 0.377",
+        "z = 0.5, L ≈ 0.474",
+        "z = −0.5, L ≈ 0.948"
+      ],
+      "answer": 0,
+      "explanation": "z = 0.5·1.0 + (−0.5)·2.0 + 0 = −0.5, so ŷ = σ(−0.5) ≈ 0.3775. With y=0, BCE = −ln(1−ŷ) = −ln(0.6225) ≈ 0.474. The 0.377 distractor is ŷ itself, not the loss."
+    }
+  ]
+}

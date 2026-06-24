@@ -1,0 +1,268 @@
+{
+  "topic": "ai",
+  "source": "ai/fine-tuning-and-alignment-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "What fine-tuning changes",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Fine-tuning is best understood as a tool to change which of the following in a model?",
+      "options": [
+        "Behavior, skill, and output format, by editing the weights",
+        "The set of fresh, frequently-changing facts the model can cite",
+        "The model's tokenizer and context-window length",
+        "The retrieval index used to fetch documents at query time"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer's throughline is that fine-tuning changes behavior, skill, and format by editing weights — it is not the tool for injecting fresh facts (that is RAG's job)."
+    },
+    {
+      "subtopic": "Transfer learning",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does transfer learning let a small team get a strong specialized model with only a few thousand labeled examples?",
+      "options": [
+        "The pretrained base already learned reusable general representations, so only a small specialization must be added",
+        "Fine-tuning re-runs pretraining at higher precision, compressing the corpus into the new dataset",
+        "The few thousand examples are enough to retrain all weights from random initialization",
+        "Transfer learning copies the labels from the pretraining corpus into the task dataset"
+      ],
+      "answer": 0,
+      "explanation": "Features transfer: the base learned general representations (grammar, world knowledge, edges/textures), so your task needs most of that plus a small specialization. You do not retrain from scratch, and pretraining is not re-run."
+    },
+    {
+      "subtopic": "Adaptation spectrum",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In feature extraction (freeze the backbone, train a new head), what is the main limitation compared with full fine-tuning?",
+      "options": [
+        "The frozen body cannot adjust to the new task, so capacity is limited",
+        "It updates all weights and therefore overfits aggressively on small data",
+        "It requires several times the model size in optimizer state",
+        "It forgets the pretrained knowledge faster than any other method"
+      ],
+      "answer": 0,
+      "explanation": "Feature extraction is cheapest, fastest, and lowest forgetting risk, but limited because the frozen body cannot adapt to the new task. The other options describe full fine-tuning's costs, not feature extraction's."
+    },
+    {
+      "subtopic": "Learning rate when fine-tuning",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Fine-tuning typically uses a **smaller** learning rate than pretraining because you are nudging already-good weights rather than learning from scratch.",
+      "answer": true,
+      "explanation": "A high rate would blow away the pretrained knowledge; fine-tuning uses a small rate, few epochs, and early stopping to specialize while preserving what the base learned."
+    },
+    {
+      "subtopic": "Lifecycle stages",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the LLM lifecycle (pretrain → SFT → align → deploy), which stage is where almost all of the model's knowledge and cost live?",
+      "options": [
+        "Pretraining (self-supervised next-token prediction over a vast corpus)",
+        "Supervised fine-tuning on curated instruction pairs",
+        "Preference alignment with RLHF or DPO",
+        "Deployment and monitoring"
+      ],
+      "answer": 0,
+      "explanation": "Pretraining produces raw capability and is where almost all knowledge and cost live; SFT and alignment are comparatively cheap and shape instruction-following and behavior, not bulk knowledge."
+    },
+    {
+      "subtopic": "SFT loss masking",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In supervised fine-tuning on (prompt, response) pairs, why is the loss typically computed only on the response tokens?",
+      "options": [
+        "So the model learns to produce answers rather than to regurgitate the prompts",
+        "Because computing loss on the prompt would exceed the context window",
+        "Because prompt tokens have no embeddings and cannot contribute gradients",
+        "So that the reward model can later score the prompt independently"
+      ],
+      "answer": 0,
+      "explanation": "Masking the loss to the response makes the model learn to generate the desired output, not to memorize and reproduce prompt text. Context limits and missing embeddings are not the reason."
+    },
+    {
+      "subtopic": "SFT data quality",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "For SFT, a hundred thousand noisy examples will generally produce a better model than a few thousand clean, consistent, on-style examples.",
+      "answer": false,
+      "explanation": "Data quality dominates: a few thousand clean, consistent examples beat a hundred thousand noisy ones, because the model imitates exactly what you show it, including mistakes and bad formatting."
+    },
+    {
+      "subtopic": "LoRA mechanics",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In LoRA, the original weight matrix W is frozen and a low-rank update ΔW = B·A is learned. At inference (before merging), what does the adapted layer compute?",
+      "options": [
+        "W·x + B·A·x",
+        "B·A·x only, with W discarded",
+        "(W + A + B)·x",
+        "W·(B·A·x), applying the update inside W"
+      ],
+      "answer": 0,
+      "explanation": "LoRA adds the low-rank delta in parallel: the layer computes W·x + B·A·x. After training, B·A can be merged into W for zero added inference latency."
+    },
+    {
+      "subtopic": "LoRA parameter count",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For a rank-8 LoRA applied to a single 4096 × 4096 weight matrix, how many parameters does LoRA train, and roughly what fraction of full fine-tuning is that?",
+      "options": [
+        "65,536 parameters, about 0.39% of the full matrix",
+        "32,768 parameters, about 0.20% of the full matrix",
+        "131,072 parameters, about 0.78% of the full matrix",
+        "16,777,216 parameters, about 100% of the full matrix"
+      ],
+      "answer": 0,
+      "explanation": "A is 8×4096 = 32,768 and B is 4096×8 = 32,768, totaling 65,536. Full fine-tuning trains 4096·4096 = 16,777,216, so the ratio is 65,536/16,777,216 ≈ 0.39%."
+    },
+    {
+      "subtopic": "LoRA parameter count (code)",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given the snippet, what is the printed trainable-parameter ratio of LoRA (rank 16) versus full fine-tuning for a 2048 × 2048 matrix?",
+      "code": "d = 2048\nr = 16\nfull = d * d\nlora = (r * d) + (d * r)\nprint(round(lora / full, 5))",
+      "lang": "python",
+      "options": [
+        "0.01563",
+        "0.00781",
+        "0.03125",
+        "0.00391"
+      ],
+      "answer": 0,
+      "explanation": "full = 2048·2048 = 4,194,304; lora = 16·2048 + 2048·16 = 65,536; ratio = 65,536/4,194,304 = 0.015625 ≈ 1.56%."
+    },
+    {
+      "subtopic": "QLoRA",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does QLoRA change relative to standard LoRA?",
+      "options": [
+        "It loads the frozen base in low precision (e.g. 4-bit) to cut memory, training LoRA adapters on top",
+        "It quantizes the LoRA adapters to 4-bit while keeping the base in full precision",
+        "It replaces the low-rank update with a full-rank update for higher quality",
+        "It removes the need for a frozen base by quantizing gradients instead of weights"
+      ],
+      "answer": 0,
+      "explanation": "QLoRA loads the frozen base in low precision (e.g. 4-bit) to slash memory and trains LoRA adapters on top in higher precision, letting very large models be fine-tuned on a single accelerator."
+    },
+    {
+      "subtopic": "PEFT family",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are true of the PEFT family as described in the reviewer? (Select all that apply.)",
+      "options": [
+        "All PEFT methods freeze the bulk of the model and train a small set of parameters",
+        "Prefix/prompt tuning prepends trainable soft-prompt vectors and trains only those",
+        "Adapters insert small trainable layers between frozen blocks",
+        "PEFT is a single technique, of which LoRA is just a rebranding",
+        "PEFT requires storing a full-size model copy per task"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "PEFT is an umbrella of methods (LoRA, adapters, prefix/prompt tuning) that all freeze the base and train a tiny add-on. It is not one technique, and a key benefit is swappable few-MB adapters instead of full per-task copies."
+    },
+    {
+      "subtopic": "Catastrophic forgetting mitigations",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of these help mitigate catastrophic forgetting during fine-tuning? (Select all that apply.)",
+      "options": [
+        "Using PEFT/LoRA so the base weights stay frozen",
+        "Mixing in general/replay data alongside the task data",
+        "Using a small learning rate and few epochs",
+        "Increasing the learning rate so the task is learned in one epoch",
+        "Removing the validation set to train on more task data"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Forgetting is reduced by freezing the base (PEFT), mixing in replay/general data, and using a small LR with few epochs. A high LR overwrites pretrained knowledge faster, and dropping validation removes your early-stopping signal."
+    },
+    {
+      "subtopic": "Diagnosing overfitting",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "During fine-tuning you observe: training loss keeps falling every epoch, but validation loss falls then starts rising after epoch 4. What does this indicate and what is the standard response?",
+      "options": [
+        "Overfitting; apply early stopping at the validation minimum (epoch 4)",
+        "Catastrophic forgetting; mix in general replay data and continue training",
+        "Underfitting; increase model size and train for more epochs",
+        "Data leakage; the validation scores are inflated and should be ignored"
+      ],
+      "answer": 0,
+      "explanation": "Train loss dropping while validation loss turns upward is the signature of overfitting; the fix is early stopping at the validation minimum. Forgetting shows as a drop on general benchmarks, not rising validation loss on the same task."
+    },
+    {
+      "subtopic": "Data leakage",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Near-duplicate examples end up in both your training and validation splits. What is the likely consequence?",
+      "options": [
+        "Validation scores look great but production performance is worse than expected",
+        "Validation loss rises sharply, correctly flagging the problem early",
+        "The model trains more slowly but generalizes better",
+        "Catastrophic forgetting of general abilities is accelerated"
+      ],
+      "answer": 0,
+      "explanation": "Leakage from near-duplicates across train/validation inflates your scores while real generalization is worse, so production fails. The fix is to de-duplicate before splitting. It does not raise validation loss or improve generalization."
+    },
+    {
+      "subtopic": "RLHF steps and KL penalty",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the RLHF policy-optimization step (commonly PPO), what is the purpose of the KL penalty that keeps the policy close to the SFT model?",
+      "options": [
+        "To stop the policy from drifting into reward hacking or losing fluency",
+        "To inject new factual knowledge that the reward model has learned",
+        "To replace the reward model so PPO can run without it",
+        "To increase the learning rate as reward rises"
+      ],
+      "answer": 0,
+      "explanation": "The KL penalty anchors the policy to the SFT model so it does not exploit flaws in the reward proxy (sycophancy, padding) or lose fluency. It does not add knowledge, replace the reward model, or change the learning rate."
+    },
+    {
+      "subtopic": "DPO vs RLHF",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does DPO differ from the classic RLHF recipe?",
+      "options": [
+        "It optimizes the same preference objective with a direct supervised-style loss on preferred-vs-rejected pairs, with no separate reward model and no RL loop",
+        "It trains a stronger reward model first, then runs PPO twice for stability",
+        "It replaces human preferences with self-generated labels and skips the SFT stage",
+        "It adds knowledge to the model that RLHF cannot, by editing the reward model directly"
+      ],
+      "answer": 0,
+      "explanation": "DPO collapses RLHF into a direct loss on preferred-vs-rejected pairs — no separate reward model and no PPO/RL loop — which is simpler and more stable. It still uses human preferences and does not add knowledge."
+    },
+    {
+      "subtopic": "Prompt vs RAG vs fine-tune",
+      "source": "ai/fine-tuning-and-alignment-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team needs an assistant that (a) always replies in a fixed JSON schema and (b) cites figures from a weekly-updated internal report. What is the recommended approach?",
+      "options": [
+        "Fine-tune (LoRA SFT) for the JSON format and use RAG for the fresh report figures",
+        "Fine-tune on the report each week so the latest figures are baked into the weights",
+        "Use RAG alone, relying on retrieved examples to enforce the JSON schema",
+        "Use prompting alone for both the schema and the weekly figures"
+      ],
+      "answer": 0,
+      "explanation": "The format is a behavior gap (fine-tune bakes it in reliably) while the weekly figures are fresh private knowledge (RAG retrieves and cites, updating instantly). Fine-tuning facts goes stale and cannot cite; prompting/RAG alone enforces strict format less reliably. They compose."
+    }
+  ]
+}

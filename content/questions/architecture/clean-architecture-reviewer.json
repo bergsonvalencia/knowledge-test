@@ -1,0 +1,280 @@
+{
+  "topic": "architecture",
+  "source": "architecture/clean-architecture-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "The one idea",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Clean Architecture, which element sits at the **center** of the design, with everything else pointing inward toward it?",
+      "options": [
+        "The database schema",
+        "The business logic / domain core",
+        "The web framework and UI",
+        "The dependency-injection container"
+      ],
+      "answer": 1,
+      "explanation": "The defining idea is to put business logic at the center and make UI, database, frameworks, and external services point inward toward it. The database, UI, and DI container are all outer details, not the center."
+    },
+    {
+      "subtopic": "Synonymous architectures",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Clean Architecture is described as essentially the same idea as several other named styles. Which set names those equivalents?",
+      "options": [
+        "Onion, Hexagonal / Ports & Adapters",
+        "MVC, MVVM, MVP",
+        "Microservices, Service Mesh, Event Sourcing",
+        "Layered N-Tier, Client-Server, Peer-to-Peer"
+      ],
+      "answer": 0,
+      "explanation": "Clean Architecture is the same idea as Onion (Palermo) and Hexagonal / Ports & Adapters (Cockburn), all achieved through dependency inversion. MVC/MVVM are UI patterns, and microservices is explicitly contrasted as a different concern."
+    },
+    {
+      "subtopic": "The Dependency Rule",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Under the Dependency Rule, an inner layer must never name a type, function, or even a data format defined in an outer layer.",
+      "answer": true,
+      "explanation": "The rule states that nothing in an inner circle knows anything about an outer circle — not a type, function, or even a data format. That is precisely what keeps the core independent of details."
+    },
+    {
+      "subtopic": "Layers vs tiers",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the distinction the reviewer draws between *layers* and *tiers*?",
+      "options": [
+        "Layers are physical deployment targets; tiers are logical groupings",
+        "Layers are logical separations; tiers are physical deployment targets",
+        "They are interchangeable terms for the same concept",
+        "Layers apply to microservices; tiers apply to monoliths"
+      ],
+      "answer": 1,
+      "explanation": "Layers are a logical separation while tiers are physical deployment targets. Clean Architecture is about layers and organizes a monolith well; it does not dictate physical tiering."
+    },
+    {
+      "subtopic": "What may cross boundaries",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is permitted to cross a layer boundary in Clean Architecture?",
+      "options": [
+        "Domain entities, so outer layers can reuse business rules",
+        "Database rows mapped directly from the ORM",
+        "Simple, isolated data structures (DTOs / plain objects)",
+        "The DbContext, passed by reference for efficiency"
+      ],
+      "answer": 2,
+      "explanation": "Only simple, isolated DTOs / plain objects may cross a boundary. Passing entities or DB rows leaks an inner or outer structure and creates a hidden dependency that violates the Dependency Rule."
+    },
+    {
+      "subtopic": "Dependency Inversion mechanism",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "If the Core cannot depend on the database, how does it end up using one without breaking the Dependency Rule?",
+      "options": [
+        "Infrastructure defines the data-access interface and the Core imports it",
+        "The Core defines the interface and Infrastructure implements it, wired at runtime via DI",
+        "The Core references the ORM directly but only inside a `partial` class",
+        "The UI passes an open database connection down into the Core as a parameter"
+      ],
+      "answer": 1,
+      "explanation": "The Core owns (defines) the abstraction; Infrastructure implements it. The compile-time dependency is inverted toward the Core, and the concrete implementation is injected at runtime via DI in the composition root. If Infrastructure owned the interface, the Core would depend outward."
+    },
+    {
+      "subtopic": "Compile-time vs runtime",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the diagrams, what does a **dashed** arrow from UI to Infrastructure represent?",
+      "options": [
+        "A compile-time project reference from UI to Infrastructure",
+        "An inheritance relationship between UI and Infrastructure types",
+        "A runtime-only dependency: DI wiring of concrete implementations at startup",
+        "A forbidden dependency that violates the Dependency Rule"
+      ],
+      "answer": 2,
+      "explanation": "Solid arrows are compile-time dependencies; the dashed UI to Infrastructure arrow is runtime-only — the DI wiring of concrete implementations in the composition root. It is the one permitted UI-to-Infrastructure tie, not a violation."
+    },
+    {
+      "subtopic": "N-Tier coupling problem",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does traditional N-Tier make the Business Logic Layer hard to test compared with Clean Architecture?",
+      "options": [
+        "N-Tier forbids the use of dependency injection entirely",
+        "Compile-time dependencies run UI to Business to Data, coupling the BLL to data access (and usually a real DB)",
+        "N-Tier puts all business rules inside the database as stored procedures",
+        "N-Tier has no UI layer, so there is nothing to drive the tests"
+      ],
+      "answer": 1,
+      "explanation": "In N-Tier the compile-time dependencies flow top-to-bottom (UI to Business to Data), so the BLL is coupled to data access and usually a real database, making isolated testing hard. Clean Architecture inverts that infrastructure dependency."
+    },
+    {
+      "subtopic": "What goes where",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "According to the 'What goes where' table, which of the following belong in the **Application Core** (Core / Domain)? Select all that apply.",
+      "options": [
+        "Entities, aggregates, and value objects",
+        "The interfaces that outer layers implement",
+        "EF Core `DbContext` and repository implementations",
+        "The composition root (`Program.cs`) that wires DI",
+        "Domain events and their handlers"
+      ],
+      "answer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "The Core holds entities/aggregates/value objects, domain events and handlers, and the interfaces outer layers implement. The concrete `DbContext`/repositories live in Infrastructure, and the composition root lives in the UI / Web entry point."
+    },
+    {
+      "subtopic": "Use Cases layer dependencies",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The optional Use Cases (Application) layer is allowed to depend on Infrastructure so it can call repositories directly.",
+      "answer": false,
+      "explanation": "The Use Cases layer depends on Core, not Infrastructure. It talks only to Core interfaces; the concrete Infrastructure implementations are injected at runtime via DI."
+    },
+    {
+      "subtopic": "Ports and the boundary",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the Controller -> Interactor -> Presenter -> View flow, the Interactor calls an **Output Port** and the Presenter implements it. Why is this arrangement used instead of the Interactor calling the Presenter directly?",
+      "options": [
+        "It lets the Interactor run on a background thread",
+        "So no outer-layer name appears in inner code — the inner circle owns the port, the outer Presenter implements it (DIP at the boundary)",
+        "Because Presenters cannot be instantiated without a DI container",
+        "It allows control flow to point inward instead of outward"
+      ],
+      "answer": 1,
+      "explanation": "Control flows outward, but the Interactor (inner) owns the Output Port interface and the Presenter (outer) implements it, so no outer name appears in inner code — Dependency Inversion applied at the boundary. Control flow still points outward; only source-code dependencies point inward."
+    },
+    {
+      "subtopic": "Request flow contract",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the runtime request-flow sequence, what does the Use Case (Core) interact with when it needs data from the repository?",
+      "options": [
+        "The concrete Infrastructure repository class, referenced directly",
+        "A Core interface, with the Infrastructure implementation resolved by DI",
+        "The Database connection object passed from the Web endpoint",
+        "A static service-locator call into Infrastructure"
+      ],
+      "answer": 1,
+      "explanation": "The Use Case talks only to a Core interface; the concrete Infrastructure implementation is resolved by DI. A direct reference to the concrete class or a static service-locator call would violate the Dependency Rule."
+    },
+    {
+      "subtopic": "Benefits",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are cited as benefits of Clean Architecture? Select all that apply.",
+      "options": [
+        "The Core can be unit-tested in isolation without a web host or real database",
+        "Implementations (DB, email provider) can be swapped without touching business rules",
+        "It provides independent per-feature horizontal scaling",
+        "Enforceable dependency rules limit the blast radius of a change"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Testability, swappable implementations behind Core interfaces, and separation of concerns that limits a change's blast radius are listed benefits. Independent per-feature scaling is explicitly NOT provided — Clean Architecture organizes a monolith, not microservices."
+    },
+    {
+      "subtopic": "ardalis template references",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the ardalis .NET template's project-reference graph, which statement is correct?",
+      "code": "Web      --> Infrastructure\nWeb      --> UseCases\nInfra    --> Core\nInfra    --> UseCases\nUseCases --> Core",
+      "lang": "text",
+      "answer": 1,
+      "options": [
+        "Core references Infrastructure so it can reach the DbContext",
+        "Core references no other project; every other project's references point inward toward Core",
+        "Web references only Core and never Infrastructure",
+        "UseCases references Infrastructure to call repositories directly"
+      ],
+      "explanation": "Core references no other project; all references point inward toward Core. Web does reference Infrastructure (for composition-root wiring), and UseCases depends on Core only — not Infrastructure."
+    },
+    {
+      "subtopic": "Composition-root leak",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The 'composition-root leak' refers to the fact that the UI project usually needs a reference to Infrastructure to register implementations at startup. What is the recommended way to contain this leak?",
+      "options": [
+        "Move all Infrastructure types into the Core project",
+        "Keep actual use of Infrastructure types confined to `Program.cs` (optionally avoid the reference with assembly scanning)",
+        "Reference Infrastructure from Core instead of from the UI",
+        "Make every controller depend on the concrete repository to avoid indirection"
+      ],
+      "answer": 1,
+      "explanation": "The discipline is to keep actual use of Infrastructure types in `Program.cs` (the composition root) only, and the project reference itself can even be avoided via assembly scanning. Moving Infrastructure into Core or having controllers depend on concrete types would violate the Dependency Rule."
+    },
+    {
+      "subtopic": "When not to use it",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For a genuinely trivial application, what is recommended instead of full Clean Architecture layering?",
+      "options": [
+        "Jump straight to microservices for future-proof scalability",
+        "A single project with folders, or a Vertical Slice organized by feature",
+        "Bolt CQRS and a Mediator onto the app anyway for consistency",
+        "Put all logic in the database via stored procedures"
+      ],
+      "answer": 1,
+      "explanation": "For trivial apps the ceremony isn't worth it; a single project with folders or a feature-based Vertical Slice suffices. Adding CQRS/Mediator layering to a small app is called out as over-engineering, and jumping to microservices prematurely is warned against."
+    },
+    {
+      "subtopic": "Redundant validation",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "The ardalis template validates at multiple boundaries. Which statements about that validation strategy are correct? Select all that apply.",
+      "options": [
+        "The domain enforces invariants via encapsulation, throwing on bad input (assuming pre-validated)",
+        "Use Cases validate the command/query objects",
+        "Web validates the incoming request DTOs",
+        "Validation happens only once, exclusively at the Web boundary",
+        "Redundant validation across boundaries is considered an accidental smell to remove"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The domain enforces invariants by throwing on bad input, Use Cases validate command/query objects, and Web validates request DTOs. Validation deliberately happens at multiple boundaries — the redundancy is intentional defensive coding, not a smell."
+    },
+    {
+      "subtopic": "CQRS in the template",
+      "source": "architecture/clean-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does the ardalis template treat reads versus writes under its CQRS approach?",
+      "options": [
+        "Commands and queries both must go through repositories for consistency",
+        "Commands mutate via repositories; queries are read-only and may bypass the repositories",
+        "Queries mutate state; commands only read",
+        "Both commands and queries bypass repositories and hit the DbContext directly"
+      ],
+      "answer": 1,
+      "explanation": "Under the template's CQRS, commands mutate state through repositories while queries are read-only and may bypass them (e.g. querying directly for read models). Queries never mutate, and commands do go through repositories."
+    }
+  ]
+}

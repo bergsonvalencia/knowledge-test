@@ -1,0 +1,269 @@
+{
+  "topic": "ai",
+  "source": "ai/transformers-and-attention-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Why transformers replaced RNNs",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the primary structural advantage transformers have over RNNs that makes them much faster to train on GPUs?",
+      "options": [
+        "They process all positions of a sequence in parallel rather than one step at a time",
+        "They use far fewer parameters than a comparable RNN",
+        "They avoid floating-point matrix multiplication entirely",
+        "They process sequences in O(n) memory instead of O(n²)"
+      ],
+      "answer": 0,
+      "explanation": "An RNN must compute step t before t+1 (n non-parallel steps), whereas a transformer computes all positions in one matrix multiply, giving far better GPU utilization. The memory distractor is backwards: attention costs O(n²) memory, more than the RNN's O(n)."
+    },
+    {
+      "subtopic": "Query, key, value roles",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In attention, which vector represents the actual **content** a token contributes to the blend if it is attended to?",
+      "options": [
+        "The value (V)",
+        "The query (Q)",
+        "The key (K)",
+        "The positional encoding"
+      ],
+      "answer": 0,
+      "explanation": "The value is the content a token contributes when attended to. The query is what a token is looking for, and the key is what a token advertises about itself for matching."
+    },
+    {
+      "subtopic": "Scaled dot-product attention",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In `softmax(Q Kᵀ / √d_k) · V`, the softmax is applied row-wise. What does each row of the resulting weight matrix represent?",
+      "options": [
+        "One query's attention distribution over all keys, summing to 1",
+        "One key's similarity to all queries, summing to d_k",
+        "The mean of the value vectors across all positions",
+        "The variance of the pre-softmax scores for each head"
+      ],
+      "answer": 0,
+      "explanation": "Softmax is applied row-wise so each row turns one query's scores into a probability distribution over all keys that sums to 1. The other options misdescribe what a row holds."
+    },
+    {
+      "subtopic": "Positional encoding necessity",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Without positional encoding, a transformer's self-attention is permutation-equivariant, so it cannot distinguish \"dog bites man\" from \"man bites dog.\"",
+      "answer": true,
+      "explanation": "Attention is a weighted average over an unordered set; permuting the input tokens permutes the outputs identically. Positional encoding adds an order-revealing signal to break this symmetry."
+    },
+    {
+      "subtopic": "Encoder vs decoder families",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which transformer family uses bidirectional self-attention and is the natural choice for classification, embeddings, and retrieval?",
+      "options": [
+        "Encoder-only (BERT-style)",
+        "Decoder-only (GPT-style)",
+        "Encoder-decoder (T5-style)",
+        "A recurrent encoder with attention"
+      ],
+      "answer": 0,
+      "explanation": "Encoder-only models stack bidirectional self-attention blocks for understanding tasks like classification and retrieval. Decoder-only is causal/generative, and encoder-decoder targets sequence-to-sequence mapping."
+    },
+    {
+      "subtopic": "Scaling factor √d_k",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why are the raw dot-product scores divided by `√d_k` before the softmax?",
+      "options": [
+        "Dot-product variance grows with d_k, and large scores saturate softmax into a near-one-hot region where its gradient is almost zero",
+        "It converts the scores into integers so the softmax is numerically exact",
+        "It guarantees the attention weights become exactly uniform across positions",
+        "It compensates for the number of attention heads h so each head sums to 1"
+      ],
+      "answer": 0,
+      "explanation": "Dot products of d_k-dimensional unit-variance vectors have variance ≈ d_k, so they grow with dimension; large pre-softmax scores push softmax toward one-hot where the gradient vanishes and learning stalls. Dividing by √d_k rescales variance back toward 1."
+    },
+    {
+      "subtopic": "Self vs cross-attention",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a translation model's cross-attention layer, where do the Query, Key, and Value come from?",
+      "options": [
+        "Q from the decoder sequence; K and V from the encoder sequence",
+        "Q, K, and V all from the encoder sequence",
+        "Q and K from the decoder; V from the encoder",
+        "Q from the encoder; K and V from the decoder"
+      ],
+      "answer": 0,
+      "explanation": "Cross-attention takes Q from the decoder (the output-so-far) and K, V from the encoder's representation of the source, letting the decoder consult the source text. The math is identical to self-attention; only the input wiring differs."
+    },
+    {
+      "subtopic": "Multi-head dimensions",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A model has `d_model = 512` and `h = 8` heads. What is the per-head dimension, and how does the total attention cost compare to a single full-width head?",
+      "options": [
+        "d_k = 64 per head; the 8 heads together cost about the same as one full-width head",
+        "d_k = 512 per head; the 8 heads cost roughly 8× a single full-width head",
+        "d_k = 64 per head; the 8 heads cost roughly 8× a single full-width head",
+        "d_k = 4096 per head; cost is dominated by the final Wo projection"
+      ],
+      "answer": 0,
+      "explanation": "Per-head dimension is d_model/h = 512/8 = 64. Because each head is 1/h as wide, h heads together cost about the same as one full-width head, buying representational diversity nearly for free."
+    },
+    {
+      "subtopic": "Layer norm vs batch norm",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why do transformers use layer normalization rather than batch normalization?",
+      "options": [
+        "Layer norm normalizes per token across features and needs no batch statistics, which are awkward for variable-length sequences",
+        "Batch norm cannot be implemented on GPUs, but layer norm can",
+        "Layer norm removes the need for residual connections in deep stacks",
+        "Batch norm only works for image data and produces NaNs on any text input"
+      ],
+      "answer": 0,
+      "explanation": "Layer norm is computed per token across its features and needs no batch statistics, which are unstable for variable-length, variable-padding sequences and small inference batches. The other options are false claims about both techniques."
+    },
+    {
+      "subtopic": "Causal masking implementation",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How is causal masking implemented in a decoder's self-attention?",
+      "options": [
+        "Add −∞ to the future (disallowed) entries of the score matrix before softmax, so those weights become exactly 0",
+        "Multiply the value vectors of future tokens by 0 after softmax",
+        "Drop future tokens from the input sequence entirely before the layer runs",
+        "Set the future entries of the score matrix to 0 before softmax"
+      ],
+      "answer": 0,
+      "explanation": "Adding −∞ before softmax forces e^(−∞)=0, so future weights become exactly 0; this is the lower-triangular mask. Setting scores to 0 before softmax would instead give those positions weight e^0=1 (nonzero), which is wrong, and zeroing values after softmax still lets the normalization mass leak."
+    },
+    {
+      "subtopic": "Self-attention complexity",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Roughly how does the attention compute and memory cost change when you double the sequence length n?",
+      "options": [
+        "It roughly quadruples, because the score matrix is n × n (O(n²))",
+        "It roughly doubles, because attention is linear in n",
+        "It stays the same, because heads are run in parallel",
+        "It grows by about log n, like a convolutional layer"
+      ],
+      "answer": 0,
+      "explanation": "Self-attention is O(n²·d) time and O(n²) memory because the score matrix is n × n, so doubling n roughly quadruples attention cost. This quadratic term is the main obstacle to very long context windows."
+    },
+    {
+      "subtopic": "Per-layer characteristics",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Compared to a recurrent layer, which statements about a self-attention layer are correct? (Select all that apply.)",
+      "options": [
+        "It has O(1) sequential operations (fully parallel) versus the RNN's O(n)",
+        "It has O(1) maximum path length between any two tokens versus the RNN's O(n)",
+        "Its per-layer time complexity is O(n²·d) versus the RNN's O(n·d²)",
+        "It uses less memory in sequence length than the RNN",
+        "It cannot model long-range dependencies as directly as the RNN"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Self-attention is O(n²·d) with O(1) sequential steps and O(1) max path length; the RNN is O(n·d²) with O(n) sequential steps and O(n) path length. It uses MORE memory (O(n²)) and models long-range dependencies MORE directly, so those two options are false."
+    },
+    {
+      "subtopic": "Tiny attention computation",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given query `q = [2, 0]` and keys `k1 = [1, 0]`, `k2 = [0, 1]` with `d_k = 2`, what are the attention weights (to 3 decimals)?",
+      "code": "d_k = 2,  sqrt(d_k) ≈ 1.414\nscores: q·k1, q·k2  ->  scale by 1/1.414  ->  softmax",
+      "lang": "text",
+      "options": [
+        "[0.804, 0.196]",
+        "[0.500, 0.500]",
+        "[0.881, 0.119]",
+        "[0.731, 0.269]"
+      ],
+      "answer": 0,
+      "explanation": "q·k1 = 2, q·k2 = 0; scaled by 1/1.414 gives 1.414 and 0. Softmax: e^1.414 ≈ 4.113, e^0 = 1, sum 5.113, so weights ≈ [0.804, 0.196]. [0.5, 0.5] would require equal scores."
+    },
+    {
+      "subtopic": "Transformer block structure",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about one transformer block are correct? (Select all that apply.)",
+      "options": [
+        "Each sublayer output takes the form x + Sublayer(x) via a residual connection",
+        "The feed-forward sublayer is applied to each position independently",
+        "It contains exactly two sublayers: multi-head attention and a position-wise FFN",
+        "The residual connection replaces the need for an attention sublayer",
+        "The FFN mixes information across positions, which is the 'communication' step"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A block has two sublayers (multi-head attention then a position-wise FFN), each wrapped as x + Sublayer(x) with a layer norm, and the FFN runs per position. Attention is the cross-position 'communication' step (not the FFN), and residuals supplement rather than replace the attention sublayer."
+    },
+    {
+      "subtopic": "Forgotten causal mask",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A decoder is trained without a causal mask. Training loss looks excellent, but generation quality is terrible. What is the precise cause?",
+      "options": [
+        "Each position attended to future tokens during training, so the model learned to predict the next token partly by reading information unavailable at generation time",
+        "The missing mask made gradients explode, so the weights never converged at all",
+        "Softmax could no longer normalize because some scores were −∞",
+        "The model became permutation-equivariant and lost all positional information"
+      ],
+      "answer": 0,
+      "explanation": "Without the mask, each position can read its own future, making next-token prediction trivially easy during training (low loss) but impossible to reproduce at inference where the future doesn't exist yet. The other options describe unrelated failure modes."
+    },
+    {
+      "subtopic": "Sinusoidal positional encoding",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In the original sinusoidal scheme, lower dimension indices use higher-frequency sinusoids (changing quickly with position) while higher dimension indices use lower-frequency ones (changing slowly), and these encodings are added to the token embeddings.",
+      "answer": true,
+      "explanation": "PE uses sin/cos of geometrically varying frequency: freq(0)=1 (fast, low dims) down to far smaller frequencies (slow, high dims), giving each position a unique fingerprint that is added to the embedding. The reviewer's trace shows dims 0,1 fast and dims 2,3 slow."
+    },
+    {
+      "subtopic": "Long-context mitigations",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are described as techniques to mitigate the O(n²) attention bottleneck for long contexts? (Select all that apply.)",
+      "options": [
+        "Sparse or local attention (each token attends to a window or a few global tokens)",
+        "Memory-efficient exact attention such as FlashAttention, which avoids materializing the full n × n matrix",
+        "Retrieval so the model reads only relevant chunks",
+        "Replacing self-attention layers with recurrent layers to regain O(1) memory",
+        "Increasing d_model so the n² term becomes negligible"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The reviewer lists sparse/local attention, linear approximations, FlashAttention, and retrieval as mitigations. Recurrent layers reintroduce O(n) sequential steps (and aren't O(1) memory), and raising d_model increases cost rather than removing the n² term."
+    },
+    {
+      "subtopic": "Pre-norm vs post-norm",
+      "source": "ai/transformers-and-attention-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Regarding normalization placement in the transformer block, which statement matches the reviewer?",
+      "options": [
+        "The original paper used post-norm (normalize after the residual add); most modern large models use pre-norm because it trains more stably at depth",
+        "The original paper used pre-norm; modern models switched to post-norm for better extrapolation",
+        "Both pre-norm and post-norm were introduced in the original paper as equal options",
+        "Pre-norm eliminates the residual connection, whereas post-norm keeps it"
+      ],
+      "answer": 0,
+      "explanation": "The original transformer normalized after the residual add (post-norm); most modern large models normalize before the sublayer (pre-norm) for more stable deep training. Either way, the residual + norm pairing is retained, so the last option is wrong."
+    }
+  ]
+}

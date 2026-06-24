@@ -1,0 +1,281 @@
+{
+  "topic": "architecture",
+  "source": "architecture/microservices-architecture-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Core definition",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which property is the defining characteristic that distinguishes a microservice from a module inside a monolith?",
+      "options": [
+        "It can change, deploy, fail, and scale independently of the rest of the system",
+        "It is written in a different programming language from the other services",
+        "It exposes a REST API rather than being called in-process",
+        "It has fewer than a fixed number of lines of code"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer stresses the boundary is the unit of independence: a service is worth carving out only if it can change, deploy, fail, and scale on its own. Polyglot stacks and REST are possible consequences, not the defining property, and size is not a defining metric."
+    },
+    {
+      "subtopic": "Why microservices",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which of these is NOT a valid reason on its own to choose microservices over a (modular) monolith?",
+      "options": [
+        "Getting cleaner code with well-defined module boundaries",
+        "Independent scaling because one part is a hotspot",
+        "Team autonomy when many teams are blocked by one release train",
+        "Independent deployment of one service without redeploying the rest"
+      ],
+      "answer": 0,
+      "explanation": "Clean boundaries are a modularity property achievable inside a monolith, so 'clean code' alone is not a reason. Independent scaling, team autonomy, and independent deployment are the things you genuinely cannot get from a monolith."
+    },
+    {
+      "subtopic": "Database per service",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Under the database-per-service pattern, how may another service obtain data that a service owns?",
+      "options": [
+        "Only through that service's API or the events it publishes",
+        "By directly querying the owning service's database with read-only credentials",
+        "By performing a cross-service JOIN against a shared schema",
+        "By opening a distributed ACID transaction spanning both stores"
+      ],
+      "answer": 0,
+      "explanation": "Each service owns its store privately; access is only through its API or published events. Direct DB access, cross-service JOINs, and cross-service ACID transactions are exactly what the pattern forbids."
+    },
+    {
+      "subtopic": "Distributed monolith",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A 'distributed monolith' — services that must be deployed together and share a database — is considered worse than either a clean monolith or true microservices.",
+      "answer": true,
+      "explanation": "The reviewer calls the distributed monolith the anti-pattern: you pay every network cost while keeping every coupling cost, making it worse than either pure option."
+    },
+    {
+      "subtopic": "Circuit Breaker states",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the Circuit Breaker pattern, what happens to calls while the breaker is in the **Open** state?",
+      "options": [
+        "They fail fast immediately without attempting the remote call",
+        "They are queued and retried once the cooldown elapses",
+        "A limited trial of calls is allowed through to test recovery",
+        "They flow normally while the breaker counts failures"
+      ],
+      "answer": 0,
+      "explanation": "In Open, calls fail fast immediately with no remote attempt for the break duration, protecting both caller and the struggling dependency. The limited trial happens in Half-Open; normal flow with failure counting is the Closed state."
+    },
+    {
+      "subtopic": "Synchronous coupling",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is async messaging preferred over a deep synchronous chain A→B→C for inter-service writes?",
+      "options": [
+        "Synchronous chains create temporal coupling, so if C is slow, A's threads pile up and the whole chain falls over",
+        "Synchronous calls cannot carry a request body, so they cannot transfer state between services",
+        "REST and gRPC are unable to propagate correlation IDs across hops",
+        "A broker guarantees exactly-once delivery, which synchronous calls cannot provide"
+      ],
+      "answer": 0,
+      "explanation": "Sync chains impose temporal coupling and cascading failure: a slow C backs up B and A until threads exhaust. A broker buffers and breaks that chain. Sync calls can carry bodies and correlation IDs, and brokers are typically at-least-once, not exactly-once."
+    },
+    {
+      "subtopic": "Availability math",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A request fans out synchronously to 5 services, each independently 99.9% available and all required to succeed. Approximately what is the end-to-end availability?",
+      "options": [
+        "About 99.5%",
+        "About 99.9%",
+        "About 99.99%",
+        "About 95%"
+      ],
+      "answer": 0,
+      "explanation": "Independent required dependencies multiply: 0.999^5 ≈ 0.995, i.e. about 99.5%. Each added synchronous hop multiplies the failure probability, lowering overall availability below any single dependency."
+    },
+    {
+      "subtopic": "Why 2PC is avoided",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Select all reasons the reviewer gives for avoiding Two-Phase Commit (2PC/XA) across microservices.",
+      "options": [
+        "Participants hold locks through the prepare phase, so a stalled coordinator blocks everyone and sacrifices availability",
+        "Cross-technology distributed-transaction support is patchy and slow, and many brokers/cloud stores don't support it",
+        "It violates service autonomy because a service must expose its commit to an external coordinator",
+        "It silently drops messages because it relies on at-most-once delivery semantics",
+        "It requires every service to share a single physical database to coordinate the commit"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The reviewer lists blocking/coupling (locks through prepare), poor scaling and weak cross-technology support, and violation of autonomy. 2PC is unrelated to message delivery semantics, and it coordinates separate stores rather than requiring one shared database."
+    },
+    {
+      "subtopic": "Saga compensation",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a Saga, why is a failed step's prior committed work undone with a **compensating transaction** rather than a rollback?",
+      "options": [
+        "Each local step already committed, so it cannot be rolled back — it must be semantically undone (e.g. refund, not un-charge)",
+        "Compensating transactions are faster than database rollbacks at high throughput",
+        "The broker automatically rolls back all published events when any step fails",
+        "Rollbacks are unavailable because the saga runs entirely in a single distributed transaction"
+      ],
+      "answer": 0,
+      "explanation": "A saga is a sequence of local transactions; each step's commit cannot be rolled back, so you compensate (refund, release stock) to semantically undo it. There is no single distributed transaction and the broker does not roll events back."
+    },
+    {
+      "subtopic": "Transactional Outbox",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The Transactional Outbox pattern solves the dual-write problem by:",
+      "options": [
+        "Inserting the event into an outbox table in the same local DB transaction as the business change, then having a relay publish it with retries",
+        "Wrapping the database write and the broker publish in a single 2PC transaction across the DB and the broker",
+        "Publishing the event first and only committing the DB change once the broker acknowledges",
+        "Having the consumer poll the producer's database directly to detect new business changes"
+      ],
+      "answer": 0,
+      "explanation": "The outbox writes the event atomically with the business change in one local transaction; a separate relay/poller publishes and marks rows sent, retrying until success (at-least-once). It deliberately avoids 2PC across DB and broker, which the reviewer says you cannot do."
+    },
+    {
+      "subtopic": "Idempotent consumer",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Because most brokers deliver at-least-once, an 'exactly-once' end-to-end effect is achieved by combining at-least-once delivery with idempotent consumer processing, not by the broker alone.",
+      "answer": true,
+      "explanation": "The reviewer states exactly-once is effectively at-least-once delivery plus idempotent processing. Consumers must dedupe (inbox table / unique constraint) since duplicates are expected."
+    },
+    {
+      "subtopic": "Service Bus PeekLock",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In Azure Service Bus, which receive mode gives at-least-once delivery and lets a crashed consumer have the message redelivered?",
+      "options": [
+        "PeekLock — the message is locked, then Completed on success or Abandoned/expired on failure for redelivery",
+        "ReceiveAndDelete — the message is removed on receive so it survives a consumer crash",
+        "ReceiveAndDelete — the broker re-sends until the consumer calls Complete",
+        "PeekLock — the message is deleted immediately, giving at-most-once semantics"
+      ],
+      "answer": 0,
+      "explanation": "PeekLock (the default) locks the message; Complete on success, Abandon or lock expiry on failure triggers redelivery — at-least-once. ReceiveAndDelete removes on receive and is at-most-once, losing messages on a crash."
+    },
+    {
+      "subtopic": "Choosing a broker",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Match the workload to the right Azure messaging service per the reviewer. Select all correct pairings.",
+      "options": [
+        "High-throughput telemetry ingestion with replay by offset → Event Hubs / Kafka",
+        "Commands and work requiring ordering, sessions, transactions, and a DLQ → Service Bus",
+        "Lightweight reactive event routing of discrete notifications via HTTP push → Event Grid",
+        "Guaranteed FIFO ordering of millions of distinct commands per second → Event Grid",
+        "Rich enterprise messaging with built-in duplicate detection → Event Hubs"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Event Hubs/Kafka = high-throughput streaming with offset replay; Service Bus = rich enterprise messaging (ordering, sessions, transactions, DLQ, duplicate detection); Event Grid = lightweight reactive HTTP-push routing. Event Grid is not for FIFO command ordering, and duplicate detection is a Service Bus feature, not Event Hubs."
+    },
+    {
+      "subtopic": "Outbox code reading",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "This handler is meant to implement the Transactional Outbox. What is the defect that reintroduces the dual-write problem?",
+      "code": "using var tx = db.BeginTransaction();\ndb.Orders.Add(order);\ndb.SaveChanges();          // commit business change\ntx.Commit();\n\n// after the transaction commits:\ndb.Outbox.Add(new OutboxMessage(\"OrderPlaced\", order.Id));\ndb.SaveChanges();",
+      "lang": "csharp",
+      "options": [
+        "The outbox row is inserted after the transaction commits, so a crash between the two commits loses the event while the order is saved",
+        "Calling SaveChanges twice always throws a concurrency exception in EF Core",
+        "BeginTransaction is unnecessary because SaveChanges is already atomic across both tables",
+        "The relay can never read the outbox row because it was inserted outside a transaction"
+      ],
+      "answer": 0,
+      "explanation": "The outbox insert must be in the same transaction as the business change. Here it runs after tx.Commit(), so a crash in between commits the order but loses the event — exactly the dual-write failure the outbox is supposed to prevent."
+    },
+    {
+      "subtopic": "Resiliency ordering",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The reviewer recommends a typical nesting order for resilience strategies around a remote call. From the call outward, which order is correct?",
+      "options": [
+        "timeout → retry → circuit breaker → fallback (outermost)",
+        "fallback → timeout → retry → circuit breaker (outermost)",
+        "circuit breaker → fallback → retry → timeout (outermost)",
+        "retry → timeout → fallback → circuit breaker (outermost)"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer states the typical order is timeout → retry → circuit breaker → fallback, outermost. Timeout bounds each attempt, retry handles transient blips, the circuit breaker trips on sustained failure, and fallback degrades gracefully as the outermost layer."
+    },
+    {
+      "subtopic": "Saga isolation gotcha",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A senior concern with sagas is the lack of isolation between steps. What does this mean, and how is it mitigated?",
+      "options": [
+        "Other transactions can observe intermediate state (e.g. stock briefly reserved); mitigate with semantic locks like a PENDING/reserved status, commutative updates, or re-reads",
+        "Saga steps run in parallel and corrupt each other's memory; mitigate with mutexes around each handler",
+        "The orchestrator cannot see step results; mitigate by switching to choreography",
+        "Compensations cannot be retried; mitigate by making them run exactly once"
+      ],
+      "answer": 0,
+      "explanation": "Sagas have no ACID isolation across steps, so other transactions can see intermediate states. The reviewer's mitigations are semantic locks (PENDING/reserved), commutative updates, or re-reads. Compensations are in fact designed to be idempotent and retryable."
+    },
+    {
+      "subtopic": "Event-carried state transfer",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For database-per-service systems, why does the reviewer often favor 'event-carried state transfer' (a fat event) over a thin 'event notification'?",
+      "options": [
+        "The fat event carries enough data for consumers to update their local replicas with no synchronous callback to the producer",
+        "The thin event guarantees ordering while the fat event does not",
+        "The fat event is always smaller on the wire, reducing broker storage costs",
+        "The thin event lets consumers update local replicas without ever calling back the producer"
+      ],
+      "answer": 0,
+      "explanation": "A fat event ships a full snapshot so consumers update local read replicas without a sync callback — well suited to DB-per-service. A thin notification minimizes payload but forces a synchronous callback for details; it is the thin event, not the fat one, that requires the callback."
+    },
+    {
+      "subtopic": "Bad boundaries",
+      "source": "architecture/microservices-architecture-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following are symptoms of badly chosen service boundaries ?",
+      "options": [
+        "Cascading deploys where changing service A forces B and C to be redeployed",
+        "Anemic entity services such as a CustomerService that is just CRUD over one table",
+        "Many synchronous hops between two services to complete a single use case",
+        "Each service owning its own private database and schema",
+        "A business change that typically touches exactly one service"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Cascading deploys, anemic CRUD 'entity services', and chatty multi-hop boundaries all signal misplaced seams. Private DB ownership and a change touching one service are the desired properties (high cohesion, low coupling), not symptoms of a problem."
+    }
+  ]
+}

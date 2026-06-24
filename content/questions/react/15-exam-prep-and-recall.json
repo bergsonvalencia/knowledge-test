@@ -1,0 +1,272 @@
+{
+  "topic": "react",
+  "source": "react/15-exam-prep-and-recall.md",
+  "questions": [
+    {
+      "subtopic": "Declarative rendering",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does it mean that React is **declarative**?",
+      "options": [
+        "You describe the UI you want for the current state and React computes the DOM mutations to get there",
+        "You issue step-by-step DOM commands and React records them for replay",
+        "You declare all variables before use, which React enforces at compile time",
+        "You annotate components with decorators that bind them to the DOM imperatively"
+      ],
+      "answer": 0,
+      "explanation": "Declarative means writing `view = f(state)` — you describe the target UI and React figures out the minimal DOM changes. Issuing step-by-step DOM commands is the imperative style React replaces."
+    },
+    {
+      "subtopic": "Component vs element",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the difference between a React **component** and a React **element**?",
+      "options": [
+        "A component is a function that returns UI; an element is the lightweight `{type, props}` object describing one node",
+        "A component is the rendered DOM node; an element is the JSX source text before compilation",
+        "A component is immutable; an element can be mutated in place to update the screen",
+        "A component lives in the virtual DOM; an element lives only in the real DOM"
+      ],
+      "answer": 0,
+      "explanation": "A component is a function returning UI; an element is the lightweight object (`{type, props}`) it produces. Writing `<Comp/>` or calling the component creates elements; neither an element nor a component is a real DOM node."
+    },
+    {
+      "subtopic": "Props are read-only",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A child component may directly mutate its own props to update what it displays.",
+      "answer": false,
+      "explanation": "Props are read-only inputs; a child must never mutate them. To change data, the parent updates its own state and passes new props down — one-way data flow keeps rendering predictable."
+    },
+    {
+      "subtopic": "useEffect purpose",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which of these is the appropriate use of `useEffect`?",
+      "options": [
+        "Subscribing to an external store, a WebSocket, or setting the document title",
+        "Transforming props into the value you render this frame",
+        "Running the logic for a button's `onClick`",
+        "Resetting a component's state when one of its props changes"
+      ],
+      "answer": 0,
+      "explanation": "Effects are only for synchronizing with systems external to React (subscriptions, network, document title). Derived data belongs in render, click logic in the handler, and prop-driven resets are done with a `key` — none need an effect."
+    },
+    {
+      "subtopic": "Rules of Hooks",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "According to the Rules of Hooks, hooks must be called…",
+      "options": [
+        "only at the top level of a React function (component or custom hook), never inside conditions or loops",
+        "inside a `try/catch` so a thrown hook does not crash the component",
+        "before any JSX is returned, but conditionally branching on props is fine",
+        "from any function, as long as the component is a class with a render method"
+      ],
+      "answer": 0,
+      "explanation": "Hooks must be called at the top level and only from React functions, so the call order stays stable and React can match each hook to its stored state. Conditions, loops, and nested functions break that ordering."
+    },
+    {
+      "subtopic": "State snapshot semantics",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Starting from `count = 0`, what is `count` after this handler runs, and why?",
+      "code": "setCount(count + 1);\nsetCount(count + 1);\nsetCount(count + 1);",
+      "lang": "typescript",
+      "options": [
+        "1 — all three reads see the same render's snapshot (`count` is `0`), so each computes `0 + 1`",
+        "3 — each `setCount` immediately applies and increments the live variable",
+        "0 — React batches the calls and discards all but the final no-op",
+        "3 — React replays the calls in order against the updated value each time"
+      ],
+      "answer": 0,
+      "explanation": "`count` is fixed at `0` for this render, so each call computes `0 + 1` and the result is 1. Only the functional updater `setCount(c => c + 1)` would yield 3, because each call receives the latest pending value."
+    },
+    {
+      "subtopic": "Index as key",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A reorderable to-do list uses `key={index}` and each row has a local input. After dragging item 3 to the top, the typed text appears on the wrong row. Why?",
+      "options": [
+        "Index keys tie state to position, not identity, so React reuses the node at each index and the per-row state stays put",
+        "Dragging unmounts every row, and React restores input state in alphabetical order",
+        "Index keys force a full remount on reorder, which clears the wrong inputs",
+        "React requires numeric keys to be unique strings, so duplicate indices corrupt the rows"
+      ],
+      "answer": 0,
+      "explanation": "An index key identifies an item by its position, so when order changes React keeps the node (and its state) at each index. The fix is a stable id tied to the data, e.g. `key={todo.id}`."
+    },
+    {
+      "subtopic": "Falsy value in JSX",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does `{count && <Badge />}` render a stray `0` on screen when `count` is `0`?",
+      "options": [
+        "`0` is falsy so the expression evaluates to `0`, and React renders the number `0` (unlike `false`/`null`/`undefined`, which render nothing)",
+        "React coerces `0` to the string `\"0\"` only inside `&&` expressions as a debugging aid",
+        "`<Badge />` is rendered but collapses to its `0`-width fallback text",
+        "`count` is undefined on first render, and React prints `0` as the default for missing numbers"
+      ],
+      "answer": 0,
+      "explanation": "`0 && <Badge/>` short-circuits to `0`, and React renders the number `0` — whereas `false`, `null`, and `undefined` render nothing. Guard with `count > 0 && ...` or `count ? <Badge/> : null`."
+    },
+    {
+      "subtopic": "Immutability and bail-out",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What happens when this `rename` handler runs?",
+      "code": "const [user, setUser] = useState({ name: \"Ana\" });\nfunction rename() {\n  user.name = \"Bea\";\n  setUser(user);\n}",
+      "lang": "typescript",
+      "options": [
+        "React bails out — the reference is unchanged so `Object.is(prev, next)` is true — and no re-render occurs while the snapshot is now corrupted",
+        "React deep-compares the object, sees `name` changed, and re-renders with \"Bea\"",
+        "React throws because mutating state in place is a runtime error",
+        "React re-renders once, then warns that you passed the same reference"
+      ],
+      "answer": 0,
+      "explanation": "React compares by reference (`Object.is`); since the same object was passed, it bails out and skips the re-render, and you've also mutated the current snapshot. Fix: pass a new object, `setUser({ ...user, name: \"Bea\" })`."
+    },
+    {
+      "subtopic": "React.memo effectiveness",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A child wrapped in `React.memo` still re-renders every time its parent does. The parent passes `style={{ margin: 4 }}` and `onClick={() => save()}` as props. What is the correct diagnosis?",
+      "options": [
+        "Each render creates a new object and function, so the props are never shallow-equal; stabilize them before `memo` can help",
+        "`React.memo` only compares primitive props, so object and function props always force a re-render by design",
+        "`React.memo` requires `useMemo` to also wrap the child element, otherwise it is ignored",
+        "The parent re-rendering always re-renders memoized children; `memo` only blocks state changes"
+      ],
+      "answer": 0,
+      "explanation": "`React.memo` skips re-render only when props are shallow-equal. Inline object/array/function literals create a new reference every render, defeating it — fix the unstable prop (e.g. `useMemo`/`useCallback`) first."
+    },
+    {
+      "subtopic": "useRef vs useState",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes `useRef` from `useState`?",
+      "options": [
+        "Writing a ref does not trigger a re-render and is mutable synchronously; updating state schedules a re-render",
+        "Refs trigger a re-render only when `.current` changes by reference, just like state",
+        "Both trigger re-renders, but refs are cheaper because they skip reconciliation",
+        "Refs persist only for the current render, while state persists across renders"
+      ],
+      "answer": 0,
+      "explanation": "Both persist across renders, but a ref write does not cause a re-render and applies synchronously, so refs suit values you read/write without rendering (DOM nodes, timer ids). State re-renders when changed and is what the UI shows."
+    },
+    {
+      "subtopic": "Context vs store library",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For large, frequently-updated global state, why is a store like Redux Toolkit or Zustand preferred over plain Context?",
+      "options": [
+        "Context re-renders every consumer on any change, whereas a store lets components subscribe per selector and re-render only on relevant changes",
+        "Context cannot hold objects, so it forces excessive serialization for large state",
+        "A store bypasses reconciliation entirely, mutating the DOM directly for speed",
+        "Context updates are asynchronous and unbatched, so they drop rapid changes"
+      ],
+      "answer": 0,
+      "explanation": "Context re-renders all consumers when its value changes and isn't a real state manager. Stores subscribe via selectors (both Redux Toolkit and Zustand use `useSyncExternalStore`), so only components reading changed slices re-render."
+    },
+    {
+      "subtopic": "useLayoutEffect vs useEffect",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "`useLayoutEffect` fires synchronously after the DOM mutation but before the browser paints, whereas `useEffect` fires after paint.",
+      "answer": true,
+      "explanation": "`useLayoutEffect` runs synchronously before paint — useful for measuring layout and applying changes without a visible flicker — while `useEffect` runs after the paint. Otherwise prefer `useEffect`."
+    },
+    {
+      "subtopic": "Stale closure in effects",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "This interval is meant to log the current `count`, but it always logs `0`. Which fixes are correct? (Select all that apply.)",
+      "code": "useEffect(() => {\n  const id = setInterval(() => console.log(count), 1000);\n  return () => clearInterval(id);\n}, []); // count not in deps",
+      "lang": "typescript",
+      "options": [
+        "Add `count` to the dependency array so the effect re-subscribes when it changes",
+        "Store the latest `count` in a ref and read `ref.current` inside the interval",
+        "Use a functional-updater pattern so the callback reads the latest value instead of the captured one",
+        "Remove the cleanup function so the old interval keeps the fresh closure alive",
+        "Wrap the `console.log` in `useMemo` to recompute `count` each tick"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The interval closes over `count` from the first render and the empty deps prevent re-subscribing. Adding `count` to deps, reading the latest value from a ref, or using the functional-updater pattern all fix it. Removing cleanup leaks intervals without refreshing the closure, and `useMemo` does not capture fresh values for a long-lived callback."
+    },
+    {
+      "subtopic": "Error boundaries scope",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which errors does a React **error boundary** catch? (Select all that apply.)",
+      "options": [
+        "An error thrown during a child component's render",
+        "An error thrown in a child's lifecycle method",
+        "An error thrown inside an `onClick` event handler",
+        "An error thrown in an `async` callback after `await`",
+        "An error thrown during server-side rendering"
+      ],
+      "answer": [0, 1],
+      "explanation": "Error boundaries catch errors thrown during rendering, in lifecycle methods, and in child constructors. They do not catch errors in event handlers, asynchronous code, or SSR — those need ordinary `try/catch`."
+    },
+    {
+      "subtopic": "useCallback identity",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which equivalence between `useCallback` and `useMemo` is correct?",
+      "options": [
+        "`useCallback(fn, deps)` is equivalent to `useMemo(() => fn, deps)`",
+        "`useCallback(fn, deps)` is equivalent to `useMemo(fn, deps)`",
+        "`useMemo(fn, deps)` is equivalent to `useCallback(() => fn(), deps)`",
+        "`useCallback(fn, deps)` is equivalent to `useMemo(() => fn(), deps)`"
+      ],
+      "answer": 0,
+      "explanation": "`useCallback` memoizes a function's identity, so `useCallback(fn, deps)` equals `useMemo(() => fn, deps)` — the memoized value *is* the function. `useMemo(fn, deps)` would instead store the result of *calling* `fn`."
+    },
+    {
+      "subtopic": "The use API",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does the React 19 `use` API differ from a regular hook?",
+      "options": [
+        "It reads a Promise (suspending until it resolves) or a context, and unlike hooks it may be called conditionally and inside loops",
+        "It can be called outside render, e.g. in event handlers, but never reads context",
+        "It replaces `useEffect` for data fetching and runs only after paint",
+        "It must be called at the top level like every hook, but accepts a Promise instead of a value"
+      ],
+      "answer": 0,
+      "explanation": "`use` reads the value of a Promise (suspending until resolved) or a context. It can only be called during render, but unlike ordinary hooks it may be called conditionally and inside loops — which is exactly what relaxes the Rules-of-Hooks ordering constraint for it."
+    },
+    {
+      "subtopic": "React 19 ref as a prop",
+      "source": "react/15-exam-prep-and-recall.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What changed about `ref` for function components in React 19?",
+      "options": [
+        "`ref` is now an ordinary prop a function component can accept directly; `forwardRef` still works but is planned for deprecation and removal",
+        "`forwardRef` is removed in React 19 and code using it fails to compile",
+        "Function components can no longer receive refs; you must convert them to classes",
+        "`ref` must now be renamed to `innerRef` because `ref` became a reserved keyword"
+      ],
+      "answer": 0,
+      "explanation": "In React 19 a function component can accept `ref` directly as a prop, so `forwardRef` is no longer required. `forwardRef` still works for now; React plans to deprecate and later remove it, with a codemod to migrate."
+    }
+  ]
+}

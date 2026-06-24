@@ -1,0 +1,261 @@
+{
+  "topic": "testing",
+  "source": "testing/unit-testing-and-mocking-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "F.I.R.S.T. principles",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the F.I.R.S.T. acronym for a good unit test, what does the **R** stand for?",
+      "options": [
+        "Repeatable — deterministic, with no reliance on `DateTime.Now`, `Random`, or real I/O",
+        "Realistic — exercises production data so results mirror real usage",
+        "Robust — keeps passing even when the production code changes",
+        "Reusable — the same test can be shared across multiple modules"
+      ],
+      "answer": 0,
+      "explanation": "F.I.R.S.T. = Fast, Isolated/Independent, Repeatable, Self-validating, Timely. Repeatable means deterministic — no `DateTime.Now`, `Random`, GUIDs, or real I/O, so it produces the same result every run."
+    },
+    {
+      "subtopic": "Arrange-Act-Assert",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why should a unit test avoid `if`/`for`/`switch` logic in its body?",
+      "options": [
+        "Branching in a test is a smell that the test is exercising more than one behavior",
+        "Test runners cannot compile control-flow statements inside `[Fact]` methods",
+        "Loops make the test run too slowly to qualify as Fast under F.I.R.S.T.",
+        "Conditional logic prevents the framework from generating a separate case per row"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer states branching in a test is a smell that you're testing more than one thing — it breaks the one-logical-assertion / one-reason-to-fail discipline. Runners compile such logic fine; it's a design smell, not a syntax limit."
+    },
+    {
+      "subtopic": "xUnit lifecycle",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "XUnit creates a new instance of the test class for every test method, which is why it has no `[SetUp]`/`[TearDown]` attributes and uses the constructor and `Dispose()` instead.",
+      "answer": true,
+      "explanation": "xUnit's signature isolation guarantee is a fresh test-class instance per test method, so the constructor serves as setup and `IDisposable.Dispose()` as teardown — no `[SetUp]`/`[TearDown]` needed."
+    },
+    {
+      "subtopic": "Test double taxonomy",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which test double is best described as **a working, lightweight implementation** of a collaborator, such as an in-memory repository?",
+      "options": [
+        "Fake",
+        "Stub",
+        "Dummy",
+        "Mock"
+      ],
+      "answer": 0,
+      "explanation": "A fake is a working lightweight implementation (in-memory repo, SQLite-in-memory). A stub only returns canned answers, a dummy is an unused placeholder, and a mock carries pre-set expectations and fails if they aren't met."
+    },
+    {
+      "subtopic": "Coverage as a metric",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "It is possible to reach 100% line coverage while the tests contain zero assertions.",
+      "answer": true,
+      "explanation": "Coverage measures which lines/branches executed, not whether anything was verified. You can execute every line — hitting 100% — with no assertions at all, which is exactly why coverage is a poor quality target."
+    },
+    {
+      "subtopic": "Stub vs mock",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An `OrderService.Place` method loads an order from a repository, then publishes an `OrderPlaced` event. You want to test that the event is published exactly once. Which choice best matches the guidance on stub vs mock?",
+      "options": [
+        "Stub the repository (it's an input providing data) and mock the publisher (publishing is the behavior under test)",
+        "Mock both the repository and the publisher, with a `Verify` on every call to each",
+        "Stub both, then assert on the publisher's internal state after the call",
+        "Mock the repository to assert `GetById` was called, and stub the publisher"
+      ],
+      "answer": 0,
+      "explanation": "The repository is an input that provides data, so a stub is right; publishing the event is the interaction that *is* the behavior under test, so a mock with `Verify(..., Times.Once)` is right. Verifying the query call (GetById) is the kind of interaction the reviewer says is almost always wrong."
+    },
+    {
+      "subtopic": "InlineData constraints",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A teammate writes `[InlineData(new Order(100m), 10m)]` on an xUnit `[Theory]` and it won't compile. What is the cause and the correct fix?",
+      "options": [
+        "`[InlineData]` arguments must be compile-time constants; supply the `Order` via `[MemberData]` with a static source method instead",
+        "`[InlineData]` only accepts a single argument; split it into two separate `[InlineData]` attributes",
+        "`decimal` literals are not allowed in attributes; change `10m` to an `int`",
+        "`[Theory]` cannot take reference types; mark the method `[Fact]` and loop over the cases internally"
+      ],
+      "answer": 0,
+      "explanation": "Attribute arguments must be compile-time constants, so you cannot `new` an object inside `[InlineData]`. Use `[MemberData(nameof(Source))]` backed by a `static IEnumerable<object[]>` that constructs the instances at runtime."
+    },
+    {
+      "subtopic": "Async test pitfalls",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does the reviewer warn that writing a test method as `async void` is dangerous?",
+      "options": [
+        "The runner cannot await it, so unobserved exceptions and failed assertions are swallowed and the test falsely passes",
+        "`async void` forces the test onto a background thread, causing it to deadlock with `MockBehavior.Strict`",
+        "The compiler rewrites `async void` to run synchronously, defeating the purpose of an async test",
+        "`async void` cannot use `ReturnsAsync`, so the mocked dependency returns null"
+      ],
+      "answer": 0,
+      "explanation": "An `async void` method can't be awaited by the runner, so unobserved exceptions and failed assertions are lost and the test passes falsely. Always use `async Task` and `await` the call under test."
+    },
+    {
+      "subtopic": "Async test code reading",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "This xUnit test passes regardless of whether the order is actually saved. What is the primary bug?",
+      "code": "[Fact]\npublic async Task Place_SavesOrder()\n{\n    var repo = new Mock<IOrderRepository>();\n    var sut  = new OrderService(repo.Object);\n    sut.PlaceAsync(42);\n    repo.Verify(r => r.SaveAsync(It.IsAny<Order>()), Times.Once);\n}",
+      "lang": "csharp",
+      "options": [
+        "`PlaceAsync` is not awaited, so `Verify` can run before the async work completes",
+        "`It.IsAny<Order>()` matches nothing, so the `Verify` is always vacuously true",
+        "`Times.Once` should be `Times.AtLeastOnce` for async methods",
+        "The mock needs `MockBehavior.Strict` or `SaveAsync` is never tracked"
+      ],
+      "answer": 0,
+      "explanation": "`sut.PlaceAsync(42)` returns a `Task` that is never awaited, so the `Verify` can execute before `SaveAsync` is ever reached. Mark the test `async Task` and `await sut.PlaceAsync(42);` before verifying. `It.IsAny<Order>()` is a valid catch-all matcher, not the bug."
+    },
+    {
+      "subtopic": "Moq mockability limits",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following can Moq **not** override when building its runtime proxy? (Select all that apply.)",
+      "options": [
+        "A non-`virtual` instance method on a concrete class",
+        "A `static` method",
+        "A member of a `sealed` class",
+        "An interface method",
+        "An `abstract` method"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Moq builds a runtime proxy and can only override interface, `abstract`, or `virtual` members. Non-virtual instance methods, `static` methods, and members of `sealed` classes can't be intercepted — which is why testable designs depend on interfaces/abstractions."
+    },
+    {
+      "subtopic": "FluentAssertions licensing",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the licensing situation a senior should know about FluentAssertions?",
+      "options": [
+        "v8+ moved to a commercial license for business use, while v7 remains free under Apache 2.0",
+        "All versions are free under the MIT license with no commercial restrictions",
+        "v7 became commercial, so teams should upgrade to the free v8 release",
+        "It is dual-licensed GPL/commercial, so any use in closed-source code requires a paid license"
+      ],
+      "answer": 0,
+      "explanation": "FluentAssertions v8+ moved to a commercial license for business use; v7 stays free under Apache 2.0. Many teams pin v7 or switch to Shouldly / AwesomeAssertions (a free fork)."
+    },
+    {
+      "subtopic": "Data-driven test sources",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about xUnit `[Theory]` data sources are correct? (Select all that apply.)",
+      "options": [
+        "`[InlineData]` arguments must be compile-time constants",
+        "`[MemberData]` references a `static` property or method returning `IEnumerable<object[]>`",
+        "`[ClassData]` uses a class implementing `IEnumerable<object[]>`",
+        "`[Theory]` reports all its cases as a single combined pass/fail result",
+        "`[InlineData]` can construct `new` objects as long as the type is `sealed`"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "`[InlineData]` requires compile-time constants; `[MemberData]` points at a static member returning `IEnumerable<object[]>`; `[ClassData]` uses a class implementing that interface. A `[Theory]` reports each row as a *separate* case, and `[InlineData]` can never `new` an object regardless of sealing."
+    },
+    {
+      "subtopic": "Test pyramid boundary",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A repository test runs against the EF Core **InMemory** provider with no mocks. How should it be classified, per the reviewer?",
+      "options": [
+        "An integration concern — InMemory doesn't enforce relational behavior, so it isn't a true unit test of the database",
+        "A pure unit test, because the InMemory provider replaces the real database with an in-process double",
+        "An end-to-end test, because it exercises the full persistence stack",
+        "A unit test, since Microsoft recommends InMemory specifically for fast unit testing"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer notes the EF Core InMemory provider does not make a repository test a unit test of the database; it doesn't enforce constraints, transactions, or raw SQL. Microsoft recommends testing against the real provider or SQLite — an integration concern."
+    },
+    {
+      "subtopic": "Mock only what you own",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the deepest reason the GOOS principle says to avoid mocking third-party types you don't control (e.g. `HttpClient`, an SDK client)?",
+      "options": [
+        "Mocking a foreign API bakes your possibly-wrong assumptions about its behavior into a test that stays green even when those assumptions are false",
+        "Third-party types are usually `sealed`, so Moq physically cannot create a proxy for them",
+        "External libraries change versions often, so the mock setup code needs constant maintenance",
+        "Mocking external types makes the test slower because the proxy must load the third-party assembly"
+      ],
+      "answer": 0,
+      "explanation": "The core danger is that mocking a foreign type encodes your *assumptions* about its behavior; if those assumptions are wrong, the test passes anyway while production fails. The fix is to wrap it behind a thin interface you own and mock that. Sealing/version churn are secondary, not the principle's core."
+    },
+    {
+      "subtopic": "Over-mocking diagnosis",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A reviewer flags a test that sets up six mocks and has eight `Verify` calls mirroring each internal method call, saying it will \"break on any refactor.\" What is the best remedy?",
+      "options": [
+        "Verify the observable outcome with state-based assertions and stubs, reserving `Verify` for the one or two interactions that genuinely are the behavior",
+        "Switch all six mocks to `MockBehavior.Strict` so the verifications become exact",
+        "Replace the mocks with concrete instances and keep all eight `Verify` calls intact",
+        "Add more `Verify` calls so every code path is fully pinned and refactors are caught early"
+      ],
+      "answer": 0,
+      "explanation": "Eight verifies mirroring internal calls makes a brittle change-detector test that asserts *how* the code works. The remedy is to assert the observable behavior with state-based checks/stubs and reserve `Verify` for the interaction(s) that truly are the behavior (e.g. event published once). Six mocks also hints at an SRP smell."
+    },
+    {
+      "subtopic": "xUnit parallelism flakiness",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two xUnit test classes mutate the same shared static cache. Each class passes when run alone, but the suite intermittently fails. Which fact about xUnit best explains this?",
+      "options": [
+        "xUnit runs test collections in parallel by default, so the two classes execute concurrently and race on the shared state",
+        "xUnit reuses one fixture instance across classes, so the cache leaks between them",
+        "xUnit runs tests within a single class in parallel, so the static cache is corrupted mid-class",
+        "xUnit disposes shared statics between tests, so one class clears the other's cache"
+      ],
+      "answer": 0,
+      "explanation": "xUnit runs test *collections* in parallel by default (tests within one class run serially). Two different classes touching the same mutable static run concurrently and race — the classic \"passes alone, fails in the suite\" bug. They must opt out of parallelism or share a collection. xUnit does *not* reuse a fixture across classes."
+    },
+    {
+      "subtopic": "Mutation testing vs coverage",
+      "source": "testing/unit-testing-and-mocking-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In mutation testing (e.g. Stryker.NET), what does a **surviving mutant** indicate?",
+      "options": [
+        "A line that is covered by tests but not actually verified — no test failed when the code was changed",
+        "A line that no test ever executes, so coverage is below 100%",
+        "A test that is flaky because it sometimes fails and sometimes passes",
+        "A piece of generated or trivial code that should be excluded from coverage targets"
+      ],
+      "answer": 0,
+      "explanation": "Mutation testing mutates the code and checks whether tests fail. A surviving mutant means a change to a covered line did *not* break any test — proof the line is executed but not verified. That's a stronger quality signal than line coverage, which only shows execution."
+    }
+  ]
+}

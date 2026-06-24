@@ -1,0 +1,284 @@
+{
+  "topic": "testing",
+  "source": "testing/integration-testing-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Integration vs unit tests",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In ASP.NET Core, what distinguishes an **integration test** from a **unit test**?",
+      "options": [
+        "It exercises several components through their real wiring (DI, routing, model binding, middleware, EF Core, serialization) rather than one isolated class",
+        "It only runs against a deployed production server over real HTTP",
+        "It mocks every collaborator and performs no I/O so it runs in microseconds",
+        "It tests only the controller method's logic in isolation while stubbing the pipeline"
+      ],
+      "answer": 0,
+      "explanation": "An integration test runs multiple components through their real composition; a unit test isolates one class with mocked collaborators and no I/O. Hitting a deployed server over real HTTP describes a functional/E2E test, not the typical in-process integration test."
+    },
+    {
+      "subtopic": "WebApplicationFactory and TestServer",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `TestServer` (the engine behind `WebApplicationFactory`) do with the network?",
+      "options": [
+        "It opens a real TCP socket on a random free port and the client connects over loopback",
+        "It implements `IServer` but never opens a TCP socket — requests flow through an in-memory pipeline, so there are no ports or network flakiness",
+        "It binds to port 80 and requires the test process to run elevated",
+        "It proxies requests to a separately deployed Kestrel instance over HTTP"
+      ],
+      "answer": 1,
+      "explanation": "`TestServer` processes requests through the real ASP.NET Core pipeline entirely in-memory with no TCP socket, which removes port races and network flakiness. There is no real socket or separate Kestrel process involved."
+    },
+    {
+      "subtopic": "Program visibility gotcha",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "With top-level statements, why won't a test using `WebApplicationFactory<Program>` compile, and how do you fix it?",
+      "options": [
+        "`Program` must be `sealed`; mark it `public sealed class Program`",
+        "The test project must reference `Microsoft.AspNetCore.App`; add the framework reference",
+        "The implicit `Program` class is inaccessible to the test project; add `public partial class Program { }` (or use `InternalsVisibleTo`)",
+        "`Program` must inherit from `WebApplicationFactory`; change its base class"
+      ],
+      "answer": 2,
+      "explanation": "With top-level statements the generated `Program` class is internal/inaccessible to the test assembly. Adding `public partial class Program { }` (or `InternalsVisibleTo`) exposes it; nothing requires sealing it or inheriting from the factory."
+    },
+    {
+      "subtopic": "ConfigureTestServices ordering",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why use `ConfigureTestServices` rather than `ConfigureServices` on the test builder to replace a production registration?",
+      "options": [
+        "`ConfigureTestServices` runs after the app's own service registration, so your replacements win; `ConfigureServices` runs first and gets overwritten",
+        "`ConfigureServices` is not available on `IWebHostBuilder` in test projects",
+        "`ConfigureTestServices` runs before the app's registration, letting the app build on top of your stubs",
+        "Only `ConfigureTestServices` can resolve scoped services, so `ConfigureServices` throws at startup"
+      ],
+      "answer": 0,
+      "explanation": "`ConfigureTestServices` runs after the app's `ConfigureServices`, so your replacements override the production ones. Using `ConfigureServices` on the test builder runs first and is overwritten by the app — the classic bug the reviewer flags."
+    },
+    {
+      "subtopic": "Test pyramid",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Integration tests are the middle layer of the test pyramid: fewer than unit tests and not a replacement for them.",
+      "answer": true,
+      "explanation": "The reviewer keeps the pyramid: many fast unit tests, fewer integration tests, fewest E2E/UI tests. Integration tests are the middle layer, not a substitute for units."
+    },
+    {
+      "subtopic": "EF In-Memory provider trap",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A teammate's integration tests use the EF Core In-Memory provider. They pass, but production throws on a query and a unique-index violation slips through. Why?",
+      "code": "services.AddDbContext<AppDbContext>(o => o.UseInMemoryDatabase(\"tests\"));",
+      "lang": "csharp",
+      "question_note": "",
+      "options": [
+        "The In-Memory provider needs `EnsureCreated()` to build constraints, which was omitted",
+        "The In-Memory provider is not a relational database — it does not enforce unique indexes, FK constraints, or transactions, and evaluates LINQ client-side, so it accepts data and queries real SQL Server rejects",
+        "The connection was closed too early, dropping the constraint metadata",
+        "Respawn was not configured, so stale rows from a prior test caused the violation"
+      ],
+      "answer": 1,
+      "explanation": "The In-Memory provider isn't relational: no real SQL, no constraint/FK/transaction enforcement, and LINQ runs client-side, so it passes things real SQL rejects. `EnsureCreated`, connection lifetime, and Respawn are SQLite/real-DB concerns, not what makes In-Memory unsafe."
+    },
+    {
+      "subtopic": "SQLite in-memory lifetime",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When using SQLite in-memory mode for tests, what two things must you do for the database to work across the test?",
+      "options": [
+        "Open a fresh connection per query and call `Migrate()` each time",
+        "Keep the connection open for the test's lifetime and call `Database.EnsureCreated()` to build the schema from the model",
+        "Use `DataSource=:memory:` with pooling enabled and call `Database.Migrate()`",
+        "Set `AllowAutoRedirect=false` on the client and call `EnsureDeleted()` first"
+      ],
+      "answer": 1,
+      "explanation": "An in-memory SQLite database is destroyed when its last connection closes, so the connection must stay open; `EnsureCreated()` builds the schema from the EF model. Opening fresh connections per query would drop the database, and `AllowAutoRedirect` is unrelated."
+    },
+    {
+      "subtopic": "Respawn",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What problem does **Respawn** solve, and how does it work?",
+      "options": [
+        "It spins up a throwaway SQL Server in Docker per test run with a dynamically mapped port",
+        "It wraps each test in a rolled-back transaction so committed data never persists",
+        "It resets cross-test pollution in a shared real database by deleting data from all tables in FK-safe order (or truncating) while keeping the schema intact",
+        "It mocks the DbContext so no real SQL is executed between tests"
+      ],
+      "answer": 2,
+      "explanation": "Respawn intelligently DELETEs (or TRUNCATEs) data across tables in FK-safe order between tests, leaving the schema, so resets are fast and faithful. Docker containers are Testcontainers; the rolled-back-transaction approach is the separate, lower-fidelity option Respawn improves on."
+    },
+    {
+      "subtopic": "Test auth handler",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the recommended way to handle authentication in ASP.NET Core integration tests?",
+      "options": [
+        "Perform a real OAuth/OIDC login once in a fixture and reuse the bearer token across the suite",
+        "Disable the `[Authorize]` filters in the Testing environment so every endpoint is reachable",
+        "Register a custom test `AuthenticationHandler` as the default scheme that authenticates a configurable principal, keeping authorization-policy evaluation real",
+        "Inject a pre-built `ClaimsPrincipal` directly into each controller via constructor injection"
+      ],
+      "answer": 2,
+      "explanation": "A test `AuthenticationHandler` set as the default scheme always authenticates a configurable principal with the claims/roles you need; only the identity source is faked while policy evaluation stays real. Real OIDC is slow/flaky, and disabling `[Authorize]` would stop exercising the auth pipeline."
+    },
+    {
+      "subtopic": "HttpClient end-to-end testing",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Driving an endpoint with the factory's `HttpClient` (vs. unit-testing the controller method) lets you verify which behaviors that a controller-method unit test bypasses? Select all that apply.",
+      "options": [
+        "Routing and `[ApiController]` automatic 400 responses on invalid models",
+        "JSON serializer casing and `ProblemDetails` shape",
+        "The `Location` header returned after a 201 Created",
+        "Whether a private helper method computes the correct intermediate value",
+        "The exact SQL text EF Core emits, asserted character-for-character"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Driving the real pipeline exercises routing, automatic 400s, content negotiation, ProblemDetails shape, serializer casing, and response headers like `Location`. Private-helper internals are a unit-test concern, and the reviewer never advocates asserting raw SQL text character-for-character."
+    },
+    {
+      "subtopic": "Replacing DbContext registration",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is `services.RemoveAll<DbContextOptions<AppDbContext>>()` preferred over locating and removing a single descriptor before re-adding the test DbContext?",
+      "options": [
+        "`RemoveAll` also disposes any already-built provider, preventing leaks",
+        "EF registers several related services, so removing all descriptors for that type is cleaner and safer than hunting one",
+        "`RemoveAll` is the only method that works inside `ConfigureTestServices`",
+        "A single `Remove` throws if the descriptor is registered as a singleton"
+      ],
+      "answer": 1,
+      "explanation": "EF registers several related services, so `RemoveAll<T>` cleanly drops every descriptor for that type rather than risking a missed one. `Remove` of a single descriptor isn't blocked by lifetime, and `RemoveAll` is not the only method usable in `ConfigureTestServices`."
+    },
+    {
+      "subtopic": "Per-test customization",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "`factory.WithWebHostBuilder(...)` returns a new factory that shares the host setup but layers extra overrides, making it suitable for per-test customization without a separate fixture.",
+      "answer": true,
+      "explanation": "`WithWebHostBuilder` returns a new factory sharing the base host configuration while layering additional `ConfigureTestServices` overrides — exactly the reviewer's recommended way to vary setup per test."
+    },
+    {
+      "subtopic": "Fixture sharing scope",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In xUnit, you want to boot the expensive host once and share it across **all tests in several classes**. Which fixture do you use?",
+      "options": [
+        "`IClassFixture<T>`, which shares one host across all classes automatically",
+        "`ICollectionFixture<T>`, applied via a `[Collection]` definition shared by those classes",
+        "A `[Fact]`-level fixture so each test gets the same host instance",
+        "`IAsyncLifetime` alone, which guarantees a single host process-wide"
+      ],
+      "answer": 1,
+      "explanation": "`IClassFixture<T>` shares one host within a single class; to share across multiple classes you use `ICollectionFixture<T>` with a collection definition. `IAsyncLifetime` manages async setup/teardown but does not by itself share an instance across classes."
+    },
+    {
+      "subtopic": "Speed vs fidelity heuristic",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Per the decision heuristic, which dependencies should you **fake** in an integration test (rather than run for real)? Select all that apply.",
+      "options": [
+        "Wall-clock time (use a fake `TimeProvider`)",
+        "Third-party outbound HTTP / email / SMS",
+        "The external identity provider (IdP)",
+        "Your application's database and EF Core query translation",
+        "The routing and model-binding pipeline"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Fake the slow, external, or non-deterministic things: time, third-party HTTP/email, and the IdP. The database (the behavior you're actually testing) is run for real, and the routing/binding pipeline is precisely what an integration test exercises, never faked."
+    },
+    {
+      "subtopic": "CreateClient defaults",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A test asserts that POSTing a form returns `302 Found`, but the assertion fails with a `200 OK` from the redirect target. Given the default `CreateClient()` behavior, what is the fix?",
+      "options": [
+        "Pass `WebApplicationFactoryClientOptions { AllowAutoRedirect = false }` so the client returns the 302 instead of following it",
+        "Switch from `TestServer` to a real Kestrel server so redirects aren't auto-followed",
+        "Call `client.DefaultRequestHeaders.Add(\"X-No-Redirect\", \"true\")` to suppress redirect handling",
+        "Use `PostAsync` instead of `PostAsJsonAsync`, since only the JSON helper follows redirects"
+      ],
+      "answer": 0,
+      "explanation": "`CreateClient()` auto-follows redirects by default, so you see the final 200. Setting `AllowAutoRedirect = false` (via client options) makes the client surface the 302 to assert on. The redirect behavior is a client-handler setting, unrelated to the server type or the POST helper."
+    },
+    {
+      "subtopic": "Transaction rollback reset trade-off",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is wrapping each integration test in a rolled-back transaction a worse state-reset strategy than Respawn for a real-SQL suite?",
+      "options": [
+        "It permanently corrupts the schema, requiring a recreate after every run",
+        "It breaks code under test that opens its own transaction or relies on committed data, and doesn't match production commit behavior",
+        "It is slower than recreating the schema for each test",
+        "It cannot reset tables that have foreign-key relationships"
+      ],
+      "answer": 1,
+      "explanation": "An outer rolled-back transaction breaks any code under test that opens its own transaction or depends on committed data, and it never matches production commit semantics. It's actually fast (not slower than recreating schema) and doesn't corrupt the schema — Respawn deletes committed data in FK-safe order instead."
+    },
+    {
+      "subtopic": "Testcontainers cost and ports",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about Testcontainers for .NET are correct? Select all that apply.",
+      "options": [
+        "It exposes a dynamically mapped port, so parallel runs and CI agents don't collide",
+        "It requires Docker to be available on the build agent, and first-run image pulls are slow",
+        "Pairing it with Respawn lets you avoid paying container-startup cost per test",
+        "It runs the dependency in-process inside the test host, so no Docker daemon is needed",
+        "It guarantees byte-for-byte identical behavior to SQLite in-memory mode"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Testcontainers maps a dynamic port to avoid collisions, needs a Docker daemon (with slow first-run pulls), and is paired with Respawn so you share one container and reset data cheaply. It runs real services inside Docker (not in-process), and its whole point is higher fidelity than SQLite, not parity with it."
+    },
+    {
+      "subtopic": "Respawner v6+ API",
+      "source": "testing/integration-testing-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the one-time Respawn setup below, what is required for `Respawner.CreateAsync` to work in v6+?",
+      "code": "await using var connection = new SqlConnection(connectionString);\nawait connection.OpenAsync();\n_respawner = await Respawner.CreateAsync(connection, new RespawnerOptions\n{\n    TablesToIgnore = new Table[] { \"__EFMigrationsHistory\" },\n    DbAdapter = DbAdapter.SqlServer\n});",
+      "lang": "csharp",
+      "options": [
+        "`CreateAsync` must be passed an already-open connection, because the connection-string overload was removed in v6+",
+        "`TablesToIgnore` must include every table or the reset throws",
+        "`DbAdapter` must be omitted so Respawn can auto-detect SQL Server",
+        "`CreateAsync` must run inside an explicit transaction or it silently no-ops"
+      ],
+      "answer": 0,
+      "explanation": "In Respawn v6+ the connection-string overload was removed, so `CreateAsync` needs an already-open connection. `TablesToIgnore` lists only tables to skip (e.g. `__EFMigrationsHistory`), the adapter is set explicitly, and no surrounding transaction is required."
+    }
+  ]
+}

@@ -1,0 +1,267 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-api-gateway-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "API types: choosing",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For a brand-new Lambda-backed REST-style API with no special requirements, which API Gateway type is the recommended default?",
+      "options": [
+        "HTTP API, because it is cheaper and lower latency",
+        "REST API, because it is the full-featured original",
+        "WebSocket API, because it supports bidirectional push",
+        "A REST API with edge-optimized endpoint for global reach"
+      ],
+      "answer": 0,
+      "explanation": "HTTP API is the default for new Lambda- or HTTP-backed REST-style APIs because it is materially cheaper per million requests and lower latency. REST API is only chosen when you need its premium features (usage plans, VTL, caching, WAF, private/edge endpoints, canary)."
+    },
+    {
+      "subtopic": "API keys vs authentication",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "An API key in API Gateway is a valid authentication mechanism: presenting a valid key proves the caller's verified identity.",
+      "answer": false,
+      "explanation": "API keys only identify a caller/app for metering and rate-limiting through a usage plan. They carry no verified identity and anyone holding the key can use it, so they must be paired with a real authorizer (IAM, Cognito/JWT, or Lambda) for authentication."
+    },
+    {
+      "subtopic": "Caching availability",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "You want built-in response caching at the API Gateway layer. Which statement is correct?",
+      "options": [
+        "Response caching is a REST API feature; HTTP APIs have none, so front them with CloudFront",
+        "Both HTTP and REST APIs cache responses by default once deployed",
+        "Only HTTP APIs support a built-in response cache",
+        "WebSocket APIs cache each message response automatically"
+      ],
+      "answer": 0,
+      "explanation": "Response caching is REST-only (a per-stage cache sized in GB). HTTP APIs have no built-in response cache, so you put CloudFront in front when you need one. WebSocket APIs do not have a response cache."
+    },
+    {
+      "subtopic": "VPC link target",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A backend runs on ECS in private subnets. How does a managed public API reach it without giving the tasks public IPs?",
+      "options": [
+        "A VPC link to a load balancer (REST links to an NLB; HTTP can link to an ALB, NLB, or Cloud Map)",
+        "A NAT gateway placed in front of the ECS tasks",
+        "An internet gateway attached to the private subnets",
+        "A Cognito user pool authorizer that tunnels into the VPC"
+      ],
+      "answer": 0,
+      "explanation": "A VPC link bridges the managed gateway to private targets. REST APIs link to an NLB fronting the service; HTTP APIs can link to an ALB, NLB, or Cloud Map service. A NAT/internet gateway would expose or route differently and is not the API-to-private-backend bridge."
+    },
+    {
+      "subtopic": "Latency metrics",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "On a REST stage, what does `Latency` minus `IntegrationLatency` approximately represent?",
+      "options": [
+        "Time spent in the gateway/authorizer/mapping path rather than the backend",
+        "Network round-trip time between the client and the edge location",
+        "Time the backend spent processing the request",
+        "The cache GB-hour overhead billed for the stage cache"
+      ],
+      "answer": 0,
+      "explanation": "`Latency` is the total time the gateway saw (auth + mapping + integration + response) and `IntegrationLatency` is the backend-only time. The difference isolates gateway/authorizer/mapping overhead, which is why high Latency with low IntegrationLatency points at the auth/mapping path, not the backend."
+    },
+    {
+      "subtopic": "Lambda proxy vs non-proxy",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With Lambda **proxy** integration (`AWS_PROXY`), who owns the HTTP request/response contract, and what does the function must return?",
+      "options": [
+        "The function owns the contract and must return a `{statusCode, headers, body}` JSON shape; no VTL is used",
+        "The gateway owns the contract via VTL mapping templates; the function returns a raw object",
+        "The function owns the contract but must return only a plain string body; the gateway adds the status",
+        "Neither owns it; API Gateway derives the response automatically from the model"
+      ],
+      "answer": 0,
+      "explanation": "In proxy integration the gateway forwards the entire request as a structured event and expects a specific JSON shape (`statusCode`, `headers`, `body`) back, so the function owns the HTTP contract with no VTL. Non-proxy (custom) integration is where you write VTL and the gateway owns translation."
+    },
+    {
+      "subtopic": "Authorizer caching trade-off",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "After enabling a Lambda authorizer, you find that revoking a leaked token does not take effect for a few minutes. What is the cause and fix?",
+      "options": [
+        "The authorizer result is cached by identity source for the TTL; set the cache TTL to 0 to evaluate every request",
+        "The token bucket is replenishing slowly; raise the stage burst limit",
+        "CloudFront edge caching is serving stale 200s; invalidate the distribution",
+        "The Cognito user pool propagation lag; switch to a JWT authorizer"
+      ],
+      "answer": 0,
+      "explanation": "Authorizer decisions (the returned IAM policy) are cached by identity source for the configured TTL, so an `Allow` keeps being reused until the cache expires. Setting TTL to 0 forces evaluation on every request at the cost of more authorizer invocations. The other options describe unrelated mechanisms."
+    },
+    {
+      "subtopic": "REQUEST vs TOKEN authorizer",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Your authorization decision must consider multiple headers and the caller's source IP, not just one bearer token. Which Lambda authorizer flavor fits?",
+      "options": [
+        "REQUEST, which receives the full request (headers, query, path, stage vars, source IP)",
+        "TOKEN, which receives a single bearer token and the method ARN",
+        "TOKEN, because it can also read the source IP from the method ARN",
+        "Either one — they receive identical input, only the response differs"
+      ],
+      "answer": 0,
+      "explanation": "REQUEST authorizers receive the full request (multiple headers, query string, path, stage variables, source IP), so they fit decisions needing more than one input. TOKEN authorizers receive only a single bearer token plus the method ARN, which is insufficient here."
+    },
+    {
+      "subtopic": "AWS service integration",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A POST endpoint must simply enqueue its payload to SQS with no business logic. What avoids running a Lambda entirely?",
+      "options": [
+        "An AWS service integration that calls SQS `SendMessage` directly, using a VTL request template and an IAM role granting `sqs:SendMessage`",
+        "A Lambda proxy integration whose function only calls SQS, so cold starts are negligible",
+        "An HTTP-proxy integration pointed at the public SQS endpoint with the queue URL",
+        "A mock integration that returns a 202 and asynchronously copies the body to SQS"
+      ],
+      "answer": 0,
+      "explanation": "An AWS service integration lets the gateway call the SQS `SendMessage` action directly with a VTL request mapping and an IAM role, skipping Lambda (no cold start, one fewer thing to operate). HTTP-proxy would not sign the SQS API call, a mock integration has no backend, and the Lambda option still runs a function."
+    },
+    {
+      "subtopic": "Throttling layers",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which list correctly orders the API Gateway throttling layers from broadest to most specific?",
+      "options": [
+        "Account-level → stage-level → method-level → usage-plan (per API key)",
+        "Usage-plan → method-level → stage-level → account-level",
+        "Stage-level → account-level → usage-plan → method-level",
+        "Method-level → account-level → stage-level → usage-plan"
+      ],
+      "answer": 0,
+      "explanation": "Throttling is layered account → stage → method → usage plan, evaluated most-specific-wins in effect. Each level uses a token bucket (steady rate plus burst), and exceeding any applicable limit returns 429."
+    },
+    {
+      "subtopic": "Stage variables",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "lang": "text",
+      "code": "Integration URI:\n  arn:aws:lambda:us-east-1:123:function:Orders:${stageVariables.lambdaAlias}\n\ndev  stage -> lambdaAlias = \"dev\"   (Orders:dev  -> version 7)\nprod stage -> lambdaAlias = \"prod\"  (Orders:prod -> version 5)",
+      "question": "Given this configuration, what is the primary benefit of wiring the integration URI to `${stageVariables.lambdaAlias}`?",
+      "options": [
+        "Each stage invokes a different Lambda version via its alias without changing the API definition",
+        "It forces every stage to invoke the latest published Lambda version automatically",
+        "It enables response caching keyed by the Lambda alias name",
+        "It authenticates the caller by validating the alias against the user pool"
+      ],
+      "answer": 0,
+      "explanation": "A stage variable lets the same API definition point at a per-stage backend — here a Lambda alias — so dev calls Orders:dev and prod calls Orders:prod without editing or redeploying the API. It is config, not authentication or caching, and does not force 'latest'."
+    },
+    {
+      "subtopic": "Canary deployments",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You must ship a risky change to the prod stage of a REST API and be able to roll back fast, without spinning up a second stage. What do you use?",
+      "options": [
+        "A canary release that routes a small percentage of stage traffic to the new deployment, then promote or delete the canary",
+        "Edge-optimized endpoints so the change rolls out region by region",
+        "A blue stage and a green stage with a weighted Route 53 record",
+        "An HTTP API with auto-deploy so changes go live immediately and revert on error"
+      ],
+      "answer": 0,
+      "explanation": "A canary release (REST only) splits a percentage of the prod stage's traffic to the new deployment; you promote it when metrics look good or roll back by deleting the canary — all on one stage. The Route 53 / second-stage approach is exactly the two-stage setup the question excludes, and HTTP API auto-deploy gives no traffic split."
+    },
+    {
+      "subtopic": "REST-only features",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following capabilities are available on REST APIs but NOT on HTTP APIs? (Select all that apply.)",
+      "options": [
+        "API keys + usage plans for metering and quotas",
+        "VTL request/response mapping templates",
+        "Built-in JWT authorizer pointed at any OIDC issuer",
+        "Direct AWS WAF association on the API",
+        "Lambda (`AWS_PROXY`) integration to a function"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "API keys + usage plans, VTL mapping templates, and direct AWS WAF association are REST-only. The built-in JWT authorizer is an HTTP API feature (REST uses Cognito or Lambda authorizers), and Lambda proxy (`AWS_PROXY`) integration is supported on both types."
+    },
+    {
+      "subtopic": "Endpoint types and certs",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For a custom domain on an **edge-optimized** REST API endpoint, where must the ACM certificate live, and why?",
+      "options": [
+        "In us-east-1, because the endpoint is fronted by a CloudFront distribution",
+        "In the same Region as the API, because the gateway terminates TLS regionally",
+        "In any Region, because edge-optimized endpoints replicate the cert automatically",
+        "It does not need ACM; edge-optimized endpoints use a self-signed truststore"
+      ],
+      "answer": 0,
+      "explanation": "An edge-optimized endpoint is fronted by a CloudFront distribution managed by API Gateway, and CloudFront requires its certificate in us-east-1. Regional endpoints use a cert in the same Region, but that is the contrast, not the edge-optimized case."
+    },
+    {
+      "subtopic": "Private endpoints",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You need an internal-only API reachable exclusively from inside a VPC, never the public internet. Which configuration achieves this?",
+      "options": [
+        "A REST private endpoint reached via an interface VPC endpoint (PrivateLink), gated by a resource policy allowing the specific VPC/endpoint",
+        "An HTTP API restricted with a Lambda authorizer that rejects public source IPs",
+        "An edge-optimized REST API with a resource policy denying `0.0.0.0/0`",
+        "A WebSocket API whose `$connect` route only accepts in-VPC connectionIds"
+      ],
+      "answer": 0,
+      "explanation": "A private REST endpoint is reachable only inside a VPC through an interface VPC endpoint (PrivateLink), with access gated by a resource policy that allows the specific VPC or endpoint. HTTP APIs are regional-only with no private endpoint, and edge-optimized endpoints are public-facing via CloudFront."
+    },
+    {
+      "subtopic": "Authorizer policy and context",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "lang": "csharp",
+      "code": "PolicyDocument = new APIGatewayCustomAuthorizerPolicy {\n  Version = \"2012-10-17\",\n  Statement = {\n    new APIGatewayCustomAuthorizerPolicy.IAMPolicyStatement {\n      Action = new HashSet<string> { \"execute-api:Invoke\" },\n      Effect = \"Allow\",\n      Resource = new HashSet<string> { \"arn:aws:execute-api:*:*:*/*/*/*\" }\n    }\n  }\n},\nContext = new Dictionary<string, object> { [\"tenantId\"] = \"acme\" }",
+      "question": "A Lambda authorizer returns the policy above plus the `Context` map. What is the practical effect of the wildcard `Resource` together with authorizer caching?",
+      "options": [
+        "One cached Allow decision can cover many methods on the API/stage, and `tenantId` is surfaced downstream as `$context.authorizer.tenantId`",
+        "The wildcard forces the gateway to re-invoke the authorizer per method, but `tenantId` is cached separately",
+        "The wildcard is rejected by IAM, so the gateway falls back to denying all methods",
+        "The `Context` map overrides the policy effect, allowing access even on a Deny"
+      ],
+      "answer": 0,
+      "explanation": "Because a Lambda authorizer authorizes at method-ARN granularity, a wildcard resource lets a single cached decision cover many methods on the API/stage, cutting invocations. The returned `Context` is exposed to integrations and logs as `$context.authorizer.tenantId`. Context never overrides the policy effect, and the wildcard is valid."
+    },
+    {
+      "subtopic": "ALB vs API Gateway trade-off",
+      "source": "aws/aws-api-gateway-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "For a very high-throughput, cost-sensitive HTTP service running on containers that needs no API-management features, why might an ALB beat API Gateway? (Select all that apply.)",
+      "options": [
+        "ALB's hourly + LCU pricing is often cheaper than per-request API Gateway at very high volumes",
+        "ALB does path/host routing and can even invoke Lambda as a target",
+        "ALB natively provides usage plans, request validation, and VTL mapping",
+        "ALB is the managed GraphQL service with per-field resolvers"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explanation": "At very high request volumes ALB's hourly + LCU pricing frequently undercuts API Gateway's per-request model, and ALB supports L7 path/host routing and Lambda targets. ALB is a load balancer, not an API-management layer, so it does not provide usage plans/validation/VTL, and GraphQL with per-field resolvers is AppSync."
+    }
+  ]
+}

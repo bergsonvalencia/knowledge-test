@@ -1,0 +1,277 @@
+{
+  "topic": "angular",
+  "source": "angular/08-http-security-and-errors.md",
+  "questions": [
+    {
+      "subtopic": "HttpClient observables",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What happens when you call `this.http.get('/api/users')` but never subscribe to the returned Observable?",
+      "options": [
+        "No HTTP request is ever sent — `HttpClient` methods return cold Observables and nothing fires until subscription",
+        "The request is sent immediately and the response is silently discarded",
+        "The request is sent once on the next change-detection cycle",
+        "Angular throws a runtime error because the Observable was created but not consumed"
+      ],
+      "answer": 0,
+      "explanation": "`HttpClient` methods return cold Observables: no request is issued until something subscribes. With no subscriber, the request never fires (and there is no error)."
+    },
+    {
+      "subtopic": "Fetch backend default",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In modern Angular, what is the role of `withFetch()` when calling `provideHttpClient(...)`?",
+      "options": [
+        "It is deprecated and unnecessary — the Fetch API is now the default `HttpBackend`",
+        "It is still required to enable the fetch backend, which is otherwise off by default",
+        "It switches the backend from fetch back to `XMLHttpRequest`",
+        "It enables upload progress reporting that fetch otherwise cannot provide"
+      ],
+      "answer": 0,
+      "explanation": "Fetch became the default backend in v22, so `withFetch()` is now deprecated and unnecessary. `withXhr()` is the explicit opt-out, and it is XHR (not fetch) that reports upload progress."
+    },
+    {
+      "subtopic": "Typed responses",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Calling `http.get<User[]>(url)` makes Angular validate at runtime that the response body actually matches the `User[]` shape.",
+      "answer": false,
+      "explanation": "The generic is a compile-time type assertion only; Angular performs no runtime payload validation. You must validate untrusted data yourself."
+    },
+    {
+      "subtopic": "Interpolation escaping",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "If `value` contains the string `<script>alert(1)</script>` and you render `{{ value }}` in a template, what does the user see?",
+      "options": [
+        "The literal text `<script>alert(1)</script>`, escaped and never executed",
+        "An empty element — Angular removes script tags entirely",
+        "An executed alert dialog, because interpolation does not sanitize",
+        "A sanitizer warning logged to the console with the value omitted"
+      ],
+      "answer": 0,
+      "explanation": "Interpolation auto-escapes its content to text, so the markup is shown literally and never executed. It is the default and safest sink."
+    },
+    {
+      "subtopic": "Central ErrorHandler",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which Angular service receives uncaught exceptions thrown during change detection, lifecycle hooks, and event handlers?",
+      "options": [
+        "`ErrorHandler`",
+        "`HttpErrorResponse`",
+        "`NavigationError`",
+        "`DomSanitizer`"
+      ],
+      "answer": 0,
+      "explanation": "Uncaught exceptions funnel to the single injectable `ErrorHandler` (default: log to console), which you replace app-wide to forward to a monitoring backend."
+    },
+    {
+      "subtopic": "Interceptor chaining order",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `withInterceptors([authInterceptor, loggingInterceptor, errorInterceptor])`, which interceptor is closest to the backend on the way out, and which sees the response first on the way back?",
+      "options": [
+        "`errorInterceptor` is closest to the backend out; `errorInterceptor` sees the response first on the way back",
+        "`authInterceptor` is closest to the backend out; `authInterceptor` sees the response first on the way back",
+        "`loggingInterceptor` is closest to the backend out; `errorInterceptor` sees the response first on the way back",
+        "`errorInterceptor` is closest to the backend out; `authInterceptor` sees the response first on the way back"
+      ],
+      "answer": 0,
+      "explanation": "Interceptors run in array order outbound and reverse order inbound. The last listed (`errorInterceptor`) is closest to the backend on the way out and, being innermost, is the first to see the response coming back."
+    },
+    {
+      "subtopic": "HttpErrorResponse status 0",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An `HttpErrorResponse` arrives in `catchError` with `err.status === 0`. What does that indicate?",
+      "options": [
+        "A network, CORS, or timeout failure — the request never reached or never got a usable response from the backend",
+        "A successful request whose body was empty",
+        "A backend error such as 500 that Angular normalizes to 0",
+        "An authentication failure that should redirect to `/login`"
+      ],
+      "answer": 0,
+      "explanation": "Status `0` means a network/CORS/timeout failure where no HTTP status was received. Any non-zero status is an actual backend error response."
+    },
+    {
+      "subtopic": "Immutable HttpParams",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is wrong with this code?",
+      "code": "const params = new HttpParams();\nparams.set('active', 'true');\nparams.set('page', '2');\nreturn this.http.get('/api/users', { params });",
+      "lang": "typescript",
+      "options": [
+        "`HttpParams` is immutable — `.set()` returns a NEW instance, so the original `params` still has no values and the request sends none",
+        "`HttpParams` values must be numbers, so passing strings throws at runtime",
+        "You cannot call `.set()` twice on the same `HttpParams`; the second call overwrites and erases `active`",
+        "`params` must be passed via `withInterceptors`, not the request options object"
+      ],
+      "answer": 0,
+      "explanation": "`HttpParams` is immutable: `.set()` returns a new instance and does not mutate in place. Because the returned instances are discarded, the original `params` is still empty when passed to `get`."
+    },
+    {
+      "subtopic": "observe option",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need the HTTP status code and response headers (not just the parsed body) from a `DELETE` call. Which option do you pass?",
+      "options": [
+        "`{ observe: 'response' }` to receive the full `HttpResponse<T>`",
+        "`{ observe: 'body' }`, which is the default and includes headers",
+        "`{ responseType: 'json' }` so headers are merged into the body",
+        "`{ observe: 'events' }`, the only way to read a status code"
+      ],
+      "answer": 0,
+      "explanation": "`observe: 'response'` yields the full `HttpResponse<T>` with status and headers. `'body'` (the default) gives only the parsed body; `'events'` is for progress streams."
+    },
+    {
+      "subtopic": "innerHTML sanitization",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A property holds `'<img src=x onerror=\"alert(1)\">hello'`. It is bound with `[innerHTML]=\"value\"`. What renders?",
+      "options": [
+        "The image element and the text `hello`, with the `onerror` handler stripped by the sanitizer",
+        "Nothing — the sanitizer rejects the entire string because it contains an event handler",
+        "The image plus a working `onerror` handler, since `[innerHTML]` does not sanitize",
+        "The literal escaped text `<img src=x onerror=\"alert(1)\">hello`"
+      ],
+      "answer": 0,
+      "explanation": "`[innerHTML]` keeps sanitized markup but drops scripts and event handlers, so the `onerror` is removed while the element and text remain. Interpolation would have escaped the whole string instead."
+    },
+    {
+      "subtopic": "XSRF protection",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does `HttpClient`'s built-in XSRF protection work by default?",
+      "options": [
+        "It reads the `XSRF-TOKEN` cookie and echoes it in the `X-XSRF-TOKEN` header on mutating requests; the server validates the header",
+        "It generates a random token client-side and sends it in both the cookie and the header so the server can compare them",
+        "It encrypts every request body with a token derived from the user's session",
+        "It blocks all cross-origin requests unless the server returns a matching CORS header"
+      ],
+      "answer": 0,
+      "explanation": "Angular reads the server-set `XSRF-TOKEN` cookie and echoes its value in the `X-XSRF-TOKEN` header on mutating requests. The server sets the cookie and validates the header; names are tunable via `withXsrfConfiguration`."
+    },
+    {
+      "subtopic": "Interceptor injection context",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Inside a functional `HttpInterceptorFn`, you can call `inject(AuthService)` directly because the interceptor runs in the injection context of its registrar.",
+      "answer": true,
+      "explanation": "Functional interceptors execute in the injection context where they were registered, so `inject()` works inside the function body — as the `authInterceptor` does to read the token."
+    },
+    {
+      "subtopic": "httpResource usage",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `httpResource()` are correct? (Select all that apply.)",
+      "options": [
+        "It re-fetches automatically when a signal read inside its reactive URL function changes",
+        "It still flows through your registered HTTP interceptors",
+        "It is GET-oriented for declarative reads; use `HttpClient` directly for `POST`/`PUT`/`DELETE` mutations",
+        "It returns a cold Observable that you must `subscribe` to before any request fires",
+        "It bypasses sanitization, so its results are inserted into the DOM as trusted"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "`httpResource()` is a signal-native wrapper: it re-fetches when read signals change, still passes through interceptors, and is GET-oriented (mutations use `HttpClient`). It exposes signals like `value()`/`isLoading()` rather than a cold Observable, and it has nothing to do with bypassing DOM sanitization."
+    },
+    {
+      "subtopic": "RESOURCE_URL sanitization",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You bind a dynamic URL to `<iframe [src]=\"url\">`. How does Angular treat the `RESOURCE_URL` security context here, compared to binding a URL to `[href]`?",
+      "options": [
+        "`RESOURCE_URL` is not auto-sanitized — you must explicitly mark the value trusted (e.g. `bypassSecurityTrustResourceUrl`), whereas `[href]` (URL context) is auto-sanitized",
+        "Both are auto-sanitized identically; the iframe simply blocks `javascript:` URLs like `[href]` does",
+        "`RESOURCE_URL` is auto-sanitized more strictly than `[href]`, requiring no developer action",
+        "Neither is sanitized; URL contexts are always trusted by Angular"
+      ],
+      "answer": 0,
+      "explanation": "The `RESOURCE_URL` context (e.g. `<iframe src>`) has no auto-sanitizer because the resource is fully loaded and executed; Angular requires explicit trust. The plain URL context for `[href]`/`[src]` is auto-sanitized to block `javascript:` and unsafe URLs."
+    },
+    {
+      "subtopic": "DomSanitizer bypass risk",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A developer pipes user-submitted profile bios through `DomSanitizer.bypassSecurityTrustHtml(...)` so users can use bold/italic markup. What is the consequence?",
+      "options": [
+        "It reintroduces an XSS vulnerability — bypassing tells Angular to stop sanitizing, so attacker-supplied scripts and handlers reach the DOM intact",
+        "It is safe, because `bypassSecurityTrustHtml` still strips scripts and event handlers before trusting the value",
+        "It only affects styling and cannot execute scripts, so there is no security impact",
+        "Angular ignores the bypass for values that originated from user input and sanitizes anyway"
+      ],
+      "answer": 0,
+      "explanation": "`bypassSecurityTrust*` marks a value as trusted so Angular stops sanitizing it entirely. Applying it to user input lets malicious scripts and handlers through — bypass only values you fully control."
+    },
+    {
+      "subtopic": "Global async error listeners",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An unhandled promise rejection occurs in code running outside Angular's call stack. Which provider ensures it still reaches your custom `ErrorHandler`?",
+      "options": [
+        "`provideBrowserGlobalErrorListeners()`, which routes `window` `error` and `unhandledrejection` events into `ErrorHandler`",
+        "`provideHttpClient(withInterceptors([...]))`, since interceptors catch all async errors",
+        "`withNavigationErrorHandler(fn)`, which forwards every async failure to the router",
+        "`provideBrowserGlobalErrorListeners()` is unnecessary because `ErrorHandler` already captures all `window`-level events"
+      ],
+      "answer": 0,
+      "explanation": "By default `ErrorHandler` only sees exceptions in Angular's own call stack. `provideBrowserGlobalErrorListeners()` wires `window` `error` and `unhandledrejection` events into the same `ErrorHandler`, catching out-of-stack failures."
+    },
+    {
+      "subtopic": "retry and rethrow in interceptor",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given this error interceptor, what happens to a request that fails 3 times in a row with status 500?",
+      "code": "return next(req).pipe(\n  retry({ count: 2, delay: 500 }),\n  catchError((err: HttpErrorResponse) => {\n    if (err.status === 401) router.navigate(['/login']);\n    const msg = `Server error ${err.status}: ${err.message}`;\n    return throwError(() => new Error(msg));\n  }),\n);",
+      "lang": "typescript",
+      "options": [
+        "It is retried twice (3 attempts total); after the final failure `catchError` maps it to a new `Error` that is re-thrown to the subscriber",
+        "It is retried indefinitely until it succeeds, because `catchError` resubscribes",
+        "`catchError` swallows the error and the Observable completes silently with no value",
+        "The `retry` and `catchError` cancel each other out, so the original `HttpErrorResponse` reaches the subscriber unchanged"
+      ],
+      "answer": 0,
+      "explanation": "`retry({ count: 2 })` makes up to 3 attempts; once they are exhausted the error propagates to `catchError`, which maps it to a new `Error` and re-throws via `throwError`, so the subscriber still receives a (cleaner) error rather than a swallowed one."
+    },
+    {
+      "subtopic": "ErrorHandler scope",
+      "source": "angular/08-http-security-and-errors.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which situations are appropriately routed through the central `ErrorHandler`? (Select all that apply.)",
+      "options": [
+        "An uncaught exception thrown inside a component lifecycle hook",
+        "An uncaught exception thrown in a template event handler",
+        "A route guard returning `false` to block navigation",
+        "A form validation failure surfaced as an invalid control",
+        "An error you already handled with a `try/catch` and recovered from"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explanation": "`ErrorHandler` is for uncaught exceptions during change detection, lifecycle hooks, and event handlers. A guard returning `false`, a validation failure, and already-caught errors are ordinary control flow or expected outcomes — not exceptions to route through `ErrorHandler`."
+    }
+  ]
+}

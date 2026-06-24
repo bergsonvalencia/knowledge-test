@@ -1,0 +1,267 @@
+{
+  "topic": "react",
+  "source": "react/13-forms-data-and-suspense.md",
+  "questions": [
+    {
+      "subtopic": "Controlled forms",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a **controlled** input, what is the single source of truth for the input's value?",
+      "options": [
+        "React state, updated via `onChange`",
+        "The DOM node's internal value",
+        "The `defaultValue` prop set on mount",
+        "A `ref` read at submit time"
+      ],
+      "answer": 0,
+      "explanation": "A controlled input binds `value` to React state and updates it through `onChange`, making React state the single source of truth. Reading via a `ref` and `defaultValue` describe the uncontrolled pattern, where the DOM owns the value."
+    },
+    {
+      "subtopic": "Uncontrolled forms",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For an **uncontrolled** input, which prop sets its initial value and how is the current value read on submit?",
+      "options": [
+        "Set `defaultValue`; read it with a `ref` (`ref.current.value`) on submit",
+        "Set `value`; read it from React state on submit",
+        "Set `defaultValue`; read it from React state on submit",
+        "Set `value`; read it with a `ref` on submit"
+      ],
+      "answer": 0,
+      "explanation": "Uncontrolled inputs take an initial `defaultValue` (not `value`) and the DOM holds the value, which you read via a `ref` at submit. Using `value` would make it controlled."
+    },
+    {
+      "subtopic": "Controlled/uncontrolled gotcha",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What happens if you render `<input value={name} />` without an `onChange` handler (and without `readOnly`)?",
+      "options": [
+        "The field is effectively read-only and React logs a warning",
+        "The input works normally; `onChange` is optional for controlled inputs",
+        "React throws an error and refuses to render the component",
+        "The input silently falls back to uncontrolled behavior with no warning"
+      ],
+      "answer": 0,
+      "explanation": "Binding `value` without `onChange` pins the field to that value, so typing has no effect — it is effectively read-only — and React logs a warning. Adding `onChange` (or `readOnly`) resolves it."
+    },
+    {
+      "subtopic": "When to use which",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which situations favor an **uncontrolled** input over a controlled one? (Select all that apply.)",
+      "options": [
+        "A `<input type=\"file\">` element",
+        "Integrating with non-React code that manages the DOM",
+        "Live, per-keystroke validation that disables the submit button",
+        "Formatting the value as the user types (e.g. phone-number masking)",
+        "A simple/large form where you only need values at submit time"
+      ],
+      "answer": [0, 1, 4],
+      "explanation": "File inputs are always uncontrolled, non-React integration and simple/large forms suit uncontrolled (less code, no per-keystroke re-render). Live validation and format-as-you-type require the value to flow through state each keystroke, which is the controlled pattern."
+    },
+    {
+      "subtopic": "Switching controlled/uncontrolled",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Letting an input's `value` prop toggle between a string and `undefined` (switching it between controlled and uncontrolled across renders) is safe and produces no React warning.",
+      "answer": false,
+      "explanation": "React warns when an input switches between controlled and uncontrolled, which is exactly what `value` going from a string to `undefined` does. Use a stable string (e.g. `value={name ?? \"\"}`) to keep it controlled."
+    },
+    {
+      "subtopic": "React 19 form Actions",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When you pass a function to `<form action={fn}>` in React 19, what argument is `fn` invoked with and how is the submission run?",
+      "options": [
+        "A single `FormData` argument, with submission running inside a transition",
+        "The raw `SubmitEvent`, run synchronously like a classic `onSubmit`",
+        "An object of per-field React state values, run inside an effect",
+        "A `ref` to the form element, run on the next animation frame"
+      ],
+      "answer": 0,
+      "explanation": "A React 19 form action receives a single `FormData` argument (read fields by `name`) and runs inside a transition. This is why no per-field state is needed and pending/error tracking comes for free via `useActionState`."
+    },
+    {
+      "subtopic": "useFormStatus",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `useFormStatus` (from `react-dom`) let a component read?",
+      "options": [
+        "The pending state of the parent `<form>` it is rendered inside",
+        "The validation errors of every field in the document",
+        "The cached result of the most recent server Action",
+        "Whether the browser supports the native form-validation API"
+      ],
+      "answer": 0,
+      "explanation": "`useFormStatus` lets a child component read the parent form's `pending` status (e.g. to disable its own submit button). It does not return validation errors or action results."
+    },
+    {
+      "subtopic": "Effect-based fetch races",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "code": "function useUser(id) {\n  const [user, setUser] = useState(null);\n  useEffect(() => {\n    const ac = new AbortController();\n    let ignore = false;\n    fetch(`/api/users/${id}`, { signal: ac.signal })\n      .then((r) => r.json())\n      .then((data) => { if (!ignore) setUser(data); })\n      .catch((err) => { if (err.name !== \"AbortError\") throw err; });\n    return () => { ignore = true; ac.abort(); };\n  }, [id]);\n  return user;\n}",
+      "lang": "typescript",
+      "question": "In this hook, what is the primary purpose of the `ignore` flag set in the cleanup function?",
+      "options": [
+        "To prevent a stale earlier request from calling `setUser` after `id` has changed",
+        "To stop the network request from being sent at all",
+        "To memoize the fetched user so identical `id`s skip the network",
+        "To suppress React's act() warnings during tests"
+      ],
+      "answer": 0,
+      "explanation": "The `ignore` flag guards against a race: if a slow earlier request resolves after the effect re-ran for a new `id`, the stale `setUser` is skipped. `ac.abort()` cancels the in-flight request, but `ignore` protects against a response that already resolved."
+    },
+    {
+      "subtopic": "Why a fetching library",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "easy",
+      "type": "multi",
+      "question": "Which capabilities do libraries like TanStack Query, SWR, or RTK Query provide out of the box that hand-rolled `useEffect` + `fetch` does not? (Select all that apply.)",
+      "options": [
+        "Response caching",
+        "Automatic request deduplication",
+        "Background refetch and retries",
+        "Eliminating the need for a JavaScript bundle entirely",
+        "Replacing the need for an HTTP server"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "These libraries give caching, automatic dedup, background refetch, retries, pagination, and race handling for free. They do not remove the JS bundle or the server — those are unrelated to data-fetching ergonomics."
+    },
+    {
+      "subtopic": "use(promise) caching gotcha",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "function Profile({ id }) {\n  const user = use(fetchUser(id)); // fetchUser returns a Promise\n  return <h1>{user.name}</h1>;\n}",
+      "lang": "typescript",
+      "question": "Assuming `Profile` is a **Client Component**, what is wrong with calling `use(fetchUser(id))` directly in render like this?",
+      "options": [
+        "A new promise is created every render, so the component re-suspends and re-fetches in a loop",
+        "`use` cannot be called inside a Client Component, only a Server Component",
+        "`use` must be the first call in the component, like a hook ordering rule",
+        "`fetchUser(id)` must be wrapped in `useMemo` or `use` will throw at runtime"
+      ],
+      "answer": 0,
+      "explanation": "`use` reads a promise but does not cache it. In a Client Component the promise is recreated on each render, so the component keeps suspending and re-fetching. The promise must be created once — in a Server Component, a cache, or a stable parent — not inline in a Client Component's render."
+    },
+    {
+      "subtopic": "use() vs hook rules",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Unlike standard hooks, `use` may be called conditionally and inside loops, but it must still be called from within a component or a custom hook.",
+      "answer": true,
+      "explanation": "`use` is exempt from the call-order rules: it can appear in conditionals and loops. It still must be invoked from a component or hook, not arbitrary functions."
+    },
+    {
+      "subtopic": "Framework loaders",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What advantage do framework data loaders (Next.js Server Components / `fetch`, React Router/Remix `loader`s) have over effect-based fetching?",
+      "options": [
+        "They fetch *before* render, avoiding effect waterfalls and client-side loading flicker",
+        "They make all network requests synchronous and blocking on the client",
+        "They remove the need to handle errors entirely",
+        "They guarantee data is never cached so it is always fresh"
+      ],
+      "answer": 0,
+      "explanation": "Loaders run before the component renders, so data is ready at render time — eliminating effect-triggered fetch waterfalls and the loading flicker you get when fetching inside `useEffect`."
+    },
+    {
+      "subtopic": "Suspense fallback",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When does `<Suspense fallback={...}>` show its `fallback`?",
+      "options": [
+        "While any child suspends (waiting on lazy code or a Suspense-enabled data read)",
+        "Whenever a child component throws an error during render",
+        "Only when a child explicitly calls a `showFallback()` API",
+        "On every re-render of the subtree, until manually dismissed"
+      ],
+      "answer": 0,
+      "explanation": "Suspense renders its fallback while any descendant suspends (lazy bundle loading or data via `use`/a Suspense source) and swaps in real children when the cause resolves. Errors are the job of an Error Boundary, not Suspense."
+    },
+    {
+      "subtopic": "Error Boundaries — what they catch",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which errors does a React Error Boundary catch? (Select all that apply.)",
+      "options": [
+        "Errors thrown during rendering of the subtree below it",
+        "Errors thrown in lifecycle methods and constructors of descendants",
+        "Errors thrown inside an `onClick` event handler",
+        "Errors thrown asynchronously in a `setTimeout` callback",
+        "Errors surfaced through `use`/Suspense during render"
+      ],
+      "answer": [0, 1, 4],
+      "explanation": "Error Boundaries catch errors during render, in lifecycle methods, and in constructors of the subtree — and errors surfaced through `use`/Suspense (which happen during render). They do NOT catch event-handler or asynchronous errors; use `try/catch` there."
+    },
+    {
+      "subtopic": "Error Boundary blind spots",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "function Save() {\n  function handleClick() {\n    throw new Error(\"boom\"); // thrown in an event handler\n  }\n  return <button onClick={handleClick}>Save</button>;\n}",
+      "lang": "typescript",
+      "question": "If `<Save />` is wrapped in an Error Boundary and the button is clicked, what happens?",
+      "options": [
+        "The Error Boundary does NOT catch it; the error must be handled with `try/catch` in the handler",
+        "The Error Boundary catches it and renders its fallback UI",
+        "React automatically retries the handler up to three times",
+        "Suspense catches it and shows the loading fallback"
+      ],
+      "answer": 0,
+      "explanation": "Errors thrown in event handlers are outside React's render phase, so Error Boundaries do not catch them. You must wrap the handler body in `try/catch`. Suspense handles loading, never errors."
+    },
+    {
+      "subtopic": "startTransition errors",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "An error thrown inside a `startTransition` callback is routed by React to the nearest Error Boundary.",
+      "answer": true,
+      "explanation": "Although async/event-handler errors generally escape Error Boundaries, errors thrown inside a `startTransition` callback are an exception: React routes them to error boundaries, just like render-time throws and errors surfaced through `use`/Suspense."
+    },
+    {
+      "subtopic": "Composition order",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "To show a loading spinner while a lazy `<Chart />` loads and a failure UI if it errors, how should you compose the boundaries?",
+      "options": [
+        "Wrap `<ErrorBoundary>` *around* `<Suspense>`, with `<Chart />` inside the Suspense",
+        "Wrap `<Suspense>` *around* `<ErrorBoundary>`, with `<Chart />` inside the ErrorBoundary",
+        "Use a single `<Suspense>` with both a `fallback` and an `errorFallback` prop",
+        "Wrap `<Chart />` in two nested `<Suspense>` boundaries, no Error Boundary needed"
+      ],
+      "answer": 0,
+      "explanation": "Order matters: the Error Boundary goes outside so it can show failure UI, and Suspense goes inside to show the loading fallback while the lazy bundle/data loads. Suspense has no error-fallback prop."
+    },
+    {
+      "subtopic": "React.lazy",
+      "source": "react/13-forms-data-and-suspense.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why must a component created with `React.lazy(() => import(\"./X\"))` be rendered inside a `<Suspense>` boundary?",
+      "options": [
+        "It suspends on first render while its bundle loads, and Suspense supplies the fallback",
+        "`React.lazy` throws unless a `<Suspense>` is present in the same file",
+        "Suspense is what triggers the dynamic `import()` to begin",
+        "Lazy components catch their own load errors only when inside Suspense"
+      ],
+      "answer": 0,
+      "explanation": "A lazy component defers loading its bundle and suspends on first render while that bundle downloads; the surrounding `<Suspense>` shows the fallback meanwhile. Suspense displays the fallback — it is not what starts the import, nor does it handle load errors (that needs an Error Boundary)."
+    }
+  ]
+}

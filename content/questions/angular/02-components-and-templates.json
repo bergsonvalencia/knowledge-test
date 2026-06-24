@@ -1,0 +1,278 @@
+{
+  "topic": "angular",
+  "source": "angular/02-components-and-templates.md",
+  "questions": [
+    {
+      "subtopic": "Component fundamentals",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the Angular component model, what role does the **class** decorated with `@Component` play?",
+      "options": [
+        "It is the controller: its fields hold state and its methods hold behavior that the template binds to",
+        "It is a configuration-only object; all state and behavior must live in a separate controller class",
+        "It defines the CSS scoping strategy and nothing else",
+        "It is the template, written in TypeScript instead of HTML"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer states the class is the controller — fields are state, methods are behavior — and that no separate 'controller' concept exists. The decorator supplies metadata; the class holds state/behavior."
+    },
+    {
+      "subtopic": "Standalone default",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Since v19, components are standalone by default, so you set `standalone: false` only when you want to keep the old NgModule-based behavior.",
+      "answer": true,
+      "explanation": "The reviewer says components are standalone by default since v19 (the `standalone: true` flag is implied), and `standalone: false` is set only to keep the old NgModule behavior."
+    },
+    {
+      "subtopic": "Selector conventions",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the Angular style guide recommend regarding a component's `selector` prefix?",
+      "options": [
+        "Always use `app-` because it is reserved by the framework",
+        "Choose your own short project-specific prefix (e.g. `yt-`, `mr-`) to avoid collisions; `app-` is merely the CLI default",
+        "Omit any prefix so selectors stay short",
+        "Use the `ng-` prefix to match Angular's built-in elements"
+      ],
+      "answer": 1,
+      "explanation": "The reviewer says `app-` is the CLI default, but the style guide recommends picking your own project-specific prefix to avoid collisions with native and third-party tags. `app-` is not reserved."
+    },
+    {
+      "subtopic": "Binding grammar",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Angular's binding grammar, which syntax flows an **event out** of the DOM to a handler on the class?",
+      "options": [
+        "`[prop]=\"expr\"`",
+        "`{{ expr }}`",
+        "`(event)=\"handler($event)\"`",
+        "`[(x)]=\"expr\"`"
+      ],
+      "answer": 2,
+      "explanation": "Parentheses `(event)` send events up to the class. Square brackets push data down, interpolation renders text, and the banana-in-a-box `[()]` combines both directions."
+    },
+    {
+      "subtopic": "Pure vs impure pipes",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When does a **pure** pipe (the default) re-run its `transform()`?",
+      "options": [
+        "On every change-detection cycle",
+        "Only when its input *reference* (or an argument) changes",
+        "Only when any signal anywhere in the component changes",
+        "Never after the first render; the result is cached permanently"
+      ],
+      "answer": 1,
+      "explanation": "A pure pipe recomputes only when the input reference changes (a new primitive, object, array, or Date reference). Running every CD cycle describes an impure pipe."
+    },
+    {
+      "subtopic": "Property vs attribute binding",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is it recommended to `[attr.colspan]=\"2\"` rather than `[colspan]=\"2\"` for a table cell?",
+      "options": [
+        "`[attr.x]` is faster because Angular caches attribute writes",
+        "Property binding only works on form controls, never on table cells",
+        "`colspan` has no corresponding DOM property, so it must be set as an attribute via attribute binding",
+        "Property binding would set a string, while attribute binding preserves the number type"
+      ],
+      "answer": 2,
+      "explanation": "Attribute binding (`[attr.x]`) exists for attributes that have no matching DOM property — `colspan`, `aria-*`, SVG attributes. The type-preservation claim is backwards: property binding (not attribute binding) preserves type."
+    },
+    {
+      "subtopic": "Signal in templates",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A template binds `[disabled]=\"isBusy\"` where `isBusy = signal(false)`. What is the bug and its effect?",
+      "options": [
+        "The signal must be wrapped in `()` to read its value; binding `isBusy` without parentheses binds the signal function object, which is always truthy, so the button is permanently disabled",
+        "Signals cannot be used in property bindings at all; only interpolation supports them",
+        "`[disabled]` expects a string, so the boolean signal is coerced to the literal text `false` and the button stays enabled",
+        "Nothing is wrong; Angular auto-invokes signals in bindings"
+      ],
+      "answer": 0,
+      "explanation": "Reading a signal requires calling it: `isBusy()`. Without parentheses you bind the function object, which is always truthy, so `[disabled]` is permanently true. The call is also what registers the template as a dependency."
+    },
+    {
+      "subtopic": "Two-way binding desugaring",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Into what does the two-way binding `[(value)]=\"expr\"` desugar?",
+      "options": [
+        "`[value]=\"expr\"` plus `(value)=\"expr = $event\"`",
+        "`[value]=\"expr\"` plus `(valueChange)=\"expr = $event\"`",
+        "`(value)=\"expr\"` plus `(valueChange)=\"expr\"`",
+        "A single `[value]` binding with internal mutation tracking"
+      ],
+      "answer": 1,
+      "explanation": "Two-way binding desugars to a property binding `[value]` plus an event binding `(valueChange)`, following the `x` / `xChange` naming convention (also satisfied by `model()` signals)."
+    },
+    {
+      "subtopic": "ngModel requirement",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Using `[(ngModel)]=\"query\"` on an input requires importing `FormsModule` into the component.",
+      "answer": true,
+      "explanation": "The reviewer explicitly notes that `[(ngModel)]` two-way binding for form controls requires importing `FormsModule`."
+    },
+    {
+      "subtopic": "View encapsulation modes",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `ViewEncapsulation.None` do to a component's styles?",
+      "options": [
+        "Attaches a native shadow root so styles are truly isolated from the page",
+        "Rewrites selectors with generated per-component attributes to scope them",
+        "Injects the styles globally with no rewriting, so they affect the whole document",
+        "Blocks all global styles from reaching the component's elements"
+      ],
+      "answer": 2,
+      "explanation": "`None` turns off scoping: styles are injected globally and affect the whole page (a footgun outside theme/reset components). Attribute rewriting is `Emulated`; a real shadow root is `ShadowDom`."
+    },
+    {
+      "subtopic": "host vs host-context",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does the `:host-context(.dark) .card { ... }` selector target?",
+      "options": [
+        "The component's own host element only when it has a `.dark` class",
+        "`.card` elements inside the component, but only when some *ancestor* of the host matches `.dark`",
+        "Any `.card` element anywhere in the document under a `.dark` ancestor",
+        "Child components nested inside the host that carry a `.dark` class"
+      ],
+      "answer": 1,
+      "explanation": "`:host-context(selector)` styles content based on an ancestor of the host matching the selector — e.g. a `.dark` theme class up the tree. `:host(.active)` (not host-context) styles the host itself by its own class."
+    },
+    {
+      "subtopic": "ng-deep discouragement",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `::ng-deep` are correct per the reviewer? (Select all that apply.)",
+      "options": [
+        "It forces a style past the encapsulation boundary into descendant components",
+        "The Angular team strongly discourages new use; it remains only for backwards compatibility",
+        "It is the recommended modern replacement for component inputs and CSS custom properties",
+        "There is currently no standards-track replacement for it",
+        "It is required whenever you use `ViewEncapsulation.Emulated`"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "`::ng-deep` pierces the encapsulation boundary into descendants, is discouraged and kept only for backwards compatibility, and has no standards-track replacement. It is the thing being replaced (by inputs/custom properties), not a replacement, and is never required."
+    },
+    {
+      "subtopic": "Pipe transformation contract",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Angular pipes are correct? (Select all that apply.)",
+      "options": [
+        "Pipes are pure-presentation: they format a value without mutating the source",
+        "Pipes chain left-to-right, the output of one feeding the next",
+        "Custom pipes are written with `@Pipe` and a `transform()` method, implementing `PipeTransform`",
+        "Since v19 you must import `CommonModule` to use any built-in pipe",
+        "An impure pipe is the default and runs only on input-reference change"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Pipes are non-mutating display formatters, chain left-to-right, and custom ones use `@Pipe`/`transform()`/`PipeTransform`. Pipes are standalone by default (no `CommonModule` ceremony), and pure (re-run on reference change) is the default — impure is opt-in via `pure: false`."
+    },
+    {
+      "subtopic": "Event payload typing (code)",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the handler below bound via `(input)=\"onType($event)\"`, what is `$event` and why is the cast needed?",
+      "code": "onType(e: Event) {\n  const value = (e.target as HTMLInputElement).value;\n  this.query.set(value);\n}",
+      "lang": "typescript",
+      "options": [
+        "`$event` is the input's string value; the cast converts it to an element",
+        "`$event` is the native DOM `Event`; `e.target` is typed as a generic `EventTarget`, so it is narrowed to `HTMLInputElement` to read `.value`",
+        "`$event` is the component instance; the cast accesses its `value` field",
+        "`$event` is the emitted output value; no cast is actually required"
+      ],
+      "answer": 1,
+      "explanation": "For a DOM input event, `$event` is the native `Event`. Its `target` is the broad `EventTarget` type, so it must be narrowed (cast) to `HTMLInputElement` before reading `.value`. For component outputs, by contrast, `$event` is the emitted value."
+    },
+    {
+      "subtopic": "Pipe vs computed signal",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When deriving a displayed value, when does the reviewer favor a **pipe** over a `computed` signal?",
+      "options": [
+        "Always — pipes memoize better than computed signals",
+        "For display formatting reused across multiple templates; `computed` is preferred for derived application state in the class",
+        "Whenever the value depends on signals, since computed cannot read signals",
+        "Only for impure transformations, since computed cannot memoize"
+      ],
+      "answer": 1,
+      "explanation": "The reviewer recommends a pipe for display formatting reused across templates, and `computed` for derived application state in the class (it memoizes on its signal dependencies). Computed can read signals and does memoize, so the other options are wrong."
+    },
+    {
+      "subtopic": "Impure pipe rationale",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why are `SlicePipe` and `KeyValuePipe` declared impure (`pure: false`)?",
+      "options": [
+        "Because they perform asynchronous work and must re-subscribe each cycle",
+        "Because their output depends on in-place mutation of the array/object, which a pure pipe would not detect",
+        "Because impure pipes are faster than pure pipes for collections",
+        "Because they must run before change detection to validate their input"
+      ],
+      "answer": 1,
+      "explanation": "A pure pipe only re-runs on a reference change and would miss in-place mutation of the collection. `Slice` and `KeyValue` operate over arrays/objects that may be mutated in place, so they are impure to stay correct (at a performance cost). `AsyncPipe` is impure for subscription reasons, but Slice/KeyValue are about mutation."
+    },
+    {
+      "subtopic": "ShadowDom vs isolated (code)",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A component is configured as below. Per the reviewer, how do **global/external** stylesheet rules interact with this component's elements?",
+      "code": "@Component({\n  selector: 'app-card',\n  encapsulation: ViewEncapsulation.ShadowDom,\n  template: `<div class=\"card\"><ng-content /></div>`,\n})",
+      "lang": "typescript",
+      "options": [
+        "Global styles are blocked from entering; only `ExperimentalIsolatedShadowDom` allows them in",
+        "Global styles still pierce into the component; `ExperimentalIsolatedShadowDom` is the variant that blocks them from entering",
+        "Global styles leak both in and out freely, identical to `None`",
+        "Global styles are blocked in both directions, since any shadow root is fully isolated"
+      ],
+      "answer": 1,
+      "explanation": "With `ShadowDom`, the component's styles are isolated outward but global styles still pierce in. The experimental `ExperimentalIsolatedShadowDom` (v21) additionally blocks external/global styles from entering the ShadowRoot."
+    },
+    {
+      "subtopic": "OnPush default and triggers",
+      "source": "angular/02-components-and-templates.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Per the v22 baseline, which describes the default change-detection behavior and the former `Default` strategy?",
+      "options": [
+        "`OnPush` is the default and checks the component on input-reference changes, events, or signal updates; the former `Default` is deprecated and renamed `Eager`, which checks the whole subtree every pass",
+        "`Default` remains the default and checks only on input changes; `OnPush` must be opted into for event-driven checks",
+        "`Eager` is the default and checks on signal updates only; `OnPush` checks the whole subtree every pass",
+        "`OnPush` is the default and checks the whole subtree on every pass, identical to the old `Default`"
+      ],
+      "answer": 0,
+      "explanation": "Since v22, `OnPush` is the default — it checks on input-reference changes, events, or signal updates. The old always-check `Default` strategy is deprecated and renamed `Eager`, which checks the whole subtree every pass; you set `Eager` explicitly only to restore that behavior."
+    }
+  ]
+}

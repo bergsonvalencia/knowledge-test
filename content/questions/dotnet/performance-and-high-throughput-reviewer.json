@@ -76,7 +76,7 @@
       "source": "dotnet/performance-and-high-throughput-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "A reviewer claims `StringBuilder` is *always* faster than `+` for string concatenation. What is the correct senior nuance?",
+      "question": "A developer claims `StringBuilder` is *always* faster than `+` for string concatenation. What is the correct senior nuance?",
       "options": [
         "For just 2-3 concatenations, `+` (compiled to `String.Concat`) is faster and allocates less; `StringBuilder` wins on loops or unknown counts",
         "`StringBuilder` is always faster because `string` is immutable and `+` re-allocates every time regardless of count",
@@ -99,7 +99,11 @@
         "Iterating a `ReadOnlySpan<int>` with a `foreach` loop",
         "Reading a field of a `readonly struct` through a `readonly` reference"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "Boxing, capturing closures, and `string.Format` (boxes ints + allocates a `params object[]`) all allocate. Iterating a span allocates nothing (no iterator/closure), and accessing a `readonly struct` through a `readonly` reference is exactly the case where the compiler can skip the defensive copy."
     },
     {
@@ -147,7 +151,11 @@
         "`Return` zeroes the array by default, so secrets left in a rented buffer are always cleared automatically",
         "After renting, the array is guaranteed to be exactly the requested length"
       ],
-      "answer": [0, 1, 2],
+      "answer": [
+        0,
+        1,
+        2
+      ],
       "explanation": "Rented arrays may be larger than requested, must be returned in a `finally` and never touched after return, and may hold stale data unless cleared with `clearArray: true`. `Return` does not clear by default, and the array is not guaranteed to be the exact requested length."
     },
     {

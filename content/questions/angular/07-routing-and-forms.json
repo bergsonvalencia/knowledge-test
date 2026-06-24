@@ -1,0 +1,271 @@
+{
+  "topic": "angular",
+  "source": "angular/07-routing-and-forms.md",
+  "questions": [
+    {
+      "subtopic": "Standalone router setup",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a modern standalone Angular app, what is the idiomatic way to register the router at bootstrap?",
+      "options": [
+        "Add `provideRouter(routes, ...features)` to the application config's `providers`",
+        "Import `RouterModule.forRoot(routes)` into the root `AppRoutingModule`",
+        "Call `RouterModule.forChild(routes)` in `main.ts`",
+        "Pass `routes` directly as the second argument to `bootstrapApplication`"
+      ],
+      "answer": 0,
+      "explanation": "Standalone apps wire the router functionally with `provideRouter(routes, ...features)` in the providers array. `RouterModule.forRoot`/`forChild` are the legacy NgModule APIs, and `bootstrapApplication` takes an app config object, not a routes array."
+    },
+    {
+      "subtopic": "Route matching order",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "The Angular router matches a `Routes` array top-down, first-match-wins. What is the consequence for the wildcard `**` route?",
+      "options": [
+        "It must be placed last, or it will swallow navigations meant for routes declared after it",
+        "It must be placed first so the router has a guaranteed fallback before matching",
+        "Its position is irrelevant because `**` is always evaluated after all other routes",
+        "It can only appear inside a `children` array, never at the top level"
+      ],
+      "answer": 0,
+      "explanation": "Because matching is top-down and first-match-wins, `**` matches any URL, so any route declared after it is unreachable. It must go last. Position is not automatically reordered, and `**` is valid at the top level."
+    },
+    {
+      "subtopic": "ActivatedRoute observables vs snapshot",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `User` component is reused in place (not recreated) when the URL changes from `/users/1` to `/users/2`. The component reads the id once via `route.snapshot.paramMap.get('id')` in its constructor. What happens?",
+      "options": [
+        "The displayed id stays `1` after navigating to `/users/2`, because `snapshot` is a one-shot read taken at construction",
+        "The displayed id updates to `2`, because `snapshot` is a live proxy that re-emits on every navigation",
+        "Angular throws a runtime error because `snapshot` cannot be read in a constructor",
+        "The component is forcibly recreated, so the constructor runs again and shows `2`"
+      ],
+      "answer": 0,
+      "explanation": "`snapshot.*` is a one-shot read, fine only when the component is recreated per navigation. With in-place reuse, the constructor doesn't run again, so the stale `1` remains. The observable `paramMap` (or `params`) is the safe default since it emits on change."
+    },
+    {
+      "subtopic": "withComponentInputBinding precedence",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With `withComponentInputBinding()` enabled, a route has a path param `id`, a query param `id`, static `data: { id: ... }`, and a resolver producing `id`. Which source wins when binding to the component's `id` input?",
+      "options": [
+        "The resolved data, because priority is query params < path/matrix params < static data < resolved data",
+        "The query param, because query params are applied last and override everything",
+        "The path param, because URL segment params always take precedence over data",
+        "It is non-deterministic; Angular logs a warning and binds `undefined`"
+      ],
+      "answer": 0,
+      "explanation": "On a key collision the priority (lowest to highest) is query params < path/matrix params < static `data` < resolved data, so resolved data wins. Query params have the lowest priority, not the highest."
+    },
+    {
+      "subtopic": "redirectTo and pathMatch",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does an empty-path default redirect `{ path: '', redirectTo: 'home', pathMatch: 'full' }` require `pathMatch: 'full'` rather than the default `'prefix'`?",
+      "options": [
+        "With `'full'` the empty path matches only when the entire URL is empty; `'prefix'` would match the leading segment of every URL and redirect everything",
+        "`'full'` is required for all redirects regardless of path; `'prefix'` is never valid with `redirectTo`",
+        "`'full'` makes the redirect run after guards, while `'prefix'` runs it before, which is unsafe for `''`",
+        "`'prefix'` only works with the wildcard `**`, so an empty-path route must use `'full'`"
+      ],
+      "answer": 0,
+      "explanation": "An empty path with the default `'prefix'` matches the leading segment of any URL, so it would redirect every navigation. `'full'` requires the whole URL to be empty, so `''` redirects only the root. `'prefix'` is perfectly valid for non-empty redirect paths."
+    },
+    {
+      "subtopic": "Functional vs class guards",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about the modern functional guard API are correct? (Select all that apply.)",
+      "options": [
+        "A functional guard can call `inject()` directly because guards run inside an injection context",
+        "The class-based guard interfaces such as `CanActivate` were deprecated in v15.2",
+        "Functional guards are tree-shakable and trivially composable",
+        "Functional guards cannot reuse logic that lives in a service class",
+        "A guard must return only a synchronous `boolean`; observables and promises are not allowed"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Guards run inside an injection context (so `inject()` works), the class interfaces were deprecated in v15.2, and functional guards are tree-shakable and composable. They CAN reuse service-class logic via `inject()`, and they may return `boolean | UrlTree | RedirectCommand` or an `Observable`/`Promise` of those."
+    },
+    {
+      "subtopic": "CanMatch vs CanActivate",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A `CanMatchFn` returns `false` for a lazy route. How does this differ from a `CanActivateFn` returning `false` for the same route?",
+      "options": [
+        "`CanMatch` false makes the router skip this route and try the next match, and the lazy chunk is never fetched; `CanActivate` false cancels the navigation after matching",
+        "Both cancel the whole navigation identically; the only difference is when they run",
+        "`CanMatch` false fetches the chunk but blocks activation; `CanActivate` false prevents the fetch",
+        "`CanMatch` false redirects to the wildcard route, while `CanActivate` false redirects to `/`"
+      ],
+      "answer": 0,
+      "explanation": "`CanMatch` runs during matching: returning `false` skips the route and lets the router try the next match, and crucially the lazy bundle is never fetched. `CanActivate` false cancels the in-flight navigation after the route has already matched."
+    },
+    {
+      "subtopic": "Guard execution order",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For a single in-flight navigation, in what order does the router run these phases?",
+      "options": [
+        "`CanMatch` (match time) → `CanDeactivate` (outgoing) → `CanActivateChild` → `CanActivate` → resolvers",
+        "Resolvers → `CanActivate` → `CanActivateChild` → `CanDeactivate` → `CanMatch`",
+        "`CanActivate` → `CanActivateChild` → `CanMatch` → resolvers → `CanDeactivate`",
+        "`CanDeactivate` → `CanMatch` → resolvers → `CanActivate` → `CanActivateChild`"
+      ],
+      "answer": 0,
+      "explanation": "`CanMatch` runs first at match time; then for the in-flight navigation `CanDeactivate` on the outgoing route, `CanActivateChild`, then `CanActivate`; resolvers run only after all guards pass."
+    },
+    {
+      "subtopic": "Guard return type for redirect",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `CanActivateFn` wants to cancel the current navigation AND redirect the user to `/login`, preserving the intended URL. What should it return?",
+      "code": "export const authGuard: CanActivateFn = (route, state) => {\n  const auth = inject(AuthService);\n  const router = inject(Router);\n  if (auth.isLoggedIn()) return true;\n  return /* ??? */;\n};",
+      "lang": "typescript",
+      "options": [
+        "A `UrlTree` built with `router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })`",
+        "`false`, then call `router.navigate(['/login'])` on the next line",
+        "The string `'/login'`, which the router interprets as a redirect target",
+        "`new RedirectCommand()` with no arguments, which defaults to `/login`"
+      ],
+      "answer": 0,
+      "explanation": "Returning a `UrlTree` both cancels the navigation and redirects in one step. Returning `false` only cancels (the line after a `return` never runs anyway), a bare string is not a valid `GuardResult`, and `RedirectCommand` requires an explicit target/options."
+    },
+    {
+      "subtopic": "Resolver blocking behavior",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A `ResolveFn` runs before activation and the router blocks the navigation until it completes, so the component renders with its resolved data already available (no flash of empty state).",
+      "answer": true,
+      "explanation": "Resolvers run after guards pass and before activation; the router waits for them to complete, so the component renders with data ready. The result lands in `ActivatedRoute.data` under its key (or binds to an input with `withComponentInputBinding()`)."
+    },
+    {
+      "subtopic": "loadComponent vs loadChildren",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the difference between `loadComponent` and `loadChildren` on a route?",
+      "options": [
+        "`loadComponent` lazily loads a single standalone component for one route; `loadChildren` lazily loads a child `Routes` array for a whole feature area",
+        "`loadComponent` loads eagerly at boot; `loadChildren` loads lazily on navigation",
+        "`loadComponent` works only with NgModules; `loadChildren` works only with standalone components",
+        "They are interchangeable aliases that both load a single component"
+      ],
+      "answer": 0,
+      "explanation": "`loadComponent` is the cleanest lazy unit for a single standalone component; `loadChildren` loads an entire child `Routes` array (a feature with nested pages). Both load lazily on navigation, and `loadComponent` is for standalone components specifically."
+    },
+    {
+      "subtopic": "Custom preloading strategy",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a custom `PreloadingStrategy`, what is the role of the `load` callback passed to `preload(route, load)`?",
+      "code": "preload(route: Route, load: () => Observable<unknown>): Observable<unknown> {\n  return route.data?.['preload'] ? load() : of(null);\n}",
+      "lang": "typescript",
+      "options": [
+        "Calling `load()` triggers the actual fetch of the route's lazy chunk; returning `of(null)` skips preloading it",
+        "`load()` returns the already-downloaded chunk synchronously; the return value only logs analytics",
+        "`load()` registers the route for eager loading at the next app bootstrap, not now",
+        "`load()` must always be called or the route becomes permanently unreachable"
+      ],
+      "answer": 0,
+      "explanation": "`load()` triggers the background fetch of the lazy chunk; returning `of(null)` (without calling it) skips preloading that route. The route is still loaded normally on navigation if never preloaded, so it never becomes unreachable."
+    },
+    {
+      "subtopic": "Route lazy loading vs @defer",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When should you reach for `@defer` instead of route-level lazy loading (`loadComponent`/`loadChildren`)?",
+      "options": [
+        "When you want to lazily load a part of one page (e.g. a heavy widget on viewport/interaction/idle), since `@defer` splits within a template",
+        "When you want to split an entire page by URL, since `@defer` is the only URL-based splitter",
+        "When you need server-side rendering, which route lazy loading cannot support",
+        "Always — `@defer` fully replaces route lazy loading in modern Angular"
+      ],
+      "answer": 0,
+      "explanation": "Route lazy loading splits by URL (whole pages); `@defer` splits within a template, ideal for a heavy widget loaded on viewport/interaction/idle. They are complementary, not replacements, and `@defer` is not URL-based."
+    },
+    {
+      "subtopic": "Reactive vs template-driven trade-offs",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which characteristics correctly describe reactive forms (as opposed to template-driven)? (Select all that apply.)",
+      "options": [
+        "The control tree is constructed explicitly in the component class and read synchronously",
+        "Validators are declared in the class via `ValidatorFn`/`Validators`",
+        "Form logic is plain TypeScript that can be unit-tested with no rendered DOM",
+        "The source of truth lives in the template via `[(ngModel)]`",
+        "Custom validators are added as directives in the template"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Reactive forms build the control tree in the class (synchronous), declare validators in the class, and are testable as plain TS. Putting the source of truth in the template via `ngModel` and using validator directives are template-driven traits."
+    },
+    {
+      "subtopic": "Form model availability timing",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In a template-driven form, the full control tree may not be available synchronously immediately after the view initializes, because the `ngModel`/`NgForm` directives wire up the controls over one or more change-detection cycles.",
+      "answer": true,
+      "explanation": "Template-driven controls are created asynchronously by directives across change-detection cycles, so the model isn't fully available immediately. Reactive controls, by contrast, are constructed up front and readable synchronously in the same tick."
+    },
+    {
+      "subtopic": "Typed forms null and getRawValue",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Regarding strictly-typed reactive forms (v14+), which statements are correct? (Select all that apply.)",
+      "options": [
+        "By default a control's value type includes `null` because `reset()` sets the value to `null`",
+        "`group.value` is a `Partial` because disabled controls are omitted",
+        "`getRawValue()` returns every control's value with the full, non-partial type",
+        "`nonNullable: true` makes the type include `null` and causes `reset()` to set `undefined`",
+        "Disabled controls are always included in `group.value`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "By default the value type is `T | null` (because `reset()` nulls it), `value` is a `Partial` that omits disabled controls, and `getRawValue()` returns the full non-partial shape. `nonNullable: true` removes `null` and makes `reset()` restore the initial value; disabled controls are dropped from `value`."
+    },
+    {
+      "subtopic": "updateOn validation timing",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A control is configured with `{ validators: [Validators.required, Validators.minLength(8)], updateOn: 'blur' }`. When do its validators run and its value emit?",
+      "options": [
+        "Only when the field loses focus (on blur), not on every keystroke",
+        "On every keystroke, because validators always run on change regardless of `updateOn`",
+        "Only when the surrounding form is submitted via `(ngSubmit)`",
+        "Never automatically; you must call `updateValueAndValidity()` manually each time"
+      ],
+      "answer": 0,
+      "explanation": "`updateOn: 'blur'` makes the control commit its value and run validation only when the field loses focus. The default `'change'` runs them on every value change; `'submit'` defers until form submit."
+    },
+    {
+      "subtopic": "Cross-field and async validation",
+      "source": "angular/07-routing-and-forms.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `passwordsMatch` validator compares two sibling controls (`password` and `confirm`). Where must it be attached, and what is the control's status while an `AsyncValidatorFn` is running?",
+      "options": [
+        "On the parent `FormGroup`; the control's status is `PENDING` while an async validator runs",
+        "On the `password` control directly; the status is `INVALID` until the async validator resolves",
+        "On each child control separately; the status is `DISABLED` during async validation",
+        "On the parent `FormGroup`; the status is `VALID` until the async validator explicitly fails"
+      ],
+      "answer": 0,
+      "explanation": "Cross-field validators must go on the parent `FormGroup` so they can read both siblings via `group.get(...)`. While an `AsyncValidatorFn` is in flight, the control's status is `PENDING`, resolving to `VALID`/`INVALID` afterward."
+    }
+  ]
+}

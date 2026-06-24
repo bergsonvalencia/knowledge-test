@@ -1,0 +1,278 @@
+{
+  "topic": "ai",
+  "source": "ai/deep-learning-architectures-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Inductive bias",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the **inductive bias** of an architecture, in the sense used in this reviewer?",
+      "options": [
+        "The built-in assumption about the data's structure that is wired into the model so it need not learn that structure from scratch",
+        "A constant added to every neuron's weighted sum before the activation",
+        "The tendency of gradient descent to converge to a local rather than global minimum",
+        "The bias introduced when training and test data come from different distributions"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer defines inductive bias as the built-in assumption about data structure (e.g. 'patterns are local' for CNNs) wired into the model's design. The bias term in a neuron and dataset shift are unrelated concepts."
+    },
+    {
+      "subtopic": "Architecture-to-data matching",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which architecture's assumption is 'the input is a sequence and the past should inform the present'?",
+      "options": [
+        "Recurrent neural network (RNN)",
+        "Convolutional neural network (CNN)",
+        "Multilayer perceptron (MLP)",
+        "Autoencoder"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer attributes 'the input is a sequence and the past should inform the present' to RNNs. CNNs assume locality; an MLP is the no-bias baseline."
+    },
+    {
+      "subtopic": "Convolution output size",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Using the formula below, what is the output width for an input of width 7, kernel size 3, padding 1, and stride 2?",
+      "code": "out = floor((W - F + 2P) / S) + 1",
+      "lang": "text",
+      "options": [
+        "4",
+        "3",
+        "5",
+        "7"
+      ],
+      "answer": 0,
+      "explanation": "(7 − 3 + 2)/2 + 1 = 6/2 + 1 = 3 + 1 = 4. The reviewer works this exact example. The common wrong answer 3 forgets the +1."
+    },
+    {
+      "subtopic": "Parameter count of a conv layer",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A convolutional layer takes a 64×64×3 input and applies 32 filters of size 3×3 with stride 1 and 'same' padding. How many **weight parameters** does it have, including biases?",
+      "options": [
+        "896",
+        "864",
+        "98,304",
+        "32"
+      ],
+      "answer": 0,
+      "explanation": "Each filter is 3×3×3 = 27 weights; 32 filters = 864 weights, plus 32 biases = 896. The reviewer stresses that parameter count depends on filter size and channel depth, not the image's spatial dimensions (so 64×64 is irrelevant). 864 omits the biases."
+    },
+    {
+      "subtopic": "Padding semantics",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "'Valid' padding (P = 0) preserves the input's spatial size at every convolutional layer.",
+      "answer": false,
+      "explanation": "False. 'Valid' padding (P = 0) shrinks the output every layer and discards edge information; it is 'same' padding that is chosen to preserve the spatial size."
+    },
+    {
+      "subtopic": "Max pooling computation",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Applying max pooling with a 2×2 window and stride 2 to the 4×4 feature map below, what is the value of the **bottom-right** output cell?",
+      "code": "1  3  2  4\n5  6  1  0\n7  2  1  9\n1  3  8  9",
+      "lang": "text",
+      "options": [
+        "9",
+        "8",
+        "1",
+        "3"
+      ],
+      "answer": 0,
+      "explanation": "The bottom-right 2×2 quadrant is {1, 9, 8, 9}, whose maximum is 9. Average pooling would give 6.75; max pooling keeps the strongest activation."
+    },
+    {
+      "subtopic": "Pooling properties",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A standard max-pooling layer has no learnable parameters.",
+      "answer": true,
+      "explanation": "True. Pooling is a fixed downsampling rule with nothing to train, which is why it is cheap and never overfits."
+    },
+    {
+      "subtopic": "Local connectivity and parameter sharing",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about **local connectivity** and **parameter sharing** in CNNs are correct?",
+      "options": [
+        "Local connectivity means a feature-map cell depends only on a small receptive field of the input",
+        "Parameter sharing reuses the same filter weights at every spatial position",
+        "Stacking convolutional layers grows the effective receptive field so deep neurons can eventually 'see' the whole image",
+        "Parameter sharing increases the parameter count relative to a dense layer but improves accuracy",
+        "Each spatial position uses its own independently learned filter weights"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Local connectivity (small receptive field) and parameter sharing (one filter reused everywhere) are the two ideas, and stacking grows the effective receptive field. Sharing dramatically *reduces* parameters (e.g. ~2,800 vs ~3M), and weights are shared, not independent per position."
+    },
+    {
+      "subtopic": "ReLU in a CNN stack",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does a CNN insert a ReLU nonlinearity after each convolution in the feature extractor?",
+      "options": [
+        "Without a nonlinearity, stacked convolutions would collapse into a single equivalent linear map",
+        "ReLU normalizes activations to zero mean and unit variance per mini-batch",
+        "ReLU is required to make pooling layers differentiable",
+        "ReLU randomly zeros activations to prevent co-adaptation of features"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer states ReLU lets the stack model nonlinear patterns; without it, stacked (linear) convolutions collapse to one linear map. Normalizing is batch normalization, and randomly zeroing activations is dropout."
+    },
+    {
+      "subtopic": "Transfer learning strategy",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You have only 500 labeled X-ray images and a CNN pretrained on a large general image dataset. Per the practical rule, what is the best transfer-learning strategy?",
+      "options": [
+        "Freeze the pretrained backbone and train only a new classifier head (feature extraction)",
+        "Unfreeze and retrain all convolutional layers at a high learning rate",
+        "Discard the pretrained weights and train the whole network from scratch",
+        "Randomly reinitialize the early convolutional layers and freeze the head"
+      ],
+      "answer": 0,
+      "explanation": "With small, somewhat-similar data the reviewer says to freeze the backbone and train only the head; the universal low-level features transfer well. Retraining everything (especially at a high LR) or training from scratch would overfit badly on 500 images."
+    },
+    {
+      "subtopic": "Fine-tuning learning rate",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "When fine-tuning the top convolutional blocks of a pretrained backbone, why does the reviewer insist on a **small** learning rate?",
+      "options": [
+        "So gradient updates nudge the well-trained pretrained weights rather than destroying the useful features they already encode",
+        "Because a large learning rate would make the convolution output size formula produce non-integer dimensions",
+        "Because frozen layers require a higher learning rate, so unfrozen layers must use a lower one to balance",
+        "Because batch normalization only converges when the learning rate is below a fixed threshold"
+      ],
+      "answer": 0,
+      "explanation": "A low LR ensures you 'nudge, not destroy' the pretrained weights, preserving the general features learned on the large dataset. The other options invent constraints that the reviewer does not state and are not true."
+    },
+    {
+      "subtopic": "RNN hidden state",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the RNN update `hₜ = tanh(W·xₜ + U·hₜ₋₁ + b)`, what role does `hₜ₋₁` play?",
+      "options": [
+        "It is the previous hidden state, carrying a summary of everything seen so far into the current step",
+        "It is the ground-truth label for time step t − 1 used during training",
+        "It is a separate set of weights learned independently at each time step",
+        "It is the gradient accumulated from future time steps during the forward pass"
+      ],
+      "answer": 0,
+      "explanation": "hₜ₋₁ is the previous hidden state — the network's memory summarizing prior inputs — fed into the current step. Weights (W, U, b) are shared across steps, not separate per step, and hidden state is not a label or a gradient."
+    },
+    {
+      "subtopic": "Vanishing gradient over time",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "The reviewer models the gradient reaching a step k positions back as roughly `factor^k`. If `factor ≈ 0.5`, why can a vanilla RNN not learn that a token 20 steps earlier determines the label?",
+      "options": [
+        "0.5^20 ≈ 9.5e-7, so the gradient signal from 20 steps back is essentially zero and those early weights barely update",
+        "0.5^20 explodes the gradient, so gradient clipping erases the early-token contribution",
+        "tanh saturates to exactly 0.5, freezing the hidden state after 20 steps",
+        "The output size formula limits the receptive field of an RNN to 10 steps"
+      ],
+      "answer": 0,
+      "explanation": "With factor < 1, contributions decay exponentially: 0.5^20 ≈ 9.5e-7, so distant gradients vanish and the early token cannot be learned. This is vanishing, not exploding (clipping addresses the opposite case), and the output-size formula is a CNN concept."
+    },
+    {
+      "subtopic": "Exploding gradient remedy",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which technique does the reviewer name as the standard fix for the **exploding-gradient** case in RNN training?",
+      "options": [
+        "Gradient clipping (capping the gradient norm)",
+        "Adding a cell state updated by multiplication",
+        "Increasing the recurrent weight magnitude",
+        "Removing the tanh activation from the recurrent step"
+      ],
+      "answer": 0,
+      "explanation": "Gradient clipping caps the gradient norm to tame exploding gradients. A larger recurrent weight makes explosion worse, the LSTM cell state is updated by addition (not multiplication), and removing tanh does not address the issue."
+    },
+    {
+      "subtopic": "LSTM cell state and gates",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about LSTMs and GRUs are correct ?",
+      "options": [
+        "The LSTM cell state is updated mainly by addition, letting gradients flow across many steps without vanishing",
+        "The forget, input, and output gates are sigmoid valves producing values in (0,1)",
+        "A GRU merges the cell and hidden state and uses fewer gates (an update gate and a reset gate)",
+        "The LSTM cell state survives long spans because it is repeatedly multiplied by the recurrent weight",
+        "The output gate decides which parts of the old memory to erase"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The additive cell-state update is exactly what preserves gradients; gates are sigmoids in (0,1); a GRU merges cell and hidden state with two gates. Repeated multiplication is what causes vanishing (the cell state avoids it), and it is the forget gate, not the output gate, that erases old memory."
+    },
+    {
+      "subtopic": "LSTM gate values",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the additive memory update `c(t) = f × c(t-1) + i × candidate`, what happens to a memory slot when the forget gate `f = 0` and the input gate `i = 1` for that slot?",
+      "options": [
+        "The old value is erased and fully replaced by the new candidate",
+        "The old value is kept untouched and the candidate is ignored",
+        "The old value and the candidate are averaged",
+        "The slot is exposed unchanged as the hidden state"
+      ],
+      "answer": 0,
+      "explanation": "f = 0 zeroes out f × c(t-1) (erase old), and i = 1 writes the candidate fully, so c(t) = candidate. Keeping the old value would require f = 1, i = 0; exposure to the hidden state is controlled by the separate output gate."
+    },
+    {
+      "subtopic": "seq2seq bottleneck and attention",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A translation model encodes a 60-word sentence into a single fixed-size context vector; quality is fine for short sentences but collapses for long ones. What is the flaw and the fix?",
+      "options": [
+        "The fixed-context-vector bottleneck; attention lets the decoder form a per-step weighted blend of all encoder states",
+        "The vanishing gradient; gradient clipping restores the long-range signal",
+        "Overfitting on long sentences; dropout in the decoder head fixes it",
+        "Valid padding shrinking the context; same padding preserves it"
+      ],
+      "answer": 0,
+      "explanation": "Cramming the whole input into one vector is the seq2seq bottleneck; attention removes it by blending all encoder states per decoder step. The distractors mix in unrelated CNN/RNN remedies (clipping, dropout, padding) that do not address the bottleneck."
+    },
+    {
+      "subtopic": "Architecture trade-offs",
+      "source": "ai/deep-learning-architectures-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Per the cheat-sheet, which architecture canNOT parallelize computation over positions during training, and why?",
+      "options": [
+        "RNN/LSTM/GRU, because each step's hidden state depends on the previous step, forcing sequential processing in T",
+        "CNN, because each filter must be applied before the next filter starts",
+        "Transformer, because self-attention must process tokens strictly left-to-right",
+        "CNN, because pooling layers serialize the spatial dimensions"
+      ],
+      "answer": 0,
+      "explanation": "RNNs are inherently sequential over time: hₜ needs hₜ₋₁, so positions cannot be computed in parallel. CNNs and transformers both parallelize over positions; self-attention is explicitly not left-to-right constrained for parallelism."
+    }
+  ]
+}

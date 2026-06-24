@@ -1,0 +1,268 @@
+{
+  "topic": "azure",
+  "source": "azure/azure-service-bus-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Queues vs topics",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "You need an event delivered so that Billing, Shipping, and Audit each receive their **own independent copy** and process it at their own pace. Which Service Bus construct fits?",
+      "options": [
+        "A topic with one subscription per service",
+        "A single queue with three competing consumers",
+        "A single queue with `RequiresSession = true`",
+        "Three separate queues the producer sends to in a loop"
+      ],
+      "answer": 0,
+      "explanation": "A topic fans a copy of each matching message to every subscription, so each of the three services gets its own independent copy and DLQ. A single queue is point-to-point: each message goes to exactly one competing consumer, so the services would split the work rather than each get a copy."
+    },
+    {
+      "subtopic": "Receive modes",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the default receive mode and its delivery guarantee in `Azure.Messaging.ServiceBus`?",
+      "options": [
+        "PeekLock — at-least-once",
+        "ReceiveAndDelete — at-most-once",
+        "PeekLock — exactly-once",
+        "ReceiveAndDelete — at-least-once"
+      ],
+      "answer": 0,
+      "explanation": "PeekLock is the default: it locks the message and waits for the consumer to settle it, giving at-least-once delivery (duplicates possible on crash/redelivery). ReceiveAndDelete is at-most-once and is not the default; Service Bus does not provide a true exactly-once receive guarantee."
+    },
+    {
+      "subtopic": "Settlement outcomes",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Under PeekLock, which settlement operation **releases the lock so the message is redelivered immediately** and increments the delivery count?",
+      "options": [
+        "Abandon",
+        "Complete",
+        "DeadLetter",
+        "Defer"
+      ],
+      "answer": 0,
+      "explanation": "Abandon unlocks the message so it is redelivered right away and bumps the delivery count (+1). Complete removes it, DeadLetter parks it in the DLQ, and Defer sets it aside so it can only be retrieved by sequence number."
+    },
+    {
+      "subtopic": "Defaults",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the **default `MaxDeliveryCount`** after which a message is automatically dead-lettered?",
+      "options": [
+        "10",
+        "3",
+        "5",
+        "100"
+      ],
+      "answer": 0,
+      "explanation": "The default `MaxDeliveryCount` is 10; once repeated abandons or lock losses push the delivery count past it, the broker dead-letters the message. 3 is the default SDK transport `MaxRetries`, not the delivery count."
+    },
+    {
+      "subtopic": "Service comparison",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Azure Service Bus is a replayable event log: a consumer can re-read past messages by rewinding to an earlier offset, just like Event Hubs or Kafka.",
+      "answer": false,
+      "explanation": "Service Bus is a broker, not a log — messages are consumed and removed (competing consumers), with no replay by offset. Replay/rewind by offset is an Event Hubs/Kafka capability, not a Service Bus one."
+    },
+    {
+      "subtopic": "Subscription filters",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A subscription was created, then a SQL filter `region = 'EU'` was added, yet it still receives messages from **every** region. What is the most likely cause?",
+      "options": [
+        "The default `1=1` (TrueRule) was never removed, and multiple rules are OR-ed",
+        "SQL filters evaluate against the message body, which doesn't contain `region`",
+        "Correlation filters override SQL filters, so the SQL filter is ignored",
+        "Adding any filter automatically disables the subscription's other rules"
+      ],
+      "answer": 0,
+      "explanation": "A subscription created without a filter gets a default `1=1` (TrueRule) that matches everything; rules on a subscription are OR-ed, so the catch-all keeps matching until you delete the default rule. Filters evaluate against properties/metadata (not the body), and correlation filters do not override SQL filters."
+    },
+    {
+      "subtopic": "Lock duration",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A PeekLock handler does ~3 minutes of work with the default lock duration and keeps hitting `MessageLockLostException` plus duplicate processing. What is the correct fix?",
+      "options": [
+        "Set `MaxAutoLockRenewalDuration` (or call `RenewMessageLockAsync`) and keep the handler idempotent",
+        "Set the entity's lock duration to 10 minutes so the lock outlasts the work",
+        "Switch to ReceiveAndDelete so there is no lock to lose",
+        "Increase `MaxDeliveryCount` so the redeliveries don't dead-letter the message"
+      ],
+      "answer": 0,
+      "explanation": "The 30-second default lock expired mid-work, causing redelivery. Renew the lock via `MaxAutoLockRenewalDuration`/`RenewMessageLockAsync` and stay idempotent. Lock duration is capped at 5 minutes (so 10 is invalid), ReceiveAndDelete would risk losing the message on crash, and raising MaxDeliveryCount doesn't stop the duplicate processing."
+    },
+    {
+      "subtopic": "Duplicate detection",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With `RequiresDuplicateDetection = true` enabled on a queue, what exactly does duplicate detection prevent?",
+      "options": [
+        "A second **enqueue** of a message whose `MessageId` was already seen within the history window",
+        "A consumer processing the same message twice after a PeekLock redelivery",
+        "Two different producers sending two distinct messages with the same body",
+        "Redelivery of a message after the consumer abandons it"
+      ],
+      "answer": 0,
+      "explanation": "Duplicate detection is producer-side: the broker drops a second enqueue carrying a `MessageId` it has already seen within `DuplicateDetectionHistoryTimeWindow`. It does nothing about consumer-side reprocessing from redelivery — that requires idempotent consumers — and it keys on `MessageId`, not the body."
+    },
+    {
+      "subtopic": "Auto-complete pitfall",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A processor runs with `AutoCompleteMessages = true`. The handler detects a business failure, logs it, and **returns normally without throwing**. What happens to the message?",
+      "code": "processor.ProcessMessageAsync += async args =>\n{\n    if (!TryProcess(args.Message))\n    {\n        Log(\"failed to process\");\n        return; // no exception thrown\n    }\n    await DoWork(args.Message);\n};",
+      "lang": "csharp",
+      "options": [
+        "The SDK completes (removes) the message after the handler returns, so the failure is silently lost",
+        "The message is abandoned and redelivered because processing failed",
+        "The message is dead-lettered because the handler logged a failure",
+        "The lock is held until it expires, then the message is redelivered"
+      ],
+      "answer": 0,
+      "explanation": "With auto-complete on, the SDK completes the message once the handler returns without throwing — even if you logically failed. To get abandon/redelivery you must throw (or turn auto-complete off and settle explicitly)."
+    },
+    {
+      "subtopic": "Sessions",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Messages must be processed strictly in order per customer, while throughput scales across customers. What must be true?",
+      "options": [
+        "The entity is created with `RequiresSession = true` and producers set `SessionId = customerId`",
+        "Duplicate detection is enabled with `MessageId = customerId`",
+        "`MaxConcurrentCalls = 1` is set so only one message is processed at a time",
+        "ReceiveAndDelete mode is used so messages are removed in arrival order"
+      ],
+      "answer": 0,
+      "explanation": "Sessions give per-`SessionId` FIFO with cross-session parallelism: the entity needs `RequiresSession = true` (set at creation) and producers tag related messages with the same `SessionId`. Limiting concurrency to 1 would serialize all customers and still wouldn't guarantee ordering under redelivery; duplicate detection and ReceiveAndDelete don't provide ordering."
+    },
+    {
+      "subtopic": "Retries and backoff",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "When a PeekLock consumer abandons a message, Service Bus applies an exponential backoff delay before redelivering it.",
+      "answer": false,
+      "explanation": "There is no built-in inter-delivery backoff: abandon makes the message available again immediately. To space out retries you must implement it yourself (e.g. schedule a delayed copy via `ScheduledEnqueueTime` or use a retry/backoff queue)."
+    },
+    {
+      "subtopic": "DLQ causes",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following can cause a message to land in a Service Bus dead-letter queue? (Select all that apply.)",
+      "options": [
+        "The delivery count exceeds `MaxDeliveryCount`",
+        "TTL expiry when `DeadLetteringOnMessageExpiration = true`",
+        "Application code explicitly calls `DeadLetterMessageAsync`",
+        "The SDK transport retry (`ServiceBusRetryOptions`) exhausts its `MaxRetries`",
+        "A consumer successfully completes the message"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Messages dead-letter on max-delivery-count exceeded, TTL expiry with dead-lettering-on-expiration enabled, filter-evaluation errors, auto-forward failure, or an explicit DeadLetter call. Transport-level retries exhausting just surface an exception to the caller (they don't dead-letter), and a successful Complete removes the message."
+    },
+    {
+      "subtopic": "Service selection",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need to ingest millions of telemetry events per second into a **partitioned, replayable** stream for downstream analytics. Which service is the right fit?",
+      "options": [
+        "Event Hubs",
+        "Service Bus",
+        "Storage Queues",
+        "Event Grid"
+      ],
+      "answer": 0,
+      "explanation": "Event Hubs is the high-throughput, partitioned, replayable log (Kafka-compatible) built for telemetry/streaming. Service Bus is a moderate-throughput broker with no replay; Storage Queues is a simple queue; Event Grid is for discrete reactive event push, not a firehose stream."
+    },
+    {
+      "subtopic": "Scheduled vs deferred",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes **scheduled** from **deferred** messages?",
+      "options": [
+        "Scheduled = producer makes a message invisible until a future enqueue time; deferred = a consumer sets aside a received message, later retrieved by sequence number",
+        "Scheduled = consumer delays processing by re-locking; deferred = producer delays visibility by a future time",
+        "Both are producer-side; scheduled uses `MessageId` and deferred uses `SessionId`",
+        "Deferred messages reappear automatically in the normal receive loop after a delay; scheduled ones do not"
+      ],
+      "answer": 0,
+      "explanation": "Scheduled delivery is producer-side and time-based (invisible until `ScheduledEnqueueTime`). Deferral is a consumer settlement outcome: the received message is set aside and is retrievable only via `ReceiveDeferredMessageAsync(sequenceNumber)` — it does not return through the normal receive loop."
+    },
+    {
+      "subtopic": "Subscription rules and copies",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A subscription has two **plain** SQL filter rules (no actions), and an incoming message matches **both**. How many copies of the message does the subscription receive?",
+      "options": [
+        "One — plain matching rules collapse to a single message",
+        "Two — each matching rule produces its own copy",
+        "Zero — overlapping rules cancel each other out",
+        "Two, but only if the rules are correlation filters rather than SQL filters"
+      ],
+      "answer": 0,
+      "explanation": "Multiple rules are OR-ed, and plain filters (no action) collapse to a single message even when several match. Only rules that carry an action produce a separate copy per matching rule, so two plain filters both matching still yield one message."
+    },
+    {
+      "subtopic": "DLQ triage",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "While triaging the DLQ, how do you read **why** a message was dead-lettered, and how do you reprocess it?",
+      "options": [
+        "Read `DeadLetterReason`/`DeadLetterErrorDescription`, then re-send a fresh message to the main entity",
+        "Read the reason from `ApplicationProperties[\"DeadLetterReason\"]`, then call `RenewMessageLockAsync` to move it back",
+        "Call `AbandonMessageAsync` on the DLQ message to return it to the main queue",
+        "Read `Subject`, then set `DeadLetteringOnMessageExpiration = false` to release it"
+      ],
+      "answer": 0,
+      "explanation": "The broker surfaces `DeadLetterReason` and `DeadLetterErrorDescription` as first-class properties on `ServiceBusReceivedMessage` (not in `ApplicationProperties`). You cannot un-dead-letter in place — you inspect, fix, and re-send a fresh message to the main entity, then complete the DLQ copy."
+    },
+    {
+      "subtopic": "Auto-forwarding",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about Service Bus auto-forwarding are correct? (Select all that apply.)",
+      "options": [
+        "Forwarding only works between entities in the **same namespace**",
+        "If the destination is full or disabled, the source **dead-letters** the message",
+        "Forwarding chains are **capped** in hop count to prevent loops",
+        "Auto-forwarding can move messages across two different Service Bus namespaces",
+        "Auto-forwarding requires a custom consumer to copy messages between entities"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Auto-forwarding is single-namespace, code-free chaining with a capped hop count to prevent loops; if the destination is full/disabled the source dead-letters the message. It cannot cross namespaces and needs no consumer code (that's the whole point of `ForwardTo`)."
+    },
+    {
+      "subtopic": "Large payloads",
+      "source": "azure/azure-service-bus-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A service must send 20 MB payloads through messaging. On Standard tier the broker rejects them, and even on Premium the team wants to avoid bloating the bus. What is the recommended pattern?",
+      "options": [
+        "Claim-check: store the payload in Blob Storage and send only a reference on the message",
+        "Split the payload into 256 KB chunks and reassemble them using `SessionId`",
+        "Enable the Premium large-messages feature and send all 20 MB inline as the default",
+        "Base64-encode the payload so it compresses under the 256 KB Standard limit"
+      ],
+      "answer": 0,
+      "explanation": "The claim-check pattern stores the large payload in Blob Storage and sends a lightweight reference through Service Bus, which is the recommended approach for big payloads. Standard caps at 256 KB; Premium supports up to 100 MB but defaults to 1 MB and is not meant for routinely pushing large blobs through the bus, and Base64 increases size rather than fitting 20 MB into 256 KB."
+    }
+  ]
+}

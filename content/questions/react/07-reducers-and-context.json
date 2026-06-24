@@ -1,0 +1,281 @@
+{
+  "topic": "react",
+  "source": "react/07-reducers-and-context.md",
+  "questions": [
+    {
+      "subtopic": "Reducer signature",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the signature of a reducer function used with `useReducer`?",
+      "options": [
+        "`(state, action) => nextState`",
+        "`(action, state) => void`",
+        "`(prevState, nextState) => action`",
+        "`(state) => (action) => nextState`"
+      ],
+      "answer": 0,
+      "explanation": "A reducer is a pure function `(state, action) => nextState`. It receives the current state and an action and returns the new state; it does not mutate or take state second."
+    },
+    {
+      "subtopic": "Reducer purity",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "easy",
+      "type": "multi",
+      "question": "Which of the following are true of a well-written reducer? (Select all that apply.)",
+      "options": [
+        "It must be pure: same inputs always yield the same output",
+        "It should perform no side effects or I/O",
+        "It should return a new object/array rather than mutating the existing state",
+        "It should issue API calls when an action requires fetching data",
+        "It is allowed to read the current time or random values to compute next state"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Reducers are pure: no mutation, no side effects, no I/O, and deterministic. Making API calls or reading the clock/random values inside a reducer breaks purity and reproducibility."
+    },
+    {
+      "subtopic": "dispatch stability",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "React guarantees that the `dispatch` function returned by `useReducer` keeps a stable identity across renders, so it is safe to omit from effect dependency arrays.",
+      "answer": true,
+      "explanation": "`dispatch` identity is guaranteed constant across renders, so it can be omitted from effect deps and passed through context without causing extra re-renders."
+    },
+    {
+      "subtopic": "Lazy initialization",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `useReducer(reducer, initialArg, init)`, how does React use the third argument `init`?",
+      "options": [
+        "React calls `init(initialArg)` once on mount to compute the initial state",
+        "React calls `init` after every dispatch to recompute state from scratch",
+        "React passes `init` to the reducer as a fourth parameter",
+        "React uses `init` only when no provider supplies a value"
+      ],
+      "answer": 0,
+      "explanation": "The optional `init` function enables lazy initialization: React calls `init(initialArg)` once on mount to compute the initial state, avoiding recomputing it on every render. It is not invoked on each dispatch."
+    },
+    {
+      "subtopic": "useState vs useReducer",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which situation most favors `useReducer` over `useState`?",
+      "options": [
+        "Many interrelated state updates spread across several event handlers that you want centralized and unit-testable",
+        "A single boolean toggle local to one component",
+        "Two independent numeric values updated with simple setters",
+        "State that never changes after the initial render"
+      ],
+      "answer": 0,
+      "explanation": "`useReducer` wins when updates are many, interrelated, or span event handlers, and when you want the update logic out of the component and testable. One or two independent simple values favor `useState`."
+    },
+    {
+      "subtopic": "Action design",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which dispatch call best follows the principle that an action should describe intent, not mechanism?",
+      "options": [
+        "`dispatch({ type: 'added_todo', text })`",
+        "`dispatch(nextWholeStateObject)`",
+        "`dispatch(() => setState(newState))`",
+        "`dispatch(state => ({ ...state, todos: newTodos }))`"
+      ],
+      "answer": 0,
+      "explanation": "Actions should describe *what happened* (intent), e.g. `{ type: 'added_todo', text }`, letting the reducer own *how* state changes. Passing the whole next state or an updater function moves the 'how' back out of the centralized reducer."
+    },
+    {
+      "subtopic": "createContext default",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When is the default value passed to `createContext(default)` actually used?",
+      "options": [
+        "Only when a consumer has no matching provider above it in the tree",
+        "Every time the provider's value is `undefined`",
+        "On the first render, before any provider mounts",
+        "Whenever `React.memo` blocks a re-render of an intermediate component"
+      ],
+      "answer": 0,
+      "explanation": "The default is used only when a consumer renders with no matching provider above it. If a provider exists, the consumer reads the provider's value even if that value is `undefined`."
+    },
+    {
+      "subtopic": "Context re-render behavior",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Wrapping an intermediate component in `React.memo` prevents the context consumers below it from re-rendering when the context provider's value changes.",
+      "answer": false,
+      "explanation": "When a provider's value changes (by `Object.is`), every consumer re-renders regardless of depth, and `React.memo` on intermediate components does not stop this. memo only short-circuits re-renders caused by changed props, not context changes."
+    },
+    {
+      "subtopic": "Context value identity",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A provider is written as `<ThemeContext value={{ user, theme }}>`. Why might this re-render all consumers on every render of the provider's component?",
+      "options": [
+        "A fresh inline object is created each render, so the value fails the `Object.is` comparison every time",
+        "Context always re-renders consumers on every render regardless of the value",
+        "Inline objects bypass React's reconciliation and force a full tree remount",
+        "`useContext` cannot read object values, only primitives"
+      ],
+      "answer": 0,
+      "explanation": "Passing a fresh inline object/array each render produces a new reference that fails `Object.is`, so React treats the value as changed and re-renders all consumers. Memoizing the value (e.g. `useMemo`) fixes it."
+    },
+    {
+      "subtopic": "When to use context",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which use case is context best suited for, per the reviewer?",
+      "options": [
+        "Global-ish low-frequency data like theme, current user/auth, or locale",
+        "High-frequency state such as text being typed into an input",
+        "Replacing all local prop passing throughout the app",
+        "Server cache for paginated API responses"
+      ],
+      "answer": 0,
+      "explanation": "Context is for global-ish data (theme, auth, locale, design tokens). It is not a general state manager, not a replacement for local props, and overusing it couples components and hurts reuse."
+    },
+    {
+      "subtopic": "Split state/dispatch contexts",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does the reducer+context scaling pattern split into a separate `StateContext` and `DispatchContext` instead of one `{ state, dispatch }` context?",
+      "options": [
+        "So dispatch-only components subscribe to the stable `dispatch` and never re-render on state changes",
+        "Because a single context cannot hold both a value and a function",
+        "Because `dispatch` must be provided above `state` to be readable",
+        "To allow two providers to override each other's defaults"
+      ],
+      "answer": 0,
+      "explanation": "Combining `{ state, dispatch }` creates a new value identity each render and re-renders every consumer on any state change, including dispatch-only ones. Splitting lets dispatch-only components read the stable `dispatch` and stay inert."
+    },
+    {
+      "subtopic": "Custom hooks that throw",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the `TasksProvider` pattern, the state context is initialized with `createContext<Task[] | null>(null)` and `useTasks()` throws if the value is `null`. What bug does the throw catch?",
+      "options": [
+        "Using the hook outside the provider, which would otherwise silently return the `null` default",
+        "Dispatching an unknown action type from a child component",
+        "Passing a non-memoized object as the provider value",
+        "Calling `useReducer` more than once in the same provider"
+      ],
+      "answer": 0,
+      "explanation": "If a component reads the context outside any `TasksProvider`, `useContext` returns the `null` default. The throw turns that silent failure into a loud, immediate error ('must be used within TasksProvider') instead of handing back null."
+    },
+    {
+      "subtopic": "Reducer code reading",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the reducer below, what does `reducer(5, { type: 'set', value: 10 })` return?",
+      "code": "function reducer(state, action) {\n  switch (action.type) {\n    case 'incremented': return state + 1;\n    case 'set':         return action.value;\n    default: throw new Error('unknown action: ' + action.type);\n  }\n}",
+      "lang": "typescript",
+      "options": [
+        "10",
+        "15",
+        "6",
+        "It throws an 'unknown action' error"
+      ],
+      "answer": 0,
+      "explanation": "The `set` case returns `action.value`, which is `10`, ignoring the previous state of `5`. The `incremented` case (which would give `6`) does not run, and `set` is a known type so it does not throw."
+    },
+    {
+      "subtopic": "Store selectors vs context",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the key re-render advantage a store library (Redux Toolkit / Zustand) has over a single reducer+context value?",
+      "options": [
+        "A component subscribes to a slice via a selector and re-renders only when that slice changes, not on every state change",
+        "Stores never re-render components; they update the DOM directly",
+        "Stores avoid React's reconciliation entirely by using the virtual DOM differently",
+        "Stores guarantee components re-render synchronously before paint"
+      ],
+      "answer": 0,
+      "explanation": "A context provider re-renders all consumers when its value changes. A store lets each component subscribe to a slice via a selector and re-render only when that slice changes. Both also subscribe via `useSyncExternalStore` for consistency under concurrent rendering."
+    },
+    {
+      "subtopic": "Redux Toolkit & Immer",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Redux Toolkit (RTK) are correct? (Select all that apply.)",
+      "options": [
+        "`createSlice` generates both a reducer and its action creators from one object",
+        "RTK uses Immer internally so 'mutating' code like `state.value++` becomes a safe immutable update",
+        "`configureStore` enables thunk middleware and devtools by default",
+        "RTK requires you to hand-write `createStore` and action type constants",
+        "Reducers written with `createSlice` must manually return a new state object and never mutate the draft"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "`createSlice` generates a reducer plus action creators and uses Immer, so 'mutating' the draft (`state.value++`) is turned into an immutable update; `configureStore` wires thunks + devtools by default. With RTK you essentially never write plain `createStore` or hand-rolled action types, and mutating the Immer draft is exactly the intended style."
+    },
+    {
+      "subtopic": "Zustand fundamentals",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about Zustand (v5) are correct? (Select all that apply.)",
+      "options": [
+        "`create` returns a hook that is itself the store; no `<Provider>` is needed",
+        "`set` shallow-merges the top level of the store state",
+        "It can be used outside React as a vanilla store",
+        "It requires wrapping the app in a `<Provider store>` like React-Redux",
+        "Its default export is the primary way to create a store in v5"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Zustand's `create` returns a store-hook with no provider, `set` shallow-merges the top level, and v5 works outside React as a vanilla store. It needs no `<Provider>`, and v5 removed the default export in favor of the named `{ create }`."
+    },
+    {
+      "subtopic": "Zustand selector gotcha",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A Zustand selector returns a fresh object each call: `useStore(s => ({ a: s.a, b: s.b }))`. What problem can this cause and how is it fixed?",
+      "options": [
+        "It can trigger re-render loops because a new object fails equality each time; wrap it with `useShallow` (or use `createWithEqualityFn`)",
+        "It silently returns stale values; fix it by calling the hook twice",
+        "It throws at runtime because selectors may only return primitives",
+        "It disables the store's subscription; fix it by adding a `<Provider>`"
+      ],
+      "answer": 0,
+      "explanation": "Returning a new object/array from a selector each call produces a new reference that fails the default equality check, causing re-render loops. `useShallow` (or `createWithEqualityFn` for custom equality) compares the contents to prevent it."
+    },
+    {
+      "subtopic": "Picking the right tool",
+      "source": "react/07-reducers-and-context.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For state that is purely local to one component, which option is recommended?",
+      "options": [
+        "None of context, Zustand, or Redux Toolkit — keep it local (e.g. `useState`/`useReducer`)",
+        "Context, to make it available if a child ever needs it",
+        "Redux Toolkit, for devtools and structure",
+        "Zustand, because it has the least boilerplate"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer says to reach for none of context/Zustand/RTK for state that is purely local to one component. Context suits global-ish values, Zustand a small fast store, and RTK large structured apps — but local state stays local."
+    }
+  ]
+}

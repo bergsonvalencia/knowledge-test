@@ -1,0 +1,274 @@
+{
+  "topic": "software-design",
+  "source": "software-design/solid-principles-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "SOLID acronym",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the **L** in SOLID stand for?",
+      "options": [
+        "Liskov Substitution Principle",
+        "Loose Coupling Principle",
+        "Layered Architecture Principle",
+        "Least Knowledge Principle"
+      ],
+      "answer": 0,
+      "explanation": "SOLID = Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion. Loose coupling is a benefit of applying SOLID, not the L principle itself."
+    },
+    {
+      "subtopic": "SRP meaning",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The Single Responsibility Principle means a class should do only one thing (have only one method).",
+      "answer": false,
+      "explanation": "SRP means a class should have only one *reason to change* — everything it does should be closely related to a single responsibility. It can have many members as long as they all relate to that one purpose."
+    },
+    {
+      "subtopic": "SRP — one reason to change",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A `ReportService` generates a report, saves it to the database, and emails it to stakeholders. Which SOLID principle does this most directly violate?",
+      "options": [
+        "SRP — there are multiple unrelated reasons the class would need to change",
+        "OCP — adding a new report type forces editing the class",
+        "LSP — a subclass could not substitute for it",
+        "DIP — it depends on a concrete database type"
+      ],
+      "answer": 0,
+      "explanation": "Generating, persisting, and emailing are three unrelated responsibilities (three reasons to change), which is the classic SRP violation. The other principles describe different concerns and aren't what this scenario demonstrates."
+    },
+    {
+      "subtopic": "OCP definition",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "The Open-Closed Principle states that software entities should be:",
+      "options": [
+        "Open for extension, closed for modification",
+        "Open for modification, closed for extension",
+        "Open for inheritance, closed for composition",
+        "Open to all clients, closed to subclasses"
+      ],
+      "answer": 0,
+      "explanation": "OCP means you should be able to extend a class's behavior (add new functionality) without modifying its existing, already-tested code."
+    },
+    {
+      "subtopic": "DIP statement",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement best captures the Dependency Inversion Principle?",
+      "options": [
+        "High-level and low-level modules should both depend on abstractions, not on concretions",
+        "Every dependency should be resolved through a DI container at runtime",
+        "Low-level modules should depend directly on high-level modules",
+        "Concrete details should be depended upon so behavior is predictable"
+      ],
+      "answer": 0,
+      "explanation": "DIP: high-level modules should not depend on low-level modules — both should depend on abstractions, and abstractions should not depend on details. A DI container is one technique, not the principle itself."
+    },
+    {
+      "subtopic": "OCP — Strategy selection caveat",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You refactor an `if/else` discount chain into a `IDiscountStrategy` abstraction with one class per customer type. However, a central method still does `switch (customerType)` to pick which strategy to instantiate. Is OCP now satisfied?",
+      "options": [
+        "No — you only moved the modification point; selection must be extensible too (DI registration, factory, or a dictionary keyed by type)",
+        "Yes — using the Strategy pattern automatically satisfies OCP regardless of how strategies are selected",
+        "Yes — because each discount value now lives in its own class",
+        "No — Strategy is the wrong pattern; only the Decorator pattern can satisfy OCP"
+      ],
+      "answer": 0,
+      "explanation": "OCP is only satisfied if *which* strategy is selected is also extensible. A surviving central switch still forces an edit per new type — the modification point moved, it didn't disappear. Resolve selection via DI, a factory, or a type-keyed dictionary."
+    },
+    {
+      "subtopic": "LSP — design by contract",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Under design-by-contract, when a derived class overrides a method, what is it allowed to do to preconditions and postconditions without violating LSP?",
+      "options": [
+        "Weaken the precondition and strengthen the postcondition",
+        "Strengthen the precondition and weaken the postcondition",
+        "Strengthen both the precondition and the postcondition",
+        "Weaken both the precondition and the postcondition"
+      ],
+      "answer": 0,
+      "explanation": "Per Meyer/Martin, an override may only replace a precondition with a weaker one and a postcondition with a stronger one. Strengthening a precondition would reject inputs the base accepted, breaking substitutability."
+    },
+    {
+      "subtopic": "LSP — caller-side smell",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A caller contains `if (animal is Penguin) { /* skip flying */ } else { animal.Fly(); }` to route around a subtype that throws in `Fly()`. What does this indicate, and what is the correct fix?",
+      "options": [
+        "An LSP violation; replace the type check with polymorphism so the subtype honors (or doesn't advertise) the contract",
+        "An ISP violation; split `IAnimal` into smaller interfaces and keep the type check",
+        "A correct defensive pattern; add more `is` checks as new non-flying subtypes appear",
+        "An OCP violation; wrap the call in a Decorator and leave the conditional in place"
+      ],
+      "answer": 0,
+      "explanation": "Callers forced to special-case a subtype signal an LSP violation: the subtype can't honor the base contract. The throw is only the symptom — the fix is polymorphism (or not advertising `Fly`), not more type checks."
+    },
+    {
+      "subtopic": "ISP definition",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "An implementer being forced to stub a method with `throw new NotImplementedException()` is a classic symptom of an Interface Segregation Principle violation.",
+      "answer": true,
+      "explanation": "When a class must implement interface members it doesn't use — stubbing them with NotImplementedException — the interface is too coarse, forcing clients to depend on methods they don't need, which is exactly what ISP warns against."
+    },
+    {
+      "subtopic": "DIP vs DI",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement about the relationship between DIP and Dependency Injection (DI) is correct?",
+      "options": [
+        "DIP is the principle (depend on abstractions); DI is one technique to achieve it, and you can do DI while still violating DIP",
+        "DIP and DI are synonyms — using a DI container always satisfies DIP",
+        "DI is the principle; DIP is the specific container implementation that enforces it",
+        "Honoring DIP is impossible without a DI container"
+      ],
+      "answer": 0,
+      "explanation": "DIP is the principle; DI is one technique that implements it. You can inject a *concrete* type via DI (violating DIP), and you can honor DIP without a container (abstract factories, plain constructor passing)."
+    },
+    {
+      "subtopic": "SRP — practical benefit",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which are stated benefits or motivations for applying the Single Responsibility Principle? Select all that apply.",
+      "options": [
+        "Fewer merge conflicts when multiple developers work on different features",
+        "Smaller, cleaner classes that are less fragile and easier to test",
+        "Guaranteed thread-safety of all class members",
+        "Loose coupling and improved reusability",
+        "Automatic elimination of all runtime exceptions"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "SRP improves maintainability, testability, reusability, loose coupling, and reduces merge conflicts (separate files for separate responsibilities). It says nothing about guaranteeing thread-safety or eliminating runtime exceptions."
+    },
+    {
+      "subtopic": "OCP techniques in C#",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which techniques does the reviewer list for achieving OCP in C#? Select all that apply.",
+      "options": [
+        "Decorator pattern (runtime, via dependency injection)",
+        "Strategy pattern (runtime, via DI)",
+        "Extension methods (compile-time)",
+        "Editing the original method to add a new `else if` branch",
+        "Marking the class `sealed` so it cannot change"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The reviewer cites Decorator and Strategy (runtime, via DI) and extension methods (compile-time, with the caveat you can't switch at runtime). Editing the method is the OCP *violation*, and `sealed` prevents extension rather than enabling it."
+    },
+    {
+      "subtopic": "OCP — Decorator constraint",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "code": "public class NewService : IService\n{\n    private readonly IService _service;\n    public NewService(IService service) => _service = service;\n\n    public int DoSomething(int input)\n    {\n        ValidateInput(input);\n        var value = _service.DoSomething(input);\n        return value;\n    }\n}",
+      "lang": "csharp",
+      "question": "This Decorator adds behavior around `IService.DoSomething`. What is a key constraint on using the Decorator pattern this way?",
+      "options": [
+        "It only works if the method is public and part of the interface being decorated",
+        "It only works if the wrapped service is a `sealed` class",
+        "It requires the decorated method to be a `static` method",
+        "It cannot be combined with dependency injection"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer notes the Decorator can only wrap a method that is public and included in the interface — otherwise there is nothing for the decorator to intercept. Decorators are in fact resolved via DI at runtime, contradicting the last option."
+    },
+    {
+      "subtopic": "Testability and SOLID",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On a rapid-fire interview, \"Which SOLID principle most directly improves testability by allowing test doubles to be substituted?\" The expected answer is:",
+      "options": [
+        "DIP — depending on abstractions lets you inject mocks/fakes in place of real dependencies",
+        "SRP — small classes are the only thing that makes code testable",
+        "LSP — substitutability of subtypes is what mocking relies on",
+        "OCP — closing code to modification is what enables fakes"
+      ],
+      "answer": 0,
+      "explanation": "DIP is the standard answer: depending on abstractions lets you swap in test doubles. The reviewer notes SRP and ISP also contribute materially, but DIP is the most *directly* associated with substituting mocks."
+    },
+    {
+      "subtopic": "ISP — method count nuance",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "An `IUserService` with 40 methods that **every** client fully consumes is, strictly speaking, an Interface Segregation Principle violation purely because of its method count.",
+      "answer": false,
+      "explanation": "ISP is about whether clients are forced to depend on methods they don't use — not raw method count. A fat interface every client fully consumes isn't strictly an ISP breach (though it almost certainly violates SRP)."
+    },
+    {
+      "subtopic": "ISP — Repository recomposition",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "public interface IRepoReader<T>  { T Get(int id); }\npublic interface IRepoWriter<T>  { void Add(T entity); }\npublic interface IRepoRemover<T> { void Remove(T entity); }\n\npublic interface IRepo<T> : IRepoReader<T>, IRepoWriter<T>, IRepoRemover<T> { }",
+      "lang": "csharp",
+      "question": "The reviewer splits a bulky `IRepo<T>` into reader/writer/remover and then re-declares `IRepo<T>` inheriting all three. Why does this recomposition not reintroduce the original ISP problem?",
+      "options": [
+        "Clients can depend on just the narrow role they need (e.g. `IRepoReader<T>`); the composed `IRepo<T>` is only used where all three are genuinely required",
+        "Inherited interface members are excluded from each client's dependency surface by the compiler",
+        "Composing interfaces converts them into a single concrete class, removing the coupling",
+        "Because `IRepo<T>` is generic, ISP no longer applies to it"
+      ],
+      "answer": 0,
+      "explanation": "ISP is satisfied because a read-only client can depend on only `IRepoReader<T>` and is never forced to know about Add/Remove. The composed `IRepo<T>` exists only for clients that legitimately need all three operations."
+    },
+    {
+      "subtopic": "LSP — proper fix via base type",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A `Manager` class can eat, sleep, work, and cook. A `Child` is made to inherit from `Manager` but cannot work or cook, so callers using a `Manager` reference break when given a `Child`. Per the reviewer, what is the correct fix?",
+      "options": [
+        "Introduce a common `Human` base type that both `Manager` and `Child` inherit from, keeping only the truly shared behavior in it",
+        "Override `Work()` and `Cook()` in `Child` to throw `NotSupportedException`",
+        "Add `if (x is Child)` checks at every call site that invokes `Work()`",
+        "Make `Manager` `sealed` so `Child` can no longer inherit from it"
+      ],
+      "answer": 0,
+      "explanation": "The LSP fix is to model the real shared abstraction: extract a `Human` base with only common behavior, so neither subtype is forced to fake capabilities it lacks. Throwing or adding caller type-checks just relocates the broken contract."
+    },
+    {
+      "subtopic": "DIP — DI without DIP",
+      "source": "software-design/solid-principles-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "code": "public class OrderService\n{\n    private readonly SqlOrderRepository _repo;\n    public OrderService(SqlOrderRepository repo) => _repo = repo;\n}",
+      "lang": "csharp",
+      "question": "`OrderService` receives its dependency through constructor injection (and the container resolves it). Does this satisfy the Dependency Inversion Principle?",
+      "options": [
+        "No — the constructor takes the concrete `SqlOrderRepository`, so the high-level service still depends on a concretion despite using DI",
+        "Yes — any use of constructor injection satisfies DIP by definition",
+        "Yes — because a DI container is involved, the dependency is automatically inverted",
+        "No — DIP is impossible to satisfy with constructor injection; only property injection qualifies"
+      ],
+      "answer": 0,
+      "explanation": "This is DI without DIP: the high-level service depends on a concrete type, not an abstraction. To honor DIP the constructor should take an interface (e.g. `IOrderRepository`). DI is a technique; it does not guarantee the dependency is inverted."
+    }
+  ]
+}

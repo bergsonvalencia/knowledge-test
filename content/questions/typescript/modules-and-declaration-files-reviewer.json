@@ -1,0 +1,275 @@
+{
+  "topic": "typescript",
+  "source": "typescript/modules-and-declaration-files-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "module vs script",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What single rule decides whether a `.ts` file is treated as a **module** versus a **script**?",
+      "options": [
+        "Whether the file contains at least one top-level `import` or `export`",
+        "Whether the file's name ends in `.module.ts`",
+        "Whether `module` is set to `esnext` in tsconfig",
+        "Whether the file contains any top-level `const` or `function` declaration"
+      ],
+      "answer": 0,
+      "explanation": "A file becomes a module the moment it has a top-level import or export; otherwise it is a script whose top-level declarations land in the global scope. The `module` compiler option controls emit format, not module-vs-script status."
+    },
+    {
+      "subtopic": "force module scope",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "You have a `.ts` file that needs file-local scope but has nothing to export. What is the idiomatic way to force it to be treated as a module?",
+      "options": [
+        "Add `export {}` to the file",
+        "Add `declare module {}` to the file",
+        "Set `isolatedModules: true` in tsconfig",
+        "Rename the file with a `.mts` extension"
+      ],
+      "answer": 0,
+      "explanation": "`export {}` is an empty export that gives the file a top-level export, forcing module scope without exposing any bindings. `.mts` only affects the emitted module format, not the global-vs-module distinction."
+    },
+    {
+      "subtopic": "default export",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A default export is, under the hood, just a named export whose name is `default`, so `import D from \"./m\"` is equivalent to `import { default as D } from \"./m\"`.",
+      "answer": true,
+      "explanation": "The reviewer states a default export is a named export named `default`; the two import forms import the same binding."
+    },
+    {
+      "subtopic": "re-export forms",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `export * from \"./a\"` re-export?",
+      "options": [
+        "All of `a`'s named exports, but **not** its default export",
+        "All of `a`'s exports including its default export",
+        "Only `a`'s default export",
+        "A single namespace object bundling all of `a`'s exports"
+      ],
+      "answer": 0,
+      "explanation": "`export * from \"./a\"` forwards every named export of `a` but never the default. Bundling everything into one namespace property is `export * as ns from \"./a\"`, and forwarding the default needs `export { default } from \"./a\"`."
+    },
+    {
+      "subtopic": "dynamic import",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the expression `import(\"./m\")` evaluate to at runtime?",
+      "options": [
+        "A `Promise` resolving to the module's namespace object",
+        "The module's namespace object synchronously",
+        "The module's default export directly",
+        "A `require`-style synchronous handle to the module"
+      ],
+      "answer": 0,
+      "explanation": "Dynamic `import()` is an expression returning `Promise<typeof import(\"./m\")>` — a promise of the namespace object, with the default (if any) at `.default`. It is asynchronous, not synchronous."
+    },
+    {
+      "subtopic": "dynamic import default",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `math.ts` has `export default class Circle {}`, what happens at the line marked `(A)`?",
+      "code": "const m = await import(\"./math\");\nconst c = new m(); // (A)",
+      "lang": "typescript",
+      "options": [
+        "Error: the namespace object is not constructable; you must call `new m.default()`",
+        "It works: `m` is the `Circle` constructor, so `new m()` builds a `Circle`",
+        "Error: dynamic imports cannot be used with `await`",
+        "It works but returns the namespace object rather than a `Circle` instance"
+      ],
+      "answer": 0,
+      "explanation": "`m` is the module namespace object, whose `default` property is `Circle`. The namespace object itself is not constructable, so `new m()` errors; the correct call is `new m.default()`."
+    },
+    {
+      "subtopic": "type-only imports",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is marking type-only imports (e.g. `import type` or inline `type`) often **required** when using single-file transpilers like Babel, esbuild, or swc (or with `isolatedModules`)?",
+      "options": [
+        "A per-file transpiler cannot tell whether an imported name is a type or a value, so the marker tells it the import is safe to erase",
+        "Those transpilers cannot parse `import` statements without an explicit `type` keyword",
+        "The marker is needed so the transpiler emits a `require` call instead of an `import`",
+        "Without it, the transpiler treats every import as a default import"
+      ],
+      "answer": 0,
+      "explanation": "A single-file transpiler sees only one file at a time and cannot do whole-program analysis to know if an imported name resolves to a type or a value. The explicit `type` marker makes erasure deterministic per-file."
+    },
+    {
+      "subtopic": "verbatimModuleSyntax",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is emitted for the following source under `\"verbatimModuleSyntax\": true, \"module\": \"esnext\"`?",
+      "code": "import { type User, UserStore } from \"./model\";\nimport type { Config } from \"./config\";\nconst s = new UserStore();\nlet u: User;",
+      "lang": "typescript",
+      "options": [
+        "`import { UserStore } from \"./model\";` plus `const s = new UserStore();` and `let u;` — the second import is fully erased",
+        "Both import statements are kept verbatim because the file uses both modules",
+        "Both import statements are erased because each contains a type specifier",
+        "`import { type User, UserStore } from \"./model\";` is kept exactly as written"
+      ],
+      "answer": 0,
+      "explanation": "The first statement keeps its value import and strips the inline `type User` specifier, emitting `import { UserStore } from \"./model\";`. The second is entirely type-only and is erased, and the `: User` annotation on `u` is erased."
+    },
+    {
+      "subtopic": "declare keyword",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "`declare class Foo {}` describes only the *type* of `Foo` and emits no JavaScript, whereas a normal `class Foo {}` both declares the type and emits a runtime constructor.",
+      "answer": true,
+      "explanation": "`declare` introduces an ambient, type-space-only declaration with no body and no emit; a normal class declaration produces a real runtime constructor in addition to its type."
+    },
+    {
+      "subtopic": "declare global",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `declare global { interface Window { analytics?: ... } }` block successfully adds `analytics` to `Window` everywhere in the program. Which two facts make this work?",
+      "options": [
+        "`declare global` is valid because the file is a module, and the addition merges with the lib's `Window` via declaration merging",
+        "`Window` is a type alias, so `declare global` can replace its definition wholesale",
+        "`declare global` automatically runs in script files, and `Window` is re-created from scratch",
+        "The block emits a runtime patch to `window` and TypeScript infers the type from it"
+      ],
+      "answer": 0,
+      "explanation": "`declare global` is only valid inside a module (a file with imports/exports), and it relies on declaration merging because `Window` is an open interface. It emits nothing at runtime — it is purely a type-space addition."
+    },
+    {
+      "subtopic": "declaration emit",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which compiler option emits a `.d.ts` next to each `.js` **but no JavaScript at all**, typically used when a bundler produces the runtime output?",
+      "options": [
+        "`emitDeclarationOnly: true`",
+        "`declaration: true`",
+        "`declarationMap: true`",
+        "`skipLibCheck: true`"
+      ],
+      "answer": 0,
+      "explanation": "`emitDeclarationOnly` emits the type declarations only and skips JS emit. `declaration: true` emits both `.d.ts` and `.js`; `declarationMap` adds go-to-definition maps; `skipLibCheck` skips checking `.d.ts` contents."
+    },
+    {
+      "subtopic": "skipLibCheck trade-off",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `\"skipLibCheck\": true` actually do, and what is the cost?",
+      "options": [
+        "It skips type-checking the *contents* of all `.d.ts` files, speeding builds and avoiding conflicts between incompatible third-party declarations, at the cost of not validating those files",
+        "It skips downloading `@types` packages, reducing install size but losing IntelliSense",
+        "It skips emitting `.d.ts` files, making builds faster but breaking library consumers",
+        "It skips type-checking only third-party `.d.ts` files, while still fully checking your own generated declarations"
+      ],
+      "answer": 0,
+      "explanation": "`skipLibCheck` skips checking the contents of all `.d.ts` files — yours and dependencies' alike — which speeds builds and sidesteps mutually-incompatible declarations, but means errors in declaration files (including your own generated ones) go undetected."
+    },
+    {
+      "subtopic": "@types resolution and TS 6.0",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about the `@types`/DefinitelyTyped ecosystem and TS 6.0 are correct? (Select all that apply.)",
+      "options": [
+        "`@types/*` packages are dev dependencies — they vanish at runtime and only the types matter",
+        "Under TS 6.0 the `types` option defaults to `[]`, so the compiler no longer auto-includes every `@types/*` package under `node_modules/@types`",
+        "A package that ships its own bundled `.d.ts` does not need a separate `@types` package",
+        "Under TS 6.0, a previously-implicit global like `process` or `describe` can never go missing because globals are always loaded",
+        "DefinitelyTyped declarations are auto-published by the original package authors on every release"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`@types` are dev-only, TS 6.0 makes global `@types` opt-in via `types: []`, and self-typed packages need no `@types`. Option 4 is wrong precisely because `types: []` can make previously-implicit globals disappear; option 5 is wrong because DefinitelyTyped is a community-maintained repository, not author-published."
+    },
+    {
+      "subtopic": "nodenext extensions",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Under `\"moduleResolution\": \"nodenext\"`, inside an ESM file whose source is `util.ts`, which relative import specifier is correct?",
+      "options": [
+        "`import { helper } from \"./util.js\"` — you name the emitted runtime file",
+        "`import { helper } from \"./util\"` — extensionless, since TypeScript rewrites it",
+        "`import { helper } from \"./util.ts\"` — name the actual source file",
+        "`import { helper } from \"./util.mts\"` — the TypeScript ESM extension"
+      ],
+      "answer": 0,
+      "explanation": "`nodenext` mirrors Node's ESM resolver, which requires explicit extensions, and TypeScript does not rewrite specifiers — so you spell the *emitted* `./util.js`. Extensionless errors under nodenext; `.ts` needs `allowImportingTsExtensions` (with `noEmit`)."
+    },
+    {
+      "subtopic": "exports encapsulation",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given the `package.json` below, which import **fails** and why?",
+      "code": "\"exports\": {\n  \".\":     { \"types\": \"./d.ts\",     \"import\": \"./i.mjs\" },\n  \"./sub\": { \"types\": \"./sub.d.ts\", \"import\": \"./sub.mjs\" }\n}",
+      "lang": "json",
+      "options": [
+        "`import z from \"pkg/dist/internal\"` fails: an `exports` map encapsulates the package, so any subpath not listed is blocked even if the file exists",
+        "`import y from \"pkg/sub\"` fails: subpath exports require a trailing slash like `\"./sub/\"`",
+        "`import x from \"pkg\"` fails: the `\".\"` entry must list a `default` condition to be importable",
+        "None fail: an `exports` map only adds entry points and never blocks deep imports"
+      ],
+      "answer": 0,
+      "explanation": "Once an `exports` map is present it locks down the public surface: only listed subpaths (`.` and `./sub`) resolve, and `pkg/dist/internal` is blocked even though the file physically exists. That encapsulation is the whole point of `exports`."
+    },
+    {
+      "subtopic": "module augmentation pitfall",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "This file is meant to augment `my-lib`'s `Options` interface but does nothing. What is the root cause?",
+      "code": "// augment.ts\ndeclare module \"my-lib\" {\n  interface Options { verbose?: boolean }\n}",
+      "lang": "typescript",
+      "options": [
+        "The file has no top-level import/export, so it is a script; `declare module \"my-lib\"` there declares a brand-new ambient module instead of augmenting the existing one",
+        "You cannot add members to an interface via `declare module`; only type aliases can be augmented",
+        "`Options` must be re-declared with `export interface` inside the block for merging to occur",
+        "Augmentation requires `verbatimModuleSyntax` to be enabled to take effect"
+      ],
+      "answer": 0,
+      "explanation": "In a script-context file, `declare module \"my-lib\"` declares a *new* ambient module rather than merging into the real one, so the augmentation silently fails. Making the file a module (e.g. add `export {};` or `import \"my-lib\";`) fixes it. Interfaces are exactly what you *can* augment."
+    },
+    {
+      "subtopic": "augmentation limits",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following can module augmentation (`declare module \"lib\" { ... }` in a module file) legitimately do? (Select all that apply.)",
+      "options": [
+        "Add a new member to an existing interface in the library, merged via declaration merging",
+        "Add members to an existing namespace exported by the library",
+        "Add a brand-new top-level runtime *value* export to the library",
+        "Change the type of an existing member of the library's interface",
+        "Augment a type alias the library exports"
+      ],
+      "answer": [0, 1],
+      "explanation": "Augmentation only *adds* to open types — interface members and namespace members merge in. It cannot add new top-level value exports, cannot change an existing member's type, and cannot augment a (closed) type alias."
+    },
+    {
+      "subtopic": "namespaces vs modules / TS 6.0",
+      "source": "typescript/modules-and-declaration-files-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about namespaces, ES modules, and TS 6.0 legacy changes are correct? (Select all that apply.)",
+      "options": [
+        "ES modules give per-file scope, real loading semantics via `import()`, and tree-shaking that namespaces lack",
+        "In TS 6.0 the old `module Foo {}` spelling is an error; you must use the `namespace` keyword",
+        "`namespace N { export ... }` creates a value object `N` at runtime",
+        "A namespace participates in module resolution the same way an ES module does",
+        "Triple-slash directives may appear anywhere in a file as long as they are comments"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Modules win on scope, loading, and tree-shaking; TS 6.0 errors on `module Foo {}`; and a `namespace` emits a runtime value object. Namespaces do *not* participate in module resolution, and triple-slash directives must appear at the very top of the file before any code."
+    }
+  ]
+}

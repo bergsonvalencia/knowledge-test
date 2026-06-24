@@ -1,0 +1,288 @@
+{
+  "topic": "sql",
+  "source": "sql/data-types-and-built-in-functions-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Integer division",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In SQL Server, what does `SELECT 5 / 2` return, and why?",
+      "options": [
+        "`2` — both operands are integers, so `/` performs integer division and truncates the fraction",
+        "`2.5` — the engine always promotes division results to a decimal type",
+        "`3` — integer division rounds to the nearest whole number",
+        "`2.500000` — the result type is inferred from the eventual destination column"
+      ],
+      "answer": 0,
+      "explanation": "When both operands are integers, `/` is integer division and the fractional part is truncated (not rounded), so `5 / 2` is `2`. To get `2.5` you must make one operand non-integer, e.g. `5.0 / 2`."
+    },
+    {
+      "subtopic": "Approximate vs exact types",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which data type is the appropriate choice for storing a currency amount where exact precision and reliable equality comparisons matter?",
+      "options": [
+        "`DECIMAL(19, 4)` — an exact fixed-point type with explicit precision and scale",
+        "`FLOAT(53)` — an 8-byte IEEE-754 type with the widest range",
+        "`REAL` — a compact 4-byte type optimized for arithmetic speed",
+        "`FLOAT(24)` — a single-precision approximate type that rounds predictably"
+      ],
+      "answer": 0,
+      "explanation": "`DECIMAL`/`NUMERIC` are exact types and are the recommended choice for money. `FLOAT` and `REAL` are approximate (IEEE-754) and store binary approximations that can round and break equality comparisons, so they should never be used for money."
+    },
+    {
+      "subtopic": "Unicode literals",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the purpose of the `N` prefix in a string literal such as `N'José'`?",
+      "options": [
+        "It marks the literal as Unicode (`NVARCHAR`) so characters outside the database's non-Unicode code page are preserved",
+        "It forces a case-sensitive comparison regardless of the column's collation",
+        "It tells the engine the string is a name and should be indexed",
+        "It trims leading and trailing whitespace from the literal at parse time"
+      ],
+      "answer": 0,
+      "explanation": "The `N` prefix marks the literal as Unicode. Without it, the literal is interpreted in the database's non-Unicode code page and characters outside that page may be lost or replaced. It has nothing to do with collation, indexing, or trimming."
+    },
+    {
+      "subtopic": "LEN vs DATALENGTH",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For `DECLARE @s NVARCHAR(50) = N' Hello World ';`, what do `LEN(@s)` and `DATALENGTH(@s)` return respectively?",
+      "code": "DECLARE @s NVARCHAR(50) = N'  Hello World  ';\nSELECT LEN(@s) AS CharLen, DATALENGTH(@s) AS Bytes;",
+      "lang": "sql",
+      "options": [
+        "`13` and `30` — `LEN` counts characters and ignores trailing spaces; `DATALENGTH` counts bytes (15 chars × 2 for NVARCHAR)",
+        "`15` and `15` — both count every character including all spaces",
+        "`11` and `22` — both ignore leading and trailing spaces",
+        "`13` and `15` — `LEN` ignores trailing spaces and `DATALENGTH` counts characters"
+      ],
+      "answer": 0,
+      "explanation": "`LEN` returns the character count and ignores trailing (but not leading) spaces, giving 13. `DATALENGTH` returns the byte count, counting all 15 characters at 2 bytes each for NVARCHAR, giving 30."
+    },
+    {
+      "subtopic": "Modern date types",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "`ROWVERSION` (formerly spelled `TIMESTAMP`) stores a date/time value indicating when a row was last modified.",
+      "answer": false,
+      "explanation": "Despite the legacy `TIMESTAMP` spelling, `ROWVERSION` is an 8-byte database-unique value auto-incremented on every row change, used for optimistic concurrency. It is not a date/time value and does not record a wall-clock time."
+    },
+    {
+      "subtopic": "Per-operator type evaluation",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does the expression `5 / 2 * 2.0` evaluate to in T-SQL?",
+      "code": "SELECT 5 / 2 * 2.0 AS Result;",
+      "lang": "sql",
+      "options": [
+        "`4.0` — `5 / 2` truncates to `2` (int/int) before the `* 2.0` runs",
+        "`5.0` — the `2.0` promotes the whole expression to decimal before any division",
+        "`4.5` — division and multiplication are evaluated with full decimal precision",
+        "`5` — integer arithmetic is applied to the entire expression"
+      ],
+      "answer": 0,
+      "explanation": "Each operator is evaluated with the operand types it sees, left to right. `5 / 2` is int/int and truncates to `2` before the `* 2.0` ever runs, so the result is `4.0`. The later decimal multiply cannot rescue the already-truncated value."
+    },
+    {
+      "subtopic": "Implicit conversion and SARGability",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An index `IX_Customer_Code` exists on `Code VARCHAR(20)`. Why does `WHERE Code = N'A123'` produce an index scan instead of a seek, and how do you fix it?",
+      "code": "SELECT * FROM dbo.Customer WHERE Code = N'A123';",
+      "lang": "sql",
+      "options": [
+        "`NVARCHAR` outranks `VARCHAR` in precedence, so the column is converted on every row; drop the `N` to match the column's `VARCHAR` type",
+        "`VARCHAR` outranks `NVARCHAR`, so the literal is converted; add an `N` to the column definition",
+        "The index is fragmented; rebuild it so the seek is restored",
+        "Equality predicates on string columns are never SARGable; switch to `LIKE 'A123'`"
+      ],
+      "answer": 0,
+      "explanation": "Because `nvarchar` has higher data-type precedence than `varchar`, the lower-precedence column side is wrapped in an implicit `CONVERT` on every row, making the predicate non-SARGable. Matching the literal/parameter type to the column (drop the `N`) preserves the seek."
+    },
+    {
+      "subtopic": "NULL handling in concatenation",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `@a NVARCHAR(20) = NULL`, what do `'X' + @a`, `CONCAT('X', @a, 'Y')`, and `CONCAT_WS('-', 'X', @a, 'Y')` return respectively?",
+      "code": "DECLARE @a NVARCHAR(20) = NULL;\nSELECT 'X' + @a AS Plus,\n       CONCAT('X', @a, 'Y') AS Concat,\n       CONCAT_WS('-', 'X', @a, 'Y') AS Ws;",
+      "lang": "sql",
+      "options": [
+        "`NULL`, `'XY'`, `'X-Y'` — `+` propagates NULL; `CONCAT` treats NULL as `''`; `CONCAT_WS` skips NULL entirely",
+        "`'X'`, `'XY'`, `'X--Y'` — `+` ignores NULL; `CONCAT_WS` keeps a separator for the NULL slot",
+        "`NULL`, `NULL`, `NULL` — any NULL argument makes all three return NULL",
+        "`'X'`, `'X NULL Y'`, `'X-NULL-Y'` — NULL is rendered as the literal text 'NULL'"
+      ],
+      "answer": 0,
+      "explanation": "The `+` operator returns NULL if any operand is NULL. `CONCAT` converts NULL to an empty string (yielding `'XY'`). `CONCAT_WS` skips NULL arguments entirely and places the separator only between present values (yielding `'X-Y'`)."
+    },
+    {
+      "subtopic": "DATEDIFF boundary counting",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `DATEDIFF(YEAR, '2025-12-31', '2026-01-01')` return, and why?",
+      "options": [
+        "`1` — `DATEDIFF` counts the number of period boundaries crossed (one year boundary), not the elapsed duration",
+        "`0` — only one day elapsed, which is far less than a year",
+        "`365` — it returns the number of days normalized to the requested unit",
+        "`1` — it rounds the elapsed fraction of a year up to the nearest whole year"
+      ],
+      "answer": 0,
+      "explanation": "`DATEDIFF` counts how many boundaries of the given unit lie between the two dates, not the true elapsed time. One year boundary (2025→2026) sits between the dates, so it returns `1` even though only a day passed. To measure elapsed time, diff a smaller unit."
+    },
+    {
+      "subtopic": "Legacy DATETIME rounding",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the result of `CAST('2026-06-19 23:59:59.999' AS DATETIME)`?",
+      "code": "SELECT CAST('2026-06-19 23:59:59.999' AS DATETIME) AS Legacy;",
+      "lang": "sql",
+      "options": [
+        "`2026-06-20 00:00:00.000` — `DATETIME` rounds to ~3.33 ms increments, so `.999` rounds up into the next day",
+        "`2026-06-19 23:59:59.999` — `DATETIME` stores millisecond values exactly",
+        "An error — `.999` is not a valid millisecond value for `DATETIME`",
+        "`2026-06-19 23:59:59.997` — `.999` is truncated down to the nearest 3.33 ms tick"
+      ],
+      "answer": 0,
+      "explanation": "`DATETIME` rounds time to ~3.33 ms increments, so `.999` rounds up to the next second, rolling over to `2026-06-20 00:00:00.000`. `DATETIME2` would store `.999` exactly, which is one reason it is preferred."
+    },
+    {
+      "subtopic": "ISNULL vs COALESCE result type",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What do these two expressions return, and what causes the difference?",
+      "code": "SELECT ISNULL(CAST(NULL AS VARCHAR(2)), 'LongValue')   AS Isn,\n       COALESCE(CAST(NULL AS VARCHAR(2)), 'LongValue') AS Coa;",
+      "lang": "sql",
+      "options": [
+        "`'Lo'` and `'LongValue'` — `ISNULL` takes its result type from the first argument and truncates; `COALESCE` widens by precedence",
+        "`'LongValue'` and `'Lo'` — `COALESCE` truncates to the first argument's type while `ISNULL` widens",
+        "`'LongValue'` and `'LongValue'` — both widen the result to fit the replacement value",
+        "`'Lo'` and `'Lo'` — both inherit the `VARCHAR(2)` type of the first argument"
+      ],
+      "answer": 0,
+      "explanation": "`ISNULL`'s result type follows its first argument (`VARCHAR(2)`), so the replacement is truncated to `'Lo'`. `COALESCE` types by data-type precedence across all arguments, widening to fit `'LongValue'`. This is a classic trap when migrating between the two."
+    },
+    {
+      "subtopic": "Divide-by-zero guard",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the effect of writing `Revenue / NULLIF(OrderCount, 0)` instead of `Revenue / OrderCount`?",
+      "options": [
+        "When `OrderCount` is `0`, the expression returns `NULL` instead of raising a divide-by-zero error",
+        "It rounds the quotient to the nearest integer to avoid fractional results",
+        "It replaces a zero `OrderCount` with `1` so the division always succeeds",
+        "It forces the division to use exact decimal arithmetic rather than integer division"
+      ],
+      "answer": 0,
+      "explanation": "`NULLIF(OrderCount, 0)` returns `NULL` when `OrderCount` equals `0`, and dividing by `NULL` yields `NULL` rather than raising a divide-by-zero error. It does not substitute `1` or change the arithmetic type."
+    },
+    {
+      "subtopic": "Computed columns and SARGability",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about making `WHERE YEAR(OrderDate) = 2026` seekable on a date column are correct?",
+      "options": [
+        "Rewriting it as `OrderDate >= '2026-01-01' AND OrderDate < '2027-01-01'` keeps the column bare and is SARGable",
+        "Adding a `PERSISTED` computed column `OrderYear AS (YEAR(OrderDate))` and indexing it lets equality on `OrderYear` seek",
+        "Wrapping `OrderDate` in `YEAR()` in the predicate is non-SARGable and forces a scan",
+        "Creating an index directly on `OrderDate` automatically makes the `YEAR(OrderDate)` predicate seekable without rewriting",
+        "Casting `OrderDate` to `VARCHAR` and comparing the string `'2026'` is the preferred SARGable approach"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "A bare-column half-open range and an indexed persisted computed column over `YEAR(OrderDate)` are both SARGable solutions, and wrapping the column in `YEAR()` is non-SARGable. An index on the raw column does not help while the function still wraps it, and casting to `VARCHAR` only adds another non-SARGable conversion."
+    },
+    {
+      "subtopic": "Data-type precedence in expressions",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does `SELECT 5 + '10'` return `15` while `SELECT 5 + 'ten'` raises a conversion error?",
+      "code": "SELECT 5 + '10';   -- 15\nSELECT 5 + 'ten';  -- error",
+      "lang": "sql",
+      "options": [
+        "`int` outranks `varchar` in precedence, so the string is converted to `int`; `'10'` converts cleanly but `'ten'` cannot",
+        "`+` is overloaded as string concatenation, so `'10'` concatenates but `'ten'` is rejected as non-numeric",
+        "The literal `5` is converted to a string in both cases; `'ten'` fails because the result exceeds the column width",
+        "`varchar` outranks `int`, so `5` is converted to a string and `'ten'` simply produces `'5ten'` without error"
+      ],
+      "answer": 0,
+      "explanation": "Data-type precedence places `int` above `varchar`, so the lower-precedence string operand is implicitly converted to `int`. `'10'` converts to the number 10 (giving 15), but `'ten'` is not numeric and the conversion fails with an error. `+` here is arithmetic addition, not concatenation, because one operand is numeric."
+    },
+    {
+      "subtopic": "COALESCE re-evaluation risk",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `ISNULL` versus `COALESCE` are correct?",
+      "options": [
+        "`COALESCE` is ANSI-standard and variadic; `ISNULL` is T-SQL-specific and takes exactly two arguments",
+        "`COALESCE` expands to a `CASE` expression, so a subquery argument can be evaluated more than once",
+        "`COALESCE` determines its result type by data-type precedence across all arguments",
+        "`ISNULL` determines its result type by precedence across both arguments, like `COALESCE`",
+        "`COALESCE` returns the last non-NULL value in its argument list"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "`COALESCE` is ANSI, variadic, types by precedence across all arguments, and expands to `CASE` (so a subquery argument may be evaluated multiple times). `ISNULL` is T-SQL, two-argument, and its result type follows the first argument, not precedence. `COALESCE` returns the first non-NULL value, not the last."
+    },
+    {
+      "subtopic": "VARCHAR(MAX) indexing limits",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which statement about `NVARCHAR(MAX)` columns is correct?",
+      "options": [
+        "They hold up to 2 GB in LOB storage and cannot be an index key column, only `INCLUDE`d",
+        "They are limited to 4000 characters and can serve as a clustered index key",
+        "They store data in-row only and therefore can be used as a non-clustered index key",
+        "They hold up to 2 GB but, like all string types, can be a unique index key column"
+      ],
+      "answer": 0,
+      "explanation": "`NVARCHAR(MAX)` holds up to 2 GB using LOB storage, exceeding the in-row limits, and cannot be used as an index key column — it can only be added to an index via `INCLUDE`. The other options misstate both its size and its key eligibility."
+    },
+    {
+      "subtopic": "GUID clustered key fragmentation",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team uses a random `UNIQUEIDENTIFIER` generated by `NEWID()` as the clustered primary key and observes heavy page splits and fragmentation. What best explains this and the mitigation?",
+      "options": [
+        "Random GUIDs scatter inserts across the B-tree; use `NEWSEQUENTIALID()` or keep the GUID non-clustered with a separate ever-increasing clustering key",
+        "GUIDs are 16 bytes so the index pages overflow; switching to `NEWSEQUENTIALID()` halves the key size",
+        "`NEWID()` values collide frequently, forcing splits; adding a `UNIQUE` constraint removes the duplicates",
+        "Clustered indexes cannot store GUIDs at all; convert the key to `VARBINARY(16)` to fix the splits"
+      ],
+      "answer": 0,
+      "explanation": "Random `NEWID()` values insert at arbitrary points in the clustered B-tree, scattering writes and causing page splits and fragmentation. `NEWSEQUENTIALID()` produces increasing values that append cleanly, or you can keep the GUID non-clustered alongside an ever-increasing clustering key. GUID size is unchanged by `NEWSEQUENTIALID()`, collisions are not the issue, and GUIDs can be clustered keys."
+    },
+    {
+      "subtopic": "FORMAT vs CONVERT performance",
+      "source": "sql/data-types-and-built-in-functions-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "For formatting a date column to a string across millions of rows, `FORMAT(dt, 'yyyy-MM-dd')` is generally faster than `CONVERT(VARCHAR(10), dt, 23)` because it compiles the mask once.",
+      "answer": false,
+      "explanation": "It is the opposite: `FORMAT` relies on .NET CLR/globalization and incurs per-call overhead, making it a real bottleneck at scale, whereas `CONVERT` with a fixed style code is much faster. Prefer `CONVERT` styles for dates when performance matters."
+    }
+  ]
+}

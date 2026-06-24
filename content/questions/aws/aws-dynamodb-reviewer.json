@@ -1,0 +1,265 @@
+{
+  "topic": "aws",
+  "source": "aws/aws-dynamodb-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Composite primary key",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In a table with a **composite primary key** (partition key + sort key), what uniquely identifies an item?",
+      "options": [
+        "The combination of partition key and sort key together",
+        "The partition key alone, which must be globally unique",
+        "The sort key alone, since it orders items",
+        "Any attribute marked as unique in the schema"
+      ],
+      "answer": 0,
+      "explanation": "With a composite key, the (partition key, sort key) pair must be unique; many items can share a partition key as long as their sort keys differ. The partition key alone is not unique in a composite-key table."
+    },
+    {
+      "subtopic": "Item size limit",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the maximum size of a single DynamoDB item, and how should you handle data larger than that?",
+      "options": [
+        "400 KB including attribute names and values; store large blobs in S3 and keep a pointer in the item",
+        "1 MB including names and values; compress the item to fit",
+        "400 KB excluding attribute names; split the item across multiple tables",
+        "16 MB to match the batch limit; no special handling is needed"
+      ],
+      "answer": 0,
+      "explanation": "The item-size cap is 400 KB counting both attribute names and values. The standard pattern for larger payloads is to store the blob in S3 and keep only a pointer in DynamoDB."
+    },
+    {
+      "subtopic": "Query vs Scan",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A `FilterExpression` reduces the read capacity (RCUs) consumed by a `Scan` because items that fail the filter are never read.",
+      "answer": false,
+      "explanation": "False. A `FilterExpression` is applied *after* the read, so you pay RCUs for every item scanned, not just those returned. Only `KeyConditionExpression` on a `Query` actually limits what is read."
+    },
+    {
+      "subtopic": "Read consistency on GSIs",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which read consistency options are available when reading from a **Global Secondary Index (GSI)**?",
+      "options": [
+        "Eventually consistent only",
+        "Strongly consistent only",
+        "Both eventual and strong, like the base table",
+        "Strong reads, but only within the same Availability Zone"
+      ],
+      "answer": 0,
+      "explanation": "GSIs support eventually consistent reads only; strongly consistent reads are not available on a GSI. Only the base table and LSIs can serve strongly consistent reads."
+    },
+    {
+      "subtopic": "TTL behavior",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How does DynamoDB **TTL** decide when to delete an item, and how timely is the deletion?",
+      "options": [
+        "It reads a numeric attribute holding a Unix epoch timestamp in seconds; deletion is asynchronous and best-effort, often within a few days of expiry",
+        "It reads an ISO-8601 string attribute and deletes the item at the exact expiry second",
+        "It deletes items when a query encounters them past their expiry time",
+        "It uses the item's last-modified system timestamp and deletes synchronously on the next write"
+      ],
+      "answer": 0,
+      "explanation": "TTL uses a designated numeric attribute holding an epoch-seconds timestamp. Deletion is asynchronous and best-effort (typically within a few days), so you should still filter expired-but-not-yet-deleted items if precise expiry matters."
+    },
+    {
+      "subtopic": "LSI vs GSI trade-offs",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about **Local Secondary Indexes (LSIs)** are correct? (Select all that apply.)",
+      "options": [
+        "An LSI must be created at the same time as the table and cannot be added later",
+        "An LSI shares the base table's provisioned throughput",
+        "An LSI can be queried with strongly consistent reads",
+        "An LSI can use a partition key different from the base table",
+        "An LSI has its own capacity, separate from the base table"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "LSIs are table-creation-only, share the base table's capacity, and uniquely support strongly consistent reads. They keep the *same* partition key as the base table (only the sort key differs), so the options about a different partition key and separate capacity describe GSIs, not LSIs."
+    },
+    {
+      "subtopic": "Hot partitions",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A table uses `country` as its partition key and most traffic is `US`. Despite generous provisioned throughput, writes still throttle. What is the root cause and best fix?",
+      "options": [
+        "The partition key is low-cardinality, so traffic concentrates on one hot partition; fix it with a high-cardinality key or by write-sharding the hot value",
+        "The table is under-provisioned overall; raise the table's total WCUs until throttling stops",
+        "Eventually consistent reads are interfering with writes; switch all reads to strongly consistent",
+        "The sort key is missing; add a sort key so writes spread across partitions"
+      ],
+      "answer": 0,
+      "explanation": "Low cardinality funnels nearly all traffic to the `US` partition, creating a hot partition that throttles even though the table looks under-utilized. The cure is a high-cardinality, evenly-accessed key, or write-sharding the hot value (`US#<0..N>`). Raising total capacity does not help because the limit is per-partition."
+    },
+    {
+      "subtopic": "Capacity unit math",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Your workload performs 100 **eventually consistent** reads per second of 8 KB items. Approximately how many RCUs does this require?",
+      "options": [
+        "100 RCU",
+        "200 RCU",
+        "50 RCU",
+        "400 RCU"
+      ],
+      "answer": 0,
+      "explanation": "One RCU = a strongly consistent read up to 4 KB. An 8 KB item needs 2 read units strong, halved for eventual = 1 RCU per read; 100 reads/sec x 2 x 0.5 = 100 RCU."
+    },
+    {
+      "subtopic": "GSI throttling base writes",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In provisioned-capacity mode, an under-provisioned GSI can cause writes to the **base table** to be throttled.",
+      "answer": true,
+      "explanation": "True. A GSI write is applied asynchronously and consumes the GSI's own WCUs; if the GSI is under-provisioned its backlog can throttle base-table writes in provisioned mode. On-demand capacity sidesteps this."
+    },
+    {
+      "subtopic": "Transactions vs conditional writes",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When should you choose `TransactWriteItems` over a single conditional write?",
+      "options": [
+        "When an invariant spans multiple items or tables and you need all-or-nothing serializable semantics",
+        "Whenever you write any item, since transactions are always cheaper than conditional writes",
+        "When you need to read your own write immediately on the base table",
+        "When you want to atomically increment a single counter on one item"
+      ],
+      "answer": 0,
+      "explanation": "Transactions exist for multi-item/multi-table invariants (e.g., debit one account and credit another) with all-or-nothing serializable isolation. For a single item, a conditional write is atomic, cheaper (1x vs 2x capacity), and sufficient."
+    },
+    {
+      "subtopic": "Streams view type",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You are building a CDC pipeline that must compute a diff (what changed) for each item update and write an audit record. Which DynamoDB Streams `StreamViewType` do you need?",
+      "options": [
+        "`NEW_AND_OLD_IMAGES`",
+        "`KEYS_ONLY`",
+        "`NEW_IMAGE`",
+        "`OLD_IMAGE`"
+      ],
+      "answer": 0,
+      "explanation": "To diff an update you need both the before and after states, which is exactly what `NEW_AND_OLD_IMAGES` provides. `NEW_IMAGE` or `OLD_IMAGE` alone gives only one side, and `KEYS_ONLY` gives just the key attributes."
+    },
+    {
+      "subtopic": "Query code reading",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this .NET `QueryRequest`, what does it return and how is it ordered?",
+      "code": "var request = new QueryRequest\n{\n    TableName = \"Orders\",\n    KeyConditionExpression = \"PK = :pk AND begins_with(SK, :prefix)\",\n    ExpressionAttributeValues = new Dictionary<string, AttributeValue>\n    {\n        [\":pk\"]     = new AttributeValue(\"CUSTOMER#42\"),\n        [\":prefix\"] = new AttributeValue(\"ORDER#2026\")\n    },\n    ScanIndexForward = false,\n    ConsistentRead   = false\n};",
+      "lang": "csharp",
+      "options": [
+        "Items for `CUSTOMER#42` whose sort key begins with `ORDER#2026`, returned in descending sort-key order, with eventually consistent reads",
+        "All items in the `Orders` table whose sort key begins with `ORDER#2026`, in ascending order, strongly consistent",
+        "Items for `CUSTOMER#42` with any sort key, in ascending order, strongly consistent",
+        "Items for `CUSTOMER#42` whose sort key begins with `ORDER#2026`, in ascending order, eventually consistent"
+      ],
+      "answer": 0,
+      "explanation": "The key condition restricts to partition key `CUSTOMER#42` and sort keys beginning with `ORDER#2026`. `ScanIndexForward = false` returns results in descending sort-key order, and `ConsistentRead = false` means eventually consistent (half the RCU cost)."
+    },
+    {
+      "subtopic": "Optimistic locking",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about conditional writes and optimistic locking in DynamoDB are correct? (Select all that apply.)",
+      "options": [
+        "A conditional write performs its check and apply atomically as a single operation",
+        "`attribute_not_exists(PK)` is the idiom for an idempotent create that never overwrites an existing item",
+        "The .NET Object Persistence model adds the version condition automatically when you use `[DynamoDBVersion]`",
+        "An atomic counter via `SET n = n + :inc` is idempotent and safe to replay on retry",
+        "A failed condition silently writes nothing and returns success"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Conditional writes are atomic check-and-apply; `attribute_not_exists` guards uniqueness; and `[DynamoDBVersion]` automates the version condition. Atomic counters are NOT idempotent on retry, and a failed condition throws `ConditionalCheckFailedException` rather than returning success."
+    },
+    {
+      "subtopic": "Conditional create code reading",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `PutItem` includes `ConditionExpression=\"attribute_not_exists(PK)\"`. A second request arrives for an item whose `PK` already exists. What happens?",
+      "code": "PutItem(Item={PK: \"USER#alice\", ...},\n        ConditionExpression=\"attribute_not_exists(PK)\")",
+      "lang": "text",
+      "options": [
+        "No write occurs and DynamoDB throws `ConditionalCheckFailedException`",
+        "The existing item is overwritten because PutItem always replaces",
+        "The new attributes are merged into the existing item",
+        "The write succeeds but is silently ignored with no error"
+      ],
+      "answer": 0,
+      "explanation": "The condition fails because an item with that `PK` already exists, so DynamoDB performs no write and throws `ConditionalCheckFailedException`. The caller treats this as 'username taken' — the idempotent uniqueness-guard pattern."
+    },
+    {
+      "subtopic": "Global Tables conflict resolution",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two regions of a Global Table both write to the *same* item at nearly the same time. What is the result, and what is the correct design response?",
+      "options": [
+        "Last-writer-wins by timestamp resolves it, so one update can be silently dropped; design so different regions own different keys or accept the loss",
+        "DynamoDB merges the two writes attribute-by-attribute so no data is lost",
+        "The second write is rejected with a conflict error that the application must retry",
+        "A quorum across regions blocks the write until all replicas agree, guaranteeing serializability"
+      ],
+      "answer": 0,
+      "explanation": "Global Tables use last-writer-wins by timestamp, which is not true conflict reconciliation — a concurrent same-item cross-region write can be dropped. The senior design response is to partition key ownership by region or accept that one update may be lost."
+    },
+    {
+      "subtopic": "DAX capabilities and limits",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about **DAX (DynamoDB Accelerator)** are correct? (Select all that apply.)",
+      "options": [
+        "It is API-compatible with the DynamoDB SDK, so it works as a near drop-in for reads",
+        "Cached reads are eventually consistent; strongly consistent reads pass through to DynamoDB",
+        "It significantly accelerates write-heavy workloads by buffering writes",
+        "It serves cached reads in microseconds for read-heavy or bursty workloads",
+        "Unlike a general cache such as Redis, it does not require you to write cache-aside code"
+      ],
+      "answer": [0, 1, 3, 4],
+      "explanation": "DAX is an API-compatible, write-through, in-VPC cache that drops cached reads to microseconds and needs no cache-aside code. Cached reads are eventually consistent (strong reads pass through). It does NOT help write-heavy or strongly-consistent-read workloads — that option is the false one."
+    },
+    {
+      "subtopic": "PartiQL pitfall",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Because PartiQL is SQL-compatible, writing a `SELECT` without a key condition lets DynamoDB plan an efficient indexed lookup instead of a full scan.",
+      "answer": false,
+      "explanation": "False. PartiQL does not remove the need to think about keys: a `SELECT` without a key condition becomes a `Scan` and reads the whole table/index. Familiar SQL syntax does not give you a query planner that invents indexes."
+    },
+    {
+      "subtopic": "Strong reads and read-your-write",
+      "source": "aws/aws-dynamodb-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A service writes an item to the base table, then immediately reads it back via a **GSI** and intermittently gets stale data. Why, and what is the most appropriate fix?",
+      "options": [
+        "GSIs are eventually consistent and updated asynchronously, so read the base table with a strongly consistent read for read-your-write correctness",
+        "The strongly consistent read on the GSI was misconfigured; enable `ConsistentRead = true` on the GSI query",
+        "The base-table write was not durable; wrap the write in a transaction to force durability",
+        "Adaptive capacity delayed the write; increase the table's provisioned WCUs to remove the lag"
+      ],
+      "answer": 0,
+      "explanation": "GSIs are eventually consistent and propagated asynchronously, so a read-after-write against a GSI can be stale. Strong reads are not available on GSIs; for read-your-write you must read the base table with `ConsistentRead = true`. Base-table writes are already durable and replicated synchronously across AZs."
+    }
+  ]
+}

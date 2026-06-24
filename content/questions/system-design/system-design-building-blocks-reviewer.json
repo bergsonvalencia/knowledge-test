@@ -1,0 +1,267 @@
+{
+  "topic": "system-design",
+  "source": "system-design/system-design-building-blocks-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Request anatomy",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the standard large-scale request path, where are reads and writes directed once database replication (read/write split) is in place?",
+      "options": [
+        "Writes go to the primary; reads are served from read replicas",
+        "Writes go to read replicas; reads go to the primary",
+        "Both reads and writes are spread evenly across all replicas",
+        "Writes go to the cache; reads go to the primary"
+      ],
+      "answer": 0,
+      "explanation": "Writes land on the single primary and reads are routed to replicas, which is what scales read-heavy workloads. Replicas cannot accept writes, and the cache is not the write target of record."
+    },
+    {
+      "subtopic": "Scale-from-zero ladder",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For a read-heavy system whose database is saturated, what is described as the highest-leverage first scaling move?",
+      "options": [
+        "Add a cache (e.g. Redis) to serve hot reads",
+        "Shard the database immediately",
+        "Add more stateless web servers behind the load balancer",
+        "Move to a multi-region active-active deployment"
+      ],
+      "answer": 0,
+      "explanation": "A cache removes read load before it reaches the database, the highest-leverage move for read-heavy systems. Adding web nodes does nothing for a DB bottleneck, and sharding is the big, hard last step."
+    },
+    {
+      "subtopic": "Replicas vs sharding",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does sharding (partitioning rows across nodes by key) primarily scale that read replicas do not?",
+      "options": [
+        "Write throughput and total storage capacity",
+        "Read throughput only",
+        "Network bandwidth to the CDN",
+        "Cache hit ratio"
+      ],
+      "answer": 0,
+      "explanation": "Sharding is the step that finally scales writes and storage because rows are split across nodes. Replicas only scale reads since every write still hits the single primary."
+    },
+    {
+      "subtopic": "Object storage",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the standard pattern for storing and serving a user-uploaded profile video?",
+      "options": [
+        "Store the bytes in object storage, keep a pointer plus metadata in the database, and serve via a CDN",
+        "Store the video bytes as a BLOB column in the relational database and serve them directly from the app tier",
+        "Store the bytes in Redis and serve them from the cache on every request",
+        "Store the bytes in the search index and query it for the video"
+      ],
+      "answer": 0,
+      "explanation": "Large immutable binaries belong in object storage with a pointer/metadata row in the DB, served through a CDN. Putting big binaries in the relational DB bloats backups and the buffer cache; Redis and the search index are the wrong tools."
+    },
+    {
+      "subtopic": "Latency numbers",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A round trip across the world (e.g. California to Europe) is roughly 150 ms, a floor set by the speed of light that more money cannot buy away.",
+      "answer": true,
+      "explanation": "The reviewer lists ~150 ms for a cross-world round trip as a speed-of-light floor. This is why caches, CDNs, and multi-region deployments exist."
+    },
+    {
+      "subtopic": "Caching layers",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Data can be cached at many hops between the user and disk. What is the core correctness rule as you push caching further from the source of truth (toward the user)?",
+      "options": [
+        "The data can be staler and invalidation gets harder, so personalized/sensitive data must be marked private/no-store",
+        "The data is always fresher because it is closer to the user",
+        "Invalidation becomes trivial because each layer auto-expires on write",
+        "Shared layers may safely cache personalized responses since they sit near the user"
+      ],
+      "answer": 0,
+      "explanation": "The further from the source of truth, the staler data can be and the harder invalidation gets; personalized or sensitive responses must be marked private/no-store so a shared layer never caches them. Caching closer to the user trades freshness for speed, it does not improve freshness."
+    },
+    {
+      "subtopic": "Consistent hashing",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is consistent hashing preferred over `node = hash(key) % N` for distributing keys across cache or shard nodes?",
+      "options": [
+        "Changing N remaps almost every key under modulo, while consistent hashing moves only about K/N keys (one arc)",
+        "Modulo hashing cannot distribute keys evenly, while consistent hashing always achieves a perfectly even split with no extra work",
+        "Consistent hashing eliminates hash collisions entirely",
+        "Consistent hashing lets every node own exactly the same keys, removing the need for replication"
+      ],
+      "answer": 0,
+      "explanation": "Under modulo, changing N reshuffles nearly all keys, causing a cache-miss storm or full reshuffle; consistent hashing moves only one arc (~K/N). Even load actually comes from virtual nodes, not the ring alone, and collisions are not what it solves."
+    },
+    {
+      "subtopic": "Consistent hashing — virtual nodes",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Mapping each physical node to many positions on the ring (virtual nodes) evens out load and, when a node is lost, spreads its keys across all surviving nodes rather than dumping them onto a single neighbor.",
+      "answer": true,
+      "explanation": "Virtual nodes place each physical node at many ring spots, which balances load and ensures a lost node's keys spread across all survivors instead of overloading one clockwise neighbor."
+    },
+    {
+      "subtopic": "Communication patterns",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need to push one-way, server-to-client notification and live-score updates over a single long-lived HTTP connection. Which pattern fits best?",
+      "options": [
+        "Server-Sent Events (SSE)",
+        "WebSocket",
+        "Short polling",
+        "Webhook"
+      ],
+      "answer": 0,
+      "explanation": "SSE streams events server-to-client over one long-lived HTTP response, ideal for one-way push feeds. WebSocket is full-duplex (overkill for one-way), short polling wastes requests, and a webhook is server-to-server."
+    },
+    {
+      "subtopic": "Stateful connection scaling",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does a multi-node deployment of WebSocket/SSE servers need a pub/sub backplane (e.g. Redis)?",
+      "options": [
+        "Connections are stateful and pinned to one node, so an event produced on node A must reach a client connected to node B",
+        "WebSockets require sticky sessions at the DNS layer, which only a backplane can provide",
+        "The backplane is needed to terminate TLS for each persistent connection",
+        "A backplane is the only way to compress the event payloads sent to clients"
+      ],
+      "answer": 0,
+      "explanation": "Because each persistent connection lives on one node, an event originating on node A won't reach a client attached to node B without a shared pub/sub backplane to fan the event across nodes. TLS termination, compression, and DNS stickiness are unrelated to that fan-out problem."
+    },
+    {
+      "subtopic": "Geospatial indexing",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When answering a geohash-based \"find nearby\" query, why must you also scan the query point's eight neighbor cells rather than only its own cell prefix?",
+      "options": [
+        "Two physically close points can sit just across a cell boundary and share no prefix",
+        "Geohash prefixes are not actually sortable, so neighbors are needed to sort results",
+        "Each cell stores only one point, so neighbors are required to find more than one match",
+        "Neighbor cells are needed to convert the geohash back into latitude and longitude"
+      ],
+      "answer": 0,
+      "explanation": "Real-world proximity can straddle a cell boundary where the keys diverge, so a point just across the border shares no prefix; including the eight neighbor cells catches those. Geohash prefixes are sortable and cells hold many points, so the other options are false."
+    },
+    {
+      "subtopic": "Batch vs stream processing",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements correctly contrast Lambda and Kappa architectures? Select all that apply.",
+      "options": [
+        "Lambda runs an accurate batch layer alongside a fast, approximate speed layer and merges them in a serving layer",
+        "Kappa uses a single replayable stream and reprocesses by replaying the log from the start",
+        "A drawback of Lambda is maintaining two separate code paths",
+        "Kappa requires maintaining two code paths, one batch and one stream, just like Lambda",
+        "MapReduce and Spark are stream engines, while Flink and Kafka Streams are batch engines"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Lambda merges a batch and a speed layer (two code paths, its main drawback); Kappa keeps one replayable stream and reprocesses by replaying. Kappa's whole point is avoiding the second code path, and MapReduce/Spark are batch while Flink/Kafka Streams are stream, so the last two are wrong."
+    },
+    {
+      "subtopic": "Queue trade-offs",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Decoupling slow work with a message queue and async workers buys load leveling, but at what cost? Select all that apply.",
+      "options": [
+        "Eventual consistency — the result isn't ready when the call returns",
+        "At-least-once delivery, so workers must be idempotent",
+        "Strong, immediate consistency of the worker's result for the caller",
+        "Guaranteed exactly-once delivery with no idempotency concerns"
+      ],
+      "answer": [0, 1],
+      "explanation": "Queues introduce eventual consistency (the work finishes after the 202 response) and typically at-least-once delivery, which forces workers to be idempotent. The queue does not give immediate strong consistency, and exactly-once is not guaranteed by the broker."
+    },
+    {
+      "subtopic": "Availability — operational nines",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Past three nines, where does most downtime come from, and what mainly buys the higher nines?",
+      "options": [
+        "Mostly deploys, config errors, and human mistakes — bought with automation, canary/rollback, and observability",
+        "Mostly disk and CPU hardware failures — bought with more redundant servers",
+        "Mostly network packet loss — bought with a faster CDN",
+        "Mostly DNS propagation delays — bought with shorter TTLs"
+      ],
+      "answer": 0,
+      "explanation": "Beyond three nines downtime is dominated by deploys, config changes, and human error, so progress comes from automation, canary/rollback, and observability rather than more hardware. The expensive nines are operational, not architectural."
+    },
+    {
+      "subtopic": "Redundancy and independence",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two replicas each 99% available are claimed to give `1 − 0.01² = 99.99%` combined. What is the key caveat that makes this number optimistic in practice?",
+      "options": [
+        "It holds only if the failures are truly independent, but shared dependencies and correlated outages mean they rarely are",
+        "It holds only if both replicas are in the same availability zone",
+        "It assumes the replicas are read-only, which lowers real availability",
+        "It double-counts the primary, so the real figure is closer to 99%"
+      ],
+      "answer": 0,
+      "explanation": "Redundancy multiplies failure probabilities only when failures are independent; shared dependencies and correlated outages break that assumption, so 99.99% is optimistic. The formula itself is correct under independence, not invalidated by zones, read-only status, or double-counting."
+    },
+    {
+      "subtopic": "Change Data Capture",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "How does Change Data Capture (CDC) keep a search index or cache in sync with the database, and what problem does it avoid?",
+      "options": [
+        "It tails the database write-ahead log and emits one event per row change, avoiding application-level dual-writes",
+        "It periodically runs a full table scan and diffs it against the index, avoiding the need for a write-ahead log",
+        "It writes synchronously to both the DB and the index in one distributed transaction, avoiding eventual consistency",
+        "It has the application publish events before committing, avoiding the write-ahead log entirely"
+      ],
+      "answer": 0,
+      "explanation": "CDC tails the DB's write-ahead log and emits an event per row change, the log-based alternative to dual-writes from the application. It is not a full-scan diff, not a synchronous distributed transaction, and the application-level before-commit publish describes the outbox pattern, not CDC."
+    },
+    {
+      "subtopic": "Bloom filter behavior",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given this Bloom filter check, which statement about its return values is correct?",
+      "code": "def might_contain(item, bits, hashes):\n    for h in hashes:               # k hash functions\n        if bits[h(item) % len(bits)] == 0:\n            return False           # a zero bit is a hard NO\n    return True                    # all bits set\n",
+      "lang": "python",
+      "options": [
+        "A `False` is always correct (no false negatives); a `True` may be a false positive",
+        "A `True` is always correct; a `False` may be a false negative",
+        "Both `True` and `False` can be wrong, so the result is only a hint",
+        "Neither result can ever be wrong because the hashes are deterministic"
+      ],
+      "answer": 0,
+      "explanation": "If any bit is 0 the item was definitely never added, so `False` is always correct (no false negatives). When all bits are 1 the item is only probably present, because bits shared across items cause false positives, so `True` can be wrong."
+    },
+    {
+      "subtopic": "Replication lag",
+      "source": "system-design/system-design-building-blocks-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A user updates their profile (write to the primary) and the page immediately re-reads it from a read replica, but sees the old value. What is the root cause?",
+      "options": [
+        "Asynchronous replication lag means a read right after a write can be stale (a read-your-own-writes problem)",
+        "The replica rejected the write because replicas are read-only, so the value was never saved",
+        "The cache returned a stale entry because TTLs do not apply to profile data",
+        "Consistent hashing routed the read to the wrong shard, losing the write"
+      ],
+      "answer": 0,
+      "explanation": "Replicas are updated by asynchronous replication, so a read issued immediately after a write can hit a replica that has not yet applied the change — the classic read-your-own-writes staleness. The write did succeed on the primary; this is lag, not a rejected write, a cache TTL, or a shard-routing error."
+    }
+  ]
+}

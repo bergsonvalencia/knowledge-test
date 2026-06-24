@@ -1,0 +1,270 @@
+{
+  "topic": "angular",
+  "source": "angular/03-control-flow-and-directives.md",
+  "questions": [
+    {
+      "subtopic": "@for track requirement",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In Angular's built-in `@for` block, what is true about the `track` expression?",
+      "options": [
+        "It is mandatory; the compiler errors (NG5002) if you omit it",
+        "It is optional and defaults to `track $index`",
+        "It is only required when iterating over objects, not primitives",
+        "It was removed in v18 in favor of automatic identity diffing"
+      ],
+      "answer": 0,
+      "explanation": "Unlike the old optional `trackBy`, `@for` makes `track` mandatory and the compiler errors with NG5002 when it is missing, forcing a stable identity for each row."
+    },
+    {
+      "subtopic": "Built-in control flow imports",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Using `@if`, `@for`, and `@switch` requires importing `CommonModule` (or the equivalent directives) into the component's `imports`.",
+      "answer": false,
+      "explanation": "The built-in control flow is part of the template language itself, parsed directly by the compiler. There is nothing to import — `CommonModule` is no longer needed just for conditionals and loops."
+    },
+    {
+      "subtopic": "@switch semantics",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How does `@switch` / `@case` compare its value against each case?",
+      "options": [
+        "Strict `===` equality, with no fall-through between cases",
+        "Loose `==` equality, with fall-through until a `break`",
+        "Reference equality only, ignoring primitive values",
+        "Deep structural equality of the case object"
+      ],
+      "answer": 0,
+      "explanation": "`@switch` uses strict `===` comparison with no fall-through and no `break`; `@default` is optional. There is no loose comparison or fall-through behavior."
+    },
+    {
+      "subtopic": "@for contextual variables",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "easy",
+      "type": "multi",
+      "question": "Which of the following are implicit contextual variables available inside a `@for` block? (select all that apply)",
+      "options": [
+        "`$index`",
+        "`$count`",
+        "`$last`",
+        "`$key`",
+        "`$length`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`@for` exposes `$index`, `$count`, `$first`, `$last`, `$even`, and `$odd`. There is no `$key` or `$length` contextual variable."
+    },
+    {
+      "subtopic": "Attribute vs structural directives",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What distinguishes an **attribute** directive from a **structural** directive?",
+      "options": [
+        "An attribute directive changes appearance/behavior of an existing element but does not add or remove DOM",
+        "An attribute directive can only set inline styles, never listen to events",
+        "An attribute directive must always inject `TemplateRef` and `ViewContainerRef`",
+        "An attribute directive is applied via an element selector rather than an attribute selector"
+      ],
+      "answer": 0,
+      "explanation": "An attribute directive changes the appearance or behavior of an existing element/component/directive without adding or removing DOM — that is the job of a structural directive, which injects `TemplateRef`/`ViewContainerRef`."
+    },
+    {
+      "subtopic": "@for track choice",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You render a list of primitive strings that have no stable id. Which `track` expression is the appropriate choice?",
+      "options": [
+        "`track $index`",
+        "`track item.id`",
+        "`track Math.random()`",
+        "`track $count`"
+      ],
+      "answer": 0,
+      "explanation": "For primitives with no id, `track $index` is the recommended identity. `item.id` does not exist on a primitive, and an unstable value like `Math.random()` defeats reuse by changing identity every render."
+    },
+    {
+      "subtopic": "control-flow migration default",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When the control-flow migration schematic converts a `*ngFor` that had **no** `trackBy`, what does it use as the `track` expression?",
+      "options": [
+        "`track item` — the loop variable itself, which you should review and refine afterward",
+        "`track $index` automatically, which is always optimal",
+        "It leaves `track` off and emits a TODO comment",
+        "It infers `item.id` by inspecting the item's type"
+      ],
+      "answer": 0,
+      "explanation": "The schematic defaults to `track item` (the loop variable itself) when no `trackBy` existed, and the docs advise reviewing and refining it afterward since the loop variable may not be the best identity."
+    },
+    {
+      "subtopic": "@defer dependency constraints",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "For a component used inside a `@defer` block to actually be code-split into its own lazy chunk, which conditions must hold? (select all that apply)",
+      "options": [
+        "The component must be standalone",
+        "It must not be referenced elsewhere in the same file",
+        "It must be registered in an NgModule's `declarations`",
+        "It must be imported with a dynamic `import()` in the component class"
+      ],
+      "answer": [0, 1],
+      "explanation": "Deferred dependencies must be standalone and referenced solely inside the `@defer` block in that file; any eager reference forces them into the main bundle. Non-standalone deps cannot be deferred, and `@defer` handles the dynamic import for you."
+    },
+    {
+      "subtopic": "@defer prefetch",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `prefetch on idle` accomplish in a `@defer` block whose main trigger is `on viewport`?",
+      "options": [
+        "Downloads the chunk early during browser idle while still showing the placeholder until the viewport trigger fires",
+        "Renders the deferred content immediately on idle, ignoring the viewport trigger",
+        "Cancels the viewport trigger and loads only when idle",
+        "Keeps the `@loading` block visible for at least the idle period"
+      ],
+      "answer": 0,
+      "explanation": "`prefetch on …` decouples fetch from render: the chunk downloads early on its own trigger while the placeholder stays visible until the main (viewport) trigger fires. It does not render or replace the main trigger."
+    },
+    {
+      "subtopic": "@let reactivity and reassignment",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement correctly describes `@let` in a template?",
+      "options": [
+        "It is reactive and recomputes on change detection, but is read-only and cannot be reassigned",
+        "It is a one-time snapshot that never updates after first render",
+        "It can be reassigned later in the template like a mutable JavaScript variable",
+        "It is hoisted, so it can be referenced before its declaration"
+      ],
+      "answer": 0,
+      "explanation": "`@let` is reactive — it recomputes whenever its dependencies change — but it is read-only and cannot be reassigned. It is also not hoisted; referencing it before declaration is a compile error."
+    },
+    {
+      "subtopic": "@let async unwrapping",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is `@let user = user$ | async;` followed by reusing `user` across bindings preferred over repeating `user$ | async` in each binding?",
+      "options": [
+        "It subscribes to the stream only once instead of creating multiple subscriptions",
+        "It makes `user` mutable so child components can write back to the stream",
+        "It forces synchronous resolution of the observable before render",
+        "It bypasses change detection for the bound value"
+      ],
+      "answer": 0,
+      "explanation": "Aliasing the async result with `@let` subscribes a single time and reuses the value, whereas repeating `| async` would create a separate subscription per usage."
+    },
+    {
+      "subtopic": "Native bindings vs NgClass/NgStyle",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For toggling a single CSS class based on a boolean, which is the idiomatic modern approach?",
+      "options": [
+        "`[class.active]=\"isActive()\"` — a native binding requiring no import",
+        "`[ngClass]=\"{ active: isActive() }\"` — always preferred for single tokens",
+        "Injecting `ElementRef` and writing `classList.toggle` directly",
+        "Importing `CommonModule` and using `*ngClass`"
+      ],
+      "answer": 0,
+      "explanation": "For the single-token case, native `[class.x]` is built into the template compiler (no import) and is the idiomatic choice. `NgClass`/`NgStyle` are reserved for genuinely dynamic maps of names."
+    },
+    {
+      "subtopic": "host metadata vs decorators",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "The directive `host` metadata object (e.g. `host: { '(click)': 'onClick()' }`) and the `@HostListener`/`@HostBinding` decorators are functionally equivalent ways to wire host events and bindings.",
+      "answer": true,
+      "explanation": "The `host` object and the `@HostListener`/`@HostBinding` decorators are equivalent; the `host` object is the lint-preferred, more declarative form."
+    },
+    {
+      "subtopic": "structural directive desugaring",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given `<div *appUnless=\"cond\">`, what does the leading asterisk desugar to?",
+      "options": [
+        "`<ng-template appUnless [appUnless]=\"cond\"><div></div></ng-template>`",
+        "`<div [appUnless]=\"cond\"></div>` with no template wrapper",
+        "`<ng-container *appUnless=\"cond\"><div></div></ng-container>`",
+        "`<div appUnless=\"cond\"></div>` evaluated as a plain attribute string"
+      ],
+      "answer": 0,
+      "explanation": "The `*` is pure sugar: it wraps the host element in an `<ng-template>` carrying the directive and moves the microsyntax onto that template as bindings — `<ng-template appUnless [appUnless]=\"cond\"><div></div></ng-template>`."
+    },
+    {
+      "subtopic": "microsyntax to input names",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In `*ngFor=\"let x of items; trackBy: fn\"`, how are the `of` and `trackBy` microsyntax keys translated to directive inputs?",
+      "options": [
+        "They are PascalCased and prefixed with the selector, binding `ngForOf` and `ngForTrackBy`",
+        "They bind directly as `of` and `trackBy` inputs on `NgForOf`",
+        "They become context variables `$of` and `$trackBy` rather than inputs",
+        "They are merged into a single `ngFor` object input"
+      ],
+      "answer": 0,
+      "explanation": "Microsyntax keys are PascalCased and prefixed with the directive selector, so `of`/`trackBy` bind the inputs `ngForOf` and `ngForTrackBy`."
+    },
+    {
+      "subtopic": "ngTemplateOutlet context",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Reading the code, what will the rendered output be?",
+      "code": "<ng-container [ngTemplateOutlet]=\"row\"\n  [ngTemplateOutletContext]=\"{ $implicit: user() }\" />\n<ng-template #row let-u>{{ u.name }}</ng-template>",
+      "lang": "html",
+      "options": [
+        "The `name` of the object returned by `user()`, because `$implicit` binds to `let-u`",
+        "Nothing, because `let-u` must be written as `let-u=\"$implicit\"` to receive the value",
+        "The literal string `user()` since the context is not evaluated",
+        "A runtime error, because `ngTemplateOutlet` cannot pass a context object"
+      ],
+      "answer": 0,
+      "explanation": "The `$implicit` field of the context object surfaces as the bare `let-u`, so `{{ u.name }}` renders the name of the object returned by `user()`. Named (non-implicit) fields would require `let-x=\"key\"`."
+    },
+    {
+      "subtopic": "hostDirectives constraints and visibility",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about the Directive Composition API (`hostDirectives`) are correct? (select all that apply)",
+      "options": [
+        "Every host directive must be standalone; `standalone: false` is rejected at compile time",
+        "A composed directive's inputs/outputs are private by default and must be explicitly listed (and may be aliased) to expose them",
+        "Host directives initialize and run their host bindings before the host component, so the host can override them",
+        "Composed directives are applied by writing them in the component's template markup",
+        "Inputs and outputs of composed directives are automatically re-exposed on the host's public API"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Host directives must be standalone; their inputs/outputs are private unless explicitly listed (and optionally aliased); and they initialize/bind before the host so the host can override. They are applied from TypeScript, not markup, and are not auto-exposed."
+    },
+    {
+      "subtopic": "@let scope rules",
+      "source": "angular/03-control-flow-and-directives.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Reading the code, what happens at the marked line?",
+      "code": "@for (row of rows(); track row.id) {\n  @let label = row.qty + ' x ' + row.name;\n  <li>{{ label }}</li>\n}\n<p>{{ label }}</p>  <!-- marked line -->",
+      "lang": "html",
+      "options": [
+        "A compile error, because `label` is scoped to the `@for` view and is out of scope outside it",
+        "It renders the `label` of the last iteration, since `@let` leaks to the parent view",
+        "It renders an empty string, because `label` is undefined but valid outside the loop",
+        "It renders the `label` of the first iteration, which is hoisted to the parent"
+      ],
+      "answer": 0,
+      "explanation": "`@let` is lexically scoped to its declaring view and descendants only; it is not visible to the parent or sibling views. Referencing `label` outside the `@for` is a compile error, not a runtime empty value."
+    }
+  ]
+}

@@ -1,0 +1,277 @@
+{
+  "topic": "web",
+  "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "AuthN vs AuthZ",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the request lifecycle, which is true about the relationship between authentication (AuthN) and authorization (AuthZ)?",
+      "options": [
+        "Authorization always runs first, because you must know what is allowed before checking who is asking",
+        "Authentication runs first; authorization is a function of the already-established identity",
+        "They are evaluated simultaneously and are interchangeable",
+        "Authorization can succeed even when authentication has not, as long as the scope is present"
+      ],
+      "answer": 1,
+      "explanation": "Order is always AuthN then AuthZ: you cannot evaluate 'is this user an admin?' until you know who the user is and their claims. AuthZ is a function of identity, so it cannot precede or run without AuthN."
+    },
+    {
+      "subtopic": "401 vs 403",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A client presents an **expired** access token to an API. Which status code is correct, and what should the client do?",
+      "options": [
+        "403 Forbidden — the client lacks permission and should not retry",
+        "401 Unauthorized — identity can no longer be established, so the client should refresh and retry",
+        "403 Forbidden — the client should refresh the token and retry",
+        "400 Bad Request — the token is malformed and cannot be parsed"
+      ],
+      "answer": 1,
+      "explanation": "An expired token means identity can no longer be established, which is an authentication failure: 401. The correct client move is to refresh and retry; returning 403 misleads the client into thinking it is a permissions problem with nothing to retry."
+    },
+    {
+      "subtopic": "JWT format",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "A standard JWT (JWS Compact Serialization) is encrypted, so an attacker who steals the token cannot read its claims without the signing key.",
+      "answer": false,
+      "explanation": "A standard JWT is signed, not encrypted. base64url is trivially reversible encoding, so anyone holding the token can read every claim; the signature protects integrity, not confidentiality. Confidentiality would require JWE."
+    },
+    {
+      "subtopic": "OAuth2 vs OIDC",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does OpenID Connect add on top of OAuth2?",
+      "options": [
+        "An encryption layer that makes all access tokens confidential by default",
+        "A thin identity layer: the ID token, the `openid` scope, `/userinfo`, and identity-validation rules",
+        "A replacement for the Authorization Code flow that removes the need for PKCE",
+        "Mandatory mutual TLS between the client and the resource server"
+      ],
+      "answer": 1,
+      "explanation": "OIDC is a thin identity layer on top of OAuth2: it adds the ID token (a JWT about the user, for the client), the `openid` scope, the `/userinfo` endpoint, discovery, and identity-validation rules. OAuth2 alone is delegated authorization and says nothing reliable about who the user is."
+    },
+    {
+      "subtopic": "ID token vs access token",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes the ID token from the access token?",
+      "options": [
+        "The ID token's audience is the API and is sent on every call; the access token's audience is the client",
+        "The ID token's audience is the client and is consumed at sign-in; the access token's audience is the resource server and is the bearer credential sent to APIs",
+        "Both tokens have the same audience and are interchangeable as bearer credentials",
+        "The access token is always a JWT; the ID token may be opaque or a JWT"
+      ],
+      "answer": 1,
+      "explanation": "The ID token's audience is the client, consumed once at sign-in to start a session, and is not sent to APIs. The access token's audience is the resource server and is the bearer credential sent on every API call. The ID token is always a JWT; the access token may be opaque or JWT."
+    },
+    {
+      "subtopic": "Algorithm confusion attack",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An API expects RS256 tokens but uses a library that reads `alg` from the token header. How does the RS256-to-HS256 confusion attack work, and what is the fix?",
+      "options": [
+        "The attacker brute-forces the RSA private key offline; fix by lengthening the key to 4096 bits",
+        "The attacker signs an HS256 token using the issuer's public RSA key as the HMAC secret; fix by pinning the expected algorithm server-side",
+        "The attacker strips the signature with `alg=none`; fix by validating the `aud` claim",
+        "The attacker replays a token minted for another audience; fix by checking `iss`"
+      ],
+      "answer": 1,
+      "explanation": "In RS256-to-HS256 confusion, the attacker signs an HS256 token using the public RSA key (which is known) as the HMAC secret; a library that trusts the header's `alg` then HMAC-verifies with a key the attacker knows. The fix is pinning the expected algorithm server-side, never letting the header pick symmetric vs asymmetric."
+    },
+    {
+      "subtopic": "Grant type selection",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A nightly batch job synchronizes data between two services with no user present. Which OAuth2 grant type fits?",
+      "options": [
+        "Authorization Code + PKCE",
+        "Refresh Token grant",
+        "Client Credentials",
+        "Device Authorization"
+      ],
+      "answer": 2,
+      "explanation": "With no user, Client Credentials is correct: the app authenticates as itself (secret/cert/mTLS/managed identity) and gets app-level permissions, not delegated user scopes. Authorization Code + PKCE and Device Authorization both require a user; Refresh Token continues an existing user session rather than starting one."
+    },
+    {
+      "subtopic": "Implicit flow deprecation",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is the OAuth2 Implicit flow now deprecated by RFC 9700?",
+      "options": [
+        "It required a client secret that SPAs cannot keep confidential",
+        "It returned the access token in the redirect URL fragment, exposing it to history, Referer, logs, and scripts, and it is not safely refreshable",
+        "It relied on symmetric HS256 signing that resource servers could not verify",
+        "It used the back channel for tokens, which browsers can no longer reach"
+      ],
+      "answer": 1,
+      "explanation": "Implicit returned the access token directly in the redirect URL fragment (front channel), exposing it in history, Referer headers, logs, and to any script, and it was not safely refreshable. It existed only because browsers once could not POST cross-origin to `/token`; CORS removed that constraint, so RFC 9700 says do not use it."
+    },
+    {
+      "subtopic": "PKCE for confidential clients",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Current guidance is that PKCE is only needed for public clients (SPAs/mobile) and adds nothing for confidential web apps that already authenticate to `/token` with a secret.",
+      "answer": false,
+      "explanation": "PKCE is now recommended for all clients. Even for confidential clients, the authorization code rides the front channel and can leak via open redirects, Referer, or logs; PKCE makes a stolen code useless before the secret check and neutralizes mix-up/code-injection. 'PKCE is only for SPAs' is a stale answer."
+    },
+    {
+      "subtopic": "state vs nonce",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In OIDC, how do `state` and `nonce` differ in what they protect?",
+      "options": [
+        "`state` provides replay protection bound into the ID token; `nonce` protects the redirect against CSRF",
+        "`state` protects the redirect against CSRF; `nonce` is echoed inside the ID token to bind it to this auth request (replay protection)",
+        "Both protect against authorization-code interception and are redundant with PKCE",
+        "`state` is hashed with SHA-256 to produce the `code_challenge`; `nonce` is the `code_verifier`"
+      ],
+      "answer": 1,
+      "explanation": "`state` is an unguessable value the client verifies on return to protect the redirect against CSRF. `nonce` is a random value the IdP echoes back inside the ID token, binding it to this auth request for replay protection. They protect different things and both are needed."
+    },
+    {
+      "subtopic": "openid scope",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A team reports their login works and they get an access token, but no ID token and no user name claim ever appears. What is the most likely cause?",
+      "options": [
+        "They are using RS256 instead of ES256 for signing",
+        "They did not request the `openid` scope, which is what turns an OAuth2 request into an OIDC one",
+        "Their access token is opaque rather than a JWT",
+        "They forgot to send the `state` parameter on the `/authorize` request"
+      ],
+      "answer": 1,
+      "explanation": "Requesting the `openid` scope is what turns an OAuth2 request into an OIDC one and yields an ID token. No `openid` means no ID token and no identity claims. Signing algorithm, token opacity, and `state` are unrelated to whether you receive an ID token."
+    },
+    {
+      "subtopic": "Stable user identifier",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How should a relying party key a user's identity from an OIDC token, and why?",
+      "options": [
+        "On `email`, because it is human-readable and globally unique",
+        "On `sub` alone, because it is the standard subject identifier",
+        "On `iss` + `sub`, because `sub` is only guaranteed unique per issuer",
+        "On `aud`, because it identifies the client the user logged into"
+      ],
+      "answer": 2,
+      "explanation": "Identity is `iss` + `sub`, never `sub` alone, because `sub` is only unique per issuer. Keying on `email` is an account-takeover vector since email is mutable and reassignable; `aud` identifies the recipient, not the user."
+    },
+    {
+      "subtopic": "JWT vs opaque token revocation",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Select all statements that are TRUE about self-contained (JWT) vs reference (opaque) tokens.",
+      "options": [
+        "A JWT can be validated locally by the API with no per-request network call",
+        "An opaque token is resolved via the introspection endpoint (RFC 7662), adding a network hop",
+        "A stateless JWT is valid until `exp` and cannot be revoked individually without bolting on state",
+        "Opaque tokens are inherently harder to revoke than JWTs",
+        "An opaque token carries its claims directly in the token body for the API to read"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "A JWT is self-contained and validated locally; an opaque token is a meaningless handle resolved via introspection, at the cost of a network hop, which makes revocation trivial (not harder). A stateless JWT lives until `exp` and cannot be revoked individually without adding state. Opaque tokens carry no claims of their own."
+    },
+    {
+      "subtopic": "Refresh-token rotation",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With refresh-token rotation plus reuse detection, what happens when an already-consumed refresh token (RT1) is replayed?",
+      "options": [
+        "RT1 is silently reissued as a new refresh token so the session continues",
+        "Only RT1 is rejected; later tokens in the chain remain valid",
+        "Reuse is detected and the entire token family/session is revoked",
+        "The replay is ignored because RT1's `exp` had not yet passed"
+      ],
+      "answer": 2,
+      "explanation": "Each refresh token is one-time-use: redeeming RT1 returns a new access token and RT2, invalidating RT1. Replaying an already-consumed token is a theft signal, so the whole family/session is revoked. The honest limitation is that the legitimate user may get logged out, but the breach surfaces."
+    },
+    {
+      "subtopic": "Revoke on password change",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You need 'log a user out everywhere' to take effect immediately for all of a user's stateless JWTs after a password change. Which mechanism is the standard answer?",
+      "options": [
+        "A `jti` denylist with one entry per outstanding token",
+        "A security-stamp / token-version value per user that changes on sensitive events; a mismatch rejects the token",
+        "Lowering the access-token TTL to zero retroactively",
+        "Rotating the issuer's JWKS signing key so old tokens fail signature validation"
+      ],
+      "answer": 1,
+      "explanation": "A security-stamp / token-versioning value stamped into each token and changed on sensitive events (password change, sign-out-everywhere) invalidates all of a user's tokens with a single write on mismatch. A `jti` denylist would need an entry per token; TTL cannot be retroactively zeroed; rotating JWKS would break every user's tokens, not just this one."
+    },
+    {
+      "subtopic": "Token storage and BFF",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Select all statements that are TRUE about storing tokens in the browser.",
+      "options": [
+        "Tokens in `localStorage` are exfiltrated by any XSS, since JavaScript can read them",
+        "An `HttpOnly` cookie is hidden from `document.cookie` but is auto-sent, creating CSRF risk",
+        "A bearer token sent in an `Authorization` header is CSRF-immune because it is not auto-attached",
+        "`localStorage` is the recommended modern default because it is immune to CSRF",
+        "A BFF keeps tokens out of the browser entirely, setting only an `HttpOnly` session cookie"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "explanation": "localStorage is JS-readable so any XSS exfiltrates it; HttpOnly cookies are hidden from JS but auto-sent (CSRF risk); header-borne bearer tokens are CSRF-immune because they are not auto-attached; a BFF keeps tokens out of the browser entirely. localStorage is not the recommended default; the senior answer is a BFF (or hardened HttpOnly cookie), never localStorage."
+    },
+    {
+      "subtopic": "Sender-constrained tokens",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why are mTLS-bound tokens (RFC 8705) and DPoP (RFC 9449) described as the real fix for token replay, rather than just short TTLs?",
+      "options": [
+        "They encrypt the token so its claims cannot be read in transit",
+        "They bind the token to a key the client must prove possession of on every call, so a stolen token is useless without the key",
+        "They make the access token longer-lived, eliminating the need for refresh tokens",
+        "They move the token from the Authorization header into an HttpOnly cookie"
+      ],
+      "answer": 1,
+      "explanation": "mTLS/certificate-bound tokens and DPoP bind the token to a key the client proves possession of on every request, so a stolen token is useless without the key. This removes the bearer assumption rather than merely shrinking the blast radius the way short TTLs do. They neither encrypt claims nor change token lifetime."
+    },
+    {
+      "subtopic": "BOLA / IDOR",
+      "source": "web/authentication-authorization-jwt-oauth2-oidc-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Consider this endpoint. A user with a valid token for their own account requests `/invoices/9999`, which belongs to another user, and receives it. Which OWASP API risk is this, and what is the fix?",
+      "code": "[Authorize]\n[HttpGet(\"/invoices/{id}\")]\npublic async Task<Invoice> Get(int id)\n{\n    return await _db.Invoices.FindAsync(id);\n}",
+      "lang": "csharp",
+      "options": [
+        "API2 Broken Authentication — fix by shortening the token TTL and rotating refresh tokens",
+        "API1 Broken Object Level Authorization (BOLA/IDOR) — fix with a per-object ownership check on every request",
+        "API8 Security Misconfiguration — fix by tightening CORS and adding HSTS",
+        "API3 Broken Object Property Level Authorization — fix by projecting to a response DTO"
+      ],
+      "answer": 1,
+      "explanation": "A valid token used to read someone else's object because ownership was never checked is BOLA/IDOR (API1), the #1 API risk. The fix is per-object ownership checks on every request (resource-based authorization) plus query scoping. The token is valid, so it is not broken authentication; the leak is the whole object's ownership, not a property or a misconfiguration."
+    }
+  ]
+}

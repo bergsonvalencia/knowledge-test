@@ -1,0 +1,262 @@
+{
+  "topic": "react",
+  "source": "react/03-props-and-data-flow.md",
+  "questions": [
+    {
+      "subtopic": "Props are read-only",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Inside a child component, what is the correct way to treat the `props` object?",
+      "options": [
+        "As read-only — never assign to `props.x`; mutating it is a bug",
+        "As mutable local state you can freely reassign to update the UI",
+        "As a copy that, when mutated, automatically re-renders the parent",
+        "As a two-way binding that pushes changes back to the parent on assignment"
+      ],
+      "answer": 0,
+      "explanation": "Props are read-only inputs; the child renders from them but must never mutate them. Mutating props breaks React's rendering assumptions and is a bug — assignment does not trigger re-renders or propagate to the parent."
+    },
+    {
+      "subtopic": "Data down, events up",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A child needs to change a value that the parent owns. What is the idiomatic React mechanism?",
+      "options": [
+        "The child invokes a function prop (callback) passed by the parent, which updates the parent's state",
+        "The child directly reassigns the parent's variable through a ref",
+        "The child mutates the prop in place so the parent observes the change",
+        "The child calls `setState` on the parent component instance"
+      ],
+      "answer": 0,
+      "explanation": "The pattern is \"data down, events up\": the child calls a function prop (e.g. `onChange`); the parent updates *its* state and the new value flows back down. A child cannot reach up and change a parent's variable directly."
+    },
+    {
+      "subtopic": "One-way data flow",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In React's data model, when a parent re-renders due to a state change, it produces fresh props for its children and React re-renders the affected subtree with the new values.",
+      "answer": true,
+      "explanation": "Re-render propagation works exactly this way: a parent's state change produces fresh props, and React reconciles and re-renders the affected child subtree with the new values."
+    },
+    {
+      "subtopic": "Destructuring defaults",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given `function C({ n = 0 })`, for which passed value of the `n` prop does the default `0` take effect?",
+      "options": [
+        "Only when `n` is `undefined`",
+        "When `n` is `undefined` or `null`",
+        "When `n` is `undefined`, `null`, `0`, or `\"\"`",
+        "Whenever `n` is any falsy value"
+      ],
+      "answer": 0,
+      "explanation": "A destructuring default applies only when the value is `undefined`. It does NOT apply for `null`, `0`, or `\"\"` — those are passed through as-is even though some are falsy."
+    },
+    {
+      "subtopic": "defaultProps removed",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "As of React 19, `defaultProps` on function components has been removed, so you should use destructuring parameter defaults instead.",
+      "answer": true,
+      "explanation": "React 19 removed `defaultProps` for function components; parameter (destructuring) defaults are the supported replacement. (It still applies to class components, which the reviewer does not cover here.)"
+    },
+    {
+      "subtopic": "Spread override order",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the JSX `<button {...rest} onClick={handleClick} />`, where `rest` also contains an `onClick`, which `onClick` is used?",
+      "options": [
+        "`handleClick`, because the explicit attribute appears after the spread and overrides it",
+        "The `onClick` from `rest`, because spread entries always win over explicit attributes",
+        "Neither — React throws on the duplicate `onClick`",
+        "Both fire in source order, since React merges duplicate handlers"
+      ],
+      "answer": 0,
+      "explanation": "Order matters: later JSX attributes override earlier spread entries. Since `onClick={handleClick}` appears after `{...rest}`, it wins. React does not throw on or merge duplicates — last write wins."
+    },
+    {
+      "subtopic": "Spread gotcha on DOM",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is blindly spreading `{...props}` onto a native DOM element (e.g. `<div {...props} />`) risky?",
+      "options": [
+        "Component-specific props can leak onto the DOM node, and React warns about unknown DOM attributes",
+        "Spreading onto a DOM element silently mutates the original props object",
+        "React refuses to render any element that receives a spread of more than one prop",
+        "The DOM element will re-render its parent every time any spread prop changes"
+      ],
+      "answer": 0,
+      "explanation": "Spreading everything can leak your component-specific (non-HTML) props onto the DOM node, and React warns about unknown DOM attributes. The fix is to pull off your own props first (`const { title, ...rest } = props`) and spread only `rest`."
+    },
+    {
+      "subtopic": "Valid children types",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are valid React `children` values that render without throwing? (Select all that apply.)",
+      "options": [
+        "A string or number",
+        "`null`, `false`, or `undefined` (rendered as nothing)",
+        "A function (the render-prop pattern)",
+        "A plain object like `{ a: 1 }`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`children` may be a string/number, an element, an array/fragment, `null`/`false`/`undefined` (rendered as nothing), or a function (render prop). A plain object is NOT a valid React child and throws."
+    },
+    {
+      "subtopic": "props.children",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Whatever markup you nest between a component's opening and closing tags is delivered to that component as the special `children` prop.",
+      "answer": true,
+      "explanation": "Nested content arrives as `props.children`. This is the mechanism that lets layout/wrapper components render content they don't know ahead of time."
+    },
+    {
+      "subtopic": "Children prop in code",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the `Card` component, what does `rest` contain and where does it go?",
+      "code": "type CardProps = {\n  title?: string;\n  children: React.ReactNode;\n} & React.HTMLAttributes<HTMLDivElement>;\n\nfunction Card({ title = \"Untitled\", children, ...rest }: CardProps) {\n  return (\n    <div className=\"card\" {...rest}>\n      <h2>{title}</h2>\n      {children}\n    </div>\n  );\n}\n\n<Card title=\"Hello\" className=\"featured\"><p>Hi</p></Card>;",
+      "lang": "typescript",
+      "options": [
+        "`rest` holds `className=\"featured\"` (and other HTML attrs), which is spread onto the `div`; the spread's `className` overrides the literal `\"card\"`",
+        "`rest` holds `title` and `children`, which are forwarded to the `div`",
+        "`rest` is empty because `title` and `children` consume every prop",
+        "`rest` holds `className=\"featured\"`, but the literal `className=\"card\"` overrides it because it is written first"
+      ],
+      "answer": 0,
+      "explanation": "`title` and `children` are destructured out, so `rest` carries the remaining HTML attributes like `className=\"featured\"`. Because `{...rest}` appears after `className=\"card\"`, the spread's `className` overrides the literal one, so the rendered class is `\"featured\"`."
+    },
+    {
+      "subtopic": "Single source of truth",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "The reviewer warns against copying a prop into state. When is doing so actually acceptable?",
+      "options": [
+        "When you deliberately want a one-time snapshot, while remaining aware of staleness",
+        "Whenever you want the child to render faster than reading the prop directly",
+        "Always — copying props into state is the recommended default for performance",
+        "Never under any circumstances; it is forbidden by React"
+      ],
+      "answer": 0,
+      "explanation": "Keep each piece of state in its lowest common owner and pass it down. Copying a prop into state is acceptable only when you deliberately want a snapshot — and even then you must beware of staleness when the prop later changes."
+    },
+    {
+      "subtopic": "Typing children",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which TypeScript type is the correct, widest choice for a `children` prop that may be elements, strings, numbers, arrays, or `null`?",
+      "options": [
+        "`React.ReactNode`",
+        "`React.ReactElement`",
+        "`JSX.Element`",
+        "`string | number`"
+      ],
+      "answer": 0,
+      "explanation": "`React.ReactNode` is the widest \"anything renderable\" type. `React.ReactElement` (or `JSX.Element`) is narrower — use it only when you specifically require a single element."
+    },
+    {
+      "subtopic": "PropsWithChildren",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is `PropsWithChildren<{ title: string }>` equivalent to?",
+      "options": [
+        "`{ title: string; children?: React.ReactNode }`",
+        "`{ title: string; children: React.ReactNode }` (children required)",
+        "`{ title?: string; children?: React.ReactNode }`",
+        "`{ title: string }` plus a required `key` prop"
+      ],
+      "answer": 0,
+      "explanation": "`PropsWithChildren<T>` adds an OPTIONAL `children: ReactNode` to `T`, so the result is `{ title: string; children?: ReactNode }`. The `children` field is optional, not required."
+    },
+    {
+      "subtopic": "PropTypes removed",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What happens to runtime `propTypes` declarations in React 19, and what is the recommended replacement?",
+      "options": [
+        "They are removed from React core and silently ignored at runtime; use TypeScript, plus a schema library like Zod for runtime validation of external data",
+        "They now throw at runtime on the first mismatch; replace them with `defaultProps`",
+        "They are upgraded to compile-time checks; no replacement is needed",
+        "They still run but only in production builds; replace them with `React.ReactNode`"
+      ],
+      "answer": 0,
+      "explanation": "`propTypes` were removed from React core in React 19 and are silently ignored at runtime. Use TypeScript for compile-time checking and a schema library (Zod/Valibot) at the boundary for runtime validation of untrusted external data."
+    },
+    {
+      "subtopic": "type vs interface",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Comparing `type` and `interface` for props, which statements are accurate? (Select all that apply.)",
+      "options": [
+        "`type` composes nicely with unions and intersections (`A & B`)",
+        "`interface` supports declaration merging",
+        "Only `interface` can describe a props object; `type` cannot",
+        "You should match whatever the surrounding codebase already uses"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Both work for props. `type` composes well with unions/intersections; `interface` supports declaration merging; and you should match the surrounding codebase. The claim that only `interface` can describe props is false — `type Props = { ... }` works fine."
+    },
+    {
+      "subtopic": "Re-render propagation gotcha",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A child stores `count` in `useState(props.count)` instead of reading `props.count` directly. The parent later updates and passes a new `props.count`. What does the child render by default?",
+      "options": [
+        "The stale initial value, because the `useState` initializer only runs on the first render and ignores later prop changes",
+        "The new prop value, because `useState` re-syncs to its initializer argument on every render",
+        "It throws, because seeding state from a prop is disallowed",
+        "Alternating values, because the parent re-render forces the child's state to reset"
+      ],
+      "answer": 0,
+      "explanation": "This is the staleness trap the reviewer warns about. `useState`'s initializer argument is used only on the first render; subsequent changes to `props.count` do not update the copied state, so the child shows the stale snapshot unless you read the prop directly or explicitly sync."
+    },
+    {
+      "subtopic": "Render-prop typing",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You expose a render-prop API where the parent passes a function as `children` (e.g. `<Mouse>{(pos) => <X y={pos}/>}</Mouse>`). How should you type that `children` prop?",
+      "options": [
+        "`children: (arg: T) => React.ReactNode`",
+        "`children: React.ReactNode`",
+        "`children: React.ReactElement`",
+        "`children: T => void`"
+      ],
+      "answer": 0,
+      "explanation": "For the render-prop pattern, `children` is a function that returns renderable output, so its type is `(arg: T) => React.ReactNode`. `React.ReactNode`/`ReactElement` describe rendered content, not a function, and a `=> void` callback returns nothing to render."
+    },
+    {
+      "subtopic": "Object as child fails",
+      "source": "react/03-props-and-data-flow.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the result of rendering `<div>{ { name: \"Ada\" } }</div>` (a plain object placed directly as a child)?",
+      "code": "function App() {\n  const user = { name: \"Ada\" };\n  return <div>{user}</div>;\n}",
+      "lang": "typescript",
+      "options": [
+        "React throws an error, because a plain object is not a valid React child",
+        "React renders the string `[object Object]`",
+        "React renders `Ada` by reading the object's first string field",
+        "React renders nothing and logs a silent warning"
+      ],
+      "answer": 0,
+      "explanation": "Plain objects are not valid React children and throw (\"Objects are not valid as a React child\"). Valid children include strings, numbers, elements, arrays/fragments, `null`/`false`/`undefined`, and functions — but not a bare object."
+    }
+  ]
+}

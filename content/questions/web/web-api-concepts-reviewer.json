@@ -1,0 +1,272 @@
+{
+  "topic": "web",
+  "source": "web/web-api-concepts-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "REST core abstraction",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In REST, what is the key abstraction of information, and how is it identified?",
+      "options": [
+        "A resource, identified by a URI",
+        "An endpoint, identified by an HTTP verb",
+        "A session, identified by a cookie",
+        "A representation, identified by a MIME type"
+      ],
+      "answer": 0,
+      "explanation": "REST's central abstraction is the resource (anything that can be named), and it is identified by a URI. Verbs act on resources but do not identify them, and representations are what get exchanged, not the identifier."
+    },
+    {
+      "subtopic": "REST vs HTTP",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "REST is the same thing as HTTP.",
+      "answer": false,
+      "explanation": "REST is an architectural style; HTTP is the protocol it is most commonly (but not necessarily) implemented over. You can apply REST principles without using HTTP."
+    },
+    {
+      "subtopic": "Statelessness",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does it mean for a REST interaction to be **stateless**?",
+      "options": [
+        "Each request must contain all information needed to process it; the server stores no client session context between requests",
+        "The server stores session state and clients send only a session id",
+        "Responses are never cached because there is no state to cache",
+        "The connection is closed after every request to avoid keeping state"
+      ],
+      "answer": 0,
+      "explanation": "Statelessness means each request carries everything needed to understand it, and the server keeps no client session state between requests; session state lives on the client. Storing server-side session state is exactly what statelessness forbids."
+    },
+    {
+      "subtopic": "Cross-origin definition",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Two URLs are considered the **same origin** only when which set of components all match?",
+      "options": [
+        "Domain, protocol (scheme), and port",
+        "Domain and path",
+        "Protocol and path",
+        "Domain, port, and HTTP method"
+      ],
+      "answer": 0,
+      "explanation": "An origin is the combination of domain, protocol (scheme), and port; a request is cross-origin if any of those three differ. Path and HTTP method are not part of the origin."
+    },
+    {
+      "subtopic": "Verb-to-CRUD mapping",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which HTTP verb maps to the CREATE action in the verb-to-CRUD mapping?",
+      "options": [
+        "POST",
+        "GET",
+        "PUT",
+        "PATCH"
+      ],
+      "answer": 0,
+      "explanation": "POST maps to CREATE. GET=READ, PUT and PATCH both map to UPDATE (full replace vs partial), and DELETE maps to DESTROY."
+    },
+    {
+      "subtopic": "Where CORS is enforced",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A teammate says CORS errors mean the **server** is rejecting the request. What is the accurate description of how CORS works?",
+      "options": [
+        "The browser enforces the same-origin policy; CORS is the server's way of telling the browser (via response headers) to allow specific cross-origin access",
+        "The server blocks the request before any response is sent, so the browser never sees it",
+        "CORS is a network-firewall feature that filters requests by origin before they reach the server",
+        "The browser strips the response body, but the request itself always reaches and is processed by the server"
+      ],
+      "answer": 0,
+      "explanation": "The browser enforces the same-origin policy; the server uses CORS response headers to grant the browser permission to expose a cross-origin response to the script. The server does not reject the request because of CORS — it is the browser that blocks the script from reading a response that lacks the right headers."
+    },
+    {
+      "subtopic": "Uniform interface constraints",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "REST's **uniform interface** principle defines four interface constraints. Which of the following are among them? (Select all that apply.)",
+      "options": [
+        "Identification of resources",
+        "Manipulation of resources through representations",
+        "Self-descriptive messages",
+        "Hypermedia as the engine of application state (HATEOAS)",
+        "Mandatory TLS encryption on every message"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "The four uniform-interface constraints are identification of resources, manipulation through representations, self-descriptive messages, and HATEOAS. Mandatory TLS is a transport-security concern, not one of REST's interface constraints."
+    },
+    {
+      "subtopic": "PUT vs PATCH",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key distinction between **PUT** and **PATCH** as UPDATE verbs?",
+      "options": [
+        "PUT replaces the entire resource and is idempotent; PATCH applies a partial update",
+        "PUT applies a partial update; PATCH replaces the entire resource",
+        "PUT creates a new resource; PATCH only reads an existing one",
+        "PUT is for collections and PATCH is for single items, but both fully replace the target"
+      ],
+      "answer": 0,
+      "explanation": "PUT replaces the whole resource (and is idempotent); PATCH applies a partial update. Both are legitimate UPDATE verbs, but they differ in scope and replacement semantics."
+    },
+    {
+      "subtopic": "Code on demand",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Among REST's six guiding principles, which one is described as **optional**?",
+      "options": [
+        "Code on demand",
+        "Stateless",
+        "Cacheable",
+        "Layered system"
+      ],
+      "answer": 0,
+      "explanation": "Code on demand — extending client functionality by downloading and executing applets or scripts — is the one principle REST marks as optional. The others (client-server, stateless, cacheable, uniform interface, layered system) are required constraints."
+    },
+    {
+      "subtopic": "Cacheable principle",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Under REST's **cacheable** constraint, responses must be implicitly or explicitly labeled as cacheable or non-cacheable so a client cache can decide whether to reuse them.",
+      "answer": true,
+      "explanation": "The cacheable constraint requires responses to be labeled (implicitly or explicitly) as cacheable or non-cacheable; if cacheable, a client cache may reuse that response for later equivalent requests."
+    },
+    {
+      "subtopic": "Layered system",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does REST's **layered system** principle constrain?",
+      "options": [
+        "Each component cannot 'see' beyond the immediate layer it interacts with",
+        "Every request must pass through exactly one proxy layer",
+        "The client must know the full topology of servers behind a load balancer",
+        "State may be shared freely across all layers to improve performance"
+      ],
+      "answer": 0,
+      "explanation": "A layered system constrains component behavior so each component cannot see beyond the immediate layer it interacts with, enabling intermediaries like proxies and gateways without the client needing to know them. It does not require knowing the topology, nor does it share state across layers."
+    },
+    {
+      "subtopic": "Request anatomy (code reading)",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the raw REST request below, which describes the three structural parts in order?",
+      "code": "POST /dinosaur HTTP/1.1\n\nAccept: application/json\nAuthorization: <token>\nConnection: keep-alive\n\n{\n    \"face\": \"alligator\"\n}",
+      "lang": "http",
+      "options": [
+        "VERB + URI, then HEADERS, then BODY",
+        "URI, then BODY, then HEADERS",
+        "HEADERS, then VERB + URI, then BODY",
+        "VERB + URI, then BODY, then HEADERS"
+      ],
+      "answer": 0,
+      "explanation": "The request line carries the VERB (POST) and URI (/dinosaur), followed by the HEADERS (Accept, Authorization, Connection), and finally the BODY (the JSON payload). That fixed VERB+URI → HEADERS → BODY ordering is the request anatomy."
+    },
+    {
+      "subtopic": "APIM purpose",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the primary role of Azure API Management (APIM) in front of backend APIs?",
+      "options": [
+        "A facade and single point of access — one IP / custom domain — letting you change how the API behaves without touching the backend",
+        "A relational database that stores the backend's persistent data",
+        "A client-side JavaScript library that issues cross-origin requests",
+        "A replacement for the backend APIs that reimplements their business logic"
+      ],
+      "answer": 0,
+      "explanation": "APIM is a facade and single point of access: it exposes all APIs behind one IP (with custom domain support) and lets you change how the whole API app feels and behaves without modifying the backend. It does not store the data or reimplement backend logic."
+    },
+    {
+      "subtopic": "Client-server separation",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "REST's **client-server** principle separates UI concerns from data-storage concerns. What two benefits does the reviewer attribute to this separation?",
+      "options": [
+        "Improved portability of the UI across platforms and improved scalability by simplifying the server components",
+        "Guaranteed strong consistency and automatic horizontal sharding of the database",
+        "Elimination of the need for authentication and reduced network latency",
+        "Mandatory caching and enforced idempotency of all operations"
+      ],
+      "answer": 0,
+      "explanation": "Separating UI from storage improves UI portability across platforms and improves scalability by simplifying the server components. The other pairs describe unrelated guarantees that REST's client-server constraint does not promise."
+    },
+    {
+      "subtopic": "CORS failure mode (code reading)",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "JavaScript served from `https://domain-a.com` runs the fetch below. The server at domain-b responds with `200 OK` and a JSON body but includes **no** CORS headers. What happens?",
+      "code": "// page loaded from https://domain-a.com\nconst res = await fetch('https://domain-b.com/data.json');\nconst data = await res.json();",
+      "lang": "javascript",
+      "options": [
+        "The browser blocks the script from reading the response because the required CORS headers are missing, even though the server returned a successful response",
+        "The fetch succeeds and `data` contains the JSON, because a 200 response always satisfies the same-origin policy",
+        "The request never leaves the browser, so the server logs nothing and no response is produced",
+        "The browser automatically retries the request as same-origin against domain-a.com"
+      ],
+      "answer": 0,
+      "explanation": "Because domain-b differs in domain from the calling origin, this is a cross-origin request; with no CORS headers in the response, the browser enforces the same-origin policy and blocks the script from reading it — regardless of the 200 status. The browser does not silently downgrade the status or retry against a different origin."
+    },
+    {
+      "subtopic": "Same-origin edge cases",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A script is served from `https://shop.example.com` (default port 443). Which of the following target URLs are **cross-origin** relative to it? (Select all that apply.)",
+      "options": [
+        "http://shop.example.com/api (http instead of https)",
+        "https://api.example.com/data (different subdomain)",
+        "https://shop.example.com:8443/api (port 8443)",
+        "https://shop.example.com/products/42 (different path)"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Origin = protocol + domain + port, so a different scheme (http vs https), a different host (api vs shop subdomain), and a different port (8443 vs 443) each make the request cross-origin. A differing path alone does not change the origin, so it stays same-origin."
+    },
+    {
+      "subtopic": "Stateless trade-offs",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An engineer stores authenticated user session data in server memory and load-balances requests across many instances without sticky sessions, then is surprised users get logged out intermittently. Which REST principle does this design violate, and why does it break?",
+      "options": [
+        "Statelessness — a request routed to a different instance finds no stored session context, since each request is supposed to carry all information needed to process it",
+        "Cacheability — the responses were not labeled cacheable, so the cache evicted the sessions",
+        "Layered system — the load balancer can see beyond its immediate layer and corrupts state",
+        "Uniform interface — the session data was not exposed as a hypermedia link"
+      ],
+      "answer": 0,
+      "explanation": "Statelessness requires each request to contain all information needed to process it, with no client session context stored on the server; relying on in-memory server-side sessions breaks when a request lands on an instance that holds no such state. The other principles concern caching labels, layer visibility, and interface form — none explain the lost session."
+    },
+    {
+      "subtopic": "Idempotency of UPDATE verbs",
+      "source": "web/web-api-concepts-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "**PUT** is described as idempotent while it is **PATCH** that is characterized only as a partial update (without the idempotency label).",
+      "answer": true,
+      "explanation": "The reviewer explicitly calls PUT a full replace that is idempotent, and describes PATCH as a partial update; it does not attach the idempotency label to PATCH. So distinguishing PUT (replace, idempotent) from PATCH (partial) matches the source."
+    }
+  ]
+}
