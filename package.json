@@ -1,0 +1,15 @@
+{
+  "name": "knowledge-test",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A randomized Q&A interview/exam trainer generated from the senior software-engineering reviewers (vanilla HTML/CSS/JS, no framework).",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "dev": "node build.mjs && node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "highlight.js": "^11.10.0"
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "HttpClient lifetime trap",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A service does `using var http = new HttpClient();` on every request and is called thousands of times per minute. What failure mode does this most directly cause?",
+      "options": [
+        "Socket exhaustion — disposed sockets sit in `TIME_WAIT` until ephemeral ports run out and `SocketException` is thrown",
+        "An immediate `OutOfMemoryException` from allocating too many client objects",
+        "Stale DNS — the client keeps hitting a dead IP after a failover",
+        "Thread-pool starvation from blocking the request threads"
+      ],
+      "answer": 0,
+      "explanation": "Each `new HttpClient()` opens its own connection pool; disposing it strands the underlying TCP socket in `TIME_WAIT` for ~4 minutes, so under load you exhaust ephemeral ports and get `SocketException`. Stale DNS is the symptom of the *opposite* mistake — one static client forever."
+    },
+    {
+      "subtopic": "Single static client pitfall",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why is keeping one static `HttpClient` alive for the lifetime of the process *also* wrong, even though it fixes socket exhaustion?",
+      "options": [
+        "It pins the connection so it never re-resolves DNS, and keeps hitting a dead IP after a failover or scale event",
+        "It is not thread-safe, so concurrent requests corrupt each other's headers",
+        "Static fields are garbage-collected unpredictably, so the client may vanish mid-request",
+        "It disables HTTP keep-alive, forcing a new TCP handshake on every call"
+      ],
+      "answer": 0,
+      "explanation": "A single long-lived client reuses sockets but pins the connection, so it never picks up DNS changes (failover, blue-green, scaling) and keeps hitting the dead IP. `HttpClient` *is* thread-safe for concurrent requests, so that distractor is false."
+    },
+    {
+      "subtopic": "Handler pooling and rotation",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How does `IHttpClientFactory` give you both socket reuse and DNS freshness at the same time?",
+      "options": [
+        "It reuses the pooled `HttpMessageHandler` (sharing sockets) but rotates it on a schedule (default 2 minutes) so a fresh handler periodically re-resolves DNS",
+        "It opens a brand-new socket per request but caches the DNS lookup for 2 minutes",
+        "It keeps one handler forever and runs a background DNS-refresh thread",
+        "It disposes and recreates the `HttpClient` on every call while keeping the socket open"
+      ],
+      "answer": 0,
+      "explanation": "The factory pools and reuses the underlying handler for socket efficiency, but rotates that handler (default 2 minutes via `SetHandlerLifetime`) so a fresh handler eventually re-resolves DNS. It does not open a socket per request."
+    },
+    {
+      "subtopic": "Default handler lifetime",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The default `HttpMessageHandler` lifetime used by `IHttpClientFactory` is 2 minutes, and it can be changed with `SetHandlerLifetime`.",
+      "answer": true,
+      "explanation": "The default handler lifetime is 2 minutes, configurable via `SetHandlerLifetime` (e.g. `TimeSpan.FromMinutes(5)`). The handler lifetime — not the client lifetime — governs socket/DNS behavior."
+    },
+    {
+      "subtopic": "Resilience package successor",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which package is the successor to the deprecated `Microsoft.Extensions.Http.Polly`, and what does it wrap?",
+      "options": [
+        "`Microsoft.Extensions.Http.Resilience`, which wraps Polly v8",
+        "`Polly.Extensions.Http`, which wraps Polly v7",
+        "`Microsoft.AspNetCore.Resilience`, which wraps the BCL retry handler",
+        "`System.Net.Http.Resilience`, which wraps a custom retry engine"
+      ],
+      "answer": 0,
+      "explanation": "`Microsoft.Extensions.Http.Resilience` replaces the deprecated `Microsoft.Extensions.Http.Polly`; it wraps Polly v8 and plugs a resilience pipeline into the handler chain as a delegating handler via `AddStandardResilienceHandler()`."
+    },
+    {
+      "subtopic": "Standard pipeline order",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the correct outermost-to-innermost order of the five strategies in `AddStandardResilienceHandler()`?",
+      "options": [
+        "Rate limiter → total timeout → retry → circuit breaker → per-attempt timeout",
+        "Total timeout → rate limiter → circuit breaker → retry → per-attempt timeout",
+        "Retry → rate limiter → total timeout → per-attempt timeout → circuit breaker",
+        "Circuit breaker → rate limiter → retry → total timeout → per-attempt timeout"
+      ],
+      "answer": 0,
+      "explanation": "The standard pipeline chains, outermost to innermost: rate limiter, total timeout (covers all retries), retry, circuit breaker, then per-attempt timeout. The retry loop sits inside the total-timeout budget and outside the per-attempt timeout."
+    },
+    {
+      "subtopic": "Per-attempt vs total timeout",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Using `AddStandardResilienceHandler()` defaults — per-attempt timeout 10s, retry 3×, total timeout 30s — a dependency takes 12s on every call. What does the caller ultimately observe?",
+      "options": [
+        "Each attempt hits the 10s per-attempt timeout and is retried, but the 30s total timeout caps the operation, so after a few attempts the whole call fails with a timeout",
+        "The first call succeeds at 12s because the per-attempt timeout only applies to retries",
+        "The call fails immediately with `BrokenCircuitException` since 12s exceeds 10s",
+        "The call retries forever because the per-attempt timeout resets the total budget each time"
+      ],
+      "answer": 0,
+      "explanation": "Each 12s attempt trips the 10s per-attempt timeout and is retried, but the 30s total timeout — sitting outside the retry — caps the whole operation, so after roughly the first few attempts the budget is exhausted and the call fails with a timeout. The total timeout is what stops infinite waiting."
+    },
+    {
+      "subtopic": "Retrying non-idempotent verbs",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `PaymentClient` POSTs a charge and is registered with a bare `AddStandardResilienceHandler()`. What is the risk and the correct fix?",
+      "code": "builder.Services.AddHttpClient<PaymentClient>()\n    .AddStandardResilienceHandler();\n// PaymentClient POSTs a charge to the payment gateway",
+      "lang": "csharp",
+      "options": [
+        "The handler retries all HTTP methods by default, so a transient failure can double-charge — fix with `o.Retry.DisableForUnsafeHttpMethods()` and/or an idempotency key",
+        "POST is never retried by default, so there is no risk and no change is needed",
+        "The risk is socket exhaustion from POST bodies — fix by raising the handler lifetime",
+        "The circuit breaker will refuse all POSTs — fix by lowering `FailureRatio`"
+      ],
+      "answer": 0,
+      "explanation": "The standard handler retries *all* methods by default, so a transient failure on a POST can duplicate the write (double-charge). Disable retries for unsafe methods with `DisableForUnsafeHttpMethods()` and/or send an idempotency key so the gateway de-dupes."
+    },
+    {
+      "subtopic": "Polly v8 builder API",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A teammate writes `Policy.Handle<HttpRequestException>().WaitAndRetryAsync(...)` and it won't compile against the current package. Why, and what is the v8 equivalent?",
+      "options": [
+        "That fluent API is Polly v7, removed in v8 — use `new ResiliencePipelineBuilder().AddRetry(new RetryStrategyOptions { ... }).Build()` and `ExecuteAsync`",
+        "The method is async-only now — add `.ConfigureAwait(false)` to make it compile",
+        "`Policy` moved namespaces — add `using Polly.Legacy;` and it compiles unchanged",
+        "v8 renamed it to `Policy.Handle<>().Retry(...)` with no wait variant"
+      ],
+      "answer": 0,
+      "explanation": "Polly v8 removed v7's fluent `Policy.Handle<>().WaitAndRetry(...)` API. The current model builds a reusable, thread-safe `ResiliencePipeline` via `ResiliencePipelineBuilder` + strategy options + `Build()`, executed with `ExecuteAsync`."
+    },
+    {
+      "subtopic": "Strategy composition order",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a hand-built Polly v8 pipeline, which strategy executes outermost, given the order strategies are added to the builder?",
+      "code": "new ResiliencePipelineBuilder<HttpResponseMessage>()\n    .AddFallback(...)\n    .AddRetry(...)\n    .AddCircuitBreaker(...)\n    .AddTimeout(...)\n    .Build();",
+      "lang": "csharp",
+      "options": [
+        "Fallback — the first strategy added is outermost and wraps the rest, so it catches whatever escapes the inner strategies",
+        "Timeout — the last strategy added runs first as the outermost guard",
+        "Circuit breaker — breakers always run before any other strategy regardless of order",
+        "Retry — retries are always promoted to the outermost position by the builder"
+      ],
+      "answer": 0,
+      "explanation": "The first strategy added is outermost; strategies nest like middleware. Here fallback wraps retry, which wraps the circuit breaker, which wraps the timeout — so the per-attempt timeout is what retry re-issues and fallback catches whatever escapes."
+    },
+    {
+      "subtopic": "Polly timeout exception type",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When a Polly v8 timeout strategy fires, which exception is thrown — and which `ShouldHandle` predicate must catch it?",
+      "options": [
+        "`TimeoutRejectedException` — not the BCL `TimeoutException`, so predicates must handle that specific type",
+        "`TimeoutException` from the BCL, so catching `System.TimeoutException` is correct",
+        "`OperationCanceledException`, because timeouts cancel the underlying token",
+        "`BrokenCircuitException`, since a timeout is treated as a breaker trip"
+      ],
+      "answer": 0,
+      "explanation": "Polly's timeout strategy throws `TimeoutRejectedException`, not the BCL `TimeoutException`. A `ShouldHandle` predicate that expects `System.TimeoutException` will silently miss it."
+    },
+    {
+      "subtopic": "Jitter and retry storms",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Setting `UseJitter = true` on a retry strategy randomizes each backoff delay so that many clients don't all retry on the same tick, preventing a synchronized retry storm.",
+      "answer": true,
+      "explanation": "Exponential backoff spaces attempts apart, but without jitter thousands of clients retry on the same tick (thundering herd). `UseJitter = true` desynchronizes them, which is the single toggle that breaks up the retry storm."
+    },
+    {
+      "subtopic": "Circuit breaker trigger semantics",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about Polly v8's circuit breaker trigger and behavior are correct? (Select all that apply.)",
+      "options": [
+        "It opens only when the failure *ratio* exceeds the threshold AND at least `MinimumThroughput` calls occurred within the sampling window",
+        "While Open, calls throw `BrokenCircuitException` immediately with no network round-trip",
+        "After `BreakDuration` elapses it goes Half-Open and lets one trial call decide whether to close or re-open",
+        "It opens as soon as any single call fails, regardless of call volume",
+        "While Open it keeps issuing calls but logs each failure until `BreakDuration` elapses"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The v8 breaker uses a sampling window: it opens only when the failure ratio is exceeded *and* `MinimumThroughput` was met, then fails fast with `BrokenCircuitException` while Open, and probes once in Half-Open after `BreakDuration`. It does not trip on a single failure, nor does it keep calling while Open."
+    },
+    {
+      "subtopic": "Fallback placement",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Where in a resilience pipeline should the fallback strategy sit, and why?",
+      "options": [
+        "Outermost, so it catches everything the inner strategies (retry, breaker, timeout) ultimately surface and can substitute a safe default",
+        "Innermost, so it runs before the network call and short-circuits early",
+        "Immediately after retry but before the circuit breaker, so it only catches retry exhaustion",
+        "It must not be combined with a circuit breaker, since both handle failures"
+      ],
+      "answer": 0,
+      "explanation": "Fallback belongs outermost so it catches everything the inner strategies surface (including `BrokenCircuitException`) and supplies a substitute outcome — cached data, a default object — letting the caller degrade gracefully. It composes fine with a breaker."
+    },
+    {
+      "subtopic": "One handler per client",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Your team wants to add custom retry behavior on top of `AddStandardResilienceHandler()` for one client. What is the correct guidance?",
+      "options": [
+        "Add exactly one resilience handler per client; for a non-standard composition use `AddResilienceHandler(\"name\", builder => ...)` and build the pipeline yourself rather than stacking handlers",
+        "Call `AddStandardResilienceHandler()` twice — the second call merges its options into the first",
+        "Stack a second `AddStandardResilienceHandler()` and lower its retry count so the two cooperate",
+        "Wrap the client in another typed client that also adds a standard handler, to layer the pipelines"
+      ],
+      "answer": 0,
+      "explanation": "The rule is exactly one resilience handler per client — stacking handlers multiplies retries and timeouts unpredictably. For a custom composition, drop the standard handler and use `AddResilienceHandler(\"name\", builder => ...)` to build the pipeline yourself."
+    },
+    {
+      "subtopic": "Capturing the injected client",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Stashing the `HttpClient` injected into a typed client in a static field or a singleton is safe because the factory already pools the handler behind it.",
+      "answer": false,
+      "explanation": "Capturing the injected `HttpClient` statically or in a singleton re-pins the handler and defeats the rotation that keeps DNS fresh. The typed client is transient *precisely* so each use gets a fresh client over a rotating pooled handler — let the factory hand you a new one."
+    },
+    {
+      "subtopic": "Resilience for non-HTTP work",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about using Polly v8 resilience pipelines for non-HTTP work and for testing are correct? (Select all that apply.)",
+      "options": [
+        "A `ResiliencePipeline` wraps any delegate, so the same retry/breaker patterns apply to DB calls, queue publishes, and gRPC",
+        "Shared named pipelines can be registered with `AddResiliencePipeline` and resolved via `ResiliencePipelineProvider<TKey>` so they're built once",
+        "`ResiliencePipeline.Empty` is a no-op pipeline useful for bypassing resilience in tests",
+        "Resilience pipelines only function inside the HTTP handler chain and cannot wrap a `SaveChangesAsync` call",
+        "To test retry behavior you must make real network calls; in-memory `DelegatingHandler` stubs cannot drive the retry path"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A `ResiliencePipeline` is not HTTP-specific — it wraps any delegate (DB, queue, gRPC), shared pipelines register via `AddResiliencePipeline` and resolve through `ResiliencePipelineProvider<TKey>`, and `ResiliencePipeline.Empty` is the no-op for tests. You can absolutely unit-test the strategy with a `DelegatingHandler` stub that returns 503 a fixed number of times, no real network needed."
+    },
+    {
+      "subtopic": "Double-retry across layers",
+      "source": "dotnet/resilience-and-httpclientfactory-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Your microservice's typed client retries 3×, and the service mesh (Envoy/Istio) in front of the dependency *also* retries. What is the senior concern and the correct response?",
+      "options": [
+        "Retries multiply across layers (client × mesh), amplifying load on a struggling dependency — pick one layer to own retries, not both",
+        "The two retry layers automatically deduplicate, so the effective retry count stays 3 and no action is needed",
+        "The mesh retry overrides the client retry, so the client config is silently ignored and can be left as-is",
+        "Client retries are always preferred over mesh retries, so disable mesh retries and quadruple the client count"
+      ],
+      "answer": 0,
+      "explanation": "If both the client and the mesh/gateway retry, attempts multiply (e.g. 3×3), turning one slow service into a system-wide brownout. The fix is to pick a single layer to own retries rather than stacking them — there is no automatic dedup or override."
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/entity-framework-core-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "DbContext lifetime",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What service lifetime does `AddDbContext<AppDbContext>()` register `DbContext` with, and which one must you avoid?",
+      "options": [
+        "Scoped by default; never register it as Singleton because `DbContext` is not thread-safe",
+        "Transient by default; never register it as Scoped because the change tracker would leak",
+        "Singleton by default; never register it as Transient because connections would not be pooled",
+        "Scoped by default; never register it as Transient because migrations would re-run"
+      ],
+      "answer": 0,
+      "explanation": "`AddDbContext` registers the context as Scoped (one per request). It must never be a Singleton because `DbContext` is not thread-safe, so sharing one instance across concurrent requests corrupts the change tracker."
+    },
+    {
+      "subtopic": "AsNoTracking",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the primary effect of calling `AsNoTracking()` on a query?",
+      "options": [
+        "EF Core returns the results without putting them in the change tracker, so edits to those entities are not persisted by `SaveChanges`",
+        "EF Core opens a read-only database transaction so the rows cannot be modified by other sessions",
+        "EF Core caches the results in memory so subsequent identical queries skip the database",
+        "EF Core still tracks the entities but defers writing changes until the next `SaveChanges` call"
+      ],
+      "answer": 0,
+      "explanation": "`AsNoTracking()` runs the query without adding results to the change tracker (less memory, faster reads). Because the entities aren't tracked, modifying them and calling `SaveChanges` is a no-op unless you reattach them."
+    },
+    {
+      "subtopic": "Entity states",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "An entity in the **Unchanged** state generates what SQL when `SaveChanges` runs?",
+      "options": [
+        "Nothing — its current values match its original values",
+        "An `UPDATE` touching every column, to be safe",
+        "A `SELECT` to re-validate the row still exists",
+        "An `UPDATE` touching only the primary key column"
+      ],
+      "answer": 0,
+      "explanation": "Unchanged means the entity is tracked but identical to its original values, so `SaveChanges` emits nothing. Only Added (INSERT), Modified (UPDATE), and Deleted (DELETE) produce SQL."
+    },
+    {
+      "subtopic": "N+1 problem",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which loading strategy most commonly causes the N+1 query problem?",
+      "options": [
+        "Lazy loading — accessing a navigation in a loop fires one query per item",
+        "Eager loading — `Include` always issues a separate query per related entity",
+        "No-tracking queries — they re-query each row to resolve identity",
+        "Split queries — `AsSplitQuery` issues one query per row"
+      ],
+      "answer": 0,
+      "explanation": "Lazy loading triggers a separate query each time a navigation is accessed, so iterating a list of N items produces 1 + N queries. Eager loading with `Include` is the fix, not the cause."
+    },
+    {
+      "subtopic": "Concurrency exception",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which exception does EF Core throw when an optimistic-concurrency token check matches 0 rows at save time?",
+      "options": [
+        "`DbUpdateConcurrencyException`",
+        "`DbUpdateException`",
+        "`InvalidOperationException`",
+        "`OptimisticLockException`"
+      ],
+      "answer": 0,
+      "explanation": "When the `UPDATE ... WHERE Id = @id AND RowVersion = @original` matches 0 rows (the version moved), EF throws `DbUpdateConcurrencyException`. `DbUpdateException` is its base type used for other update failures, and `OptimisticLockException` is not an EF Core type."
+    },
+    {
+      "subtopic": "Element operators",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You query by a column that *should* be unique (e.g. email). Two rows unexpectedly match. Which operator surfaces this data-corruption bug by throwing, rather than silently returning one row?",
+      "options": [
+        "`SingleOrDefault(...)`",
+        "`FirstOrDefault(...)`",
+        "`First(...)`",
+        "`Where(...).Take(1)`"
+      ],
+      "answer": 0,
+      "explanation": "`SingleOrDefault` returns null on no match but throws on more than one — the throw is a feature that surfaces a uniqueness violation. `FirstOrDefault` and `First` both happily return the first of several matches, hiding the corruption."
+    },
+    {
+      "subtopic": "AsSplitQuery",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You `Include` two **collection** navigations (`o.Items` and `o.Payments`) on the same query and notice a huge row blow-up. What does `AsSplitQuery()` do to address it?",
+      "options": [
+        "Emits one SQL statement per collection navigation instead of one big JOIN, avoiding the cartesian product",
+        "Replaces the JOINs with a single subquery that deduplicates rows at the database",
+        "Loads only the first collection eagerly and lazy-loads the rest",
+        "Caps the number of related rows returned per parent to prevent the explosion"
+      ],
+      "answer": 0,
+      "explanation": "Including multiple collection navigations in one JOIN multiplies rows (Items x Payments per order). `AsSplitQuery()` splits the work into one SQL statement per collection, avoiding the cartesian product."
+    },
+    {
+      "subtopic": "Client vs server filtering",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is wrong with this code?",
+      "code": "var users = await context.Users.ToListAsync();\nvar activeUsers = users.Where(x => x.IsActive);",
+      "lang": "csharp",
+      "options": [
+        "`ToListAsync()` materializes **all** users into memory, then filters client-side; the `Where` should come before `ToListAsync` so it runs as SQL",
+        "`Where` returns an `IQueryable`, so `activeUsers` is never executed and the filter is lost",
+        "Mixing async (`ToListAsync`) with a synchronous `Where` causes a deadlock",
+        "`IsActive` cannot be translated to SQL, so EF throws at runtime"
+      ],
+      "answer": 0,
+      "explanation": "Calling `ToListAsync()` first pulls every row into memory; the subsequent `Where` runs in app memory (LINQ to Objects), not the database. Putting `Where` before `ToListAsync` pushes the filter into SQL so only matching rows return."
+    },
+    {
+      "subtopic": "AsNoTracking edit",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does the database remain unchanged after this code runs?",
+      "code": "var user = await context.Users.AsNoTracking().FirstAsync(u => u.Id == id);\nuser.Name = \"John\";\nawait context.SaveChangesAsync();",
+      "lang": "csharp",
+      "options": [
+        "The entity was loaded with `AsNoTracking`, so it isn't in the change tracker and `SaveChanges` sees nothing to write",
+        "`FirstAsync` returns a detached copy by value, so the assignment mutates a temporary",
+        "`SaveChangesAsync` was not awaited inside a transaction, so the write was rolled back",
+        "`AsNoTracking` makes the entity read-only, so the `Name` assignment silently throws"
+      ],
+      "answer": 0,
+      "explanation": "`AsNoTracking` keeps the entity out of the change tracker, so EF has no recorded modification to flush — `SaveChanges` is a no-op. Dropping `AsNoTracking` (or calling `context.Update(user)`) makes the edit persist."
+    },
+    {
+      "subtopic": "Migrations in production",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For a production app running **multiple instances**, which migration approach does the reviewer recommend, and why?",
+      "options": [
+        "Generate an idempotent SQL script (`dotnet ef migrations script --idempotent`) and apply it through the deployment pipeline, because multiple instances racing `Database.Migrate()` on boot can conflict",
+        "Call `Database.Migrate()` at startup in every instance, because EF serializes concurrent migrations automatically",
+        "Call `EnsureCreated()` at startup, because it is safe to combine with migrations at scale",
+        "Apply each migration's `Up` method manually in code on every request to stay current"
+      ],
+      "answer": 0,
+      "explanation": "For production the reviewer recommends an idempotent script applied via the pipeline; `Database.Migrate()` at startup is reserved for dev/single-instance because multiple instances racing it on boot can conflict. `EnsureCreated()` must not be mixed with migrations."
+    },
+    {
+      "subtopic": "Optimistic concurrency resolution",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Inside a `catch (DbUpdateConcurrencyException)` handler, what does `entry.CurrentValues.SetValues(databaseValues)` implement as a conflict-resolution strategy?",
+      "options": [
+        "\"Store wins\" — it discards the user's edits and reloads the current database values",
+        "\"Client wins\" — it keeps the user's edits and overwrites the database unconditionally",
+        "A merge that combines the user's edits with the database values column by column",
+        "A rollback that re-throws the exception after restoring original values"
+      ],
+      "answer": 0,
+      "explanation": "Setting `CurrentValues` to the database values discards the client's edits — \"store wins\". \"Client wins\" instead keeps `CurrentValues` and only re-baselines the token via `entry.OriginalValues.SetValues(databaseValues)`."
+    },
+    {
+      "subtopic": "Projection and tracking",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does projecting to a DTO with `Select(x => new UserDto { ... })` implicitly avoid change-tracking overhead even without `AsNoTracking()`?",
+      "options": [
+        "Because you aren't materializing tracked entity instances — the result is a DTO, which EF has no entity state to track",
+        "Because `Select` forces the query to run client-side, where tracking does not apply",
+        "Because EF automatically calls `AsNoTracking` whenever a `Where` clause is present",
+        "Because DTOs are immutable, so EF skips snapshotting them"
+      ],
+      "answer": 0,
+      "explanation": "A projection produces DTO objects rather than entity instances, so there is nothing for the change tracker to snapshot — tracking is implicitly skipped. It also sends less data over the wire by selecting only needed columns."
+    },
+    {
+      "subtopic": "Loading strategies",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about EF Core lazy loading are correct? (Select all that apply.)",
+      "options": [
+        "Lazy loading is off by default and requires the proxies package plus `virtual` navigation properties",
+        "With lazy loading disabled and no `Include`, an un-loaded **reference** navigation is `null`",
+        "With lazy loading disabled and no `Include`, an un-loaded **collection** navigation is an empty collection",
+        "Lazy loading is enabled by default and must be turned off to use `Include`",
+        "Lazy loading guarantees a single JOIN per parent entity"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Lazy loading is off by default and needs `UseLazyLoadingProxies()` plus `virtual` navs. When it's off and you don't `Include`, an un-loaded reference nav is null and a collection nav is empty. It is not on by default, and it produces extra per-access queries, not a single JOIN."
+    },
+    {
+      "subtopic": "Query performance checklist",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of these are recommended EF Core query-performance techniques from the senior checklist? (Select all that apply.)",
+      "options": [
+        "Project to a DTO with `Select` to fetch only needed columns",
+        "Use `AsNoTracking` for read-only queries",
+        "Inspect generated SQL with `query.ToQueryString()` before optimizing",
+        "Default every navigation to lazy loading so data loads only when touched",
+        "Call `ToListAsync()` early and filter the list in memory for flexibility"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Projecting with `Select`, using `AsNoTracking` for reads, and diagnosing with `ToQueryString()` are all on the checklist. Defaulting to lazy loading invites N+1, and materializing then filtering in memory is the anti-pattern the reviewer warns against."
+    },
+    {
+      "subtopic": "Transactions",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "A single `SaveChanges` call that performs several inserts, updates, and deletes wraps them all in one transaction, so a partial failure rolls the entire batch back.",
+      "answer": true,
+      "explanation": "`SaveChanges`/`SaveChangesAsync` is itself transactional: every change in one call is committed atomically and a partial failure rolls the whole batch back. You only need an explicit `BeginTransaction` to span *multiple* `SaveChanges` calls or external work."
+    },
+    {
+      "subtopic": "Explicit loading and N+1",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Explicit loading (`context.Entry(x).Reference(...).LoadAsync()`) inherently prevents the N+1 problem in all cases.",
+      "answer": false,
+      "explanation": "Explicit loading only avoids N+1 when you load the whole related set in a single call. Calling `Load` once per item inside a loop reproduces N+1 by hand, just as lazy loading does."
+    },
+    {
+      "subtopic": "DbContext thread-safety",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team registers `DbContext` as a Singleton and a load test starts throwing \"A second operation was started on this context before a previous operation completed.\" What is the root cause?",
+      "options": [
+        "`DbContext` is not thread-safe; one shared instance is being used by concurrent requests, corrupting the change tracker",
+        "The connection pool is exhausted because the Singleton never releases its connection",
+        "`SaveChangesAsync` was used instead of `SaveChanges`, which serializes operations",
+        "Migrations were not applied, so EF retries the operation on a second thread"
+      ],
+      "answer": 0,
+      "explanation": "A Singleton `DbContext` is shared across concurrent requests, but `DbContext` is not thread-safe — overlapping operations on one instance throw the \"second operation\" error. The fix is the Scoped (per-request) lifetime, or `AddDbContextFactory` where a non-scoped context is needed."
+    },
+    {
+      "subtopic": "Concurrency token portability",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Your model uses `[Timestamp] byte[] RowVersion` for optimistic concurrency. You migrate from SQL Server to PostgreSQL. What is the most accurate consequence?",
+      "options": [
+        "`[Timestamp]`/`rowversion` is SQL Server-specific; on other providers you typically configure a manually-managed concurrency token (e.g. `IsConcurrencyToken()`) instead",
+        "Nothing changes — `[Timestamp]` is a provider-agnostic EF Core attribute the database auto-bumps everywhere",
+        "Optimistic concurrency stops working entirely; you must switch to pessimistic row locks",
+        "EF Core silently converts `RowVersion` to an auto-incrementing integer primary key"
+      ],
+      "answer": 0,
+      "explanation": "`[Timestamp]`/`rowversion` relies on a SQL Server-specific auto-bumped column. Non-SQL-Server providers don't have it, so you use a manually-managed concurrency token via `IsConcurrencyToken()` (or `[ConcurrencyCheck]` on a property)."
+    },
+    {
+      "subtopic": "Materialized tracking state",
+      "source": "dotnet/entity-framework-core-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "After `context.Users.Add(user)` followed by a successful `SaveChangesAsync()`, what state is `user` in, and what would a subsequent property edit then produce on the next `SaveChanges`?",
+      "options": [
+        "Unchanged after the save; editing a property flips it to Modified and the next `SaveChanges` emits an `UPDATE`",
+        "Detached after the save; an edit produces nothing because the entity is no longer tracked",
+        "Added still; a subsequent `SaveChanges` would `INSERT` the row a second time",
+        "Deleted after the save; an edit re-inserts the row on the next `SaveChanges`"
+      ],
+      "answer": 0,
+      "explanation": "After a successful insert the entity transitions Added → Unchanged but stays tracked. Editing a tracked property flips Unchanged → Modified, so the next `SaveChanges` emits an `UPDATE` of the changed column."
+    }
+  ]
+}

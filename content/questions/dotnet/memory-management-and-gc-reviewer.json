@@ -1,0 +1,271 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/memory-management-and-gc-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Stack vs heap",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Where does the `Age` field (an `int`) of a heap-allocated `Person` object live?",
+      "options": [
+        "On the managed heap, inline inside the `Person` object",
+        "Always on the calling thread's stack, regardless of the object",
+        "In a separate boxed object on the Large Object Heap",
+        "In a CPU register for the lifetime of the object"
+      ],
+      "answer": 0,
+      "explanation": "A value type's storage lives wherever its container lives; an `int` field of a heap object lives on the heap as part of that object. The myth that value types 'always live on the stack' is wrong."
+    },
+    {
+      "subtopic": "Generations",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A Gen 2 collection (a 'full GC') collects which parts of the managed heap?",
+      "options": [
+        "Gen 2 only",
+        "Gen 0 + Gen 1 + Gen 2 + the LOH",
+        "Gen 1 + Gen 2 only",
+        "Gen 0 + Gen 1 only"
+      ],
+      "answer": 1,
+      "explanation": "A Gen N collection also collects all younger generations, so a Gen 2 collection is a full GC covering Gen 0, Gen 1, Gen 2, and the LOH. A Gen 0 collection touches only Gen 0."
+    },
+    {
+      "subtopic": "Large Object Heap",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "At what size are objects allocated directly on the Large Object Heap (LOH)?",
+      "options": [
+        "≥ 8,500 bytes",
+        "≥ 64 KB",
+        "≥ 85,000 bytes",
+        "≥ 1 MB"
+      ],
+      "answer": 2,
+      "explanation": "Objects of 85,000 bytes or more go straight to the LOH, a separate segment that is logically Gen 2 and collected only on a full GC."
+    },
+    {
+      "subtopic": "GC algorithm",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The .NET garbage collector uses reference counting to decide when an object can be reclaimed.",
+      "answer": false,
+      "explanation": "The .NET GC is a tracing collector: it traces reachability from roots and treats unreachable objects as garbage. Tracing can reclaim cycles, which reference counting cannot."
+    },
+    {
+      "subtopic": "Disposal timing",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the key difference in *timing* between `IDisposable.Dispose()` and a finalizer?",
+      "options": [
+        "`Dispose()` is deterministic (caller-controlled); a finalizer runs non-deterministically on the GC's finalizer thread",
+        "Both run deterministically when the object goes out of scope",
+        "A finalizer runs immediately on `Dispose()`; `Dispose()` is deferred to the next GC",
+        "`Dispose()` runs on the finalizer thread; a finalizer runs on the calling thread"
+      ],
+      "answer": 0,
+      "explanation": "`Dispose()` is deterministic cleanup the caller invokes (e.g. via `using`); a finalizer is a non-deterministic safety net run later by the GC's finalizer thread."
+    },
+    {
+      "subtopic": "Boxing",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does this snippet print, and how many heap allocations occur from boxing?",
+      "code": "int x = 10;\nobject o1 = x;\nobject o2 = x;\nConsole.WriteLine(ReferenceEquals(o1, o2));",
+      "lang": "csharp",
+      "options": [
+        "`True`, with one boxing allocation shared by both references",
+        "`False`, with two separate boxing allocations",
+        "`True`, with zero boxing allocations",
+        "`False`, with one boxing allocation"
+      ],
+      "answer": 1,
+      "explanation": "Each boxing operation allocates a separate heap object, so `o1` and `o2` reference different boxes and `ReferenceEquals` is `False`. Two boxing allocations occur."
+    },
+    {
+      "subtopic": "Avoiding boxing",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following help avoid hidden boxing of value types? (Select all that apply.)",
+      "options": [
+        "Using generic collections like `List<int>` instead of non-generic `ArrayList`",
+        "Implementing `IEquatable<T>` on a struct so `Equals`/dictionary lookups don't box",
+        "Storing value-type items in `ArrayList` and casting back on read",
+        "Using `EqualityComparer<T>.Default` for comparisons",
+        "Assigning a struct to an `IComparable` interface variable before comparing"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Generics, `IEquatable<T>` on structs, and `EqualityComparer<T>.Default` all avoid boxing. `ArrayList` boxes every value-type item, and assigning a struct to an interface variable (like `IComparable`) boxes it."
+    },
+    {
+      "subtopic": "LOH fragmentation",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A hot loop repeatedly allocates `new byte[90_000]` and lets each array become garbage. Why might this eventually throw `OutOfMemoryException` even though total free memory looks adequate?",
+      "options": [
+        "90 KB arrays are pinned automatically, so the GC can never reclaim them",
+        "Each array lands on the LOH, which is collected only on full GCs and not compacted by default, so it fragments into gaps too small for a new 90 KB block",
+        "Arrays this size are boxed, and the box headers exhaust the Gen 0 budget",
+        "The arrays go to Gen 0, which has a hard 64 KB-per-object ceiling"
+      ],
+      "answer": 1,
+      "explanation": "90,000-byte arrays go on the LOH, which is collected only on full GCs and is not compacted by default. Rapid churn fragments it so free gaps can't satisfy a new large allocation. Pooling via `ArrayPool<T>` is the fix."
+    },
+    {
+      "subtopic": "GC flavors",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does Server GC differ structurally from Workstation GC?",
+      "options": [
+        "Server GC disables Gen 2 collections entirely to maximize throughput",
+        "Server GC creates one managed heap and one GC thread per logical CPU, collecting in parallel for higher throughput",
+        "Server GC runs every collection on a single dedicated background thread to minimize footprint",
+        "Server GC eliminates the LOH by compacting all large objects on every collection"
+      ],
+      "answer": 1,
+      "explanation": "Server GC allocates one managed heap and one GC thread per logical CPU and collects in parallel, trading higher memory footprint for throughput. Workstation GC uses a single heap optimized for latency and low footprint."
+    },
+    {
+      "subtopic": "Background GC",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Background GC lets the expensive mark phase of a Gen 2 collection run concurrently with application threads, and it is on by default for both workstation and server GC in modern .NET.",
+      "answer": true,
+      "explanation": "Background GC applies to Gen 2 (full) collections: the long mark phase runs on a background thread concurrently with the app, reducing stop-the-world pauses, and it is on by default for both flavors."
+    },
+    {
+      "subtopic": "SuppressFinalize",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why does the canonical `Dispose()` call `GC.SuppressFinalize(this)`?",
+      "options": [
+        "To force an immediate Gen 2 collection so the object is reclaimed sooner",
+        "To remove the object from the finalization queue so it doesn't pay the extra-GC-survival cost of running a finalizer it no longer needs",
+        "To register the object for finalization in case Dispose threw partway through",
+        "To pin the object so the GC cannot move it during compaction"
+      ],
+      "answer": 1,
+      "explanation": "After deterministic cleanup, the finalizer is redundant. Suppressing finalization removes the object from the finalize queue so it isn't promoted and reclaimed across an extra GC. It does not trigger or force any collection."
+    },
+    {
+      "subtopic": "Dispose pattern",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the standard `protected virtual void Dispose(bool disposing)`, why is the `disposing` flag needed?",
+      "options": [
+        "When `disposing` is `false` (called from the finalizer), other managed objects may already be finalized, so only unmanaged state may be released",
+        "When `disposing` is `true`, the method must skip releasing unmanaged resources to avoid double-free",
+        "It tells the GC whether to run the finalizer immediately or defer it",
+        "It controls whether `Dispose()` is idempotent on repeated calls"
+      ],
+      "answer": 0,
+      "explanation": "When reached from the finalizer (`disposing == false`), referenced managed objects may already have been finalized, so you must not touch them—only release unmanaged state. The unmanaged release path runs in both cases."
+    },
+    {
+      "subtopic": "Managed leaks",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are common causes of managed memory 'leaks' (objects that stay reachable so the GC can't collect them)? (Select all that apply.)",
+      "options": [
+        "An event subscription where a long-lived publisher holds a handler targeting a short-lived subscriber that never unsubscribes",
+        "A `static` collection used as a cache that only ever grows",
+        "An undisposed `System.Threading.Timer` whose callback target is rooted while it keeps firing",
+        "A local `Span<byte>` created with `stackalloc` inside a method",
+        "A short-lived local `int` declared inside a tight loop"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Event handlers, ever-growing statics, and undisposed timers all keep objects reachable. A `stackalloc` span lives on the stack and is freed when the frame pops, and a local `int` is reclaimed automatically—neither leaks."
+    },
+    {
+      "subtopic": "Span constraints",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Because `Span<T>` is a `ref struct`, which of these is NOT allowed?",
+      "options": [
+        "Slicing an array into a `Span<T>` without allocating",
+        "Storing a `Span<T>` in an instance field of a class",
+        "Passing a `Span<T>` as a method argument",
+        "Viewing a `stackalloc` block through a `Span<T>`"
+      ],
+      "answer": 1,
+      "explanation": "As a `ref struct`, `Span<T>` is stack-only: it can't be a class field, boxed, captured in a lambda, or held across an `await`. Slicing, passing as an argument, and wrapping `stackalloc` are all fine."
+    },
+    {
+      "subtopic": "Diagnostics tooling",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You suspect a leak and want to find *which type is retaining the most bytes and what is keeping it alive*. Which tool is the best fit?",
+      "options": [
+        "`dotnet-counters` — live runtime counters",
+        "`dotnet-gcdump` — a GC heap snapshot with object graph, sizes, and roots",
+        "`dotnet-trace` — allocation hot-path ETW events",
+        "`GC.Collect()` called in a loop to observe whether memory drops"
+      ],
+      "answer": 1,
+      "explanation": "`dotnet-gcdump` captures a heap snapshot (object graph + sizes + roots) so you can follow the retention path. `dotnet-counters` shows trends, `dotnet-trace` profiles allocation hot paths, and calling `GC.Collect()` is not a diagnostic technique."
+    },
+    {
+      "subtopic": "Finalizers and GC cost",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the GC-cost consequence of giving a class a finalizer (and never suppressing it)?",
+      "options": [
+        "The object is collected one GC earlier because finalizers run eagerly",
+        "The object survives at least one extra GC—placed on the finalization queue, promoted, finalized later, then collected on a subsequent GC",
+        "The object is allocated directly on the LOH regardless of size",
+        "The object is pinned so the GC never moves or compacts around it"
+      ],
+      "answer": 1,
+      "explanation": "A finalizable object is placed on the finalization queue and survives at least one extra collection: it gets promoted, its finalizer runs later on the finalizer thread, and it is reclaimed on a subsequent GC—so it lives longer and reaches Gen 2."
+    },
+    {
+      "subtopic": "Does this need a finalizer?",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Does the `CacheReader` type below need a finalizer, and why?",
+      "code": "public sealed class CacheReader : IDisposable\n{\n    private readonly FileStream _stream;\n    public CacheReader(string path) => _stream = File.OpenRead(path);\n    public void Dispose() => _stream.Dispose();\n}",
+      "lang": "csharp",
+      "options": [
+        "Yes — any type implementing `IDisposable` must also declare a finalizer for safety",
+        "No — it holds no raw unmanaged handle directly; `FileStream` wraps a `SafeFileHandle` with its own critical finalizer, so disposing the stream is enough",
+        "Yes — because `FileStream` holds an OS handle that only a finalizer on `CacheReader` can release",
+        "No — but it must still call `GC.SuppressFinalize(this)` in `Dispose` to be correct"
+      ],
+      "answer": 1,
+      "explanation": "`CacheReader` owns only a managed `FileStream`, which already wraps a `SafeFileHandle` (its own critical finalizer). Implementing `IDisposable` and disposing the stream suffices; a finalizer would only add GC cost, and `SuppressFinalize` is pointless with no finalizer."
+    },
+    {
+      "subtopic": "Pinning and compaction",
+      "source": "dotnet/memory-management-and-gc-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Regarding heap compaction and pinning on the small object heap, which statements are true? (Select all that apply.)",
+      "options": [
+        "Compaction slides survivors together, which makes allocation a fast bump-pointer operation",
+        "Because compaction moves objects, the GC must update all references that point at moved objects",
+        "Pinning (e.g. `fixed` or a pinned `GCHandle`) tells the GC it may not move that object",
+        "Excessive long-lived pinning improves compaction by giving the GC stable anchor points",
+        "Compaction uses a free-list search to place each survivor in the best-fitting gap"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Compaction enables fast bump-pointer allocation and requires fixing up references to moved objects; pinning forbids the GC from moving an object. Excessive pinning defeats compaction and causes fragmentation, and a compacted heap allocates by advancing a pointer, not by free-list search."
+    }
+  ]
+}

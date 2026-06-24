@@ -1,0 +1,264 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/linq-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Deferred execution",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does **deferred execution** mean in LINQ?",
+      "options": [
+        "The query is built but not executed until the sequence is enumerated",
+        "The query runs immediately and caches its results for later reuse",
+        "The query executes on a background thread and you await the result",
+        "The query is compiled to SQL even for in-memory collections"
+      ],
+      "answer": 0,
+      "explanation": "Deferred execution means the query is defined now but only runs when enumerated (e.g., by a `foreach` or a materializing operator). Caching results immediately describes an immediate operator like `ToList`, not deferral."
+    },
+    {
+      "subtopic": "Immediate operators",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "easy",
+      "type": "multi",
+      "question": "Which of the following operators force **immediate** execution (materialize results right away)?",
+      "options": [
+        "`ToList`",
+        "`Where`",
+        "`Count`",
+        "`Select`",
+        "`First`"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "`ToList`, `Count`, and `First` materialize the query immediately. `Where` and `Select` are deferred — they build the pipeline and only run when enumerated."
+    },
+    {
+      "subtopic": "Where vs Select",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Using the SQL-table mental model from the reviewer, what does `Where` do versus `Select`?",
+      "options": [
+        "`Where` filters rows; `Select` projects columns",
+        "`Where` projects columns; `Select` filters rows",
+        "Both filter rows, but `Select` also sorts them",
+        "`Where` flattens nested sequences; `Select` groups them"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer's mental model is `Where` filters *rows* while `Select` projects *columns* (shapes the output). Flattening is `SelectMany`, not `Select`."
+    },
+    {
+      "subtopic": "Any vs Count",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why does the reviewer recommend `Any(predicate)` over `Count(predicate) > 0` for an existence check?",
+      "options": [
+        "`Any()` short-circuits on the first match, while `Count()` must examine every element",
+        "`Any()` returns an `int` that is cheaper to compare than a `bool`",
+        "`Count()` cannot accept a predicate, so it always throws on filtering",
+        "`Any()` is the only one of the two that supports deferred execution"
+      ],
+      "answer": 0,
+      "explanation": "`Any()` stops at the first matching element; `Count()` with a predicate (or over a provider) must scan everything. In EF, `Any()` translates to an `EXISTS` check, which is cheaper than `SELECT COUNT(*)`."
+    },
+    {
+      "subtopic": "ToList vs ToArray",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "`ToList()` and `ToArray()` both execute the query immediately, but only the `List<T>` returned by `ToList()` is resizable.",
+      "answer": true,
+      "explanation": "Both materialize the query right away. `ToList` returns a resizable `List<T>`; `ToArray` returns a fixed-size `T[]`. The reviewer recommends defaulting to `ToList` unless an array is required."
+    },
+    {
+      "subtopic": "IQueryable vs IEnumerable",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With EF, what is the key practical difference between keeping a query as `IQueryable<T>` versus calling `AsEnumerable()` early?",
+      "options": [
+        "`IQueryable` translates the filter to SQL so only matching rows return; `AsEnumerable()` pulls all rows and filters in app memory",
+        "`IQueryable` always buffers the full result set; `AsEnumerable()` streams rows one at a time from SQL",
+        "`AsEnumerable()` runs the query in the database, while `IQueryable` always runs it in memory",
+        "Both run identical SQL, but `AsEnumerable()` opens a second database connection"
+      ],
+      "answer": 0,
+      "explanation": "`IQueryable` builds an expression tree the provider translates to SQL, so the WHERE runs in the database and only matching rows come back. `AsEnumerable()` switches to in-memory evaluation, so subsequent operators run client-side after pulling all rows — a common over-fetching bug."
+    },
+    {
+      "subtopic": "When SQL runs",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For an EF `IQueryable`, when is the SQL query actually sent to the database?",
+      "code": "var query = db.Users;\nquery = query.Where(u => u.IsActive);\nquery = query.OrderBy(u => u.Name);\nvar result = query.ToList();",
+      "lang": "csharp",
+      "options": [
+        "Once, when `ToList()` materializes the query",
+        "Three times — once for each operator (`Where`, `OrderBy`, and `ToList`)",
+        "When `db.Users` is first assigned to `query`",
+        "Twice — once when `Where` is added and again at `ToList()`"
+      ],
+      "answer": 0,
+      "explanation": "Chaining operators just composes the expression tree; nothing runs until materialization. `ToList()` triggers a single SQL query that includes the WHERE and ORDER BY."
+    },
+    {
+      "subtopic": "Select vs SelectMany",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `customers` where each customer has a `List<Order> Orders`, what is the element type of `customers.Select(c => c.Orders)` versus `customers.SelectMany(c => c.Orders)`?",
+      "options": [
+        "`Select` yields `IEnumerable<List<Order>>`; `SelectMany` yields `IEnumerable<Order>`",
+        "Both yield `IEnumerable<Order>`, but `SelectMany` removes duplicates",
+        "`Select` yields `IEnumerable<Order>`; `SelectMany` yields `IEnumerable<List<Order>>`",
+        "`Select` yields `List<Order>`; `SelectMany` yields a single `Order`"
+      ],
+      "answer": 0,
+      "explanation": "`Select` projects 1:1, so over a nested collection it produces a sequence of collections (`IEnumerable<List<Order>>`). `SelectMany` flattens one level into a single `IEnumerable<Order>`."
+    },
+    {
+      "subtopic": "GroupBy vs ToLookup",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key execution difference between `GroupBy` and `ToLookup`?",
+      "options": [
+        "`GroupBy` is deferred; `ToLookup` executes immediately and produces a reusable lookup",
+        "`ToLookup` is deferred; `GroupBy` executes immediately",
+        "Both are deferred, but `ToLookup` cannot be indexed by key",
+        "Both execute immediately, but `GroupBy` requires unique keys"
+      ],
+      "answer": 0,
+      "explanation": "`GroupBy` is deferred and re-evaluates on each enumeration; `ToLookup` materializes immediately into an `ILookup` you can index by key (e.g., `lookup[\"IT\"]`) and reuse without re-running the query."
+    },
+    {
+      "subtopic": "Single vs First behavior",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement about the element operators is correct?",
+      "options": [
+        "`SingleOrDefault` returns the default for an empty source but throws if more than one element matches",
+        "`SingleOrDefault` never throws regardless of how many elements match",
+        "`First` returns the default value when the source is empty",
+        "`FirstOrDefault` throws if more than one element matches"
+      ],
+      "answer": 0,
+      "explanation": "`SingleOrDefault` tolerates zero (returns default) but still enforces uniqueness — it throws if more than one element matches. `First` throws on empty; `FirstOrDefault` returns default and never enforces uniqueness."
+    },
+    {
+      "subtopic": "Client vs server evaluation",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "EF throws **\"The LINQ expression could not be translated\"** for `db.Users.Where(u => MyCustomFunction(u.Name))`. What is the recommended fix?",
+      "code": "var ok = db.Users\n    .Where(u => u.IsActive)\n    .AsEnumerable()\n    .Where(u => MyCustomFunction(u.Name));",
+      "lang": "csharp",
+      "options": [
+        "Do the translatable filter in SQL first, then `AsEnumerable()`, then apply the custom logic in memory",
+        "Call `AsEnumerable()` before any filter so all logic runs client-side",
+        "Wrap `MyCustomFunction` in `Expression.Call` so EF translates it to SQL automatically",
+        "Replace `Where` with `ToList().Where(...)` to avoid the translation error entirely"
+      ],
+      "answer": 0,
+      "explanation": "Push the translatable predicate (`IsActive`) into SQL to reduce rows, then switch to client-side with `AsEnumerable()` and run the untranslatable custom function in memory. Calling `AsEnumerable()` first over-fetches every row; `ToList()` first does the same."
+    },
+    {
+      "subtopic": "ToDictionary constraint",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "`ToDictionary` throws if the key selector produces duplicate keys for two different elements.",
+      "answer": true,
+      "explanation": "`ToDictionary` requires unique keys; a duplicate key throws an `ArgumentException`. If duplicates are expected, `ToLookup` (which maps each key to a group of values) is the right tool."
+    },
+    {
+      "subtopic": "Multiple enumeration",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about deferred queries and multiple enumeration are correct?",
+      "options": [
+        "A deferred query re-executes its full pipeline each time it is enumerated",
+        "Storing results in a `List<T>` avoids re-running the query on each reuse",
+        "Enumerating a deferred query twice is guaranteed to be free because results are cached",
+        "An `OrderBy` chain only performs the sort when the query is enumerated"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Deferred queries re-run the whole pipeline on every enumeration, so materializing once with `ToList` avoids repeated work (and repeated DB hits with EF). Deferred queries are not cached, so the 'guaranteed free' claim is wrong; ordering only happens on enumeration."
+    },
+    {
+      "subtopic": "First vs Single cost",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is `Single()`/`SingleOrDefault()` more expensive than `First()`/`FirstOrDefault()`, including in EF?",
+      "options": [
+        "`Single` must read a second element to prove uniqueness — EF fetches a 2nd row (e.g., `TOP(2)`)",
+        "`Single` always sorts the source before returning, while `First` does not",
+        "`Single` opens a transaction while `First` runs without one",
+        "`Single` disables deferred execution, forcing the whole table to materialize"
+      ],
+      "answer": 0,
+      "explanation": "`First` can stop at the first match, but `Single` must verify there isn't a second match, so it reads (or fetches) a second element — EF emits `TOP(2)` on SQL Server / `LIMIT 2` elsewhere. There's no extra sort or transaction involved."
+    },
+    {
+      "subtopic": "Operator order with providers",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Compared to LINQ to Objects, why does operator order matter more for an EF `IQueryable`?",
+      "options": [
+        "For EF, order affects SQL translation and pushdown; a client-side hop (e.g., `AsEnumerable`) before a filter forces every row into memory",
+        "For EF, operators are evaluated right-to-left, so reversing them changes the result set",
+        "For LINQ to Objects the order changes the output, but for EF the output is always identical",
+        "EF requires `Select` before `Where`, otherwise the query fails to compile"
+      ],
+      "answer": 0,
+      "explanation": "For LINQ to Objects the output is identical regardless of order; for EF the order changes what SQL is generated and how much is pushed down. Putting a client-side hop like `AsEnumerable()` before the filter pulls every row, then filters locally."
+    },
+    {
+      "subtopic": "Streaming vs buffering",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which LINQ operators are **buffering** (must load all input before producing output) rather than streaming?",
+      "options": [
+        "`OrderBy`",
+        "`Where`",
+        "`GroupBy`",
+        "`Select`",
+        "`ToArray`"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "`OrderBy`, `GroupBy`, and `ToArray` must consume the entire input before yielding results (you can't sort or group without seeing everything). `Where` and `Select` stream item-by-item."
+    },
+    {
+      "subtopic": "AsEnumerable vs ToList",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "On an EF `IQueryable`, what is the essential difference between `AsEnumerable()` and `ToList()`?",
+      "options": [
+        "`ToList()` executes the query and buffers results; `AsEnumerable()` does not execute — it only changes the static type to `IEnumerable`",
+        "Both execute the query, but `AsEnumerable()` buffers into an array and `ToList()` into a list",
+        "`AsEnumerable()` executes immediately; `ToList()` stays deferred until first enumerated",
+        "Neither executes the query; both only change the compile-time type"
+      ],
+      "answer": 0,
+      "explanation": "`ToList()` runs the SQL now and buffers the rows. `AsEnumerable()` executes nothing — it just switches the static type from `IQueryable` to `IEnumerable` so subsequent operators run in memory once enumeration begins."
+    },
+    {
+      "subtopic": "PLINQ ordering",
+      "source": "dotnet/linq-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "When using `AsParallel()`, the original ordering of the source sequence is preserved in the output by default.",
+      "answer": false,
+      "explanation": "PLINQ does not guarantee order by default; you must add `AsOrdered()` to preserve source ordering (at some performance cost). `AsParallel()` is intended for CPU-bound work over large datasets."
+    }
+  ]
+}

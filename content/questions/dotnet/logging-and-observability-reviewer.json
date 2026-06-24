@@ -1,0 +1,274 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/logging-and-observability-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "ILogger category",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When you inject `ILogger<OrderService>`, what determines the logger's **category** (the key that per-category level filtering uses)?",
+      "options": [
+        "The fully-qualified type name of the generic argument `T` (e.g. `MyApp.Services.OrderService`)",
+        "The `EventId` passed to each log call",
+        "The name of the registered logging provider (Console, Debug, etc.)",
+        "The assembly name of the project being logged from"
+      ],
+      "answer": 0,
+      "explanation": "The generic argument of `ILogger<T>` sets the category to the fully-qualified type name, which is what per-category minimum-level configuration keys off. EventId, provider name, and assembly name do not set the category."
+    },
+    {
+      "subtopic": "structured logging",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why is `_logger.LogInformation(\"User {UserId} placed order {OrderId}\", userId, orderId)` preferred over `_logger.LogInformation($\"User {userId} placed order {orderId}\")`?",
+      "options": [
+        "The template form captures `UserId` and `OrderId` as queryable structured properties and gives the event a stable message id",
+        "The template form is the only syntax that compiles in .NET 6 and later",
+        "Interpolation logs at a lower severity level than templates",
+        "Interpolation cannot include more than one placeholder per message"
+      ],
+      "answer": 0,
+      "explanation": "The message-template form preserves each value as a structured, queryable field and shares one stable template id across all such events. The interpolated form bakes a flat string the backend can only substring-search. The other options are false (both compile, neither changes level, and interpolation supports many placeholders)."
+    },
+    {
+      "subtopic": "log levels",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A retry kicked in and the operation then succeeded via a fallback path. Which level is the appropriate choice for that log?",
+      "options": [
+        "Warning",
+        "Error",
+        "Critical",
+        "Information"
+      ],
+      "answer": 0,
+      "explanation": "Warning is for unexpected-but-recovered situations such as a retry or fallback. Error means the current operation failed, Critical is an app/host-level failure or data loss, and Information is normal noteworthy flow."
+    },
+    {
+      "subtopic": "scopes",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does `_logger.BeginScope(...)` accomplish?",
+      "options": [
+        "It attaches a set of properties to every log written inside the `using` block",
+        "It raises the minimum log level for the duration of the block",
+        "It buffers log records and flushes them only when the scope disposes",
+        "It creates a new logging provider scoped to the current request"
+      ],
+      "answer": 0,
+      "explanation": "A scope stamps its properties onto every log line emitted inside the block, so correlation fields appear without repeating them. It does not change levels, buffer/flush records, or create providers."
+    },
+    {
+      "subtopic": "OpenTelemetry mapping",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In .NET's OpenTelemetry mapping, an `Activity` started from an `ActivitySource` is an OpenTelemetry **span**.",
+      "answer": true,
+      "explanation": "OpenTelemetry in .NET sits on the BCL diagnostics primitives: `ActivitySource`/`Activity` is the tracing API and an `Activity` *is* a span."
+    },
+    {
+      "subtopic": "structured placeholders",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the call below, which structured property captures the value of `userId`?",
+      "code": "_logger.LogInformation(\"Order {OrderId} for user {UserId}\", userId, orderId);",
+      "lang": "csharp",
+      "options": [
+        "`OrderId`, because placeholders bind positionally and `userId` is the first argument",
+        "`UserId`, because the property name matches the variable name `userId`",
+        "Neither — the runtime throws because the names are mismatched",
+        "Both `OrderId` and `UserId`, because the value is duplicated into each field"
+      ],
+      "answer": 0,
+      "explanation": "Placeholders bind positionally, not by name. The first `{OrderId}` binds to the first argument `userId`, so `userId`'s value is stored under the property `OrderId` — a classic mismatch bug. The names are only labels for the structured output; no exception is thrown."
+    },
+    {
+      "subtopic": "per-category filtering",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "With this configuration, a log written by category `Microsoft.AspNetCore.Routing` at `Information` level is:",
+      "code": "{ \"Logging\": { \"LogLevel\": {\n  \"Default\": \"Information\",\n  \"Microsoft.AspNetCore\": \"Warning\"\n} } }",
+      "lang": "json",
+      "options": [
+        "Suppressed, because the most specific matching prefix `Microsoft.AspNetCore` sets the minimum to Warning",
+        "Written, because `Default` is Information and that always wins",
+        "Suppressed, because Information is below the global default minimum",
+        "Written, because category prefixes only affect Trace and Debug levels"
+      ],
+      "answer": 0,
+      "explanation": "Filtering is hierarchical by category prefix and the most specific match wins. `Microsoft.AspNetCore` (a prefix of the category) sets the minimum to Warning, so an Information record is suppressed. `Default` is only the fallback when no prefix matches."
+    },
+    {
+      "subtopic": "LoggerMessage generator",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about the `[LoggerMessage]` source generator are correct? (Select all that apply.)",
+      "options": [
+        "The enclosing class and the logging method must both be declared `partial`",
+        "It performs the level check before doing any argument work, so a filtered-out call is essentially free",
+        "It avoids boxing value-type arguments into an `object[]`",
+        "It requires the OpenTelemetry SDK to be registered before it will emit logs",
+        "It parses the message template once at compile time rather than on every call"
+      ],
+      "answer": [0, 1, 2, 4],
+      "explanation": "The generator emits a `partial` method body (class and method must be `partial`), checks the level first, avoids boxing, and pre-parses the template at compile time. It is independent of OpenTelemetry — it works with any provider and needs no OTel SDK."
+    },
+    {
+      "subtopic": "exception parameter",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a `[LoggerMessage]` method whose `Message` has no `{...}` placeholder for it, how is an `Exception` parameter handled?",
+      "code": "[LoggerMessage(EventId = 1002, Level = LogLevel.Error,\n  Message = \"Failed to place order {OrderId}\")]\npublic partial void OrderFailed(int orderId, Exception ex);",
+      "lang": "csharp",
+      "options": [
+        "It is bound automatically as the log entry's exception, not as a template argument",
+        "It is rendered into the message via its `ToString()` as an extra positional argument",
+        "It causes a compile error because every parameter must have a matching placeholder",
+        "It is silently ignored and never recorded"
+      ],
+      "answer": 0,
+      "explanation": "An `Exception` parameter is matched automatically and logged as the entry's exception, not consumed as a template placeholder. It is neither rendered as a positional arg, an error, nor dropped."
+    },
+    {
+      "subtopic": "three pillars",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why should you avoid putting unbounded values like user ids or full URLs into **metric** labels/tags?",
+      "options": [
+        "They explode cardinality, which drives up the cost and degrades the metrics backend",
+        "Metric tags are write-only and can never be queried back",
+        "Tags are limited to numeric values, so strings are dropped",
+        "It would force every metric to be exported as a trace span"
+      ],
+      "answer": 0,
+      "explanation": "Metrics are cheap only when label cardinality stays bounded. High-cardinality values like user ids or URLs multiply time series, exploding cost and load; such detail belongs in logs/traces. The other options are not real constraints of the metrics model."
+    },
+    {
+      "subtopic": "AddSource / AddMeter",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You created a `static readonly ActivitySource(\"MyApp.Orders\")` and start spans from it, but none appear in your backend. The OTLP exporter is wired and ASP.NET Core spans show up fine. What is the most likely cause?",
+      "options": [
+        "You never called `.AddSource(\"MyApp.Orders\")` on the tracing builder, so your custom source's spans are dropped",
+        "An `ActivitySource` cannot be `static` and must be created per request",
+        "Custom `ActivitySource` spans require a separate exporter from the auto-instrumentation",
+        "The source name must exactly equal the assembly name or spans are discarded"
+      ],
+      "answer": 0,
+      "explanation": "The SDK only listens to sources you register; you must `AddSource(name)` matching the `ActivitySource` name or its spans are silently dropped. Static singletons are correct and recommended, one exporter handles all spans, and the name need not match the assembly."
+    },
+    {
+      "subtopic": "traceparent propagation",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Service A calls Service B over HTTP, both using the standard OpenTelemetry instrumentation. How does B's span end up in the **same** distributed trace as A's?",
+      "options": [
+        "`HttpClient` instrumentation injects the W3C `traceparent` header outbound and ASP.NET Core extracts it inbound, continuing the same `TraceId`",
+        "Both services independently generate the same `TraceId` from a shared random seed",
+        "The OTel Collector merges traces by matching request timestamps",
+        "A custom GUID is passed in the request body and parsed by B"
+      ],
+      "answer": 0,
+      "explanation": "W3C trace context travels in the `traceparent` header: HttpClient instrumentation injects it on the way out and ASP.NET Core instrumentation extracts it on the way in, so B continues A's `TraceId` as a child span. The other mechanisms are not how distributed tracing correlates spans."
+    },
+    {
+      "subtopic": "liveness vs readiness",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A single `/health` endpoint runs all checks, including a DB ping. A transient DB blip causes a pod restart loop. What is the correct fix?",
+      "options": [
+        "Split into a cheap dependency-free **liveness** endpoint and a separate **readiness** endpoint that includes the DB check, selected by tags",
+        "Increase the liveness probe timeout so the DB ping always completes",
+        "Move the DB ping into the liveness check so failures are caught earlier",
+        "Return `Degraded` from every check so the orchestrator never restarts the pod"
+      ],
+      "answer": 0,
+      "explanation": "Conflating liveness and readiness means a dependency failure trips the liveness probe and the orchestrator restarts a healthy process. Splitting them with tags makes a DB blip only stop traffic (readiness) without restarting (liveness). Raising timeouts or moving the DB check into liveness makes it worse."
+    },
+    {
+      "subtopic": "IsEnabled guard",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "This loop dominates a CPU profile in production even though `Debug` is disabled there. What is the senior explanation and fix?",
+      "code": "for (var i = 0; i < items.Length; i++)\n    _logger.LogDebug(\"Item {Index} of {Total}: {@Item}\", i, items.Length, items[i]);",
+      "lang": "csharp",
+      "options": [
+        "The arguments are boxed into an `object[]` and `{@Item}` work is set up before the filter short-circuits; guard with `IsEnabled(LogLevel.Debug)` and/or use a `[LoggerMessage]` method",
+        "`LogDebug` ignores configuration and always writes, so the only fix is to remove the call entirely",
+        "Destructuring with `{@Item}` is what enables the level filter, so removing `@` makes it free",
+        "The cost is the disk I/O of writing each line; redirecting Console output fixes it"
+      ],
+      "answer": 0,
+      "explanation": "Each convenience call boxes value-type args into an `object[]` and prepares destructuring before the level filter fully short-circuits the cost; over a tight loop that is expensive. Guarding with `IsEnabled` and/or using `[LoggerMessage]` (which checks the level before any argument work) eliminates it. `LogDebug` does honor configuration, `@` does not control filtering, and no I/O happens when Debug is off."
+    },
+    {
+      "subtopic": "deferred formatting",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Using `$\"...\"` string interpolation to build a log message pays the formatting cost **even when** that log level is filtered out and nothing is written.",
+      "answer": true,
+      "explanation": "Interpolation produces the finished string before the logging call is even reached, so the formatting cost is paid unconditionally. Message templates defer rendering until a provider that passed the filter actually needs the string."
+    },
+    {
+      "subtopic": "sampling and null activity",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `Activity`/sampling in .NET OpenTelemetry are correct? (Select all that apply.)",
+      "options": [
+        "`ActivitySource.StartActivity` can return `null` when no listener is sampling, which is why `activity?.` is idiomatic",
+        "Sampling is decided at the root span and propagated, so child spans honor the parent's decision",
+        "`ActivitySource` and `Meter` are cheap to construct, so per-request instances are recommended",
+        "When `StartActivity` returns `null`, the unsampled span costs essentially nothing",
+        "Each child span independently re-rolls its own sampling decision regardless of the parent"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "`StartActivity` returns `null` when nothing is sampling (hence `activity?.`), the unsampled span is essentially free, and the sampling decision is made at the root and propagated so children honor the parent. `ActivitySource`/`Meter` are expensive and should be static singletons, and children do not re-roll independently."
+    },
+    {
+      "subtopic": "Serilog enrichment",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You switched the host to Serilog. Application code still calls `_logger.BeginScope(...)`, but the scope properties no longer appear as fields in Seq. Which Serilog configuration is required to surface them?",
+      "options": [
+        "`Enrich.FromLogContext()`",
+        "`WriteTo.Seq(...)` with `IncludeScopes = true`",
+        "`ReadFrom.Services(services)`",
+        "`MinimumLevel.Override(\"Default\", LogEventLevel.Debug)`"
+      ],
+      "answer": 0,
+      "explanation": "`Enrich.FromLogContext()` is what makes `ILogger.BeginScope(...)` values flow into Serilog events as structured fields. `IncludeScopes` is a Console (Microsoft.Extensions.Logging) option, `ReadFrom.Services` pulls DI services, and minimum-level overrides only affect filtering."
+    },
+    {
+      "subtopic": "Console scope rendering",
+      "source": "dotnet/logging-and-observability-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "You wrap several log calls in `BeginScope(new { OrderId = id })`, but the Console output shows the log messages with no `OrderId` field, while your Seq sink shows it fine. What is the most likely reason?",
+      "options": [
+        "The Console provider does not render scopes unless `IncludeScopes = true` is set; structured sinks capture them by default",
+        "Scopes are only honored by the first registered provider, so Console is skipped",
+        "Anonymous-object scopes are dropped; only `Dictionary<string,object>` scopes work anywhere",
+        "Console flushes asynchronously and discards scope properties under load"
+      ],
+      "answer": 0,
+      "explanation": "The Console provider must opt in with `IncludeScopes = true` to render scope properties; structured backends like Seq/Serilog/OTel capture scope values as fields regardless. Scopes are not limited to one provider or to dictionary form, and Console does not drop scope data under load."
+    }
+  ]
+}

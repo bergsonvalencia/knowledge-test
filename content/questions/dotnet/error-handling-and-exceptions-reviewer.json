@@ -1,0 +1,275 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "throw vs throw ex",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Inside a `catch` block, what is the difference between bare `throw;` and `throw ex;`?",
+      "options": [
+        "`throw;` preserves the original stack trace; `throw ex;` resets it to the rethrow line",
+        "`throw;` resets the stack trace; `throw ex;` preserves the original",
+        "They are identical; the compiler treats them the same way",
+        "`throw ex;` wraps the exception in a new `AggregateException`, `throw;` does not"
+      ],
+      "answer": 0,
+      "explanation": "Bare `throw;` rethrows the current exception with its original stack trace intact. `throw ex;` throws the same object but overwrites the stack trace with the current line, erasing where the error actually originated — the classic stack-trace-destroying bug."
+    },
+    {
+      "subtopic": "exceptions vs control flow",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Exceptions are an appropriate mechanism for routine branching, such as signalling that a dictionary lookup missed a key.",
+      "answer": false,
+      "explanation": "Exceptions are for the exceptional, not control flow — they are expensive (stack capture and unwinding) and obscure intent. A routine, expected miss should use a return value such as the Try-parse pattern (`TryGetValue`) or a nullable, not a thrown exception."
+    },
+    {
+      "subtopic": "custom exception base class",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the recommended base class for a new custom exception type in modern .NET?",
+      "options": [
+        "`System.Exception`",
+        "`System.ApplicationException`",
+        "`System.SystemException`",
+        "`System.InvalidOperationException`"
+      ],
+      "answer": 0,
+      "explanation": "Custom exceptions should derive directly from `Exception`. The historical `ApplicationException` (user) vs `SystemException` (runtime) split is now discouraged, and `SystemException`/`InvalidOperationException` carry runtime-specific meanings you should not appropriate."
+    },
+    {
+      "subtopic": "ProblemDetails contract",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which RFC and media type define the `ProblemDetails` error body produced by `AddProblemDetails()` in ASP.NET Core?",
+      "options": [
+        "RFC 9457, media type `application/problem+json`",
+        "RFC 7231, media type `application/json`",
+        "RFC 6749, media type `application/error+json`",
+        "RFC 9110, media type `application/problem+xml`"
+      ],
+      "answer": 0,
+      "explanation": "`ProblemDetails` is defined by RFC 9457 (which obsoletes RFC 7807) and is served with the media type `application/problem+json`. The other RFCs cover HTTP semantics (7231/9110) and OAuth (6749), not the problem-details body."
+    },
+    {
+      "subtopic": "cancellation is not failure",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When a `CancellationToken` is signalled mid-operation, which exception type is thrown to indicate cooperative cancellation?",
+      "options": [
+        "`OperationCanceledException` (or its subclass `TaskCanceledException`)",
+        "`InvalidOperationException`",
+        "`TimeoutException`",
+        "`AggregateException` wrapping a `ThreadAbortException`"
+      ],
+      "answer": 0,
+      "explanation": "Cooperative cancellation throws `OperationCanceledException`, whose subclass `TaskCanceledException` is surfaced when awaiting a cancelled `Task`. This is expected control flow, not a server fault — it should not be logged as an error or mapped to a 500."
+    },
+    {
+      "subtopic": "exception filters",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key behavioral advantage of an exception filter `catch (X e) when (predicate)` over catching and then re-checking the condition inside the catch body?",
+      "options": [
+        "If the predicate returns false, the stack is NOT unwound and the exception keeps searching with its original frame intact",
+        "The filter automatically retries the protected block until the predicate returns true",
+        "The filter converts the exception into a `Result<T>` so the caller cannot ignore it",
+        "The filter suppresses the exception entirely if the predicate throws"
+      ],
+      "answer": 0,
+      "explanation": "A filter decides whether the catch applies before the stack unwinds; when the predicate is false the catch body never runs and the stack/original frame is preserved for debugging and first-chance logging. Catching-then-rethrowing has already unwound the stack to the catch site."
+    },
+    {
+      "subtopic": "async exception location",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the code below, where is the `InvalidOperationException` thrown to the caller?",
+      "code": "async Task LoadAsync()\n{\n    throw new InvalidOperationException(\"boom\");\n}\n\nTask t = LoadAsync();\nConsole.WriteLine(\"after call\");\nawait t;",
+      "lang": "csharp",
+      "options": [
+        "At `await t;` — the exception is captured onto the Task and \"after call\" prints first",
+        "At `LoadAsync();` — the call site throws immediately, before \"after call\" prints",
+        "At `Console.WriteLine` — the pending exception interrupts the next statement",
+        "It is never thrown; it is silently swallowed because the Task is discarded"
+      ],
+      "answer": 0,
+      "explanation": "An exception in an `async` method is captured and stored on the returned `Task`; it re-throws when the Task is awaited. So nothing throws at the call, \"after call\" prints, and the exception surfaces at `await t;` with its original stack trace."
+    },
+    {
+      "subtopic": "IExceptionHandler chain",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Two `IExceptionHandler` implementations are registered in this order. For a thrown exception, which handler writes the response?",
+      "code": "builder.Services.AddExceptionHandler<AHandler>(); // TryHandleAsync returns false\nbuilder.Services.AddExceptionHandler<BHandler>(); // TryHandleAsync returns true",
+      "lang": "csharp",
+      "options": [
+        "`BHandler` — handlers run in registration order and the first to return true wins",
+        "`AHandler` — the first registered handler always produces the response regardless of return value",
+        "Both run and their responses are merged into one body",
+        "Neither — returning false from `AHandler` aborts the chain and yields the default 500"
+      ],
+      "answer": 0,
+      "explanation": "Handlers run in registration order; `TryHandleAsync` returning `true` means \"handled, stop\" and `false` means \"not mine, try the next.\" `AHandler` returns false so the middleware calls `BHandler`, which returns true and writes the response."
+    },
+    {
+      "subtopic": "logging exceptions",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is `logger.LogError(ex, \"Order {OrderId} failed\", id)` preferred over `logger.LogError($\"Order {id} failed: {ex}\")`?",
+      "options": [
+        "It captures the exception type/message/stack and `OrderId` as structured fields you can query, instead of flattening everything into one string",
+        "It is the only overload that prevents the exception from being rethrown",
+        "Interpolated strings cannot be passed to `LogError` and would fail to compile",
+        "The interpolated form logs at Warning level instead of Error level"
+      ],
+      "answer": 0,
+      "explanation": "Passing the exception as the first argument and using named message templates preserves structured properties (exception details plus `OrderId`) for querying. String interpolation throws away that structure by baking everything into one flat message — it still compiles and logs at Error, but is far less useful."
+    },
+    {
+      "subtopic": "transient faults and retries",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which conditions should be satisfied before an operation is retried as a transient fault? (Select all that apply.)",
+      "options": [
+        "The failure is genuinely transient (e.g. timeout, 429, 503, a transient SQL error number)",
+        "The operation is idempotent so re-execution is safe",
+        "The failure is a `400 Bad Request` caused by invalid user input",
+        "Retries are implemented via a configured resilience pipeline rather than a hand-rolled catch loop",
+        "The failure is an unhandled `NullReferenceException` from a server bug"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Retries must target only transient conditions and only for idempotent operations, and belong in a resilience policy (e.g. Polly v8 / `AddStandardResilienceHandler`), not a catch block. Retrying a 400 (client must change the request) or a `NullReferenceException` (a bug to fix) just wastes attempts."
+    },
+    {
+      "subtopic": "exceptions never to catch",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which exceptions should you NOT routinely catch because they signal a broken process or a bug to fix rather than a recoverable condition? (Select all that apply.)",
+      "options": [
+        "`StackOverflowException`",
+        "`OutOfMemoryException`",
+        "`NullReferenceException`",
+        "`HttpRequestException`",
+        "`IOException`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`StackOverflowException` (uncatchable since .NET 2.0, terminates the process) and `OutOfMemoryException` are process-fatal; `NullReferenceException` is a programmer error to fix at the source. `HttpRequestException` and `IOException` are recoverable/transient faults you legitimately catch and may retry."
+    },
+    {
+      "subtopic": "exceptions vs Result pattern",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "A primary trade-off of the `Result<T>` pattern compared to throwing is that the failure becomes part of the method signature, so the caller is forced to handle it, but it does not automatically unwind the stack the way an exception does.",
+      "answer": true,
+      "explanation": "The Result pattern encodes success/failure in the signature, making the caller deal with it explicitly and cheaply, at the cost of extra ceremony and no automatic stack unwinding/propagation — which is exactly what an exception provides."
+    },
+    {
+      "subtopic": "ProblemDetails leakage",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In production, what is the main reason to map exceptions to a `ProblemDetails` body in a global handler rather than relying on the developer exception page?",
+      "options": [
+        "The developer exception page leaks the full stack trace and internal details to the client and must be Development-only",
+        "The developer exception page returns 200 OK for every error, breaking status-code semantics",
+        "`ProblemDetails` is required to make `finally` blocks execute during unwinding",
+        "The developer exception page cannot be enabled when `AddProblemDetails()` is registered"
+      ],
+      "answer": 0,
+      "explanation": "The developer exception page exposes the full stack trace and request internals, so it is Development-only and must never run in production. `ProblemDetails` gives one machine-readable contract that surfaces a clean error to clients while internals go to logs."
+    },
+    {
+      "subtopic": "Task.WhenAll aggregation",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Both tasks in this `WhenAll` throw different exceptions. What prints, and how do you observe both failures?",
+      "code": "var t = Task.WhenAll(A(), B()); // A and B throw different exceptions\ntry { await t; }\ncatch (Exception e) { Console.WriteLine(e.GetType().Name); }",
+      "lang": "csharp",
+      "options": [
+        "Prints the type of the first exception only; read `t.Exception.InnerExceptions` after the await to see both",
+        "Prints `AggregateException`; awaiting always surfaces the aggregate so both are already in `e`",
+        "Prints both type names on separate lines because the catch runs once per inner exception",
+        "Prints nothing because `await` on a multi-fault Task rethrows only after the Task is garbage-collected"
+      ],
+      "answer": 0,
+      "explanation": "`WhenAll` collects every exception into an `AggregateException`, but `await` unwraps and rethrows only the first. To see them all, inspect the faulted task's `Exception.InnerExceptions` after the await — the catch block runs exactly once."
+    },
+    {
+      "subtopic": "async void danger",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why is `async void` (outside of event handlers) considered dangerous for exception handling?",
+      "options": [
+        "Its exceptions are not stored on an awaitable Task, so they escape to the synchronization context / `AppDomain` and can crash the process",
+        "It silently converts every exception into a returned `Result<T>` the caller must inspect",
+        "It forces all exceptions to be wrapped in `AggregateException`, hiding the real type",
+        "The compiler rejects any `try/catch` inside an `async void` method"
+      ],
+      "answer": 0,
+      "explanation": "An `async void` method returns nothing awaitable, so a thrown exception is not captured onto a Task — it propagates to the synchronization context or `AppDomain` and can crash the process. Use `async void` only for event handlers; everything else should return `Task`."
+    },
+    {
+      "subtopic": "exception filter side effects",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does the following code do when `DoWork()` throws?",
+      "code": "try { DoWork(); }\ncatch (Exception e) when (LogFirstChance(e)) { /* body */ }\n\nstatic bool LogFirstChance(Exception e)\n{\n    Console.Error.WriteLine($\"first-chance: {e.GetType().Name}\");\n    return false;\n}",
+      "lang": "csharp",
+      "options": [
+        "Logs the exception type via the filter, then lets the exception propagate up with its stack trace intact — the catch body never runs",
+        "Logs the exception, runs the catch body, and swallows the exception",
+        "Skips logging entirely because a filter returning false is never evaluated",
+        "Throws a `StackOverflowException` because the filter re-enters `DoWork`"
+      ],
+      "answer": 0,
+      "explanation": "The filter predicate runs (logging as a side effect) before the stack unwinds, then returns false, so this catch does not apply and the exception keeps searching up the stack with its trace preserved. The body is never reached — this is the first-chance-logging trick."
+    },
+    {
+      "subtopic": "log-once at the boundary",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An inner service catches an exception, calls `_logger.LogError(ex, \"failed\")`, and then `throw;`, while the global `IExceptionHandler` also logs it. What is the senior critique, and the better approach?",
+      "options": [
+        "It double-logs one failure; the inner layer should add context (e.g. wrap with an inner exception) without logging, and let the boundary log exactly once",
+        "It is correct; logging at every layer the exception passes through is the recommended defense-in-depth pattern",
+        "The `throw;` swallows the exception, so the boundary never sees it; switch to `throw ex;` so it propagates",
+        "The inner log is fine but the boundary should rethrow instead of logging, so the framework crashes loudly"
+      ],
+      "answer": 0,
+      "explanation": "Log-and-rethrow produces duplicate, confusing entries for a single failure. The rule is log once, at the boundary that owns the decision (usually the global handler); inner layers may add context by wrapping (`new X(msg, inner)`) but should not log."
+    },
+    {
+      "subtopic": "client disconnect handling",
+      "source": "dotnet/error-handling-and-exceptions-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "A client closes the connection mid-request and an `OperationCanceledException` reaches your `IExceptionHandler`. Which actions are appropriate? (Select all that apply.)",
+      "options": [
+        "Detect that `RequestAborted.IsCancellationRequested` is true and treat it as expected cancellation",
+        "Log at Information level rather than Error and return true to short-circuit",
+        "Avoid writing a 500 / ProblemDetails response, since there is no client left to receive it",
+        "Map it to a 500 server fault and trigger error alerting",
+        "Always swallow it identically to a genuine `TimeoutException`-driven cancellation without distinguishing them"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A client disconnect cancels `RequestAborted`; the resulting `OperationCanceledException` is expected, so detect it, log at info, return true, and emit no 500/ProblemDetails. Mapping it to a 500 with alerting is wrong, and you should still distinguish a caller-cancelled case from a timeout-driven cancellation that may warrant a log."
+    }
+  ]
+}

@@ -1,0 +1,267 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Middleware ordering",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why must `app.UseAuthentication()` be registered before `app.UseAuthorization()` in the request pipeline?",
+      "options": [
+        "Authorization reads `HttpContext.User`, which authentication populates; reversed, every secured endpoint sees the anonymous principal",
+        "Authentication can only run after routing has matched an endpoint, which authorization triggers",
+        "Authorization caches the JWKS keys that authentication needs to validate tokens",
+        "The two are interchangeable; ordering only affects performance, not correctness"
+      ],
+      "answer": 0,
+      "explanation": "Authentication builds `HttpContext.User`; authorization evaluates against it. Reversed, policies run against an anonymous user so `[Authorize]` endpoints fail. It is not merely a performance concern."
+    },
+    {
+      "subtopic": "Challenge vs forbid mapping",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A client sends an **expired** JWT (with `ValidateLifetime = true`) to a `[Authorize]` endpoint. What HTTP status should the AuthorizationMiddleware produce, and why?",
+      "options": [
+        "**401**, because the lifetime check fails so no identity is established → challenge",
+        "**403**, because the token was authenticated but is no longer permitted",
+        "**419**, a dedicated 'token expired' status returned by ASP.NET Core",
+        "**200**, because `ClockSkew` always tolerates expired tokens silently"
+      ],
+      "answer": 0,
+      "explanation": "Expired means no identity can be established, so the middleware challenges → 401 (the client should refresh). Returning 403 for an expired token is the classic bug; 403 is for an authenticated user lacking permission."
+    },
+    {
+      "subtopic": "ClockSkew default",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "By default, `TokenValidationParameters.ClockSkew` is set to what value, and what is its practical effect?",
+      "options": [
+        "5 minutes — a token is accepted up to 5 minutes past its `exp`",
+        "0 seconds — tokens are rejected the instant they expire",
+        "30 seconds — a small NTP-tolerant grace window",
+        "1 hour — matching the typical access-token lifetime"
+      ],
+      "answer": 0,
+      "explanation": "The default `ClockSkew` is 5 minutes, so a token validates up to 5 minutes past `exp`. Seniors tighten it (e.g. 30s or `TimeSpan.Zero`) for short-lived/high-security tokens since cloud clocks are NTP-synced."
+    },
+    {
+      "subtopic": "AllowAnonymous precedence",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "If an action method is decorated with both `[Authorize(Roles = \"Admin\")]` and `[AllowAnonymous]`, the `[AllowAnonymous]` wins and the endpoint is reachable without authentication.",
+      "answer": true,
+      "explanation": "`[AllowAnonymous]` always wins and short-circuits all authorization on that endpoint. Auditing for stray `[AllowAnonymous]` attributes is a genuine security task."
+    },
+    {
+      "subtopic": "JwtBearer vs OpenIdConnect roles",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which statement correctly contrasts `AddJwtBearer` with `AddOpenIdConnect`?",
+      "options": [
+        "`AddJwtBearer` validates bearer tokens for APIs (no login); `AddOpenIdConnect` authenticates users interactively by running the login dance",
+        "`AddJwtBearer` runs the interactive login; `AddOpenIdConnect` only validates pre-issued tokens",
+        "Both issue redirects to the identity provider on every request",
+        "`AddJwtBearer` requires cookies, while `AddOpenIdConnect` is cookie-free"
+      ],
+      "answer": 0,
+      "explanation": "An API does not sign anyone in — `AddJwtBearer` just validates the access token per request. `AddOpenIdConnect` runs the interactive OIDC login. A typical system uses both, in different processes."
+    },
+    {
+      "subtopic": "DefaultPolicy vs FallbackPolicy",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You want every endpoint in the app to require an authenticated user *without* decorating each one, while still allowing `[AllowAnonymous]` exceptions. Which authorization option do you configure?",
+      "options": [
+        "`FallbackPolicy`, which applies to endpoints that have **no** authorization metadata at all",
+        "`DefaultPolicy`, which is what a bare `[Authorize]` evaluates",
+        "`InvokeHandlersAfterFailure`, which forces evaluation of every handler",
+        "`RequireHttpsMetadata`, which forces auth on all endpoints"
+      ],
+      "answer": 0,
+      "explanation": "`FallbackPolicy` runs on endpoints with no authorization metadata, making the app secure-by-default while `[AllowAnonymous]` still opts out. `DefaultPolicy` is only what a bare `[Authorize]` evaluates and would not cover undecorated endpoints."
+    },
+    {
+      "subtopic": "Roles attribute semantics",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given `[Authorize(Roles = \"Admin,Manager\")]` stacked together with a separate `[Authorize(Roles = \"Finance\")]` attribute on the same action, who can call it?",
+      "options": [
+        "A user who is in (Admin OR Manager) AND also in Finance",
+        "A user in any one of Admin, Manager, or Finance",
+        "A user who is in Admin AND Manager AND Finance simultaneously",
+        "Any authenticated user, because multiple attributes cancel out"
+      ],
+      "answer": 0,
+      "explanation": "Within one attribute, comma-separated roles are OR. Two stacked `[Authorize]` attributes are AND. So the caller needs (Admin OR Manager) AND Finance."
+    },
+    {
+      "subtopic": "Handler success/failure semantics",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `AuthorizationHandler` success/failure semantics are correct? (Select all that apply.)",
+      "options": [
+        "A requirement is satisfied only if some handler calls `context.Succeed(requirement)`",
+        "`context.Fail()` is a hard veto that fails the whole policy even if another handler succeeded",
+        "A handler that does nothing fails the whole policy immediately, vetoing all other handlers",
+        "Multiple handlers for the same requirement behave as OR — any `Succeed` wins",
+        "Multiple requirements in one policy behave as OR — satisfying any one passes the policy"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Succeed satisfies a requirement; Fail is a hard veto; same-requirement handlers are OR. Doing nothing leaves a requirement unmet (deny) but does NOT veto other handlers, and multiple requirements in a policy are AND, not OR."
+    },
+    {
+      "subtopic": "Handler doing nothing",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In this handler, the `date_of_birth` claim is missing. What is the effect on the `MinimumAgeRequirement`?",
+      "code": "protected override Task HandleRequirementAsync(\n    AuthorizationHandlerContext context, MinimumAgeRequirement requirement)\n{\n    var dob = context.User.FindFirst(\"date_of_birth\");\n    if (dob is null) return Task.CompletedTask;\n    var age = DateTime.Today.Year - DateTime.Parse(dob.Value).Year;\n    if (age >= requirement.MinimumAge)\n        context.Succeed(requirement);\n    return Task.CompletedTask;\n}",
+      "lang": "csharp",
+      "options": [
+        "The requirement is left unmet (deny), but it does not veto other handlers for the same requirement",
+        "The requirement hard-fails the entire policy and short-circuits all handlers",
+        "The requirement is automatically satisfied because no exception was thrown",
+        "The handler throws because `dob.Value` is dereferenced on null"
+      ],
+      "answer": 0,
+      "explanation": "Returning without calling `Succeed` or `Fail` leaves the requirement unmet — a deny — but is not a veto, so another handler could still satisfy it. It is neither a hard fail nor an automatic success, and the null is guarded before dereference."
+    },
+    {
+      "subtopic": "Resource-based authorization / BOLA",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why can a declarative `[Authorize(Roles = \"Reader\")]` attribute on `GET /invoices/{id}` not prevent user A from reading user B's invoice?",
+      "options": [
+        "It runs before the action and cannot see the loaded resource, so it only proves the caller is a Reader — not that they own that invoice (BOLA/IDOR)",
+        "Role checks are evaluated after the action runs, so the data has already leaked",
+        "The `Roles` attribute is ignored on GET requests by ASP.NET Core",
+        "It would work if `ClockSkew` were set to zero"
+      ],
+      "answer": 0,
+      "explanation": "Declarative `[Authorize]` runs before the action and has no access to the resource, so it cannot answer 'does THIS user own THIS invoice?' — that gap is Broken Object Level Authorization. The fix is imperative resource-based authorization via `IAuthorizationService`."
+    },
+    {
+      "subtopic": "404 vs 403 on resource auth",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "After a resource-based ownership check fails for an invoice that *does* exist but is not the caller's, why does the reviewer recommend returning **404** rather than **403**?",
+      "options": [
+        "To avoid leaking the existence of the resource, which 403 would confirm and enable enumeration",
+        "Because 403 is reserved exclusively for unauthenticated callers",
+        "Because returning 404 lets the client automatically retry with a refreshed token",
+        "Because ASP.NET Core converts all authorization failures to 404 by default"
+      ],
+      "answer": 0,
+      "explanation": "A 403 confirms the resource exists, letting an attacker enumerate IDs. Returning 404 for 'exists but not yours' hides existence. 403 is not limited to unauthenticated callers (that is 401), and the framework does not auto-convert failures to 404."
+    },
+    {
+      "subtopic": "Defense in depth",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which measures does the reviewer endorse for robustly closing BOLA/IDOR on a per-record endpoint? (Select all that apply.)",
+      "options": [
+        "Use `IAuthorizationService.AuthorizeAsync(User, resource, requirement)` to check ownership imperatively",
+        "Scope every data-layer query by the owning principal, e.g. `Where(i => i.OwnerId == userId)`",
+        "Rely on `[Authorize(Roles = \"User\")]` alone to guarantee the caller owns the record",
+        "Use `OperationAuthorizationRequirement` so one handler covers Read/Create/Update/Delete"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Resource-based `AuthorizeAsync`, owner-scoped queries (defense in depth), and `OperationAuthorizationRequirement` are all endorsed. A role check alone is exactly the design that ships IDOR — no role check substitutes for an ownership check."
+    },
+    {
+      "subtopic": "Entra delegated vs application",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A daemon authenticating via client-credentials receives **403** from an endpoint guarded by `[RequiredScope(\"Tasks.Read\")]`. What is the root cause?",
+      "options": [
+        "App-only tokens carry the `roles` claim, not the delegated `scp` claim, so the scope check fails",
+        "Client-credentials tokens are unsigned, so signature validation fails",
+        "`[RequiredScope]` only works on POST endpoints, not GET",
+        "The daemon's token expired and was not refreshed"
+      ],
+      "answer": 0,
+      "explanation": "Application permissions surface as the `roles` claim; delegated permissions surface as `scp`. A `[RequiredScope]` check looks for `scp`, which an app-only token lacks. Guard app-only endpoints with `[Authorize(Roles=...)]` against app roles instead."
+    },
+    {
+      "subtopic": "scp claim shape",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "In an Entra ID v2.0 access token, the `scp` claim that carries delegated permissions is a single space-delimited string, not a JSON array.",
+      "answer": true,
+      "explanation": "The `scp` claim is a single space-delimited string of scopes. The `roles` claim (app roles / application permissions) is the one that is an array. Confusing the two leads to silently failing authorization checks."
+    },
+    {
+      "subtopic": "WebApi vs WebApp selection",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "An ASP.NET Core service is a protected resource API that only receives bearer tokens and never performs interactive sign-in. A developer wires it up with `AddMicrosoftIdentityWebApp` and the service starts issuing login redirects. What is the correct fix?",
+      "options": [
+        "Use `AddMicrosoftIdentityWebApi`, which validates bearer tokens (aud/iss/exp/signature) and maps `scp`/`roles` without redirecting",
+        "Keep `AddMicrosoftIdentityWebApp` but set `RequireHttpsMetadata = false` to stop the redirects",
+        "Switch to `AddCookie` so the API stores the session locally instead of redirecting",
+        "Add `[AllowAnonymous]` globally so no redirect is ever triggered"
+      ],
+      "answer": 0,
+      "explanation": "`AddMicrosoftIdentityWebApi` is for APIs that validate bearer tokens; `AddMicrosoftIdentityWebApp` is for interactive web sign-in and therefore redirects to login. An API never issues a login redirect, so the right method is `WebApi`. The other options mask the symptom or break security."
+    },
+    {
+      "subtopic": "On-Behalf-Of flow",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "API A receives a user's bearer token (with `aud` = A) and must call downstream API B *as that user*. Why can't A simply forward the inbound token to B, and what is the correct mechanism?",
+      "options": [
+        "B would reject the token because its `aud` is A; A must perform the On-Behalf-Of exchange (`ITokenAcquisition.GetAccessTokenForUserAsync`) as a confidential client",
+        "A can forward the token directly; OBO is only an optimization for caching",
+        "A should switch to client-credentials so B sees an app token, preserving the user's permissions",
+        "A must disable `ValidateAudience` on B so the forwarded token is accepted"
+      ],
+      "answer": 0,
+      "explanation": "The inbound token's audience is A, so B rejects it. OBO exchanges it for a new token scoped to B while honoring the user's permissions and Conditional Access. Downgrading to client-credentials would act as the app with no user constraints, and disabling `ValidateAudience` is a vulnerability."
+    },
+    {
+      "subtopic": "Token revocation via security stamp",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In the security-stamp revocation pattern wired through `OnTokenValidated`, what is the consequence of calling `ctx.Fail(...)` when the stored stamp no longer matches the one embedded in the token?",
+      "options": [
+        "It vetoes the authentication result so the request is treated as having no valid identity, effectively revoking the still-unexpired JWT",
+        "It only logs a warning; the request proceeds because the JWT signature is still valid",
+        "It returns a 403 because the user is authenticated but the stamp changed",
+        "It refreshes the token automatically using the embedded refresh token"
+      ],
+      "answer": 0,
+      "explanation": "A stateless JWT is otherwise valid until `exp`; calling `ctx.Fail` during validation rejects the principal, which is how you invalidate a token early (e.g. on password change). The cost is a per-request lookup — pay it only where instant revocation matters."
+    },
+    {
+      "subtopic": "jti denylist trade-off",
+      "source": "dotnet/aspnetcore-authentication-authorization-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "For explicit JWT revocation using a `jti` denylist in Redis, why is the entry's TTL typically set to the token's *remaining lifetime*?",
+      "options": [
+        "So the denylist entry self-evicts exactly when the token would have expired anyway, bounding storage",
+        "So the token is silently re-issued once the TTL elapses",
+        "Because Redis cannot store entries longer than an access token's lifetime",
+        "So that `ClockSkew` is automatically applied to the revocation check"
+      ],
+      "answer": 0,
+      "explanation": "Once the token passes `exp` it is invalid regardless of the denylist, so keeping the `jti` entry only until then lets it self-evict, bounding memory. It does not re-issue tokens, is not a Redis limit, and is unrelated to `ClockSkew`."
+    }
+  ]
+}

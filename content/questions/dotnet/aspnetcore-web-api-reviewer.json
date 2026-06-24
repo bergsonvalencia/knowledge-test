@@ -1,0 +1,272 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/aspnetcore-web-api-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "[ApiController] behavior",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does decorating a controller with `[ApiController]` give you out of the box?",
+      "options": [
+        "Automatic 400 on invalid `ModelState`, binding-source inference, `ProblemDetails` for error status codes, and required attribute routing",
+        "Automatic JSON-to-XML content negotiation and a bundled Swagger UI",
+        "Automatic API versioning across URL, header, and media-type readers",
+        "Automatic rate limiting and CORS policies applied to every action"
+      ],
+      "answer": 0,
+      "explanation": "`[ApiController]` enables auto-400 on invalid ModelState, binding inference (body for complex types, route/query for simple), ProblemDetails error bodies, and requires attribute routing. Versioning, rate limiting, CORS, and a Swagger UI are all separate opt-in concerns, not part of `[ApiController]`."
+    },
+    {
+      "subtopic": "Default serializer",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "By default, how does ASP.NET Core's default serializer (System.Text.Json) treat property names and fields when writing JSON?",
+      "options": [
+        "camelCase property names, and it does not serialize fields by default",
+        "PascalCase property names, and it serializes public fields by default",
+        "snake_case property names, and it serializes all members including private fields",
+        "camelCase property names, and it serializes public fields by default"
+      ],
+      "answer": 0,
+      "explanation": "STJ defaults to camelCase property names, case-insensitive reads, UTF-8, and does not serialize fields by default. PascalCase, snake_case, and field serialization are not the defaults."
+    },
+    {
+      "subtopic": "Body binding limit",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "An action or endpoint can bind at most one parameter from the request body (`[FromBody]`).",
+      "answer": true,
+      "explanation": "There can be at most one `[FromBody]` binding per action/endpoint, because the request body stream is read once. Multiple body-bound parameters are not supported."
+    },
+    {
+      "subtopic": "ActionResult<T>",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the purpose of returning `ActionResult<T>` from a controller action?",
+      "options": [
+        "It lets the action return either the typed payload `T` or an alternative `IActionResult` such as `NotFound()` from the same method",
+        "It forces the action to always return the typed payload `T` and never a status-only result",
+        "It serializes `T` to XML by default instead of JSON",
+        "It defers serialization until after middleware runs so the result can be cached automatically"
+      ],
+      "answer": 0,
+      "explanation": "`ActionResult<T>` uses implicit conversions so an action can return either the value `T` or a result like `NotFound()`. It does not force a payload, change the serializer, or add caching."
+    },
+    {
+      "subtopic": "Minimal API grouping",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which Minimal API feature gives endpoints the shared route-prefix and shared-metadata grouping that controllers get for free?",
+      "options": [
+        "`MapGroup`",
+        "`[AsParameters]`",
+        "`TypedResults`",
+        "`AddEndpointFilter`"
+      ],
+      "answer": 0,
+      "explanation": "`MapGroup` creates a route group with a shared prefix and lets you attach metadata, auth, filters, and CORS to all endpoints in it, and groups compose. `[AsParameters]` bundles binding sources, `TypedResults` produces results, and `AddEndpointFilter` adds an interception layer."
+    },
+    {
+      "subtopic": "Binding precedence",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the endpoint below, what value does `id` bind to for the request `GET /items/5?id=99`?",
+      "code": "app.MapGet(\"/items/{id}\", (int id) => Results.Ok(id));",
+      "lang": "csharp",
+      "options": [
+        "5 — the route value wins over the query string for an unattributed simple parameter of the same name",
+        "99 — the query string wins over the route value for simple parameters",
+        "The request fails with a 400 because `id` is ambiguous",
+        "0 — neither source binds because no `[From...]` attribute is present"
+      ],
+      "answer": 0,
+      "explanation": "For an unattributed simple parameter, route values take precedence over the query string, so `id` binds to 5. The query value 99 is ignored; there is no ambiguity error and binding still occurs without an explicit attribute."
+    },
+    {
+      "subtopic": "TypedResults vs Results",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why prefer `TypedResults` over `Results` in Minimal APIs?",
+      "options": [
+        "`TypedResults` returns strongly-typed `IResult` implementations, so endpoints are unit-testable without casting and OpenAPI can infer accurate response types",
+        "`TypedResults` is significantly faster at runtime because it skips JSON serialization",
+        "`TypedResults` automatically wraps every response in a `ProblemDetails` envelope",
+        "`Results` is deprecated and removed in .NET 10, so `TypedResults` is the only option"
+      ],
+      "answer": 0,
+      "explanation": "`TypedResults` returns concrete `IResult` types, giving compile-time type info that tests can assert on and OpenAPI can read; runtime behavior is the same as `Results`. It is not faster, does not force ProblemDetails, and `Results` is not removed."
+    },
+    {
+      "subtopic": "ModelState with [ApiController]",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given this controller, what happens for a POST with an invalid model (e.g. missing the required `Name`)?",
+      "code": "[ApiController]\n[Route(\"u\")]\npublic class UsersController : ControllerBase\n{\n    [HttpPost]\n    public IActionResult Create(CreateUser dto) => Ok(dto);\n}",
+      "lang": "csharp",
+      "options": [
+        "A 400 with a `ValidationProblemDetails` body is returned and the action body is never reached",
+        "The action body runs and returns 200 with the partially-bound `dto`",
+        "The action body runs but throws a `ValidationException` you must catch",
+        "A 422 Unprocessable Entity is returned and the action body still runs afterward"
+      ],
+      "answer": 0,
+      "explanation": "`[ApiController]` short-circuits invalid ModelState into a 400 `ValidationProblemDetails` before the action executes, so the body is never reached. It is a 400 (not 422), no exception is thrown, and the body does not run."
+    },
+    {
+      "subtopic": "ProblemDetails standard",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which standard governs the `ProblemDetails` error contract in modern ASP.NET Core, and how do validation failures differ?",
+      "options": [
+        "RFC 9457 (which obsoletes RFC 7807); validation failures use the `ValidationProblemDetails` subtype that adds an `errors` dictionary keyed by field",
+        "RFC 7807 (still current); validation failures reuse the same `ProblemDetails` shape with a single `error` string",
+        "RFC 9457 (which obsoletes RFC 7807); validation failures return a plain text body instead of JSON",
+        "RFC 6585; validation failures use a `violations` array of objects"
+      ],
+      "answer": 0,
+      "explanation": "ProblemDetails follows RFC 9457, which obsoletes RFC 7807, and validation errors use the `ValidationProblemDetails` subtype with an `errors` dictionary keyed by field. RFC 7807 is obsoleted, the body stays JSON (`application/problem+json`), and RFC 6585 is unrelated."
+    },
+    {
+      "subtopic": "OpenAPI on .NET 10",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On a fresh .NET 10 project, a teammate adds `builder.Services.AddSwaggerGen()` expecting Swagger UI at `/swagger`. What is the correct assessment?",
+      "options": [
+        "Swashbuckle was removed from the templates in .NET 9; the built-in path is `AddOpenApi()` + `MapOpenApi()`, which serves the document only — a UI like Scalar must be added separately",
+        "`AddSwaggerGen()` is the supported built-in API; the issue is only that they forgot `app.UseSwaggerUI()`",
+        "Swashbuckle still ships in the templates; the UI appears automatically once `AddSwaggerGen` is registered",
+        "OpenAPI is not supported for Minimal APIs, so they must switch to controllers first"
+      ],
+      "answer": 0,
+      "explanation": "Swashbuckle was removed from the templates in .NET 9. The framework's built-in `Microsoft.AspNetCore.OpenApi` (`AddOpenApi`/`MapOpenApi`) generates the document for both controllers and Minimal APIs but ships no UI, so Scalar/Swagger UI/NSwag must be added separately."
+    },
+    {
+      "subtopic": "MapOpenApi output",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does `app.MapOpenApi()` actually expose by default?",
+      "options": [
+        "The OpenAPI document as JSON at `/openapi/v1.json` (YAML if the endpoint is given a `.yaml`/`.yml` suffix) — not an interactive UI",
+        "An interactive Swagger UI page at `/swagger`",
+        "Both the JSON document and a bundled Scalar UI automatically",
+        "A redirect to the externally hosted Swagger Editor"
+      ],
+      "answer": 0,
+      "explanation": "`MapOpenApi` serves the OpenAPI document (JSON at `/openapi/v1.json`, or YAML with a `.yaml`/`.yml` suffix). No interactive UI ships; you add Scalar or another UI separately."
+    },
+    {
+      "subtopic": "Minimal API validation in .NET 10",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Before .NET 10, Minimal APIs had no built-in DataAnnotations validation — you had to validate manually or use a library such as FluentValidation.",
+      "answer": true,
+      "explanation": "Built-in Minimal API validation arrived in .NET 10 via `AddValidation()` plus a source-generated interceptor. Before .NET 10 there was no built-in Minimal-API validation, so manual checks or a library were required."
+    },
+    {
+      "subtopic": "Cross-cutting interception layers",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about middleware, MVC filters, and endpoint filters are correct? (Select all that apply.)",
+      "options": [
+        "Middleware runs for the whole pipeline and is endpoint-agnostic — it knows nothing about the action/endpoint",
+        "MVC filters run inside MVC with access to `ModelState`, action arguments, and the result",
+        "Endpoint filters (`AddEndpointFilter`) are the Minimal API analog, running around the endpoint delegate with access to its arguments and result",
+        "Endpoint filters can only run before the delegate, never after it returns",
+        "Middleware has direct access to the bound action arguments and `ModelState`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Middleware wraps the whole pipeline and is endpoint-agnostic; MVC filters run inside MVC with ModelState/argument/result access; endpoint filters wrap the Minimal API delegate with argument and result access. Endpoint filters run both before and after (they call `next` and can post-process), and middleware has no access to bound arguments or ModelState."
+    },
+    {
+      "subtopic": "Separate JSON option objects",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team configures STJ via `AddControllers().AddJsonOptions(...)` to emit enums as strings, but their Minimal API endpoints still serialize enums as numbers. What is the cause?",
+      "options": [
+        "Minimal APIs use the `Microsoft.AspNetCore.Http.Json.JsonOptions` (configured via `ConfigureHttpJsonOptions`), which is separate from MVC's `JsonOptions`",
+        "Minimal APIs ignore all `JsonSerializerOptions` and always use compile-time defaults",
+        "`AddJsonOptions` only applies to deserialization, never serialization",
+        "Enum-as-string requires source generation, which controllers enable but Minimal APIs disable"
+      ],
+      "answer": 0,
+      "explanation": "MVC's `JsonOptions` (set by `AddJsonOptions`) and Minimal APIs' `Http.Json.JsonOptions` (set by `ConfigureHttpJsonOptions`) are separate objects. Configuring one does not affect the other, which is why the Minimal API endpoints were unaffected."
+    },
+    {
+      "subtopic": "Content negotiation 406",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With only the default JSON formatter configured, a client sends `Accept: application/xml`. What does the server return by default, and how do you change it?",
+      "options": [
+        "It falls back to JSON by default; set `ReturnHttpNotAcceptable = true` to return 406 Not Acceptable instead",
+        "It returns 406 Not Acceptable by default; set `ReturnHttpNotAcceptable = false` to fall back to JSON",
+        "It returns 415 Unsupported Media Type because the body content type is wrong",
+        "It throws an unhandled exception that surfaces as a 500"
+      ],
+      "answer": 0,
+      "explanation": "By default the server falls back to JSON when the requested type is unsupported. A 406 is only returned if you opt in with `ReturnHttpNotAcceptable = true`. 415 concerns the request body's Content-Type, not the Accept header."
+    },
+    {
+      "subtopic": "CORS wildcard + credentials",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does this CORS configuration fail at runtime / get rejected by the browser?",
+      "code": "builder.Services.AddCors(o => o.AddDefaultPolicy(p =>\n    p.AllowAnyOrigin().AllowCredentials()));",
+      "lang": "csharp",
+      "options": [
+        "`AllowAnyOrigin()` (wildcard `*`) cannot be combined with `AllowCredentials()`; use explicit `WithOrigins(...)` when credentials are required",
+        "`AllowCredentials()` is not a real method and does not compile",
+        "A default policy cannot use `AllowCredentials()` — only named policies can",
+        "`AllowAnyOrigin()` must be paired with `AllowAnyMethod()` or it throws"
+      ],
+      "answer": 0,
+      "explanation": "A wildcard origin cannot be combined with credentials — browsers reject credentialed requests against `*`. You must specify explicit origins via `WithOrigins(...)` when `AllowCredentials()` is needed. The method exists and default policies may use it."
+    },
+    {
+      "subtopic": "CORS / rate limiting middleware order",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about CORS and rate limiting wiring in ASP.NET Core are correct? (Select all that apply.)",
+      "options": [
+        "`UseCors` must sit before `UseAuthorization` and the endpoints it applies to",
+        "Rate limiting is built in since .NET 7 via `AddRateLimiter`/`UseRateLimiter`, supporting fixed window, sliding window, token bucket, and concurrency",
+        "Per-endpoint and per-group enforcement is attached with `RequireCors(...)` and `RequireRateLimiting(\"policy\")`",
+        "Rate limiting requires a third-party NuGet package because it is not part of the framework",
+        "`AllowAnyOrigin()` and `AllowCredentials()` can be combined as long as `UseCors` runs last"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`UseCors` must precede authorization/endpoints; rate limiting has been built in since .NET 7 with those four algorithms; and `RequireCors`/`RequireRateLimiting` attach policies per endpoint or group. Rate limiting needs no third-party package, and wildcard origin can never be combined with credentials regardless of ordering."
+    },
+    {
+      "subtopic": "DTOs vs entities at the boundary",
+      "source": "dotnet/aspnetcore-web-api-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What is the primary risk, beyond schema leakage, of binding incoming requests directly to EF Core entities instead of input DTOs?",
+      "options": [
+        "Over-posting (mass-assignment): a client can set entity properties the endpoint never intended to expose for writing",
+        "EF Core refuses to bind entities from the request body, so the request always 400s",
+        "System.Text.Json cannot serialize entities, forcing a switch to XML",
+        "Model binding silently runs database queries during binding, causing N+1 reads"
+      ],
+      "answer": 0,
+      "explanation": "Binding input to entities risks over-posting/mass-assignment, where a caller sets fields you never meant to be writable; it also couples the wire contract to the DB. Entities bind fine, STJ serializes them, and binding itself does not query the database."
+    }
+  ]
+}

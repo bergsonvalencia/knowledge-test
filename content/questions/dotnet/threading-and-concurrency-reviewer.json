@@ -1,0 +1,374 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/threading-and-concurrency-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Threads vs ThreadPool vs Task.Run",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "For a short, parallelizable CPU-bound unit of work that you want to await and observe for exceptions, which is the recommended default?",
+      "options": [
+        "`Task.Run`, which queues to the thread pool and returns an observable `Task`",
+        "`new Thread(...)`, to get a dedicated OS thread for the work",
+        "A named `Mutex` to coordinate the worker",
+        "`Parallel.Invoke`, since it always uses the calling thread"
+      ],
+      "answer": 0,
+      "explanation": "`Task.Run` is the modern default for short CPU-bound work: it uses the pool's efficiency and hands back a `Task` you can await and observe for exceptions. `new Thread` is reserved for long-lived dedicated work; a `Mutex` is a synchronization primitive, not a way to run work."
+    },
+    {
+      "subtopic": "Foreground vs background threads",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which statement about foreground vs background threads in .NET is correct?",
+      "options": [
+        "A `new Thread` defaults to foreground and will keep the process alive unless `IsBackground = true` is set",
+        "Thread-pool threads are foreground and keep the process alive until all queued work completes",
+        "`Task.Run` work runs on a foreground thread, so it always finishes before the process exits",
+        "Setting `IsBackground = true` makes a thread keep the process alive longer"
+      ],
+      "answer": 0,
+      "explanation": "`new Thread` defaults to foreground, and a process stays alive while any foreground thread runs; you must set `IsBackground = true` to opt out. Thread-pool threads and `Task.Run` work are background and do not keep the process alive."
+    },
+    {
+      "subtopic": "Thread.Abort",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the correct way to stop in-progress work on a thread in modern .NET?",
+      "options": [
+        "Cooperative cancellation via a `CancellationToken`",
+        "`Thread.Abort()`, which raises an exception on the target thread",
+        "`Thread.Interrupt()` followed by `Thread.Abort()`",
+        "Setting `Thread.Priority` to the lowest value so the work stops"
+      ],
+      "answer": 0,
+      "explanation": "`Thread.Abort` is removed/obsolete on modern .NET (it throws `PlatformNotSupportedException` on .NET 5+); cooperative cancellation via `CancellationToken` is the only correct mechanism. Lowering priority only deprioritizes, it does not stop work."
+    },
+    {
+      "subtopic": "Parallel.For accumulation",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does this code reliably print, and why?",
+      "code": "int counter = 0;\nParallel.For(0, 100_000, _ => counter++);\nConsole.WriteLine(counter);",
+      "lang": "csharp",
+      "options": [
+        "Usually less than 100000, varying per run, because `counter++` is a non-atomic read-modify-write executed concurrently",
+        "Always exactly 100000, because `Parallel.For` serializes the body internally",
+        "Always exactly 100000, because `int` increments are atomic in .NET",
+        "Always 0, because each parallel partition gets its own copy of `counter`"
+      ],
+      "answer": 0,
+      "explanation": "`counter++` is read-add-write; with many threads running concurrently, increments are lost to the race, so the result is usually below 100000 and varies. The fix is `Interlocked.Increment` or a thread-local accumulator combined at the end."
+    },
+    {
+      "subtopic": "Parallel.* characteristics",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `System.Threading.Tasks.Parallel` (`For`/`ForEach`/`Invoke`) are correct? Select all that apply.",
+      "options": [
+        "It is synchronous from the caller's perspective — it blocks the calling thread until all partitions finish",
+        "`MaxDegreeOfParallelism` via `ParallelOptions` bounds how many iterations run at once",
+        "Exceptions thrown by the body are aggregated into an `AggregateException`",
+        "It is the recommended tool for I/O-bound iterations that each do an async download",
+        "Early exit is done with a plain `break`/`return` inside the body"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`Parallel.*` is synchronous data parallelism that blocks the caller, honors `MaxDegreeOfParallelism`, and aggregates body exceptions into an `AggregateException`. It is for CPU-bound work, not I/O (use `Parallel.ForEachAsync`/async), and early exit uses `ParallelLoopState` (`Stop()`/`Break()`), not `break`/`return`."
+    },
+    {
+      "subtopic": "Race conditions",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Using the reviewer's four-part test, which situation is a race condition?",
+      "options": [
+        "Shared mutable state touched by two or more threads where at least one writes, with no synchronization",
+        "Multiple threads reading the same immutable object concurrently",
+        "Two threads each writing to their own thread-local field that is never shared",
+        "A single thread performing a non-atomic read-modify-write in a loop"
+      ],
+      "answer": 0,
+      "explanation": "A race requires shared, mutable state, touched by 2+ threads, with at least one writer, and no synchronization. Reading immutable data, writing only thread-local fields, or single-threaded code each fail one of those conditions, so none is a race."
+    },
+    {
+      "subtopic": "Tearing",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "On a 32-bit platform, reads and writes of a `long` field are not guaranteed atomic and can be observed half-updated (torn), so `Interlocked.Read` or a lock is needed to read it safely.",
+      "answer": true,
+      "explanation": "Values larger than a native word (e.g. `long`/`double` on 32-bit) are not guaranteed atomic and can tear; `Interlocked.Read` gives an atomic 64-bit read on 32-bit platforms, or a lock can be used."
+    },
+    {
+      "subtopic": "lock / Monitor",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which object is the correct choice to pass to a `lock` statement?",
+      "options": [
+        "A private, readonly, reference-type object dedicated to that lock",
+        "`this`, so callers can see what is being locked",
+        "A string constant, since strings are convenient lock keys",
+        "The `Type` object of the class, e.g. `typeof(MyClass)`"
+      ],
+      "answer": 0,
+      "explanation": "You should lock on a private readonly reference object dedicated to the lock so no external code can take the same monitor. Locking on `this`, a `Type`, or a string (interned, shared process-wide) lets outside code lock the same object and deadlock you."
+    },
+    {
+      "subtopic": "lock and await",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You need single-writer mutual exclusion but must `await` inside the critical section. Why can't you use `lock`, and what should you use instead?",
+      "options": [
+        "The compiler forbids `await` inside `lock` because `Monitor` is thread-affine; use a `SemaphoreSlim(1, 1)` with `WaitAsync`",
+        "`lock` works fine with `await`; there is no reason to change it",
+        "`lock` is too slow for async code; use a named `Mutex` with `WaitOne`",
+        "`await` inside `lock` compiles but silently disables the lock; use `volatile` instead"
+      ],
+      "answer": 0,
+      "explanation": "You cannot `await` inside a `lock` — the compiler forbids it because the monitor is thread-affine and a continuation may resume on a different thread. The async-safe substitute is `SemaphoreSlim(1, 1)` with `await WaitAsync()` and `Release()` in a `finally`."
+    },
+    {
+      "subtopic": "Interlocked CompareExchange",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does `Interlocked.CompareExchange(ref x, newVal, comparand)` do, and what is its return value?",
+      "options": [
+        "Atomically sets `x = newVal` only if `x == comparand`, and returns the original value of `x`",
+        "Atomically sets `x = newVal` only if `x == comparand`, and returns the new value",
+        "Atomically sets `x = comparand` only if `x == newVal`, and returns `true`/`false`",
+        "Always sets `x = newVal` regardless of `comparand`, and returns the old value"
+      ],
+      "answer": 0,
+      "explanation": "CAS sets `x = newVal` only when `x` currently equals `comparand`, and always returns the original value of `x`. Comparing that returned original against `comparand` is how a lock-free retry loop detects whether another thread changed the value."
+    },
+    {
+      "subtopic": "Interlocked CAS retry loop",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In this lock-free atomic-max routine, what causes the `do/while` loop to iterate more than once?",
+      "code": "public static void Max(ref int target, int value)\n{\n    int snapshot;\n    do\n    {\n        snapshot = Volatile.Read(ref target);\n        if (value <= snapshot) return;\n    }\n    while (Interlocked.CompareExchange(ref target, value, snapshot) != snapshot);\n}",
+      "lang": "csharp",
+      "options": [
+        "Another thread changed `target` between the `Volatile.Read` and the CAS, so the CAS returns a value other than `snapshot`",
+        "`value` is larger than `snapshot`, which always forces a second pass",
+        "`Volatile.Read` is non-atomic and may return a torn value that fails the comparison",
+        "`Interlocked.CompareExchange` always returns `value`, never `snapshot`"
+      ],
+      "answer": 0,
+      "explanation": "The CAS succeeds only if `target` still equals `snapshot`; if another thread changed `target` in between, CAS returns the new (different) value, the condition is true, and the loop retries with a fresh snapshot. This optimistic retry is the standard lock-free pattern."
+    },
+    {
+      "subtopic": "SemaphoreSlim semantics",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which statements about `SemaphoreSlim` are correct? Select all that apply.",
+      "options": [
+        "`SemaphoreSlim(1, 1)` with `WaitAsync` is the standard async substitute for `lock`",
+        "It is not reentrant and not thread-affine — a different thread (e.g. an async continuation) can `Release`",
+        "`Release()` should be placed in a `finally` block so it always runs",
+        "It is reentrant like `Monitor`, so the same logical flow can re-acquire it safely",
+        "Only the thread that called `Wait` is permitted to call `Release`"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`SemaphoreSlim(1,1)` + `WaitAsync` is the async mutex, `Release` belongs in a `finally`, and unlike `Monitor` it is neither reentrant nor thread-affine — any thread may release it. Because it is not reentrant, re-acquiring on the same logical flow deadlocks, and there is no owning-thread restriction on `Release`."
+    },
+    {
+      "subtopic": "Mutex (cross-process)",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When is reaching for `System.Threading.Mutex` over `lock`/`SemaphoreSlim` actually justified?",
+      "options": [
+        "When you need cross-process synchronization, e.g. a single-instance app using a named mutex",
+        "When you need the fastest possible in-process mutual exclusion",
+        "When you need to `await` inside the critical section without blocking a thread",
+        "When you want many concurrent readers but a single writer"
+      ],
+      "answer": 0,
+      "explanation": "A named `Mutex` is system-wide, so its real advantage is synchronizing across separate processes (e.g. single-instance enforcement). It is slow because of the kernel transition, can't be awaited, and offers no reader/writer distinction, so in-process it is just a slower `lock`."
+    },
+    {
+      "subtopic": "AbandonedMutexException",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "If the thread owning a `Mutex` exits without releasing it, the next waiter receives an `AbandonedMutexException`, which signals that shared state protected by the mutex may be corrupt.",
+      "answer": true,
+      "explanation": "An abandoned mutex throws `AbandonedMutexException` to the next waiter precisely because the previous owner left without an orderly release, so the protected state may be in an inconsistent/corrupt condition."
+    },
+    {
+      "subtopic": "ReaderWriterLockSlim",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the purpose of `EnterUpgradeableReadLock` on `ReaderWriterLockSlim`, and what is its key restriction?",
+      "options": [
+        "It lets a thread read while reserving the right to upgrade to a write lock without releasing first; only one upgradeable reader is allowed at a time",
+        "It lets unlimited threads hold upgradeable read locks so any of them can later become the writer",
+        "It is a faster form of `EnterReadLock` with no ability to write",
+        "It promotes all current readers to writers simultaneously when contention is detected"
+      ],
+      "answer": 0,
+      "explanation": "The upgradeable read lock is the safe way to do read-check-then-write: it reads while reserving the right to upgrade to a write lock, but only one upgradeable reader is permitted at a time. The other options misstate either the count restriction or the read/write behavior."
+    },
+    {
+      "subtopic": "volatile",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does the `volatile` keyword guarantee for a field?",
+      "options": [
+        "Ordering/visibility (acquire/release semantics), but not atomicity",
+        "Atomicity, so `volatile int x; x++;` is thread-safe",
+        "Both ordering and atomicity for all field types including `long`",
+        "Mutual exclusion, equivalent to wrapping each access in a `lock`"
+      ],
+      "answer": 0,
+      "explanation": "`volatile` gives a field acquire/release ordering and visibility, but not atomicity, so `x++` (a read-modify-write) is still a race. It is not a lock and provides no mutual exclusion."
+    },
+    {
+      "subtopic": "volatile and other primitives",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "If access to shared state already goes through a `lock` or a concurrent collection, you also need to mark the underlying field `volatile` to guarantee visibility.",
+      "answer": false,
+      "explanation": "`lock`, `Interlocked`, and `Task`/`await` boundaries already establish the necessary memory barriers, so adding `volatile` on top is redundant — the reviewer explicitly says you do not also need `volatile` in that case."
+    },
+    {
+      "subtopic": "ConcurrentDictionary GetOrAdd",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "`ConcurrentDictionary.GetOrAdd` is thread-safe, so why can its value-factory delegate run more than once, and how do you guarantee the expensive work happens only once?",
+      "options": [
+        "The factory isn't part of the atomic section, so under contention multiple threads may invoke it (only one result is stored); wrap the value in `Lazy<T>` so the body runs once",
+        "The factory runs twice only when the key already exists; call `TryGetValue` first to avoid it",
+        "It is a bug in `ConcurrentDictionary`; switch to a plain `Dictionary` guarded by a `lock`",
+        "The factory runs once per bucket; reduce the bucket count to force a single invocation"
+      ],
+      "answer": 0,
+      "explanation": "Under contention several threads can invoke the `GetOrAdd` factory, and only one returned value 'wins' and is stored. Storing a `Lazy<T>` value ensures the expensive factory body executes exactly once even if the outer delegate runs multiple times."
+    },
+    {
+      "subtopic": "ConcurrentDictionary check-then-act",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Spot the concurrency bug in this hit-counter and the correct fix.",
+      "code": "private readonly ConcurrentDictionary<string, int> _hits = new();\npublic void Record(string key)\n{\n    if (_hits.ContainsKey(key))\n        _hits[key] = _hits[key] + 1;\n    else\n        _hits[key] = 1;\n}",
+      "lang": "csharp",
+      "options": [
+        "It is a check-then-act race across separate atomic calls; replace it with `_hits.AddOrUpdate(key, 1, (_, c) => c + 1)`",
+        "`ConcurrentDictionary` indexers aren't thread-safe; wrap the whole method in a `lock`",
+        "`ContainsKey` throws under contention; catch the exception and retry",
+        "There is no bug, because every `ConcurrentDictionary` operation here is atomic"
+      ],
+      "answer": 0,
+      "explanation": "Each individual call is atomic, but the sequence of contains/read/write has gaps where another thread can interleave, so updates are lost. The atomic `AddOrUpdate` collapses the read-modify-write into one safe operation."
+    },
+    {
+      "subtopic": "ConcurrentBag",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "For which workload is `ConcurrentBag<T>` the right concurrent collection, and what should you prefer otherwise?",
+      "options": [
+        "When the same thread both adds and removes (thread-local pools); prefer `ConcurrentQueue<T>` when producers and consumers are different threads",
+        "When you need strict FIFO ordering across many producers; otherwise use `ConcurrentStack<T>`",
+        "When you need a bounded blocking queue with backpressure; otherwise use `BlockingCollection<T>`",
+        "When you need atomic keyed lookups; otherwise use `ConcurrentDictionary<K,V>`"
+      ],
+      "answer": 0,
+      "explanation": "`ConcurrentBag` uses thread-local storage and is optimized for the producer==consumer case where the same thread adds and removes. When producers and consumers are distinct threads, `ConcurrentQueue` is the better choice; `ConcurrentBag` is unordered, so it is not for FIFO."
+    },
+    {
+      "subtopic": "BlockingCollection shutdown",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a `BlockingCollection<T>` producer/consumer pipeline, how do consumers cleanly drain remaining items and then stop?",
+      "options": [
+        "The producer calls `CompleteAdding()`; consumers iterating `GetConsumingEnumerable()` drain the rest and the `foreach` ends",
+        "The producer calls `Dispose()`, which immediately aborts any blocked consumers mid-item",
+        "Consumers poll `Count == 0` in a busy loop and break when it stays zero",
+        "The producer adds a `null` sentinel and each consumer checks for it"
+      ],
+      "answer": 0,
+      "explanation": "`CompleteAdding()` signals no more items; consumers iterating `GetConsumingEnumerable()` then drain the remaining items and the `foreach` ends cleanly. That handshake avoids busy-waiting and ad-hoc sentinels."
+    },
+    {
+      "subtopic": "Deadlock prevention",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which techniques help prevent deadlock between two locks? Select all that apply.",
+      "options": [
+        "Impose a consistent global lock-ordering (always acquire A before B)",
+        "Use timeouts such as `Monitor.TryEnter` or `WaitAsync(timeout)`",
+        "Never call out to unknown code while holding a lock",
+        "Always acquire both locks but in whichever order is convenient at each call site",
+        "Block on the second lock indefinitely until it becomes free"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "A global lock-ordering breaks the circular-wait condition, timeouts let a thread back off instead of waiting forever, and not calling unknown code while holding a lock avoids surprise re-entrancy/deadlock. Acquiring locks in inconsistent order or blocking indefinitely are exactly what cause deadlocks."
+    },
+    {
+      "subtopic": "Thread-pool starvation",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A service shows high latency, growing request queues, but low CPU utilization. What is the most likely cause and the real fix?",
+      "options": [
+        "Thread-pool starvation from pool threads blocked on `.Result`/`.Wait()`/sync I/O; fix by making the blocking work truly async",
+        "CPU saturation from too much parallelism; fix by lowering `MaxDegreeOfParallelism`",
+        "A deadlock from inconsistent lock ordering; fix by removing all locks",
+        "False sharing on a hot cache line; fix by padding the request objects"
+      ],
+      "answer": 0,
+      "explanation": "Low CPU with high latency and growing queues is the classic thread-pool starvation signature: pool threads are blocked, so new work waits for the pool's slow ~1-thread-per-0.5 s injection. The cure is to stop blocking pool threads by making the work async; raising `SetMinThreads` is only a temporary mitigation."
+    },
+    {
+      "subtopic": "False sharing",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Two threads each update their own separate counter variable, yet the parallel code is unexpectedly slow while producing perfectly correct results. What is happening?",
+      "options": [
+        "False sharing — the two distinct variables sit on the same CPU cache line, so each write invalidates the other core's cached line",
+        "A race condition that corrupts the counters but only under load",
+        "Lock convoy — both threads serialize behind one hot lock",
+        "Thread-pool starvation because both counters block their pool threads"
+      ],
+      "answer": 0,
+      "explanation": "False sharing is a performance-only problem (results stay correct) where unrelated variables on the same 64-byte cache line cause cache-coherency ping-pong between cores. A race would corrupt results, and there is no lock or blocking involved here. The fix is to pad/separate the hot per-thread fields onto distinct cache lines."
+    },
+    {
+      "subtopic": "Async deadlock on captured context",
+      "source": "dotnet/threading-and-concurrency-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Why does this deadlock when called on a thread with a single-threaded `SynchronizationContext` (legacy UI / classic ASP.NET)?",
+      "code": "public string Get() => GetAsync().Result;\nprivate async Task<string> GetAsync()\n{\n    await Task.Delay(100);\n    return \"done\";\n}",
+      "lang": "csharp",
+      "options": [
+        "`.Result` blocks the single thread of the captured context, but `GetAsync`'s continuation needs that same context to resume — circular wait",
+        "`Task.Delay` never completes because the timer thread is also blocked by `.Result`",
+        "`async` methods always run on a new thread that the caller's context cannot reach",
+        "`.Result` throws an `AggregateException` that is silently swallowed, hanging the call"
+      ],
+      "answer": 0,
+      "explanation": "`.Result` blocks the context's only thread; when the awaited `Task.Delay` completes, the continuation must resume on that same captured context, which is still blocked waiting for the result — a circular wait and thus a deadlock. The fix is to `await` all the way up instead of blocking with `.Result`."
+    }
+  ]
+}

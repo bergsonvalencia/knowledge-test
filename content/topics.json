@@ -1,0 +1,18 @@
+{
+  "topics": [
+    { "key": "dotnet",           "label": ".NET / C#",            "accent": "purple", "blurb": "ASP.NET Core, EF Core, DI, async, GC, performance.",            "sourceDir": "dotnet" },
+    { "key": "typescript",       "label": "TypeScript",           "accent": "blue",   "blurb": "Types, generics, narrowing, utility types, tsconfig.",        "sourceDir": "typescript" },
+    { "key": "react",            "label": "React",                "accent": "teal",   "blurb": "Hooks, state, effects, rendering, React 19, performance.",     "sourceDir": "react" },
+    { "key": "angular",          "label": "Angular",              "accent": "rose",   "blurb": "Components, signals, DI, change detection, routing, SSR.",     "sourceDir": "angular" },
+    { "key": "sql",              "label": "SQL Server / T-SQL",   "accent": "amber",  "blurb": "Joins, indexes, window functions, transactions, tuning.",     "sourceDir": "sql" },
+    { "key": "web",              "label": "Web & API",            "accent": "blue",   "blurb": "REST, HTTP, auth — JWT/OAuth2/OIDC, API concepts.",           "sourceDir": "web" },
+    { "key": "software-design",  "label": "Software Design",      "accent": "green",  "blurb": "OOP, SOLID, design patterns, CUPID properties.",              "sourceDir": "software-design" },
+    { "key": "architecture",     "label": "Architecture",         "accent": "purple", "blurb": "Microservices, DDD, CQRS, EDA, CAP, resiliency.",            "sourceDir": "architecture" },
+    { "key": "system-design",    "label": "System Design",        "accent": "teal",   "blurb": "Scalability, caching, messaging, API design at scale.",        "sourceDir": "system-design" },
+    { "key": "azure",            "label": "Microsoft Azure",      "accent": "blue",   "blurb": "App Service, Functions, Cosmos DB, Service Bus, Key Vault.",   "sourceDir": "azure" },
+    { "key": "aws",              "label": "Amazon Web Services",  "accent": "amber",  "blurb": "Lambda, S3, DynamoDB, ECS, IAM, VPC, API Gateway.",           "sourceDir": "aws" },
+    { "key": "ai",               "label": "AI / Machine Learning","accent": "rose",   "blurb": "ML foundations, neural nets, transformers, LLMs, RAG.",        "sourceDir": "ai" },
+    { "key": "testing",          "label": "Testing",              "accent": "green",  "blurb": "Unit testing, mocking, integration testing in .NET.",         "sourceDir": "testing" },
+    { "key": "agile-leadership", "label": "Agile & Leadership",   "accent": "teal",   "blurb": "Scrum, Kanban, SAFe, coaching, behavioral/STAR, people.",     "sourceDir": "agile-leadership" }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/configuration-and-options-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Provider precedence",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "In the default provider order registered by `WebApplication.CreateBuilder(args)`, which source has the **highest** precedence on a key collision?",
+      "options": [
+        "Command-line arguments",
+        "`appsettings.json`",
+        "Environment variables",
+        "`appsettings.{Environment}.json`"
+      ],
+      "answer": 0,
+      "explanation": "The default order is appsettings.json → appsettings.{Environment}.json → user secrets (Dev) → environment variables → command-line args, with last-wins per key. Command-line args are registered last, so they have the highest default precedence."
+    },
+    {
+      "subtopic": "Key hierarchy / env var mapping",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "An environment variable needs to set the config key `ConnectionStrings:Default`. How must it be named?",
+      "options": [
+        "`ConnectionStrings__Default` (double underscore maps to colon)",
+        "`ConnectionStrings:Default` (colons are allowed in env vars everywhere)",
+        "`ConnectionStrings--Default` (double dash maps to colon)",
+        "`ConnectionStrings.Default` (dot maps to colon)"
+      ],
+      "answer": 0,
+      "explanation": "Because colons aren't valid in environment variable names on some shells, the env var provider translates a double underscore `__` to the colon separator. The `--`→`:` mapping is specific to Azure Key Vault secret names, not env vars."
+    },
+    {
+      "subtopic": "Options interfaces",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which options interface is registered as a **singleton**, computes its value **once**, and never reloads?",
+      "options": [
+        "`IOptions<T>`",
+        "`IOptionsSnapshot<T>`",
+        "`IOptionsMonitor<T>`",
+        "`IConfigureOptions<T>`"
+      ],
+      "answer": 0,
+      "explanation": "`IOptions<T>` is a singleton whose value is computed once and cached forever — it never reloads and has no named-options support. `IOptionsSnapshot<T>` is scoped and `IOptionsMonitor<T>` is a singleton that does track live changes."
+    },
+    {
+      "subtopic": "Secrets management",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The .NET Secret Manager (`dotnet user-secrets`) encrypts secrets at rest so they are safe to store anywhere on disk.",
+      "answer": false,
+      "explanation": "User Secrets are stored as plaintext JSON in the user profile, outside the project tree. Its purpose is keeping secrets out of source control — not at-rest encryption."
+    },
+    {
+      "subtopic": "GetSection behavior",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Calling `configuration.GetSection(\"DoesNotExist\")` on a section that is not present in any provider returns `null`.",
+      "answer": false,
+      "explanation": "`GetSection` never returns null — a missing section yields an empty section. To know whether it was actually present you must call `section.Exists()`."
+    },
+    {
+      "subtopic": "Captive dependency",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A class registered as a **singleton** takes a constructor dependency on `IOptionsSnapshot<MyOptions>`. What happens?",
+      "code": "builder.Services.AddSingleton<Worker>();\npublic Worker(IOptionsSnapshot<MyOptions> opts) { }",
+      "lang": "csharp",
+      "options": [
+        "It throws an exception about consuming a scoped service from a singleton (captive dependency)",
+        "It works fine and the snapshot reloads on every request as usual",
+        "It silently injects the default (unnamed) options and never reloads",
+        "It throws only if `ValidateOnStart()` was called on the options"
+      ],
+      "answer": 0,
+      "explanation": "`IOptionsSnapshot<T>` is registered scoped; capturing a scoped service in a singleton is a captive dependency, and the DI scope validator throws `InvalidOperationException`. The correct fix for singletons/hosted services is `IOptionsMonitor<T>`."
+    },
+    {
+      "subtopic": "Reload behavior",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A value is supplied via an **environment variable** and consumed through `IOptionsMonitor<T>`. The env var's value is changed in the OS while the app is running. What does `CurrentValue` reflect?",
+      "options": [
+        "The original startup value — env vars are read once at startup and don't provide change tokens",
+        "The new value immediately — `IOptionsMonitor<T>` always reflects live changes from any provider",
+        "The new value on the next request only, like a snapshot",
+        "An exception, because monitors require `reloadOnChange` on every provider"
+      ],
+      "answer": 0,
+      "explanation": "Reload depends on the provider emitting change tokens. Only file providers added with `reloadOnChange` watch their source; environment variables and command-line args are read once at startup and never hot-reload, so `CurrentValue` stays at the original value."
+    },
+    {
+      "subtopic": "Named options",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You registered `Configure<SmtpOptions>(\"Backup\", ...)`. Which is the correct way to retrieve the \"Backup\" configuration?",
+      "options": [
+        "Inject `IOptionsSnapshot<SmtpOptions>` (or `IOptionsMonitor<SmtpOptions>`) and call `.Get(\"Backup\")`",
+        "Inject `IOptions<SmtpOptions>` and call `.Get(\"Backup\")`",
+        "Inject `IOptions<SmtpOptions>`; `.Value` returns the \"Backup\" options because it was registered last",
+        "Inject `IConfiguration` and call `.GetNamedOptions(\"Backup\")`"
+      ],
+      "answer": 0,
+      "explanation": "Named options are retrieved via `IOptionsSnapshot<T>.Get(name)` or `IOptionsMonitor<T>.Get(name)`. `IOptions<T>` has no concept of names — it only ever returns the default (unnamed) options."
+    },
+    {
+      "subtopic": "Binding gotcha",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A developer typos a key as `\"Smpt:Host\"` in `appsettings.json` instead of `\"Smtp:Host\"`. With default binder settings, what is the observable behavior?",
+      "options": [
+        "The `Host` property silently keeps its default value; no error is raised",
+        "Binding throws an exception about an unknown configuration key",
+        "The app fails to start because the key doesn't match the section",
+        "`GetSection(\"Smtp\")` returns null, surfacing the typo immediately"
+      ],
+      "answer": 0,
+      "explanation": "By default unmatched config keys are silently ignored, so the property keeps its default and the typo causes a 'my setting isn't taking effect' bug. Setting `BinderOptions.ErrorOnUnknownConfiguration = true` makes it fail loudly."
+    },
+    {
+      "subtopic": "Validation timing",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Options are registered with `.ValidateDataAnnotations()` but **without** `.ValidateOnStart()`. When does validation actually run?",
+      "options": [
+        "Lazily, the first time the options are resolved (`.Value`/`.Get()`), which may be deep in a request",
+        "Eagerly during `builder.Build()`, before any request is handled",
+        "On every request, regardless of whether the options are accessed",
+        "Never — `ValidateDataAnnotations()` only registers attributes; you must call `Validate(...)` to run them"
+      ],
+      "answer": 0,
+      "explanation": "Validation is lazy by default — it runs the first time the options instance is resolved, which can be long after startup. `.ValidateOnStart()` moves it to application startup so bad config fails fast instead of throwing later on first use."
+    },
+    {
+      "subtopic": "Composition root vs typed options",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "In a unit test, `Options.Create(new SmtpOptions { Host = \"x\" })` produces an `IOptions<SmtpOptions>` without needing any `IConfiguration` or DI machinery.",
+      "answer": true,
+      "explanation": "`Options.Create(...)` wraps a plain POCO in an `IOptions<T>`, which is exactly why typed options are more testable than reaching into `IConfiguration` — you inject a known object instead of mocking the whole config tree."
+    },
+    {
+      "subtopic": "GetConnectionString",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What config key does `configuration.GetConnectionString(\"Default\")` actually read?",
+      "options": [
+        "`ConnectionStrings:Default`",
+        "`Default:ConnectionString`",
+        "`ConnectionString:Default`",
+        "`Connections:Default`"
+      ],
+      "answer": 0,
+      "explanation": "`GetConnectionString(\"Name\")` is a shortcut that reads the `ConnectionStrings:Name` key — here `ConnectionStrings:Default`."
+    },
+    {
+      "subtopic": "Order of options building",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements correctly describe how a single options instance is built? (Select all that apply.)",
+      "options": [
+        "All `Configure`/`Bind` delegates run before any `PostConfigure` delegate",
+        "`PostConfigure<T>` runs after all `Configure` calls but before validation",
+        "Validation runs last, so it sees the final post-configured value",
+        "Validation runs before `PostConfigure`, so post-config can fix invalid values",
+        "`PostConfigure` runs before `Configure` to seed defaults that `Configure` then overrides"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The pipeline is: all Configure/Bind delegates → all PostConfigure delegates → validation last. That ordering means validation evaluates the final, post-configured value; the two reversed-order options are wrong."
+    },
+    {
+      "subtopic": "PostConfigure purpose",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given this registration, what is `o.Port` after the options are built if `appsettings.json` has `Smtp:UseSsl = true` and no `Smtp:Port` key?",
+      "code": "builder.Services\n    .Configure<SmtpOptions>(cfg.GetSection(\"Smtp\"))\n    .PostConfigure<SmtpOptions>(o =>\n    {\n        if (o.Port == 0) o.Port = o.UseSsl ? 465 : 25;\n    });",
+      "lang": "csharp",
+      "options": [
+        "465 — `Port` binds to its default 0, then `PostConfigure` runs after binding and applies 465",
+        "25 — `PostConfigure` runs before binding, so `UseSsl` is still false when the default is computed",
+        "0 — `PostConfigure` cannot mutate options that were already bound from configuration",
+        "A validation exception, because `Port` is outside the valid range"
+      ],
+      "answer": 0,
+      "explanation": "Binding runs first and leaves `Port` at its default 0; `PostConfigure` runs afterward, sees `Port == 0` and `UseSsl == true`, and sets 465. PostConfigure always runs after all Configure/Bind delegates, so `UseSsl` is already true."
+    },
+    {
+      "subtopic": "OptionsMonitor.OnChange lifecycle",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A long-lived singleton subscribes with `IOptionsMonitor<T>.OnChange(...)` in its constructor but never stores or disposes the returned value. What is the senior-level concern?",
+      "options": [
+        "A resource/callback leak — the returned `IDisposable` registration is never released, so the subscription lingers",
+        "Nothing — `OnChange` registrations are garbage-collected automatically when the callback returns",
+        "The monitor stops emitting changes after the first callback because the token wasn't renewed",
+        "It throws at startup because `OnChange` may only be called from a hosted service"
+      ],
+      "answer": 0,
+      "explanation": "`OnChange` returns an `IDisposable` representing the subscription; failing to dispose it leaks the registration. The reviewer explicitly notes you should keep the `IDisposable` and dispose it (e.g. in `Dispose`) to avoid leaks."
+    },
+    {
+      "subtopic": "Key Vault provider mapping",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Regarding the Azure Key Vault configuration provider and Managed Identity, which statements are correct? (Select all that apply.)",
+      "options": [
+        "Key Vault is not one of the default providers; you add it explicitly with `AddAzureKeyVault`",
+        "A Key Vault secret named `Smtp--Host` surfaces as the config key `Smtp:Host`",
+        "Using `DefaultAzureCredential` (Managed Identity) means no secret is needed to authenticate and read the secrets",
+        "Where you add Key Vault in the provider chain has no effect on precedence since vault always wins",
+        "Key Vault secret names use `__` (double underscore) to express hierarchy, just like environment variables"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Key Vault must be added explicitly and its chain position determines precedence (so the 'always wins' claim is wrong). Secret names map `--`→`:` (not `__`, which is the env-var convention). Managed Identity via `DefaultAzureCredential` solves the chicken-and-egg problem with no stored secret."
+    },
+    {
+      "subtopic": "Per-key precedence semantics",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "`appsettings.json` defines `Feature:Limit=10` and `Feature:Name=A`. A command-line arg passes `--Feature:Limit=99` but nothing for `Feature:Name`. What are the effective values?",
+      "options": [
+        "`Limit=99`, `Name=A` — precedence is last-wins **per key**, not whole-file replacement",
+        "`Limit=99`, `Name` unset — the CLI provider replaces the entire `Feature` section",
+        "`Limit=10`, `Name=A` — JSON files always win over command-line args",
+        "A binding error, because the CLI provided a partial section"
+      ],
+      "answer": 0,
+      "explanation": "Precedence is evaluated key-by-key (last-wins per key), so the CLI overrides only `Feature:Limit` while JSON still supplies `Feature:Name`. It is not whole-section replacement."
+    },
+    {
+      "subtopic": "Env var array override",
+      "source": "dotnet/configuration-and-options-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "`appsettings.json` defines an array `Servers` with three elements (indices 0–2). You set the environment variable `Servers__0=override`. What is the result?",
+      "options": [
+        "Only index 0 is overridden; indices 1 and 2 keep their JSON values — you can't 'clear' the array via env vars",
+        "The entire `Servers` array is replaced by a single-element array `[\"override\"]`",
+        "The env var is ignored because arrays can only be set in JSON",
+        "A binding exception, because the array length now mismatches the JSON definition"
+      ],
+      "answer": 0,
+      "explanation": "Arrays are keyed by integer index (`Servers:0`, `Servers:1`, …), so `Servers__0` overrides only index 0. Env vars can override or extend by index but cannot clear or shrink a JSON-defined array."
+    }
+  ]
+}

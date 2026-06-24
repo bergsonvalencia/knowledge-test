@@ -1,0 +1,270 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/performance-and-high-throughput-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Measure first",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why is BenchmarkDotNet preferred over a hand-rolled `Stopwatch` loop for micro-benchmarking a hot method?",
+      "options": [
+        "A `Stopwatch` loop mostly measures JIT warmup and noise, while BenchmarkDotNet runs warmup, many iterations, and statistical analysis in an isolated Release process",
+        "`Stopwatch` cannot measure intervals shorter than one millisecond, so it is useless for fast methods",
+        "BenchmarkDotNet runs the benchmark in Debug configuration, which produces more stable numbers",
+        "BenchmarkDotNet disables the garbage collector during measurement so allocations never affect the result"
+      ],
+      "answer": 0,
+      "explanation": "BenchmarkDotNet isolates each benchmark in its own Release-config process, handles warmup and many iterations, and does statistical analysis, whereas a raw `Stopwatch` loop measures JIT warmup and noise. It runs in Release (not Debug) and does not disable the GC."
+    },
+    {
+      "subtopic": "MemoryDiagnoser",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What does adding `[MemoryDiagnoser]` to a BenchmarkDotNet class report?",
+      "options": [
+        "Bytes allocated and Gen0/1/2 collection counts per operation",
+        "The peak managed heap size reached during the whole run",
+        "The number of CPU cache misses per operation",
+        "The wall-clock time spent inside the garbage collector across all iterations"
+      ],
+      "answer": 0,
+      "explanation": "`[MemoryDiagnoser]` reports allocated bytes plus Gen0/1/2 collection counts per operation, which is usually more actionable than nanoseconds. It does not measure cache misses, total GC wall-clock, or peak heap size."
+    },
+    {
+      "subtopic": "Allocations and GC",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "In a high-throughput service, reducing the number of Gen0 allocations per request generally reduces GC frequency and improves p99 tail latency.",
+      "answer": true,
+      "explanation": "Fewer allocations fill Gen0 more slowly, triggering fewer collections and less pause/CPU time, which improves throughput and tail latency. Reducing allocations is the consumer-side lever the reviewer emphasizes."
+    },
+    {
+      "subtopic": "Span constraints",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which type should you use to hold a buffer that must remain valid across an `await` in an async method?",
+      "options": [
+        "`Memory<T>` (or `ReadOnlyMemory<T>`)",
+        "`Span<T>`",
+        "`ReadOnlySpan<T>`",
+        "A `stackalloc`-backed `Span<T>`"
+      ],
+      "answer": 0,
+      "explanation": "`Span<T>` is a `ref struct` restricted to the stack and cannot cross an `await`. `Memory<T>`/`ReadOnlyMemory<T>` can live on the heap and cross awaits; call `.Span` only inside synchronous regions."
+    },
+    {
+      "subtopic": "ValueTask consume-once",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "How many times may a `ValueTask`/`ValueTask<T>` returned by a method safely be awaited?",
+      "options": [
+        "Exactly once",
+        "Any number of times, just like a `Task`",
+        "Twice, but only if the second await happens after completion",
+        "Zero times — you must call `.AsTask()` before awaiting it"
+      ],
+      "answer": 0,
+      "explanation": "`ValueTask` is consume-once: await it exactly once, and never await twice, read `.Result` before completion, or store it. If you need multi-await semantics, call `.AsTask()` once and await the resulting `Task`."
+    },
+    {
+      "subtopic": "StringBuilder myth",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A reviewer claims `StringBuilder` is *always* faster than `+` for string concatenation. What is the correct senior nuance?",
+      "options": [
+        "For just 2-3 concatenations, `+` (compiled to `String.Concat`) is faster and allocates less; `StringBuilder` wins on loops or unknown counts",
+        "`StringBuilder` is always faster because `string` is immutable and `+` re-allocates every time regardless of count",
+        "`+` is always faster because the compiler folds all concatenations into a single allocation at any size",
+        "They are identical because the C# compiler rewrites every `StringBuilder.Append` chain into `String.Concat`"
+      ],
+      "answer": 0,
+      "explanation": "For a few concatenations `+` lowers to a single `String.Concat` call that is faster and lower-allocation; `StringBuilder` only wins on loops or unknown/large counts. The compiler does not fold loop concatenations or rewrite `StringBuilder` into `String.Concat`."
+    },
+    {
+      "subtopic": "Hidden allocations",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following are common sources of *hidden* heap allocations on a hot path that a profiler would flag? (Select all that apply.)",
+      "options": [
+        "Boxing a value type to `object` or an interface",
+        "Lambda closures that capture local variables",
+        "`string.Format` with integer arguments (boxes the ints and allocates an `object[]`)",
+        "Iterating a `ReadOnlySpan<int>` with a `foreach` loop",
+        "Reading a field of a `readonly struct` through a `readonly` reference"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Boxing, capturing closures, and `string.Format` (boxes ints + allocates a `params object[]`) all allocate. Iterating a span allocates nothing (no iterator/closure), and accessing a `readonly struct` through a `readonly` reference is exactly the case where the compiler can skip the defensive copy."
+    },
+    {
+      "subtopic": "Defensive copy trap",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Given the code below, after calling `Move()` once, what is the value of `_p.X`?",
+      "code": "struct Point { public int X; public void Shift() => X++; }\nclass Box\n{\n    private readonly Point _p;\n    public void Move() => _p.Shift();\n}",
+      "lang": "csharp",
+      "options": [
+        "0 — `_p` is a `readonly` field of a mutable struct, so `Shift()` runs on a discarded defensive copy",
+        "1 — `Shift()` mutates the field in place because `X` is public",
+        "It does not compile — calling a mutating method on a `readonly` field is a compile error",
+        "It throws at runtime because mutating a `readonly` struct field is not allowed"
+      ],
+      "answer": 0,
+      "explanation": "Because `Point` is a mutable struct behind a `readonly` field, the compiler makes a defensive copy before invoking `Shift()`, so the mutation is discarded and `_p.X` stays 0. It compiles fine and throws nothing — making `Point` a `readonly struct` would surface the bug by making the mutating method illegal."
+    },
+    {
+      "subtopic": "in parameters",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When is passing a value type by `in` parameter the right call?",
+      "options": [
+        "For a large `readonly struct`, to pass a readonly reference instead of copying all fields on every call",
+        "For any struct, since passing by reference is always cheaper than copying",
+        "For small structs like an `int`-sized value, where the indirection beats the copy",
+        "For mutable structs, so the callee can modify the caller's copy in place"
+      ],
+      "answer": 0,
+      "explanation": "`in` shines for large readonly structs, avoiding a full field copy on the call. For small structs the copy is cheaper than the indirection, and `in` is readonly so the callee cannot mutate the caller's value."
+    },
+    {
+      "subtopic": "ArrayPool contract",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `ArrayPool<T>.Shared` are correct? (Select all that apply.)",
+      "options": [
+        "The rented array may be larger than the size you requested, so you must track and use only the length you asked for",
+        "You should return the array in a `finally` block and never read or write it after returning",
+        "A returned array may contain stale data unless you pass `clearArray: true` on return",
+        "`Return` zeroes the array by default, so secrets left in a rented buffer are always cleared automatically",
+        "After renting, the array is guaranteed to be exactly the requested length"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Rented arrays may be larger than requested, must be returned in a `finally` and never touched after return, and may hold stale data unless cleared with `clearArray: true`. `Return` does not clear by default, and the array is not guaranteed to be the exact requested length."
+    },
+    {
+      "subtopic": "ValueTask when to use",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "On which kind of method does `ValueTask<T>` actually save an allocation compared to `Task<T>`?",
+      "options": [
+        "A hot path that *often completes synchronously* (e.g. a cache hit), where `ValueTask` allocates nothing on the sync path",
+        "Any async method, because `ValueTask` is a struct and structs are never heap-allocated",
+        "A method that always completes asynchronously after real I/O, where `ValueTask` avoids the underlying `Task`",
+        "A method whose result is awaited many times, because `ValueTask` caches the result for reuse"
+      ],
+      "answer": 0,
+      "explanation": "The win is on hot paths that frequently complete synchronously (cache hits, buffered reads): `ValueTask` wraps the ready result with zero allocation. When it must complete asynchronously it still wraps a real `Task`, and it must be awaited exactly once — not many times."
+    },
+    {
+      "subtopic": "STJ source generation",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the primary performance and compatibility benefit of using a source-generated `JsonSerializerContext` with `System.Text.Json`?",
+      "options": [
+        "It moves type metadata discovery from runtime reflection to compile time, improving startup and making STJ work under Native AOT/trimming",
+        "It switches the serializer to operate on UTF-16 strings instead of UTF-8 bytes for faster parsing",
+        "It enables JsonPath queries and `JObject`-style dynamic LINQ-to-JSON that STJ otherwise lacks",
+        "It automatically caches a singleton `JsonSerializerOptions` so you never rebuild converter caches"
+      ],
+      "answer": 0,
+      "explanation": "Source generation shifts metadata from runtime reflection to compile time, giving faster startup and being the AOT/trim-safe path since reflection-based serialization is unsupported there. STJ already works on UTF-8 bytes, JsonPath/`JObject` are Newtonsoft features, and caching options is a separate concern."
+    },
+    {
+      "subtopic": "FrozenDictionary",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You load 50,000 country codes once at startup and look them up on every request, never mutating the set. Which collection best fits, and why?",
+      "options": [
+        "`FrozenDictionary` — high one-time build cost but the fastest read performance, ideal for build-once/read-constantly",
+        "`ImmutableDictionary` — copy-on-write gives the fastest reads of any immutable collection",
+        "`ConcurrentDictionary` — required because many requests read it at the same time",
+        "A regular `Dictionary` with no pre-sizing — frozen collections are slower to read than `Dictionary`"
+      ],
+      "answer": 0,
+      "explanation": "`FrozenDictionary` pays a high build cost once and then outperforms `Dictionary`/`HashSet` on lookup, matching the build-once/read-constantly profile. `ImmutableDictionary` is slower to read, a plain read-only `Dictionary` needs no concurrency control for reads, and frozen is faster than `Dictionary` on lookups."
+    },
+    {
+      "subtopic": "CollectionsMarshal",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "What does `CollectionsMarshal.GetValueRefOrAddDefault(dict, key, out _)` give you, and what is the main risk?",
+      "options": [
+        "A `ref` to the dictionary's value slot (adding a default if absent), enabling read-and-update in a single hash lookup — but the ref is unsafe and invalidated by a structural change to the dictionary",
+        "A defensive copy of the value that you mutate and then write back, doubling the number of hash lookups",
+        "An `out` flag indicating whether the key existed, but no way to update the value without a second indexer write",
+        "A thread-safe atomic increment of the value, safe to call concurrently from multiple threads"
+      ],
+      "answer": 0,
+      "explanation": "It returns a `ref` to the value (adding a default if missing), so you read and update in one hash lookup instead of two. The ref is low-level and unsafe: any structural change to the collection can invalidate it, and it offers no thread safety."
+    },
+    {
+      "subtopic": "Span across await",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Does the following method compile, and why?",
+      "code": "async Task<int> ReadAsync(Stream s)\n{\n    Span<byte> buffer = stackalloc byte[256];\n    int n = await s.ReadAsync(buffer);\n    return n;\n}",
+      "lang": "csharp",
+      "options": [
+        "No — `Span<byte>` is a `ref struct` that cannot live across an `await`, and `Stream.ReadAsync` takes `Memory<byte>` anyway",
+        "Yes — the `stackalloc` buffer is promoted into the async state machine on the heap automatically",
+        "Yes — `Span<byte>` implicitly converts to `Memory<byte>` at the call site, satisfying `ReadAsync`",
+        "No — `stackalloc` is illegal inside any method marked `async`, even before the first `await`"
+      ],
+      "answer": 0,
+      "explanation": "A `Span<byte>` is a `ref struct` that cannot be hoisted into the heap-allocated async state machine, so a local span cannot cross an `await`; also `Stream.ReadAsync` accepts `Memory<byte>`, not `Span<byte>`. Use a `Memory<byte>` (e.g. a pooled array), taking `.Span` only in synchronous regions."
+    },
+    {
+      "subtopic": "SearchValues caching",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "Constructing a `SearchValues<char>` instance with `SearchValues.Create(...)` inside a hot method on every call is the recommended pattern for SIMD-accelerated `IndexOfAny`.",
+      "answer": false,
+      "explanation": "`SearchValues<T>` is meant to be built once and cached as a `static readonly` field, since creation precomputes the SIMD-friendly lookup. Rebuilding it per call is exactly what analyzer CA1870 flags."
+    },
+    {
+      "subtopic": "Portable SIMD",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In a portable `Vector<T>`-based loop, why is a scalar tail loop after the vectorized loop necessary?",
+      "options": [
+        "`Vector<int>.Count` (the lane width) is decided at JIT time by the hardware, so the element count is rarely an exact multiple of it — the tail handles the leftover elements",
+        "The JIT cannot vectorize the final iteration, so the tail re-runs the last `Vector<int>.Count` elements scalarly as a correctness check",
+        "`Vector<T>` cannot read the first few elements of a span, so the tail processes the head that the vector loop skipped",
+        "Scalar operations are always faster than SIMD on the last elements, so the tail exists purely for speed"
+      ],
+      "answer": 0,
+      "explanation": "The lane width `Vector<int>.Count` is chosen by the JIT for the CPU (e.g. 8 ints on AVX2), so the input length is usually not an exact multiple; the scalar tail processes the remaining elements the vectorized loop could not. It handles leftover elements, not the head, and is not about speed."
+    },
+    {
+      "subtopic": "Native AOT trade-offs",
+      "source": "dotnet/performance-and-high-throughput-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Which statement correctly contrasts Native AOT with ReadyToRun (R2R)?",
+      "options": [
+        "Native AOT compiles fully ahead of time with no JIT — fastest startup and lowest memory, but no runtime codegen and limited reflection; R2R precompiles native code with a JIT fallback, improving startup without AOT's restrictions",
+        "Native AOT keeps the JIT for hot methods while precompiling cold ones, whereas R2R removes the JIT entirely",
+        "R2R forbids reflection-based serialization and DI, while Native AOT supports them fully via runtime codegen",
+        "Both disable the JIT, but only R2R produces a single self-contained native executable"
+      ],
+      "answer": 0,
+      "explanation": "Native AOT removes the JIT entirely (fastest startup, lowest memory) at the cost of no runtime codegen and limited reflection, so it needs source generators; R2R is a middle ground that precompiles native code but keeps a JIT fallback and the full feature set. The other options invert these restrictions."
+    }
+  ]
+}

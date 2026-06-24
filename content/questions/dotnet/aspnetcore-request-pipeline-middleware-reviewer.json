@@ -1,0 +1,268 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Onion model / reverse execution",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Given the pipeline below, what is the exact console output for one request?",
+      "code": "app.Use(async (ctx, next) => { Console.WriteLine(\"A\"); await next(ctx); Console.WriteLine(\"B\"); });\napp.Use(async (ctx, next) => { Console.WriteLine(\"C\"); await next(ctx); Console.WriteLine(\"D\"); });\napp.Run(async ctx => { Console.WriteLine(\"E\"); await ctx.Response.WriteAsync(\"ok\"); });",
+      "lang": "csharp",
+      "options": ["A C E D B", "A B C D E", "E C A B D", "A C E B D"],
+      "answer": 0,
+      "explanation": "\"Before\" code runs in registration order (A, C), the terminal Run prints E, then the response unwinds back up the onion in reverse, so \"after\" code prints D then B. The result is A C E D B."
+    },
+    {
+      "subtopic": "Middleware ordering",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why must `UseAuthentication` be registered before `UseAuthorization`?",
+      "options": [
+        "Authentication populates `context.User`, which authorization reads to make access decisions; reversed, authorization evaluates an anonymous user.",
+        "Authorization throws a startup exception if authentication has not been registered first.",
+        "Authentication must run last so it can override any decision authorization already made.",
+        "The two are interchangeable; the framework re-sorts them into the correct order automatically."
+      ],
+      "answer": 0,
+      "explanation": "Authentication establishes who the user is by populating `context.User`; authorization then reads that identity. Reversed, authorization sees an anonymous user and secured endpoints return 401/403. The framework does not re-sort middleware."
+    },
+    {
+      "subtopic": "Exception handler placement",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why is the exception-handling middleware (`UseExceptionHandler`) registered first / outermost in the pipeline?",
+      "options": [
+        "So it wraps the entire pipeline and can catch any downstream throw, and because once the response has started it can no longer rewrite it.",
+        "Because it must run after the endpoint executes so it can read the action's result.",
+        "Because exception handling is the cheapest middleware and should short-circuit static files.",
+        "Because it needs the authenticated `context.User` to decide how to render the error page."
+      ],
+      "answer": 0,
+      "explanation": "Registered first, it wraps everything below it and catches any downstream exception. Placing it later means a downstream component may already have started the response, after which status and headers can no longer be rewritten into a clean error."
+    },
+    {
+      "subtopic": "Use vs Run",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "`Run` registers a terminal middleware: by convention it never calls `next`, so nothing registered after it in that branch executes.",
+      "answer": true,
+      "explanation": "`Run` is the terminal handler at the end of a branch. It does not call next, so any middleware after it never runs. `Use`, by contrast, is non-terminal and may pass control onward."
+    },
+    {
+      "subtopic": "HttpContext.Items",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is `HttpContext.Items` intended for?",
+      "options": [
+        "A per-request scratchpad dictionary for passing data between middleware (and to the endpoint) within the same request.",
+        "A process-wide cache shared across all requests for the lifetime of the application.",
+        "The collection of low-level server capabilities such as the connection and response-completion features.",
+        "The request's DI scope from which scoped services are resolved."
+      ],
+      "answer": 0,
+      "explanation": "`Items` is a per-request `IDictionary<object,object>` scratchpad to pass data between middleware in the same request. `Features` is the low-level capability collection and `RequestServices` is the request's DI scope — those are different members."
+    },
+    {
+      "subtopic": "MapWhen vs UseWhen",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You want to run extra middleware only for `/api/*` requests and then continue through the rest of the main pipeline normally. Which method fits?",
+      "options": [
+        "`UseWhen`, because if its branch doesn't short-circuit, control rejoins the main pipeline.",
+        "`MapWhen`, because its branch automatically rejoins the main pipeline after running.",
+        "`Map`, because branching on a path prefix always rejoins the main pipeline.",
+        "`Run`, because it conditionally executes middleware and then continues."
+      ],
+      "answer": 0,
+      "explanation": "`UseWhen` conditionally inserts middleware and, if the branch doesn't short-circuit, rejoins the main pipeline. `Map`/`MapWhen` branches are self-contained sub-pipelines that never rejoin, and `Run` is terminal."
+    },
+    {
+      "subtopic": "Map path rewriting",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A request for `/health/live` is handled by `app.Map(\"/health\", branch => { ... })`. Inside the branch, what are `Request.Path` and `Request.PathBase`?",
+      "options": [
+        "`Path` = `/live`, `PathBase` = `/health`.",
+        "`Path` = `/health/live`, `PathBase` = empty.",
+        "`Path` = `/health`, `PathBase` = `/live`.",
+        "`Path` = empty, `PathBase` = `/health/live`."
+      ],
+      "answer": 0,
+      "explanation": "`Map` strips the matched prefix from `Request.Path` and appends it to `Request.PathBase`. So the branch sees `Path=/live` and `PathBase=/health`."
+    },
+    {
+      "subtopic": "Two-phase endpoint routing",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the snippet, what does `context.GetEndpoint()` return inside the inline middleware?",
+      "code": "app.Use(async (ctx, next) => { var e1 = ctx.GetEndpoint(); await next(ctx); });\napp.UseRouting();\napp.Use(async (ctx, next) => { var e2 = ctx.GetEndpoint(); await next(ctx); });\napp.MapControllers();",
+      "lang": "csharp",
+      "options": [
+        "`e1` is null (it runs before `UseRouting`); `e2` is the matched endpoint (it runs after match, before execute).",
+        "Both `e1` and `e2` are the matched endpoint, because routing is registered in the pipeline.",
+        "Both `e1` and `e2` are null, because the endpoint is only known once `MapControllers` executes it.",
+        "`e1` is the matched endpoint; `e2` is null because the endpoint has already executed."
+      ],
+      "answer": 0,
+      "explanation": "Endpoint routing is two-phase. `UseRouting` matches and stores the endpoint, so middleware registered before it (e1) sees null, while middleware between match and execute (e2) sees the selected endpoint. The terminal `MapControllers` runs it last."
+    },
+    {
+      "subtopic": "Accidental short-circuit",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What happens to requests with this pipeline?",
+      "code": "app.Use((context, next) =>\n{\n    context.Response.Headers[\"X-Trace\"] = context.TraceIdentifier;\n    return Task.CompletedTask;   // never calls next\n});\napp.MapControllers();",
+      "lang": "csharp",
+      "options": [
+        "Every request is short-circuited: routing and controllers never run, returning an empty 200 with only the header set.",
+        "The request body is buffered and replayed, so controllers run twice.",
+        "An `InvalidOperationException` is thrown because `next` was not awaited.",
+        "Controllers still run because returning `Task.CompletedTask` implicitly invokes `next`."
+      ],
+      "answer": 0,
+      "explanation": "Returning `Task.CompletedTask` without calling `next` unintentionally short-circuits the pipeline; routing and controllers never execute, so the request returns an empty 200 with just the header. The fix is `return next(context);`."
+    },
+    {
+      "subtopic": "Convention-based middleware DI",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In a convention-based middleware class, a scoped service such as `IOrderRepository` should be supplied where?",
+      "options": [
+        "As a parameter of `InvokeAsync`, so the framework resolves it from the current request's scope on each call.",
+        "As a constructor parameter, because the class is reconstructed for every request.",
+        "Via a static field set once at startup and reused across requests.",
+        "As a constructor parameter, but only if the service is also registered as a singleton."
+      ],
+      "answer": 0,
+      "explanation": "Convention-based middleware is constructed once at startup (effectively a singleton), so a scoped service injected in the constructor becomes a captive dependency. Scoped services must be `InvokeAsync` parameters, which are resolved per request."
+    },
+    {
+      "subtopic": "Convention vs factory-based",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about factory-based middleware (implementing `IMiddleware`) are true? Select all that apply.",
+      "options": [
+        "It must be registered in the DI container (e.g. `AddScoped<T>()`).",
+        "It is resolved from the container per request.",
+        "Scoped services can safely be injected via its constructor.",
+        "It is constructed once at startup and reused as a singleton.",
+        "Adding it to the pipeline with `UseMiddleware<T>()` is unnecessary because DI registration alone activates it."
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Factory-based middleware is registered in DI and resolved per request, so constructor-injected scoped services are safe. It is NOT a startup singleton, and it still must be added to the pipeline (e.g. `UseMiddleware<T>()`) — DI registration alone does not place it in the pipeline."
+    },
+    {
+      "subtopic": "CORS placement",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is `UseCors` placed after `UseRouting` but before the authentication/authorization pair?",
+      "options": [
+        "It needs the matched endpoint's CORS metadata and must answer pre-flight `OPTIONS` before auth challenges those requests.",
+        "It populates `context.User`, which routing depends on to select the endpoint.",
+        "It must run after authorization so it can read the authenticated user's allowed origins.",
+        "It short-circuits static files, so it must follow `UseStaticFiles` immediately."
+      ],
+      "answer": 0,
+      "explanation": "CORS needs the endpoint metadata selected by routing (so it goes after `UseRouting`) and must answer the browser's pre-flight `OPTIONS` request before auth would reject it (so it goes before authentication). Placing it after authorization causes pre-flight requests to be rejected."
+    },
+    {
+      "subtopic": "Two app.Use overloads",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Regarding the two `app.Use` overloads (where `next` is a `RequestDelegate` vs a `Func<Task>`), which statements are correct? Select all that apply.",
+      "options": [
+        "The `RequestDelegate` overload is called as `await next(context)` and avoids a per-request `Func<Task>` closure allocation.",
+        "The `Func<Task>` overload is called as `await next()` with no context argument.",
+        "Which overload is selected depends on whether the lambda is marked `async`.",
+        "Awaiting `next` is mandatory if you intend the rest of the pipeline to run.",
+        "The `Func<Task>` overload was removed in .NET 7 and no longer compiles."
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "The modern `RequestDelegate` overload takes the context and avoids a closure allocation; the older `Func<Task>` overload is parameterless. The compiler picks the overload from how you call `next`, not from `async`, and the `Func<Task>` overload still works. Forgetting to await `next` silently short-circuits."
+    },
+    {
+      "subtopic": "Started-response trap",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A middleware runs after `next` and tries to set `context.Response.StatusCode = 500` when a downstream component has already begun writing the response body. What happens?",
+      "options": [
+        "It throws `InvalidOperationException` because the response has already started; status and headers are already on the wire.",
+        "The status is silently overwritten to 500 and the previously sent body is discarded.",
+        "The framework buffers the entire response, so the status can always be changed before flush.",
+        "Nothing changes and no exception occurs; status writes after the body are simply ignored."
+      ],
+      "answer": 0,
+      "explanation": "Once the body has begun writing, `HasStarted` is true and the status/headers are committed; mutating them throws `InvalidOperationException`. You must guard with `context.Response.HasStarted` before mutating — this is also why the exception handler must sit near the top."
+    },
+    {
+      "subtopic": "HttpContext lifetime / background work",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A middleware kicks off a fire-and-forget `Task.Run` that outlives the request and reads `context.User` and `context.Request.Path` inside it. What is the senior-level objection?",
+      "options": [
+        "`HttpContext` is not thread-safe and is only valid for the request's duration; the background task may read it after it is invalid. Copy the needed values into locals first.",
+        "`Task.Run` cannot capture an `HttpContext` because the type is not serializable.",
+        "It is fine as written because `HttpContext` is automatically deep-cloned for any background task that captures it.",
+        "The only problem is performance: reading `context.User` repeatedly forces re-authentication."
+      ],
+      "answer": 0,
+      "explanation": "`HttpContext` is not thread-safe and is valid only for the duration of the request. Capturing it in fire-and-forget work that outlives the request risks reading invalid state. Copy the values you need (user id, trace id, path) into locals and pass those."
+    },
+    {
+      "subtopic": "Re-reading the request body",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A logging middleware reads `context.Request.Body` to a string and then calls `next`. Without extra precautions the endpoint receives an empty body. What is the correct fix?",
+      "options": [
+        "Call `context.Request.EnableBuffering()` before reading, then rewind with `Body.Position = 0` after reading.",
+        "Set `context.Request.Body` to a new `MemoryStream` after reading so the endpoint allocates a fresh body.",
+        "Move the logging middleware after `MapControllers` so it reads the body once the endpoint is done.",
+        "Read the body twice in a loop; the second read returns the buffered copy automatically."
+      ],
+      "answer": 0,
+      "explanation": "The request body is a forward-only stream consumed by the first reader. Call `EnableBuffering()` to permit re-reads, read, then rewind `Body.Position = 0` so the endpoint can read it again. Without this, the endpoint sees an empty body."
+    },
+    {
+      "subtopic": "Middleware vs filters",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which concerns are better implemented as an MVC filter than as middleware? Select all that apply.",
+      "options": [
+        "Model-state validation that needs the bound action arguments.",
+        "Action-level result shaping that needs `ActionExecutingContext`.",
+        "Logging and timing that applies to every request, including static files.",
+        "CORS policy enforcement across all traffic.",
+        "Inspecting and modifying a controller action's model-bound arguments before it executes."
+      ],
+      "answer": [0, 1, 4],
+      "explanation": "Filters run inside MVC and have access to the action context — model binding, action arguments, and the result — so model validation, result shaping, and inspecting bound arguments belong there. Logging/timing for all requests and CORS are pipeline-wide, `HttpContext`-only concerns, so middleware fits better."
+    },
+    {
+      "subtopic": "UseRouting in minimal hosting",
+      "source": "dotnet/aspnetcore-request-pipeline-middleware-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "In .NET 6+ minimal hosting, the only reason to call `UseRouting()` explicitly is to insert middleware between endpoint matching and endpoint execution; otherwise `WebApplication` adds routing automatically.",
+      "answer": true,
+      "explanation": "`WebApplication` automatically adds routing and endpoint execution, and `MapControllers`/`MapGet` register endpoints. You call `UseRouting()` by hand only to place middleware between the match phase and the execute phase — for example to read the selected endpoint's metadata."
+    }
+  ]
+}

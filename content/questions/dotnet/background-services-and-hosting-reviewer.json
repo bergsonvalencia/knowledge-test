@@ -1,0 +1,270 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/background-services-and-hosting-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Hosted service lifetime",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "With which DI lifetime does `AddHostedService<T>()` register the worker type `T`?",
+      "options": [
+        "Singleton — one instance for the whole process",
+        "Scoped — a new instance per request scope",
+        "Transient — a new instance each time it is resolved",
+        "Scoped at startup, then promoted to singleton after `StartAsync`"
+      ],
+      "answer": 0,
+      "explanation": "`AddHostedService<T>()` registers `T` as a singleton, so the host creates exactly one instance for the app's lifetime. That is precisely why injecting a scoped `DbContext` into the constructor is a captive-dependency bug."
+    },
+    {
+      "subtopic": "BackgroundService base class",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "When you derive from `BackgroundService`, which single method do you override to host a long-running processing loop?",
+      "options": [
+        "`ExecuteAsync(CancellationToken stoppingToken)`",
+        "`StartAsync(CancellationToken cancellationToken)`",
+        "`RunAsync(CancellationToken cancellationToken)`",
+        "`OnTickAsync(CancellationToken stoppingToken)`"
+      ],
+      "answer": 0,
+      "explanation": "`BackgroundService` implements `IHostedService` for you and exposes the single overridable method `ExecuteAsync(stoppingToken)`, which is where the long-running loop lives. `StartAsync` is already implemented by the base class and `RunAsync`/`OnTickAsync` are not members of `BackgroundService`."
+    },
+    {
+      "subtopic": "Default shutdown timeout",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the default value of `HostOptions.ShutdownTimeout` that bounds how long the host waits for all hosted services to stop?",
+      "options": [
+        "30 seconds",
+        "5 seconds",
+        "15 seconds",
+        "Infinite — the host waits forever for workers to drain"
+      ],
+      "answer": 0,
+      "explanation": "`HostOptions.ShutdownTimeout` defaults to 30 seconds; past that, the host stops waiting and proceeds with disposal, potentially cutting off in-flight work. The 15-second value in the sample code is an explicit override, not the default."
+    },
+    {
+      "subtopic": "Exception default since .NET 6",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Since .NET 6, the default behavior when an unhandled exception escapes `BackgroundService.ExecuteAsync` is to log it and stop the entire host.",
+      "answer": true,
+      "explanation": "The default is `BackgroundServiceExceptionBehavior.StopHost`: the exception is logged and the whole host (and every other worker) is torn down. Before .NET 6 it was silently swallowed, leaving a zombie process with a dead worker."
+    },
+    {
+      "subtopic": "Channel drain idiom",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the idiomatic way for a consumer to drain a `System.Threading.Channels` channel until completion?",
+      "options": [
+        "`await foreach (var item in reader.ReadAllAsync(ct))`",
+        "`while (reader.TryRead(out var item)) { }` polled on a `Thread.Sleep` loop",
+        "`foreach (var item in reader.ToEnumerable())`",
+        "`reader.WaitToReadAsync(ct).Result` checked in a tight spin loop"
+      ],
+      "answer": 0,
+      "explanation": "`await foreach (var item in reader.ReadAllAsync(ct))` is the async-native drain idiom; it yields items as they arrive and ends gracefully once `Writer.Complete()` is called and the buffer empties. The polling/`Thread.Sleep`/spin variants defeat the channel's `await`-able design and waste CPU."
+    },
+    {
+      "subtopic": "StartAsync must be fast",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why must a hosted service's `StartAsync` be fast and non-blocking?",
+      "options": [
+        "The host awaits each service's `StartAsync` sequentially before the app is considered started, so slow work there stalls startup",
+        "`StartAsync` runs on the UI thread, and blocking it freezes the application window",
+        "The host calls `StartAsync` with a 1-second token that cancels any longer work",
+        "`StartAsync` runs inside the request pipeline, so blocking it delays every incoming HTTP request"
+      ],
+      "answer": 0,
+      "explanation": "The host awaits each hosted service's `StartAsync` in registration order before reporting the app as started, so blocking work there delays the whole host coming up. There is no UI thread, no automatic 1-second cancellation, and `StartAsync` runs during host startup, not per-request."
+    },
+    {
+      "subtopic": "Scope per unit of work",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A singleton worker injects `IServiceScopeFactory` but creates one scope at the top of `ExecuteAsync` and reuses it for every loop iteration. What is wrong with this?",
+      "options": [
+        "A scope held for the worker's lifetime is the captive bug again — the resolved `DbContext` is reused for the app's lifetime and its change tracker grows unbounded",
+        "`IServiceScopeFactory` can only create one scope per process, so the second iteration throws",
+        "Scopes created outside a request cannot resolve scoped services at all, so `GetRequiredService<AppDbContext>()` returns null",
+        "Nothing is wrong — a single long-lived scope is the recommended pattern for workers"
+      ],
+      "answer": 0,
+      "explanation": "Creating the scope once and holding it for the worker's lifetime reintroduces the captive-dependency problem: the same scoped `DbContext` lives for the whole process, its change tracker grows without bound, and it isn't safe to reuse. The fix is one scope per unit of work (per tick/message), mirroring a per-request scope."
+    },
+    {
+      "subtopic": "Bounded vs unbounded channels",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A `POST` endpoint writes to a `Channel.CreateUnbounded<WorkItem>()` and a single worker reads slowly. Under sustained load that outpaces the consumer, what is the failure mode and the correct fix?",
+      "options": [
+        "Memory grows without limit until the process is killed (OOM); fix with a bounded channel using `BoundedChannelFullMode.Wait` to apply backpressure",
+        "`WriteAsync` starts throwing `ChannelClosedException`; fix by calling `Writer.Complete()` less often",
+        "The endpoint blocks each request until the worker catches up; fix by switching to an unbounded channel",
+        "Items are silently dropped once a hidden 1000-item cap is hit; fix by raising the cap"
+      ],
+      "answer": 0,
+      "explanation": "An unbounded channel never blocks the writer, so the backlog grows until the process runs out of memory. A bounded channel with `BoundedChannelFullMode.Wait` makes `WriteAsync` await when full, throttling producers (the endpoint slows) instead of leaking memory."
+    },
+    {
+      "subtopic": "PeriodicTimer vs callback timers",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Why is `PeriodicTimer` preferred over `System.Threading.Timer` for periodic work inside `ExecuteAsync`?",
+      "options": [
+        "You await the tick and then await the work in one loop, so the next tick can't start until the current iteration finishes — preventing re-entrant overlap",
+        "`PeriodicTimer` guarantees the work runs at exactly the configured interval with zero drift, unlike callback timers",
+        "`PeriodicTimer` automatically retries the work on failure, whereas callback timers do not",
+        "`PeriodicTimer` callbacks run on a dedicated high-priority thread, avoiding thread-pool starvation"
+      ],
+      "answer": 0,
+      "explanation": "Because the tick and the work are both awaited in the same `async Task` loop, the next tick cannot begin until the current iteration returns, eliminating re-entrancy. Callback-based `Timer`s fire on a thread-pool thread regardless of whether the prior callback finished. `PeriodicTimer` does not guarantee zero drift, does not auto-retry, and does not use a dedicated thread."
+    },
+    {
+      "subtopic": "Graceful shutdown token flow",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Graceful shutdown is requested while a worker is sitting in `await Task.Delay(TimeSpan.FromMinutes(5))` with **no** `CancellationToken` passed to `Delay`. What is the consequence?",
+      "options": [
+        "The delay is not cancellable, so the worker keeps sleeping; it only notices shutdown after the 5 minutes elapse, likely exceeding `ShutdownTimeout` and being force-cut",
+        "`Task.Delay` throws `OperationCanceledException` immediately because the host cancels all outstanding tasks",
+        "The host kills the delay instantly because shutdown overrides any pending await",
+        "Shutdown is blocked indefinitely — the host will never proceed until the delay completes"
+      ],
+      "answer": 0,
+      "explanation": "Cancellation is cooperative: if `stoppingToken` is not flowed into `Task.Delay`, the delay can't observe the shutdown signal and keeps running. The worker only reacts after the delay returns, which can blow past `ShutdownTimeout` and get force-cut. The host does not magically cancel unaware awaits, nor is it blocked forever (it gives up at the timeout)."
+    },
+    {
+      "subtopic": "BackgroundServiceExceptionBehavior.Ignore",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "An unhandled exception escapes `ExecuteAsync` while `HostOptions.BackgroundServiceExceptionBehavior` is set to `Ignore`. What is the outcome, and why is `Ignore` usually the wrong choice?",
+      "options": [
+        "The exception is logged, the host keeps running, but that worker stays dead — a silently degraded app, usually worse than crashing and restarting",
+        "The exception is swallowed and `ExecuteAsync` is automatically restarted from the top, so the worker recovers transparently",
+        "The host stops anyway because `Ignore` only suppresses the log entry, not the shutdown",
+        "The worker is replaced with a fresh singleton instance and continues processing"
+      ],
+      "answer": 0,
+      "explanation": "`Ignore` logs the exception and keeps the host alive, but the faulted worker does not restart — it stays dead while the rest of the app runs on, a silently degraded state. The framework does not auto-restart `ExecuteAsync` or recreate the worker; the recommended pattern is a try/catch inside the loop so the worker survives transient faults."
+    },
+    {
+      "subtopic": "When to use a durable platform",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which of the following requirements indicate you should move work OUT of an in-process `BackgroundService` + in-memory channel and onto a durable/distributed platform? (Select all that apply.)",
+      "options": [
+        "The work must survive a crash, redeploy, or pod eviction without being lost",
+        "Many instances must drain one shared queue as competing consumers across replicas",
+        "A job must run 'every night at 2am, exactly once, even if the box was down'",
+        "A low-latency, best-effort in-process handoff where losing a few items on restart is acceptable",
+        "Decoupling a fast producer from a single in-process consumer within one process"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Durability across restarts, competing consumers across replicas, and persistent exactly-once scheduling all exceed what an in-process worker can provide and call for a broker, Hangfire/Quartz, or Azure Functions. Best-effort low-latency handoff and single-process producer/consumer decoupling are exactly what in-process `BackgroundService` + channels are for."
+    },
+    {
+      "subtopic": "IHostedService vs BackgroundService",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about `IHostedService` versus `BackgroundService` are correct? (Select all that apply.)",
+      "options": [
+        "`IHostedService` is the raw `StartAsync`/`StopAsync` contract; `BackgroundService` is the base class implementing it for you",
+        "Raw `IHostedService` is well suited to one-shot start/stop hooks like warming a cache or registering with discovery",
+        "`BackgroundService` only blocks startup up to the first `await` reached inside `ExecuteAsync`",
+        "`BackgroundService.ExecuteAsync` is awaited to completion before the host is considered started",
+        "`IHostedService.StartAsync` is fire-and-forget and never awaited by the host"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "`IHostedService` is the raw contract (good for one-shot hooks); `BackgroundService` implements it and its `StartAsync` only awaits `ExecuteAsync` up to its first incomplete await, so the loop keeps running in the background. The host does NOT await `ExecuteAsync` to completion, and it DOES await `StartAsync` (it is not fire-and-forget)."
+    },
+    {
+      "subtopic": "Startup blocking with no await",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Given this worker, does the host finish starting promptly?",
+      "code": "protected override async Task ExecuteAsync(CancellationToken stoppingToken)\n{\n    while (!stoppingToken.IsCancellationRequested)\n    {\n        DoSyncWork(); // pure synchronous CPU work, no await before it\n        await Task.Delay(1000, stoppingToken);\n    }\n}",
+      "lang": "csharp",
+      "options": [
+        "Yes — `ExecuteAsync` reaches its first `await` (`Task.Delay`) on the first iteration and yields, completing `StartAsync` and letting the host start",
+        "No — because `ExecuteAsync` is a `while` loop it never returns, so `StartAsync` never completes and the host hangs on startup",
+        "No — the synchronous `DoSyncWork()` makes `ExecuteAsync` complete synchronously, blocking startup until the loop ends",
+        "Yes — but only because the host always runs `ExecuteAsync` on a background thread regardless of awaits"
+      ],
+      "answer": 0,
+      "explanation": "`BackgroundService.StartAsync` awaits `ExecuteAsync` only up to its first incomplete await. The first iteration runs `DoSyncWork()` then hits `await Task.Delay(1000, …)`, which yields, so `StartAsync` completes and the host starts while the loop continues in the background. A long synchronous block reachable BEFORE any await would delay startup, but here the work per iteration is short and a `Task.Delay` await is reached on iteration one."
+    },
+    {
+      "subtopic": "Distinguishing cancellation from a crash",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "In a `BackgroundService` loop, why is the filtered catch `catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)` written instead of a bare `catch (OperationCanceledException)`?",
+      "options": [
+        "To swallow only the cancellation that comes from a graceful host shutdown, while letting an OCE from any OTHER source surface as a genuine failure",
+        "Because a bare `catch (OperationCanceledException)` does not compile inside an `async` method",
+        "Because the `when` filter is required for the catch to actually catch `OperationCanceledException` at all",
+        "To convert the `OperationCanceledException` into a successful return so the host treats shutdown as a crash"
+      ],
+      "answer": 0,
+      "explanation": "The `when` filter ensures you only swallow cancellation caused by the host's `stoppingToken` (a graceful stop); an `OperationCanceledException` originating from some other cancellation source is allowed to propagate as a real error rather than being masked. A bare catch compiles fine, the filter isn't required to catch the type, and the goal is to avoid treating shutdown as a crash, not to cause one."
+    },
+    {
+      "subtopic": "Captive dependency at Build",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "With `AppDbContext` registered scoped and this worker registered via `AddHostedService<Reaper>()`, what happens at startup in a Development host?",
+      "code": "public sealed class Reaper : BackgroundService\n{\n    public Reaper(AppDbContext db) { }\n    protected override Task ExecuteAsync(CancellationToken ct) => Task.CompletedTask;\n}",
+      "lang": "csharp",
+      "options": [
+        "`Build()` throws — a singleton hosted service cannot consume the scoped `AppDbContext`, so scope validation reports the captive-dependency error",
+        "It runs fine because EF Core automatically promotes `AppDbContext` to singleton inside hosted services",
+        "It runs but the first database call throws `ObjectDisposedException` at runtime instead of at startup",
+        "`ExecuteAsync` is skipped entirely and the worker is silently removed from the host"
+      ],
+      "answer": 0,
+      "explanation": "In Development, scope validation is on by default, so building the host throws 'Cannot consume scoped service AppDbContext from singleton Reaper' at `Build()`. EF Core does not promote the context's lifetime; the fix is to inject `IServiceScopeFactory` and resolve the context inside a per-iteration scope."
+    },
+    {
+      "subtopic": "PeriodicTimer vs Task.Delay cadence",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "A `PeriodicTimer(TimeSpan.FromSeconds(10))` ticks on a fixed cadence relative to start, so it measures the interval from one tick to the next regardless of work duration, whereas putting `await Task.Delay(interval)` at the END of the loop measures the interval only AFTER the work finishes.",
+      "answer": true,
+      "explanation": "`PeriodicTimer` fires at a fixed rate relative to its start (with long-running work causing ticks to be coalesced rather than backlogged), so the cadence is tick-to-tick. Trailing `Task.Delay` instead starts the clock only after each iteration's work completes, giving a fixed gap BETWEEN runs — genuinely different scheduling semantics."
+    },
+    {
+      "subtopic": ".NET 11 forward-looking behavior",
+      "source": "dotnet/background-services-and-hosting-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "According to the reviewer, how will a captured `BackgroundService` exception be surfaced differently in .NET 11 compared to the .NET 6+ default?",
+      "options": [
+        "`IHost.RunAsync`/`StopAsync` (and `WaitForShutdownAsync`) will throw the captured exception instead of completing silently, making it observable to the code that ran the host",
+        "The default will revert to .NET 5 behavior, silently swallowing the exception again",
+        "The worker's `ExecuteAsync` will be automatically retried up to three times before the host stops",
+        "The exception will be suppressed entirely and only emitted as an OpenTelemetry metric"
+      ],
+      "answer": 0,
+      "explanation": "The reviewer notes that in .NET 11, `IHost.RunAsync`/`StopAsync` and `WaitForShutdownAsync` will rethrow the captured `BackgroundService` exception rather than completing silently, so the failure is observable to the host-running code, not just the logs. It does not revert to swallowing, auto-retry `ExecuteAsync`, or downgrade the failure to a metric."
+    }
+  ]
+}

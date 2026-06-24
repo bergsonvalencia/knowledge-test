@@ -1,0 +1,255 @@
+{
+  "topic": "dotnet",
+  "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "CLR responsibilities",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the primary role of the **CLR (CoreCLR)** when you run a .NET application?",
+      "options": [
+        "It is the managed virtual machine that loads assemblies, JIT-compiles IL to native code, runs the garbage collector, and enforces type safety",
+        "It is the command-line tool that restores NuGet packages and invokes MSBuild to produce assemblies",
+        "It is the set of compilers (Roslyn) that translate C# source into IL at build time",
+        "It is the base class library of types such as `System.Text.Json`, `HttpClient`, and `Span<T>`"
+      ],
+      "answer": 0,
+      "explanation": "The CLR is the managed runtime: it loads assemblies, JIT-compiles IL, runs the GC, and enforces type safety. The dotnet CLI and Roslyn are SDK/build-time tools, and the listed types belong to the BCL, which is a separate layer that ships with the runtime."
+    },
+    {
+      "subtopic": "IL portability",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Why can the **same published (non-AOT) .NET assembly** run on both x64 and Arm64 machines?",
+      "options": [
+        "The assembly contains CPU-agnostic IL, and RyuJIT compiles that IL to the target machine's native instructions at run time",
+        "The assembly contains both x64 and Arm64 native code, and the loader picks the matching one",
+        "The CLR emulates an x64 CPU on Arm64 hardware so the same native code always runs",
+        "Roslyn detects the host architecture during build and emits architecture-neutral native code"
+      ],
+      "answer": 0,
+      "explanation": "A managed assembly ships IL plus metadata, not native code; RyuJIT specializes that IL for the actual CPU at run time. There is no per-architecture native code in the artifact and no CPU emulation. Native AOT, by contrast, is per-RID native and not portable."
+    },
+    {
+      "subtopic": "LTS vs STS cadence",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Under the .NET release cadence, which statement about support tiers is correct?",
+      "options": [
+        "Even-numbered releases are LTS with 3 years of support; odd-numbered releases are STS with 18 months",
+        "Even-numbered releases are STS with 18 months; odd-numbered releases are LTS with 3 years",
+        "Every release is supported for 3 years regardless of whether its number is even or odd",
+        "LTS and STS releases both ship every November but LTS gets 18 months and STS gets 3 years"
+      ],
+      "answer": 0,
+      "explanation": "Even-numbered .NET releases are LTS (3 years of support); odd-numbered releases are STS (18 months). The other options invert the tiers or the support windows."
+    },
+    {
+      "subtopic": "SDK vs runtime",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "A build server can run a published .NET app, but `dotnet build` fails with a \"no SDK\" error. What is the most likely cause?",
+      "options": [
+        "The machine has only the .NET runtime installed; building requires the SDK, which adds the compilers, MSBuild, and the CLI",
+        "The machine has the SDK but is missing the runtime, which is needed to compile IL",
+        "The `runtimeconfig.json` has roll-forward disabled, which blocks the build step",
+        "The project targets `netstandard2.0`, which cannot be built without an STS runtime"
+      ],
+      "answer": 0,
+      "explanation": "The runtime (CoreCLR + BCL) only runs apps; building needs the SDK, which is a superset adding Roslyn, MSBuild, and the dotnet CLI. The other options misattribute the failure to runtime config or TFM choice."
+    },
+    {
+      "subtopic": "Minimal hosting model",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "Since .NET 6, the minimal hosting model lets `Program.cs` use top-level statements, and the separate `Startup.cs` with `ConfigureServices`/`Configure` is no longer used by the default template.",
+      "answer": true,
+      "explanation": "The minimal hosting model (since .NET 6) collapses service registration and pipeline configuration into a single top-level `Program.cs`; `Startup.cs` and an explicit `Main` are gone from the template (though you can still hand-roll a Startup-like split)."
+    },
+    {
+      "subtopic": "Tiered compilation",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "How does **tiered compilation** give both fast startup and high steady-state throughput?",
+      "options": [
+        "Methods are first compiled quickly at Tier 0 with minimal optimization; hot methods are later recompiled in the background at Tier 1 with full optimizations",
+        "All methods are compiled at full optimization on first call, then cold ones are recompiled at a cheaper tier to save memory",
+        "Tier 0 runs the IL through an interpreter while Tier 1 JITs everything ahead of the first call",
+        "Tier 0 compiles on the build machine and Tier 1 compiles on the target machine at run time"
+      ],
+      "answer": 0,
+      "explanation": "Tier 0 is a fast quick-JIT for snappy startup; hot methods get recompiled at Tier 1 with full optimizations in the background. The other options reverse the tiers or invent an interpreter / build-time split that does not exist here."
+    },
+    {
+      "subtopic": "OSR",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "code": "for (int i = 0; i < 1_000_000_000; i++)\n    Work(data[i % data.Length]);",
+      "lang": "csharp",
+      "question": "A method enters this billion-iteration loop at Tier 0 and never returns until the loop finishes. Which runtime feature ensures the loop still gets fully optimized, and how?",
+      "options": [
+        "On-Stack Replacement (OSR) swaps in the Tier 1 optimized version while the method is still executing on the stack",
+        "Dynamic PGO promotes the method to Tier 1 only after it returns, so the loop runs optimized on its next call",
+        "ReadyToRun pre-JITs the loop at publish time so it always starts at Tier 1",
+        "The garbage collector pauses the loop and triggers a recompile during the next GC"
+      ],
+      "answer": 0,
+      "explanation": "Without OSR, a method that enters a long loop at Tier 0 never returns to be promoted and runs un-optimized for the whole loop. OSR patches in the Tier 1 version mid-stack. PGO/R2R/GC do not address an in-progress long-running method."
+    },
+    {
+      "subtopic": "Dynamic PGO",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What does **dynamic PGO** do, and what is its default status in modern .NET?",
+      "options": [
+        "It instruments Tier 0 code to record real execution data (hot types, taken branches) that Tier 1 uses to devirtualize and inline; it is on by default since .NET 8",
+        "It profiles the app during the build and bakes the profile into the assembly; it must be opted into per project",
+        "It collects production telemetry and uploads it to optimize future SDK releases; it is off by default for privacy",
+        "It precompiles all reflection-heavy code paths to native at publish; it is on by default only for Native AOT"
+      ],
+      "answer": 0,
+      "explanation": "Dynamic PGO instruments Tier 0 to capture run-time behavior (which types hit a virtual call, which branches are taken) so Tier 1 can devirtualize, inline, and reorder; it is on by default since .NET 8. The other options describe build-time or telemetry mechanisms that are not dynamic PGO."
+    },
+    {
+      "subtopic": "AOT vs JIT trade-off",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "You must ship a CLI tool to customer machines that may not have .NET installed, and cold-start latency dominates the experience. Which publish mode best fits?",
+      "options": [
+        "Native AOT — a self-contained native executable, no runtime needed, fastest startup and smallest footprint",
+        "Framework-dependent — smallest artifact, relying on a shared runtime the customer already has",
+        "Plain JIT with tiered compilation left on so dynamic PGO can optimize the hot path",
+        "ReadyToRun, framework-dependent — pre-JIT at publish while keeping startup dependent on the host runtime"
+      ],
+      "answer": 0,
+      "explanation": "Native AOT produces a self-contained native binary with no runtime dependency and the fastest cold start and smallest footprint, which matches a CLI tool where startup dominates and .NET may be absent. Framework-dependent and R2R-framework-dependent still need a runtime on the host; plain JIT pays a cold-JIT startup cost."
+    },
+    {
+      "subtopic": "runtimeconfig.json",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "code": "{\n  \"runtimeOptions\": {\n    \"tfm\": \"net10.0\",\n    \"framework\": { \"name\": \"Microsoft.NETCore.App\", \"version\": \"10.0.0\" },\n    \"rollForward\": \"Minor\",\n    \"configProperties\": {\n      \"System.GC.Server\": true,\n      \"System.Runtime.TieredCompilation\": true\n    }\n  }\n}",
+      "lang": "json",
+      "question": "What does the `*.runtimeconfig.json` file shown here control for a published app?",
+      "options": [
+        "Which framework version the host rolls forward to, plus runtime knobs like GC mode and tiered compilation",
+        "The list of every assembly the app loads and the probing paths used to find them",
+        "The NuGet package versions restored into the build across the whole repository",
+        "The set of source files and `#if` symbols used when Roslyn compiles the project"
+      ],
+      "answer": 0,
+      "explanation": "`runtimeconfig.json` tells the host which framework version to roll forward to and carries runtime knobs (GC mode, tiering, thread-pool settings). The assembly list and probing paths live in `deps.json`; package versions belong in CPM; source/compile settings are MSBuild concerns."
+    },
+    {
+      "subtopic": "Trimming and reflection",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "Because trimming (`PublishTrimmed=true`) removes unused IL using static analysis, code that relies on reflection over types the analyzer cannot see can fail at run time, and Native AOT implies trimming.",
+      "answer": true,
+      "explanation": "Trimming is static-analysis-based, so reflection the analyzer can't trace may have its targets removed and break at run time unless annotated or marked trim-safe. Native AOT requires trimming, which is why heavy reflection is restricted under AOT."
+    },
+    {
+      "subtopic": "Deployment models",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements about **framework-dependent (FDD)** vs **self-contained (SCD)** deployment are correct? Select all that apply.",
+      "options": [
+        "FDD produces the smallest artifact because it ships only your code and relies on a shared runtime on the host",
+        "SCD bundles the runtime for a specific RID, so it runs on a machine with no .NET installed",
+        "SCD requires specifying a RID (e.g. `-r linux-x64`), whereas FDD does not",
+        "FDD bundles the runtime so the host never needs .NET installed",
+        "SCD always produces a smaller artifact than FDD because trimming is mandatory"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "FDD is smallest and depends on a shared runtime; SCD bundles the runtime per-RID (so it needs `-r`) and runs where .NET is absent. Option 4 describes FDD as bundling the runtime (that is SCD), and option 5 is wrong because SCD is the largest model and trimming is optional, not mandatory."
+    },
+    {
+      "subtopic": "Minimal hosting builders",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "In the minimal hosting model, what is the correct order of the standard startup flow for a web app?",
+      "options": [
+        "`WebApplication.CreateBuilder(args)` → register services on `builder.Services` → `builder.Build()` → configure the pipeline → `app.Run()`",
+        "`builder.Build()` → `WebApplication.CreateBuilder(args)` → register services → configure the pipeline → `app.Run()`",
+        "Register services on `builder.Services` → `WebApplication.CreateBuilder(args)` → configure the pipeline → `builder.Build()` → `app.Run()`",
+        "`WebApplication.CreateBuilder(args)` → `builder.Build()` → register services on `app.Services` → configure the pipeline → `app.Run()`"
+      ],
+      "answer": 0,
+      "explanation": "The flow is always: create the builder, register services on `builder.Services`, call `builder.Build()`, configure the request pipeline, then `app.Run()`. Services must be registered before `Build()`, so the options that build first or register after building are wrong."
+    },
+    {
+      "subtopic": "Central Package Management",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "When **Central Package Management (CPM)** is enabled for a repository, where do package versions live and how do project files reference packages?",
+      "options": [
+        "Versions live in a single `Directory.Packages.props` (with `ManagePackageVersionsCentrally=true`); project `PackageReference` entries omit the version",
+        "Versions live in each project's `.csproj`; `Directory.Packages.props` only lists which packages are allowed",
+        "Versions live in `runtimeconfig.json`; project files reference packages by RID instead of version",
+        "Versions live in a `packages.config` per project; `Directory.Build.props` overrides them globally"
+      ],
+      "answer": 0,
+      "explanation": "CPM centralizes all versions in `Directory.Packages.props` (via `ManagePackageVersionsCentrally=true`) using `PackageVersion` entries, so per-project `PackageReference` entries are versionless. The other options misplace versions in runtimeconfig, csproj, or the legacy packages.config."
+    },
+    {
+      "subtopic": "AOT capabilities trade-off",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Compared with the default JIT deployment, which characteristics specifically apply to a **Native AOT** build? Select all that apply.",
+      "options": [
+        "There is no JIT and no IL at run time; the whole app is compiled to native at publish",
+        "Reflection and dynamic code are restricted, and trimming is required",
+        "It cannot benefit from run-time dynamic PGO specializing code for the live workload",
+        "It produces the smallest binary while still requiring the shared runtime to be installed on the host",
+        "It keeps full reflection-emit capability so any reflection-heavy library works unchanged"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Native AOT compiles entirely at publish (no JIT/IL at run time), restricts reflection/dynamic code, requires trimming, and has no run-time PGO. Option 4 is wrong because AOT is self-contained and needs no runtime on the host; option 5 is wrong because reflection-emit is exactly what AOT gives up."
+    },
+    {
+      "subtopic": "Version planning",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "As of mid-2026, a long-lived production service targets `net9.0`. What is the correct senior recommendation and the reason behind it?",
+      "options": [
+        "Move to `net10.0`, because .NET 9 (STS) ends support 2026-11-10 while .NET 10 is the current LTS supported to 2028",
+        "Stay on `net9.0`, because STS releases receive the same 3-year support window as LTS once GA",
+        "Move to `net11.0` immediately, because it is the current LTS with the longest support window",
+        "Move to `netstandard2.0`, because it never goes out of support and runs everywhere"
+      ],
+      "answer": 0,
+      "explanation": ".NET 9 is STS and ends support 2026-11-10, so it is about to fall out of support; .NET 10 is the current LTS (supported to 2028-11-14), the right target for a long-lived service. .NET 11 is STS (odd), and `netstandard2.0` is a library portability contract, not a runtime to host an app on."
+    },
+    {
+      "subtopic": "C# compiled twice",
+      "source": "dotnet/dotnet-runtime-and-platform-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A senior framing says \"C# is compiled twice.\" Which description of those two compilations is accurate?",
+      "options": [
+        "Ahead of time by Roslyn (C# → IL) on the build machine, then just in time by RyuJIT (IL → native) on the running machine",
+        "Once by RyuJIT into IL on the build machine, then once by Roslyn into native code at run time",
+        "Twice by Roslyn — first to IL, then to native — both during the build, with no run-time compilation",
+        "Once by the SDK into a ReadyToRun image and once by the CLR into IL when the process starts"
+      ],
+      "answer": 0,
+      "explanation": "Roslyn compiles C# to IL ahead of time on the build machine; RyuJIT compiles that IL to native just in time on the running machine. The second compile is what lets one IL artifact run optimally on many CPUs. The other options swap the tools' roles or eliminate the run-time JIT step."
+    }
+  ]
+}
