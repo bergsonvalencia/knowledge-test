@@ -71,6 +71,10 @@ function verifyPrompt(it) {
     '',
     'FIX problems in place: correct a wrong answer index; rewrite misleading or accidentally-correct distractors; fix inaccurate explanations. If a question is ambiguous, factually shaky, or unfixable, DELETE it. Remove duplicates. Keep all the good questions unchanged.',
     '',
+    'ALSO POLISH (so each question stands alone as a quiz item):',
+    '  - Reword any question or explanation that refers to "the reviewer"/"the guide"/"the source"/"the author" (e.g. "Why does the reviewer warn against X" -> "Why should you avoid X"; "the reviewer\'s four-part test" -> "the four-part test"). Keep the meaning identical; never invent facts.',
+    '  - Balance option lengths so the correct answer is NOT consistently the longest/most-detailed option (a giveaway). Trim or pad distractors to comparable length.',
+    '',
     'OUTPUT: Use the Write tool to OVERWRITE the same file with the COMPLETE corrected set (all surviving questions, fixes applied), same JSON schema ({ topic, source, questions:[...] }). Valid JSON only, no commentary.',
     'Return ONLY a one-line summary, e.g.: checked 18, fixed 2 answers + 1 explanation, dropped 1; 17 remain.',
   ].join('\n')

@@ -1,0 +1,223 @@
+{
+  "topic": "agile-leadership",
+  "source": "agile-leadership/scrum-framework-reviewer.md",
+  "questions": [
+    {
+      "subtopic": "Empiricism",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What are the three pillars of empiricism in Scrum?",
+      "options": ["Transparency, Inspection, Adaptation", "Plan, Do, Check", "Commitment, Focus, Courage", "Velocity, Quality, Predictability"],
+      "answer": 0,
+      "explanation": "Empiricism stands on Transparency, Inspection, and Adaptation — you can only inspect what is transparent, and inspection without adaptation is pointless. Commitment/Focus/Courage are three of the five Scrum *values*, not the pillars."
+    },
+    {
+      "subtopic": "Cancelling a Sprint",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Who has the authority to cancel a Sprint?",
+      "options": ["The Product Owner, and only the Product Owner", "The Scrum Master", "The Developers by majority vote", "Any stakeholder funding the work"],
+      "answer": 0,
+      "explanation": "Only the Product Owner can cancel a Sprint, and they would do so when the Sprint Goal becomes obsolete. The Scrum Master, Developers, and stakeholders cannot cancel it."
+    },
+    {
+      "subtopic": "Accountabilities vs roles",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "easy",
+      "type": "truefalse",
+      "question": "The 2020 Scrum Guide refers to Product Owner, Scrum Master, and Developers as \"roles.\"",
+      "answer": false,
+      "explanation": "The 2020 Guide deliberately calls them **accountabilities**, not roles — they are not job titles or seniority levels, and one Scrum Team holds all three with no internal hierarchy."
+    },
+    {
+      "subtopic": "Daily Scrum timebox",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "What is the timebox of the Daily Scrum?",
+      "options": ["15 minutes", "30 minutes", "1 hour", "It scales with Sprint length"],
+      "answer": 0,
+      "explanation": "The Daily Scrum is 15 minutes, held at the same time and place each working day. Unlike Planning, Review, and Retrospective, it does not scale with Sprint length."
+    },
+    {
+      "subtopic": "Product Owner accountability",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "easy",
+      "type": "mcq",
+      "question": "Which accountability is responsible for ordering the Product Backlog and developing the Product Goal?",
+      "options": ["The Product Owner", "The Scrum Master", "The Developers", "The Agile coach"],
+      "answer": 0,
+      "explanation": "The Product Owner is accountable for maximizing value: developing the Product Goal, creating and ordering the Product Backlog, and keeping it transparent. They may delegate the work but remain accountable."
+    },
+    {
+      "subtopic": "Sprint Planning topics",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What are the three topics addressed in Sprint Planning?",
+      "options": ["Why (the Sprint Goal), What, and How", "Yesterday, Today, and Blockers", "Scope, Schedule, and Cost", "Analysis, Design, and Testing"],
+      "answer": 0,
+      "explanation": "Sprint Planning covers Why (the PO proposes value and the team crafts the Sprint Goal), What (Developers select backlog items), and How (Developers plan the work). The 2020 Guide added the \"Why\" topic; \"Yesterday/Today/Blockers\" were the old optional Daily Scrum questions."
+    },
+    {
+      "subtopic": "Daily Scrum ownership",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Whose event is the Daily Scrum, and what is its purpose?",
+      "options": [
+        "The Developers' event, to inspect progress toward the Sprint Goal and adapt the plan",
+        "The Scrum Master's event, to collect status from each team member",
+        "The Product Owner's event, to re-prioritize the Product Backlog",
+        "A stakeholder event, to review the latest Increment"
+      ],
+      "answer": 0,
+      "explanation": "The Daily Scrum is by and for the Developers, to inspect progress toward the Sprint Goal and re-plan the day's work. It is explicitly not a status report to the Scrum Master, a manager, or stakeholders."
+    },
+    {
+      "subtopic": "Daily Scrum 2020 change",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "medium",
+      "type": "truefalse",
+      "question": "In the 2020 Scrum Guide, the three questions (what I did yesterday, what I'll do today, any impediments) are a mandatory structure for the Daily Scrum.",
+      "answer": false,
+      "explanation": "The 2020 Guide made the three questions optional. The Developers choose any structure they like, as long as the Daily Scrum inspects progress toward the Sprint Goal within 15 minutes."
+    },
+    {
+      "subtopic": "Artifacts and commitments",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which artifact carries the **Sprint Goal** as its commitment?",
+      "options": ["The Sprint Backlog", "The Product Backlog", "The Increment", "The Definition of Done"],
+      "answer": 0,
+      "explanation": "The Sprint Backlog's commitment is the Sprint Goal. The Product Backlog's commitment is the Product Goal, and the Increment's commitment is the Definition of Done."
+    },
+    {
+      "subtopic": "Definition of Done",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "A Product Backlog item is functionally complete, but the team's Definition of Done requires automated tests that haven't been written. What does Scrum say about this item?",
+      "options": [
+        "It is not Done, so it cannot be released or shown at the Sprint Review and returns to the Product Backlog",
+        "It can be presented at the Sprint Review as long as the tests are added next Sprint",
+        "It is part of the Increment because it is functionally complete",
+        "The Scrum Master may waive the Definition of Done for this Sprint"
+      ],
+      "answer": 0,
+      "explanation": "Work is only part of an Increment when it meets the Definition of Done. Since it doesn't, it can't be released or shown at the Review — it returns to the Product Backlog. The DoD is not waivable per item."
+    },
+    {
+      "subtopic": "The Scrum Team",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "medium",
+      "type": "multi",
+      "question": "Which statements are true of the Scrum Team as defined in the 2020 Scrum Guide? (Select all that apply.)",
+      "options": [
+        "It is self-managing — it decides who does the work, what to work on, and how",
+        "It is typically 10 or fewer people",
+        "It is cross-functional, with all the skills needed to create value each Sprint",
+        "It contains a separate Development Team sub-unit responsible for building the product"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "The 2020 Scrum Team is one cohesive, self-managing, cross-functional unit of typically 10 or fewer people. The \"Development Team\" sub-unit was explicitly removed in 2020 — there are no sub-teams or hierarchies."
+    },
+    {
+      "subtopic": "Review vs Retrospective",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "What is the key difference between the Sprint Review and the Sprint Retrospective?",
+      "options": [
+        "The Review inspects the product/Increment with stakeholders; the Retrospective inspects people, process, and tools",
+        "The Review inspects the team's process; the Retrospective demos the Increment to stakeholders",
+        "The Review is run by the Scrum Master; the Retrospective is run by the Product Owner",
+        "They are the same event under two names"
+      ],
+      "answer": 0,
+      "explanation": "The Review (up to 4h) inspects the Increment with stakeholders and adapts the Product Backlog — \"what we built.\" The Retrospective (up to 3h) inspects individuals, interactions, processes, tools, and the DoD — \"how we worked.\""
+    },
+    {
+      "subtopic": "Scrum Master accountability",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "medium",
+      "type": "mcq",
+      "question": "Which best describes the Scrum Master's accountability in the 2020 Guide?",
+      "options": [
+        "A true leader who serves, accountable for establishing Scrum and the team's effectiveness",
+        "The team's manager, who assigns tasks to the Developers",
+        "A scribe who books rooms and records the Daily Scrum status",
+        "The owner of the Product Backlog and its ordering"
+      ],
+      "answer": 0,
+      "explanation": "The Scrum Master is a \"true leader who serves,\" accountable for establishing Scrum and for the team's effectiveness — coaching self-management and causing the removal of impediments. They do not assign tasks (Developers are self-managing) or own the backlog (the PO does)."
+    },
+    {
+      "subtopic": "Mid-Sprint change",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Mid-Sprint, marketing demands an urgent feature unrelated to the current Sprint Goal. What does Scrum prescribe?",
+      "options": [
+        "Scope can be renegotiated with the Product Owner, but no change may endanger the Sprint Goal — unrelated urgent work waits unless the goal can absorb it",
+        "The Developers must immediately add it because stakeholder requests override the Sprint Goal",
+        "The Scrum Master decides whether to admit the new work",
+        "The Sprint must be cancelled to accommodate any new high-priority request"
+      ],
+      "answer": 0,
+      "explanation": "Scope may be clarified and renegotiated with the PO as more is learned, but no change may endanger the Sprint Goal. Unrelated urgent work waits for the next Sprint unless the goal can absorb it; only if the goal itself is obsolete would the PO cancel the Sprint."
+    },
+    {
+      "subtopic": "2017 to 2020 changes",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "hard",
+      "type": "multi",
+      "question": "Which of the following changed from the 2017 to the 2020 Scrum Guide? (Select all that apply.)",
+      "options": [
+        "The \"Development Team\" became the \"Developers,\" an accountability within one Scrum Team",
+        "The Product Goal and three explicit commitments were introduced",
+        "\"Self-organizing\" was changed to \"self-managing\"",
+        "The Sprint Review was removed as a formal event"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "2020 renamed the Development Team to Developers (one team, no sub-teams), added the Product Goal plus the three commitments, and changed \"self-organizing\" to \"self-managing.\" All five events, including the Sprint Review, were retained."
+    },
+    {
+      "subtopic": "Increment",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "hard",
+      "type": "truefalse",
+      "question": "More than one Increment may be created within a single Sprint.",
+      "answer": true,
+      "explanation": "Multiple Increments may be created within a Sprint. Each is additive to prior Increments and must meet the Definition of Done; they are presented at the Sprint Review but can be delivered to stakeholders sooner."
+    },
+    {
+      "subtopic": "Timeboxes scale with Sprint length",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "Sprint Planning is timeboxed to a maximum of 8 hours for a one-month Sprint. What is the appropriate cap for a two-week Sprint?",
+      "options": [
+        "Around 4 hours — event timeboxes scale down proportionally for shorter Sprints",
+        "Still 8 hours — the cap is fixed regardless of Sprint length",
+        "Exactly 2 hours, mandated by the Scrum Guide",
+        "There is no timebox for Sprint Planning"
+      ],
+      "answer": 0,
+      "explanation": "Event timeboxes are maxima for a one-month Sprint and scale down proportionally — a two-week Sprint typically caps Planning around 4 hours. (The Daily Scrum stays 15 minutes regardless.)"
+    },
+    {
+      "subtopic": "Scrum values",
+      "source": "agile-leadership/scrum-framework-reviewer.md",
+      "difficulty": "hard",
+      "type": "mcq",
+      "question": "A team consistently reports \"green\" status while hiding real impediments (\"watermelon reporting\"). Which Scrum value is most directly violated?",
+      "options": ["Openness", "Focus", "Respect", "Commitment"],
+      "answer": 0,
+      "explanation": "Openness — being honest about the work and its challenges — is the value most directly violated when problems are hidden behind green status (and Courage is needed to raise them). Openness fuels the Transparency pillar."
+    }
+  ]
+}
