@@ -62,7 +62,7 @@
         "It compiles — TypeScript is structural, so identical shapes are mutually assignable regardless of name",
         "It fails — the interfaces have different names, which makes them distinct nominal types",
         "It fails — assignment between unrelated named interfaces requires an explicit `implements`",
-        "It compiles only if `Robot` is declared with `extends Dog`"
+        "It compiles only if `Robot` is declared with an explicit `extends Dog` clause"
       ],
       "answer": 0,
       "explanation": "TypeScript uses structural typing: compatibility is decided by shape, not name. Two structurally identical interfaces with different names are mutually assignable; no `implements` or `extends` relationship is needed."

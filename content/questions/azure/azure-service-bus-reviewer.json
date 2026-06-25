@@ -195,10 +195,10 @@
       "type": "mcq",
       "question": "Which statement correctly distinguishes **scheduled** from **deferred** messages?",
       "options": [
-        "Scheduled = producer makes a message invisible until a future enqueue time; deferred = a consumer sets aside a received message, later retrieved by sequence number",
-        "Scheduled = consumer delays processing by re-locking; deferred = producer delays visibility by a future time",
-        "Both are producer-side; scheduled uses `MessageId` and deferred uses `SessionId`",
-        "Deferred messages reappear automatically in the normal receive loop after a delay; scheduled ones do not"
+        "Scheduled = producer hides a message until a future enqueue time; deferred = a consumer sets it aside, fetched later by sequence number",
+        "Scheduled = consumer delays processing by re-locking the message; deferred = producer delays the message's visibility by a future time",
+        "Both are producer-side operations; scheduled keys off `MessageId` while deferred keys off the message's `SessionId`",
+        "Deferred messages reappear automatically in the normal receive loop after a short delay, whereas scheduled ones never do"
       ],
       "answer": 0,
       "explanation": "Scheduled delivery is producer-side and time-based (invisible until `ScheduledEnqueueTime`). Deferral is a consumer settlement outcome: the received message is set aside and is retrievable only via `ReceiveDeferredMessageAsync(sequenceNumber)` — it does not return through the normal receive loop."

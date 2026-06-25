@@ -11,7 +11,7 @@
       "options": [
         "Exactly one trigger; bindings are optional",
         "One or more triggers; bindings are required",
-        "Exactly one trigger; at least one input binding is required",
+        "Exactly one trigger; one input binding is required",
         "Zero or more triggers; bindings are optional"
       ],
       "answer": 0,
@@ -34,9 +34,9 @@
       "question": "Which statement correctly describes input versus output bindings?",
       "options": [
         "Input bindings read data into the function; output bindings write data out of it",
-        "Input bindings write results out; output bindings read source data in",
-        "Both input and output bindings only read data; the trigger writes",
-        "Input bindings invoke the function; output bindings cannot supply data"
+        "Input bindings write results out of the function; output bindings read source data in",
+        "Both input and output bindings only read data; the trigger is what writes results",
+        "Input bindings invoke the function; output bindings cannot ever supply any data"
       ],
       "answer": 0,
       "explanation": "Input bindings declaratively read data into the function (e.g. a blob or Cosmos lookup); output bindings write data out (e.g. a queue message or table row)."
@@ -110,9 +110,9 @@
       "question": "Why is instance count alone an incomplete picture of a Function App's throughput?",
       "options": [
         "Each instance runs many invocations in parallel, so throughput = instances × per-instance concurrency",
-        "Instances are billed per-second, so count only affects cost, not throughput",
-        "The scale controller caps every instance to exactly one invocation at a time",
-        "Throughput is determined solely by the storage account's IOPS, not instances"
+        "Instances are billed per second, so the count affects only cost and never the achievable throughput",
+        "The scale controller caps every single instance to handling exactly one invocation at a time",
+        "Throughput is determined solely by the backing storage account's IOPS rather than by instances"
       ],
       "answer": 0,
       "explanation": "Throughput equals instances multiplied by per-instance concurrency. Each instance processes many invocations concurrently, so tuning maxConcurrentCalls/batchSize matters as much as how many instances exist."
@@ -125,9 +125,9 @@
       "question": "Most Azure Functions triggers deliver at-least-once. What is the correct way to handle the resulting risk of duplicate processing?",
       "options": [
         "Make the handler idempotent (dedup on a stable id, upserts, or conditional/ETag writes)",
-        "Disable retries so a message is only ever delivered once",
-        "Rely on host-level in-process retry policies to guarantee exactly-once",
-        "Set maxDeliveryCount to 1 so duplicates are impossible"
+        "Disable all retries so that any given message is only ever delivered exactly once",
+        "Rely on host-level in-process retry policies to guarantee exactly-once processing",
+        "Set maxDeliveryCount to 1 so that duplicate deliveries become impossible entirely"
       ],
       "answer": 0,
       "explanation": "You cannot prevent at-least-once redelivery, so handlers must be idempotent (stable-id dedup, upserts, conditional/ETag writes). In-process retry policies are best-effort, not a delivery or exactly-once guarantee, and lowering maxDeliveryCount does not stop redelivery before that limit."
@@ -140,9 +140,9 @@
       "question": "After repeated failures, where do failed messages go for Service Bus versus Azure Storage queues?",
       "options": [
         "Service Bus dead-letters after maxDeliveryCount; Storage queues move to a `<queue>-poison` queue",
-        "Both go to a `<queue>-poison` queue",
-        "Service Bus moves to `<queue>-poison`; Storage queues dead-letter",
-        "Both are dropped silently once maxDeliveryCount is exceeded"
+        "Both Service Bus and Storage queues move the failed message to a `<queue>-poison` queue",
+        "Service Bus moves to a `<queue>-poison` queue; Storage queues dead-letter the message",
+        "Both Service Bus and Storage queues drop the message silently past maxDeliveryCount"
       ],
       "answer": 0,
       "explanation": "Service Bus has a dead-letter queue (DLQ) reached after maxDeliveryCount; Azure Storage queues move the message to a `<queue>-poison` queue. They are durable destinations, not silent drops."
@@ -181,8 +181,8 @@
       "options": [
         "It exhausts sockets/connections; register the client as a singleton and reuse it",
         "It increases GB-second billing; create the client in a static constructor per call",
-        "It breaks idempotency; create a fresh client for every retry",
-        "It forces a cold start on each call; disable connection pooling"
+        "It breaks idempotency; create a fresh client for every retry of the message",
+        "It forces a cold start on each call; disable connection pooling to avoid it"
       ],
       "answer": 0,
       "explanation": "Creating a client per invocation exhausts sockets/connections at scale. Register clients as singletons (e.g. via AddAzureClients/DI) and reuse them — which is exactly what bindings already do for you."
@@ -197,9 +197,9 @@
       "lang": "csharp",
       "options": [
         "Both calls are non-deterministic and break replay; use `ctx.NewGuid()` and `ctx.CurrentUtcDateTime`",
-        "The orchestrator is missing an [ActivityTrigger]; add one to make it deterministic",
-        "Guid.NewGuid() is fine, but DateTime.UtcNow must be awaited as an activity",
-        "Both are fine; the inconsistency is caused by missing retry policies on the activities"
+        "The orchestrator is missing an `[ActivityTrigger]`; adding one makes it deterministic again",
+        "`Guid.NewGuid()` is fine, but `DateTime.UtcNow` must be awaited as a separate activity",
+        "Both calls are fine; the inconsistency comes from missing retry policies on the activities"
       ],
       "answer": 0,
       "explanation": "Orchestrators are replayed from history on every await, so Guid.NewGuid() and DateTime.UtcNow produce different values each replay, corrupting the workflow. Use the deterministic ctx.NewGuid() and ctx.CurrentUtcDateTime; any real randomness or I/O must move into an activity."
@@ -213,8 +213,8 @@
       "options": [
         "Side effects belong in activity functions; each entity processes one message at a time (serialized)",
         "Side effects belong in the orchestrator; entities process messages in parallel for throughput",
-        "Side effects belong in the client function; entities are stateless and non-addressable",
-        "Side effects belong in activities; entities process all messages concurrently per key"
+        "Side effects belong in the client function; entities are stateless and not addressable at all",
+        "Side effects belong in activities; entities process all messages concurrently per entity key"
       ],
       "answer": 0,
       "explanation": "Activities are the only place side effects belong (orchestrators must stay deterministic and side-effect-free). Durable Entities hold addressable per-key state and process one operation at a time, serialized per entity."
@@ -228,10 +228,10 @@
       "code": "var tasks = new List<Task<long>>();\nforeach (var file in await context.CallActivityAsync<string[]>(nameof(GetFileList), dir))\n    tasks.Add(context.CallActivityAsync<long>(nameof(CopyFile), file));\n\nlong[] results = await Task.WhenAll(tasks);\nlong total = results.Sum();",
       "lang": "csharp",
       "options": [
-        "It is fan-out/fan-in: activities run in parallel and the framework durably tracks completion across instance recycles, with WhenAll as the durable join",
-        "It runs the activities strictly sequentially; WhenAll just collects the return values",
-        "It runs the activities on the client function and blocks the orchestrator thread until all finish",
-        "Task.WhenAll forces all activities onto a single instance to preserve ordering"
+        "Fan-out/fan-in: activities run in parallel and completion is durably tracked across recycles, with WhenAll as the join",
+        "Sequential execution: the activities run strictly one after another and WhenAll merely collects the return values",
+        "Client-side execution: the activities run on the client function and block the orchestrator thread until done",
+        "Single-instance pinning: Task.WhenAll forces every activity onto one instance to preserve message ordering"
       ],
       "answer": 0,
       "explanation": "Adding tasks without awaiting fans out the CopyFile activities in parallel; await Task.WhenAll is the fan-in/durable join. The framework durably tracks completion even across instance recycles, so progress survives restarts."
@@ -243,10 +243,10 @@
       "type": "mcq",
       "question": "Scaling a Function App out to many instances breaks global message ordering. Which approach preserves ordering while still allowing some parallelism?",
       "options": [
-        "Use Service Bus sessions (one session processed by one instance at a time) or Event Hubs partitions",
-        "Raise maxConcurrentCalls so each instance processes messages faster in arrival order",
-        "Switch to Storage queues, which guarantee strict global FIFO across instances",
-        "Set the functions scale limit to its maximum so all instances see the same order"
+        "Use Service Bus sessions (one session per instance at a time) or Event Hubs partitions",
+        "Raise maxConcurrentCalls so each instance processes its messages faster in arrival order",
+        "Switch to Storage queues, which guarantee strict global FIFO ordering across all instances",
+        "Set the functions scale limit to its maximum so every instance observes the same ordering"
       ],
       "answer": 0,
       "explanation": "Scaling out breaks global ordering. Service Bus sessions (one session per instance at a time) or Event Hubs partitions preserve per-session/per-partition order while still parallelizing across keys. Raising concurrency or switching to Storage queues does not provide ordering guarantees."

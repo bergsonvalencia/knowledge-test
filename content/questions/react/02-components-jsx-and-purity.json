@@ -15,7 +15,7 @@
         "Lowercase tags are rendered but stripped of all props by the compiler"
       ],
       "answer": 0,
-      "explanation": "The reviewer states a lowercase tag is emitted as a DOM element (string `\"div\"`/`\"button\"`) while a Capitalized tag is a component reference. It is a real semantic rule of the JSX transform, not merely a lint convention."
+      "explanation": "A lowercase tag is emitted as a DOM element (the string `\"div\"`/`\"button\"`) while a Capitalized tag is a component reference. It is a real semantic rule of the JSX transform, not merely a lint convention."
     },
     {
       "subtopic": "JSX compilation",
@@ -30,7 +30,7 @@
         "A direct DOM node created with `document.createElement`"
       ],
       "answer": 0,
-      "explanation": "The reviewer describes JSX as sugar for object creation: the compiler turns each tag into a `jsx`/`jsxs` call (the modern replacement for `React.createElement`) returning a plain element object, which the reconciler later turns into DOM. It is not a template engine and produces no HTML string."
+      "explanation": "JSX is sugar for object creation: the compiler turns each tag into a `jsx`/`jsxs` call (the modern replacement for `React.createElement`) returning a plain element object, which the reconciler later turns into DOM. It is not a template engine and produces no HTML string."
     },
     {
       "subtopic": "JSX attributes",
@@ -54,7 +54,7 @@
       "type": "truefalse",
       "question": "Content nested between a component's opening and closing tags is delivered to that component as `props.children`.",
       "answer": true,
-      "explanation": "The reviewer states `children` is just a prop: content nested between tags arrives as `props.children`, which is what enables wrapper/layout components."
+      "explanation": "`children` is just a prop: content nested between tags arrives as `props.children`, which is what enables wrapper/layout components."
     },
     {
       "subtopic": "Inline style",
@@ -63,13 +63,13 @@
       "type": "mcq",
       "question": "The \"double curlies\" in `style={{ marginTop: 8 }}` are best explained as:",
       "options": [
-        "The outer `{}` enters JS and the inner `{}` is an ordinary object literal — `style` takes an object with camelCased CSS keys",
+        "The outer `{}` enters JS and the inner `{}` is an ordinary object literal with camelCased CSS keys",
         "Special two-brace syntax that React added specifically for CSS",
         "A way to escape a string so the CSS is passed through verbatim",
         "A template literal that interpolates CSS at build time"
       ],
       "answer": 0,
-      "explanation": "Per the reviewer, `{{ }}` is not special syntax: the outer braces enter JS and the inner braces form an object literal. `style` requires an object whose CSS keys are camelCased (e.g. `marginTop`)."
+      "explanation": "`{{ }}` is not special syntax: the outer braces enter JS and the inner braces form an object literal. `style` requires an object whose CSS keys are camelCased (e.g. `marginTop`)."
     },
     {
       "subtopic": "Embedding expressions",
@@ -84,7 +84,7 @@
         "`if` must be written as `If` (PascalCase) to be recognized inside JSX"
       ],
       "answer": 0,
-      "explanation": "The reviewer notes `{expr}` interpolates any JS expression but statements like `if`/`for` are not allowed inside JSX braces; you express conditionals with `&&` or a ternary. Variables and function calls are perfectly fine inside braces."
+      "explanation": "`{expr}` interpolates any JS expression but statements like `if`/`for` are not allowed inside JSX braces; you express conditionals with `&&` or a ternary. Variables and function calls are perfectly fine inside braces."
     },
     {
       "subtopic": "Single root element",
@@ -95,11 +95,11 @@
       "options": [
         "A Fragment (`<>...</>` or `<Fragment>`), which groups siblings without adding a DOM node",
         "A `<div>` wrapper, since every component must return a real DOM element",
-        "Return an array literal directly with no keys and no wrapper",
+        "An array literal returned directly with no keys and no wrapper",
         "Two separate `return` statements, one per row"
       ],
       "answer": 0,
-      "explanation": "A Fragment satisfies the single-root rule while adding no extra DOM node — exactly the case the reviewer cites for table rows. A wrapping `<div>` would inject an invalid node into `<tbody>`, and a function cannot have two reachable `return` statements producing both rows."
+      "explanation": "A Fragment satisfies the single-root rule while adding no extra DOM node — exactly the case cited for table rows. A wrapping `<div>` would inject an invalid node into `<tbody>`, and a function cannot have two reachable `return` statements producing both rows."
     },
     {
       "subtopic": "Keyed fragments",
@@ -110,7 +110,7 @@
       "options": [
         "The explicit `<Fragment key={i.id}>` imported from `react`",
         "The shorthand `<key={i.id}>...</>`, which accepts a key",
-        "Any shorthand `<>...</>`, since React derives keys from list position automatically",
+        "Any shorthand `<>...</>`, since React derives keys from list position",
         "A `<div key={i.id}>`, because only DOM elements can carry a key"
       ],
       "answer": 0,
@@ -123,7 +123,7 @@
       "type": "mcq",
       "question": "What is the precise meaning of \"a component must be pure during render\"?",
       "options": [
-        "Given the same props, state, and context, the component returns identical JSX with no observable side effects while React computes the UI",
+        "Given the same props, state, and context, it returns identical JSX with no observable side effects while React computes the UI",
         "The component must avoid using props and rely only on local constants",
         "The component must never trigger side effects anywhere in the application",
         "The component must be wrapped in `React.memo` so it never re-renders"
@@ -138,7 +138,7 @@
       "type": "truefalse",
       "question": "Creating an array inside a component's render and pushing items into it during that same render violates purity.",
       "answer": false,
-      "explanation": "The reviewer explicitly allows local mutation: an object/array created inside this render never existed before, so nothing else can observe the mutation. Purity is only violated by mutating things that existed before the render (props, prior state, module-level vars)."
+      "explanation": "Local mutation is allowed: an object/array created inside this render never existed before, so nothing else can observe the mutation. Purity is only violated by mutating things that existed before the render (props, prior state, module-level vars)."
     },
     {
       "subtopic": "Where side effects belong",
@@ -153,7 +153,7 @@
         "Written to a module-level variable so all renders can read it"
       ],
       "answer": 0,
-      "explanation": "The reviewer says derived data is not an effect: if a value is computable from existing props/state, compute it during render (optionally `useMemo`) rather than mirroring it into state through an effect. The other options add needless state, fetches, or shared mutable globals."
+      "explanation": "Derived data is not an effect: if a value is computable from existing props/state, compute it during render (optionally `useMemo`) rather than mirroring it into state through an effect. The other options add needless state, fetches, or shared mutable globals."
     },
     {
       "subtopic": "StrictMode behavior",
@@ -173,7 +173,7 @@
         1,
         2
       ],
-      "explanation": "The reviewer says StrictMode double-invokes render and re-runs effects (setup→cleanup→setup) in development to catch impurity, and is dev-only with production rendering once. It does not alter production behavior and is unrelated to memoization."
+      "explanation": "StrictMode double-invokes render and re-runs effects (setup→cleanup→setup) in development to catch impurity, and is dev-only with production rendering once. It does not alter production behavior and is unrelated to memoization."
     },
     {
       "subtopic": "Why purity matters",
@@ -188,7 +188,7 @@
         "Purity removes the need for keys when rendering lists"
       ],
       "answer": 0,
-      "explanation": "The reviewer ties purity to React's ability to memoize/bail out, reorder or restart work, and render concurrently — enabling transitions and Suspense streaming. An impure render makes those optimizations produce wrong UI. It has nothing to do with bundle size or list keys."
+      "explanation": "Purity is what lets React memoize/bail out, reorder or restart work, and render concurrently — enabling transitions and Suspense streaming. An impure render makes those optimizations produce wrong UI. It has nothing to do with bundle size or list keys."
     },
     {
       "subtopic": "Impure render — code reading",
@@ -232,24 +232,24 @@
       "source": "react/02-components-jsx-and-purity.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A network request must be sent in direct response to a user clicking \"Save\". According to the guidance, where does this belong?",
+      "question": "A network request must be sent in direct response to a user clicking \"Save\". Where does this belong?",
       "options": [
-        "In the event handler, the default home for effects caused by a user action",
+        "In the event handler, the default home for side effects caused by a user action",
         "In a `useEffect`, because all side effects must go through effects",
         "Inline in the render body, since the data depends on current state",
         "In a module-level function called during render so it runs once"
       ],
       "answer": 0,
-      "explanation": "The reviewer designates event handlers as the home for side effects caused by a user action (click/submit/type); they run during the interaction and may call APIs. `useEffect` is for synchronizing with external systems when no event triggered the work — not the right tool for a click-driven request — and side effects never belong in the render body."
+      "explanation": "Event handlers are the home for side effects caused by a user action (click/submit/type); they run during the interaction and may call APIs. `useEffect` is for synchronizing with external systems when no event triggered the work — not the right tool for a click-driven request — and side effects never belong in the render body."
     },
     {
       "subtopic": "Effect re-run safety",
       "source": "react/02-components-jsx-and-purity.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer says effects \"must be safe to re-run (setup→cleanup→setup) and must return cleanup.\" What does this imply for a `useEffect` that opens a subscription?",
+      "question": "Effects must be safe to re-run (setup→cleanup→setup) and must return cleanup. What does this imply for a `useEffect` that opens a subscription?",
       "options": [
-        "It must return a cleanup that tears down the subscription, so a re-run does not leak or stack duplicate subscriptions",
+        "It must return a cleanup that tears down the subscription, so a re-run does not leak or stack duplicates",
         "It should open the subscription only on the very first mount and never clean it up",
         "It must call `setState` synchronously so React knows the subscription is active",
         "It should be replaced by an event handler because subscriptions are user actions"

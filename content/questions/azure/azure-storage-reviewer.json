@@ -123,13 +123,13 @@
       "type": "mcq",
       "question": "What is the key functional difference between blob versioning and blob soft delete?",
       "options": [
-        "Versioning preserves prior states on overwrite/delete as read-only versions; soft delete is a time-windowed recycle bin for recovering deletions",
-        "Versioning recovers deleted containers; soft delete preserves overwrites",
-        "Versioning requires a locked immutability policy; soft delete does not",
-        "They are two names for the same feature with different retention windows"
+        "Versioning preserves prior states on overwrite/delete as read-only versions; soft delete is a recycle bin for recovering deletions",
+        "Versioning recovers deleted containers, whereas soft delete preserves overwritten blob content",
+        "Versioning requires a locked immutability policy, whereas soft delete needs no configuration",
+        "They are two names for one feature that differ only in their retention windows"
       ],
       "answer": 0,
-      "explanation": "Versioning automatically captures the prior state on every overwrite or delete as a read-only version, while soft delete is a recycle bin with a 1-365 day retention window that recovers deleted/overwritten blobs and containers. They are complementary; the reviewer recommends enabling both for serious data."
+      "explanation": "Versioning automatically captures the prior state on every overwrite or delete as a read-only version, while soft delete is a recycle bin with a 1-365 day retention window that recovers deleted/overwritten blobs and containers. They are complementary, and enabling both is recommended for serious data."
     },
     {
       "subtopic": "Storage Queue vs Service Bus",

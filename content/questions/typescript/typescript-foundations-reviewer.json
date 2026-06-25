@@ -10,7 +10,7 @@
       "question": "What does it mean that TypeScript is a **superset** of JavaScript?",
       "options": [
         "Every valid JavaScript program is also a valid TypeScript program; TS only adds type syntax on top",
-        "Every valid TypeScript program is also a valid JavaScript program that runs unchanged in any engine",
+        "Every valid TypeScript program is also valid JavaScript that runs unchanged in any engine",
         "TypeScript reimplements JavaScript's runtime with stricter, type-aware semantics",
         "TypeScript removes JavaScript's unsafe features and adds a static type layer to what remains"
       ],
@@ -24,7 +24,7 @@
       "type": "mcq",
       "question": "Why does `x instanceof MyInterface` fail to compile, while `x instanceof MyClass` works?",
       "options": [
-        "Interfaces are erased and emit no runtime value, so there is nothing for `instanceof` to test against; a class emits a real constructor function",
+        "An interface emits no runtime value, so there is nothing for `instanceof` to test against; a class emits a real constructor",
         "`instanceof` only accepts types declared with `class`, but an interface can be checked with `typeof` instead",
         "Interfaces are checked nominally, and `instanceof` only supports structural types",
         "An interface emits a frozen prototype object that `instanceof` cannot read"
@@ -93,7 +93,7 @@
       "type": "mcq",
       "question": "In a typical app stack, a bundler (Vite/esbuild/swc) produces the production JS. What is the usual role of `tsc --noEmit` in that setup?",
       "options": [
-        "It acts as the dedicated type checker in CI, doing only the type-check job and producing no output files",
+        "It is the dedicated CI type checker, doing only the type-check job and producing no output files",
         "It produces the production JavaScript while the bundler only handles assets",
         "It strips types faster than the bundler and replaces the bundler's emit step",
         "It minifies the bundler's output and emits source maps"
@@ -113,7 +113,7 @@
         "(1) compiles because it goes through a variable; (2) errors because the fresh object literal triggers an excess-property check on `age`",
         "Both compile because `age` is simply an extra structural member that is always ignored",
         "Both error because `Named` does not declare an `age` property",
-        "(1) errors because `literal` has an extra property; (2) compiles because inline literals relax excess-property checks"
+        "(1) errors because `literal` has an extra property; (2) compiles because inline literals relax the check"
       ],
       "answer": 0,
       "explanation": "Excess-property checks only fire on a fresh object literal assigned directly (line 2). Assigning through a variable (line 1) relaxes the check, so the extra `age` is allowed. This freshness heuristic is not nominal typing."
@@ -125,7 +125,7 @@
       "type": "mcq",
       "question": "At runtime, how do `Array<string>` and `Array<number>` differ, and how does this compare to C#?",
       "options": [
-        "They are identical (`Array`) because TS generics are erased; C# generics are reified and the element type is recoverable via reflection",
+        "Identical (`Array`) because TS erases generics; C# reifies them and the element type is reflectable",
         "They are distinct constructors because TS reifies generics, just like C# does",
         "They are identical in both TS and C#, since all generics are erased on both platforms",
         "They differ at runtime in TS but are identical in C#, because C# erases generics like Java"
@@ -171,7 +171,7 @@
         "Contextual typing flows the expected type from the array's element type into the callback parameter",
         "`map` is a special built-in that defaults all callback parameters to `number`",
         "`noImplicitAny` is disabled by default, so `n` is silently typed as `any`",
-        "The compiler infers `n` from the `* 2` expression, since multiplication only accepts numbers"
+        "The compiler infers `n` from `* 2`, since multiplication only accepts numbers"
       ],
       "answer": 0,
       "explanation": "Contextual typing flows the expected type (the array's `number` element type) into the callback parameter, so `n` is inferred as `number` with no annotation. It is not from the operator and not silent `any`."
@@ -181,7 +181,7 @@
       "source": "typescript/typescript-foundations-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Why does the reviewer say function parameters specifically must be annotated, while locals usually need not be?",
+      "question": "Why must function parameters specifically be annotated, while locals usually need not be?",
       "options": [
         "Parameters have no initializer, so without an annotation they would be implicit `any`, which `noImplicitAny` (on in strict mode) flags",
         "Parameters are checked nominally and locals structurally, so only parameters need a declared type",
@@ -250,9 +250,9 @@
       "source": "typescript/typescript-foundations-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer lists method **parameter bivariance** as an intentional unsoundness. What does this mean, and how does it interact with `strictFunctionTypes`?",
+      "question": "Method **parameter bivariance** is an intentional unsoundness in TypeScript. What does it mean, and how does it interact with `strictFunctionTypes`?",
       "options": [
-        "Method parameters are compared in both directions (bivariantly), which is convenient but unsafe; `strictFunctionTypes` makes function-typed parameters contravariant but methods keep bivariance",
+        "Method parameters are compared bivariantly (both directions), which is convenient but unsafe; `strictFunctionTypes` makes function-typed parameters contravariant but methods keep bivariance",
         "Method parameters are always contravariant, and `strictFunctionTypes` upgrades them to bivariant for convenience",
         "Method parameters are invariant by default, and `strictFunctionTypes` relaxes them to bivariant",
         "Method parameters are covariant, and `strictFunctionTypes` has no effect on methods or standalone functions"
@@ -265,7 +265,7 @@
       "source": "typescript/typescript-foundations-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Which feature-to-version pairing matches the durable milestones the reviewer says to cite?",
+      "question": "Which feature-to-version pairing is correct?",
       "options": [
         "`satisfies` arrived in 4.9 and template literal types in 4.1",
         "`satisfies` arrived in 5.0 and `const` type parameters in 4.9",
@@ -273,7 +273,7 @@
         "Standard decorators arrived in 4.9 and template literal types in 5.0"
       ],
       "answer": 0,
-      "explanation": "Per the reviewer's milestones: `satisfies` = 4.9 and template literal types = 4.1. (`const` type params and standard decorators = 5.0, `using`/`Symbol.dispose` = 5.2, `NoInfer<T>` = 5.4 — making the other options wrong.)"
+      "explanation": "`satisfies` = 4.9 and template literal types = 4.1. (`const` type params and standard decorators = 5.0, `using`/`Symbol.dispose` = 5.2, `NoInfer<T>` = 5.4 — making the other options wrong.)"
     }
   ]
 }

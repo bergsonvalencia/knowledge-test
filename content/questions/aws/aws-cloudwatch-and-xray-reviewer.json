@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "A high-throughput .NET Lambda already writes structured JSON logs and needs to emit an `OrdersPlaced` count and `LatencyMs` per invocation **without** adding latency or an extra API call on the hot path, keeping each metric correlated to its log line. What should it use?",
       "options": [
-        "Embedded Metric Format (EMF) — write one structured log line and let CloudWatch extract the metric",
-        "A synchronous `PutMetricData` call per invocation",
-        "A metric filter applied to the function's log group",
-        "A subscription filter forwarding events to Kinesis Data Streams"
+        "Embedded Metric Format (EMF): write one structured log line CloudWatch extracts from",
+        "A synchronous `PutMetricData` API call on every single invocation",
+        "A metric filter applied after the fact to the function's log group",
+        "A subscription filter forwarding all matching events to Kinesis Data Streams"
       ],
       "answer": 0,
       "explanation": "EMF emits one structured log line from which CloudWatch extracts the metric asynchronously — no hot-path API call, no added latency, and the metric shares dimensions/properties with its log line. `PutMetricData` adds a synchronous call per invocation; metric/subscription filters are downstream of logs and don't solve the per-invocation emission."
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "What is the key difference between a CloudWatch Logs **metric filter** and a **subscription filter**?",
       "options": [
-        "A metric filter produces a CloudWatch metric (a number you can alarm on); a subscription filter streams raw matching log events to Lambda/Kinesis/Firehose/OpenSearch",
-        "A metric filter streams events to OpenSearch; a subscription filter produces a metric",
-        "Both produce metrics, but the subscription filter does it in real time and the metric filter in batch",
-        "A metric filter forwards events to SNS; a subscription filter forwards them to SQS"
+        "A metric filter produces an alarmable CloudWatch metric; a subscription filter streams raw events to Lambda/Kinesis/Firehose/OpenSearch",
+        "A metric filter streams events to OpenSearch; a subscription filter produces a CloudWatch metric you can alarm on",
+        "Both produce metrics, but the subscription filter does it in real time and the metric filter only in batch",
+        "A metric filter forwards raw events to SNS; a subscription filter forwards raw events to SQS"
       ],
       "answer": 0,
       "explanation": "A metric filter distills matching log patterns into an alarmable metric; a subscription filter fans raw matching events out to Lambda, Kinesis Data Streams, Firehose, or OpenSearch. They are not interchangeable — one makes a number, the other forwards events."
@@ -123,10 +123,10 @@
       "type": "mcq",
       "question": "How does a **composite alarm** reduce alert fatigue when a latency alarm, an error-rate alarm, and an unhealthy-host alarm all fire together during one outage?",
       "options": [
-        "It evaluates a boolean expression over the child alarms and notifies only when their combination signals a real incident, and can suppress the children's own notifications while active",
-        "It deletes the child alarms automatically once an incident is detected",
-        "It increases each child alarm's evaluation periods so they fire less often",
-        "It routes every child alarm's notification through a single SNS topic without changing when they fire"
+        "It notifies only when a boolean combination of the child alarms signals a real incident, and can suppress the children's own notifications",
+        "It deletes the child alarms automatically once any incident is detected and confirmed",
+        "It increases each child alarm's evaluation periods so the children fire far less often",
+        "It routes every child alarm's notification through one SNS topic without changing when they fire"
       ],
       "answer": 0,
       "explanation": "A composite alarm is a boolean expression over other alarms (e.g. ALARM(latency) AND ALARM(errors) AND ALARM(unhealthyHosts)); it pages once when the combination indicates a real incident and can mute the children while it is active. It does not delete children or merely re-route their independent notifications."

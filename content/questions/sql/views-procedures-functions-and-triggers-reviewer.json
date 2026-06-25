@@ -209,10 +209,10 @@
       "type": "mcq",
       "question": "You must inject a table name (chosen at run time) into dynamic SQL. Why can't you just pass it as an `sp_executesql` parameter, and what is the correct safeguard?",
       "options": [
-        "Identifiers (table/column names) cannot be bound as parameters; wrap the name in `QUOTENAME()` (and ideally whitelist it against `sys.tables`)",
+        "Identifiers (table/column names) cannot be bound as parameters; wrap the name in `QUOTENAME()` and whitelist it against `sys.tables`",
         "Identifiers can be bound, but only if declared as `SYSNAME`; no extra escaping is needed",
         "You should concatenate the name directly — table names cannot carry an injection payload",
-        "You must cast the name to `NVARCHAR(MAX)` first, after which it is safe to bind as a value parameter"
+        "Cast the name to `NVARCHAR(MAX)` first, after which it is safe to bind as a value parameter"
       ],
       "answer": 0,
       "explanation": "Only values can be bound as parameters — an identifier (table or column name) cannot. The safe approach is `QUOTENAME()`, which bracket-quotes and doubles any embedded `]`, closing the common identifier-injection hole; whitelisting against `sys.tables` adds defense in depth. Concatenating a raw name is unsafe."
@@ -241,10 +241,10 @@
       "type": "mcq",
       "question": "A role is granted `SELECT` on a view but has no rights on the underlying base table, yet it can read through the view. What makes this work, and when does it break?",
       "options": [
-        "Ownership chaining: when the view and base table share the same owner, SQL Server skips the permission check on the table — but the chain breaks across different owners or inside dynamic SQL",
+        "Ownership chaining: a same-owner module skips the table's permission check, but the chain breaks across owners or inside dynamic SQL",
         "Row-level security policies automatically grant transitive table access through any view",
         "The view runs under `EXECUTE AS OWNER` by default, which is unaffected by dynamic SQL",
-        "`WITH SCHEMABINDING` grants implicit `SELECT` on referenced tables to anyone who can read the view"
+        "`WITH SCHEMABINDING` grants implicit `SELECT` on referenced tables to anyone who reads the view"
       ],
       "answer": 0,
       "explanation": "Ownership chaining lets access through a same-owner module skip the underlying table's permission check, so granting `SELECT` on the view suffices. The chain breaks across different owners and inside dynamic SQL, where permissions are re-checked against the caller. `SCHEMABINDING` protects schema, not permissions; views don't default to `EXECUTE AS OWNER`."
@@ -256,7 +256,7 @@
       "type": "mcq",
       "question": "Why can a deterministic scalar function back a persisted computed column or an indexed view, while a function using `NEWID()` or `GETDATE()` cannot?",
       "options": [
-        "Materialized values must be reproducible for the same input/state; non-deterministic expressions can vary, so they cannot be safely stored and kept consistent",
+        "Materialized values must be reproducible for the same input/state; non-deterministic expressions vary, so they cannot be stored and kept consistent",
         "Non-deterministic functions cannot be created `WITH SCHEMABINDING`, which materialization requires",
         "Non-deterministic functions run faster, so the engine refuses to cache their output",
         "Persisted columns only accept integer-returning functions, which exclude `GETDATE()`"

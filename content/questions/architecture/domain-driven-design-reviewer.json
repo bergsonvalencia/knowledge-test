@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "Which set of concerns belongs to **strategic** design rather than tactical design in DDD?",
       "options": [
-        "Bounded contexts, subdomains, the ubiquitous language, and context maps",
-        "Entities, value objects, and aggregates",
+        "Bounded contexts, subdomains, ubiquitous language, and context maps",
+        "Entities, value objects, and aggregate roots",
         "Repositories, factories, and domain services",
-        "Domain events and their dispatching after commit"
+        "Domain events and their post-commit dispatching"
       ],
       "answer": 0,
       "explanation": "Strategic design is the high-level work of splitting the domain into subdomains, defining bounded contexts and their ubiquitous languages, and mapping how contexts relate. Entities, value objects, aggregates, repositories, factories, domain services, and domain events are all tactical building blocks used inside a single context."
@@ -33,10 +33,10 @@
       "type": "mcq",
       "question": "What fundamentally distinguishes an **entity** from a **value object**?",
       "options": [
-        "An entity has a stable identity that persists through state changes; a value object has no identity and is defined entirely by its attributes",
-        "An entity is immutable while a value object is mutable",
-        "An entity can hold behavior while a value object can only hold data",
-        "An entity is stored in a repository while a value object is always stored in a separate table"
+        "An entity has a stable identity that persists through state changes; a value object has no identity and is defined by its attributes",
+        "An entity is immutable, whereas a value object is mutable in place",
+        "An entity can hold behavior, whereas a value object can only hold data",
+        "An entity lives in a repository; a value object is always its own table"
       ],
       "answer": 0,
       "explanation": "Identity is the defining difference: entities are equal by id and stay 'the same' as fields change; value objects are equal by value and interchangeable. Option B reverses mutability (value objects are immutable). Value objects can hold behavior, and they are typically persisted as part of an aggregate (e.g. owned types), not necessarily a separate table."
@@ -63,9 +63,9 @@
       "type": "mcq",
       "question": "Your team needs authentication, billing, and transactional email. In DDD subdomain terms, what is the recommended strategy for these?",
       "options": [
-        "Treat them as generic subdomains and buy/adopt an off-the-shelf product or library",
-        "Treat them as the core domain and assign your best engineers to build them in-house",
-        "Treat them as supporting subdomains that must be fully modeled with tactical DDD",
+        "Treat them as generic subdomains and buy or adopt an off-the-shelf solution",
+        "Treat them as the core domain and assign your best engineers to build them",
+        "Treat them as supporting subdomains and fully model them with tactical DDD",
         "Merge them into one bounded context to share a single ubiquitous language"
       ],
       "answer": 0,
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "What best describes the **Conformist** relationship in a context map?",
       "options": [
-        "The downstream context adopts the upstream model as-is with no translation, accepting its language but coupling itself to upstream changes",
-        "The downstream context's needs drive the upstream team's backlog while upstream still owns its model",
-        "Two contexts share a small, explicitly agreed subset of the model that requires joint agreement to change",
-        "The upstream publishes a documented interchange format used by many consumers"
+        "The downstream context adopts the upstream model as-is with no translation, coupling itself to upstream changes",
+        "The downstream context's needs drive the upstream team's backlog, though upstream still owns its model",
+        "Two contexts share a small, explicitly agreed model subset that needs joint agreement to change",
+        "The upstream publishes a documented interchange format used by many downstream consumers"
       ],
       "answer": 0,
       "explanation": "Conformist means the downstream simply conforms to and adopts the upstream model with no translation — cheap, but it couples you to upstream changes. Option B is Customer–Supplier, option C is Shared Kernel, and option D is Published Language / OHS."
@@ -106,7 +106,7 @@
       "source": "architecture/domain-driven-design-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Why does DDD recommend referencing **other** aggregates by identity (id) rather than by direct object reference? (Select all that apply.)",
+      "question": "Why should you reference **other** aggregates by identity (id) rather than by direct object reference? (Select all that apply.)",
       "options": [
         "It keeps aggregates small and decoupled, allowing them to be loaded independently",
         "It avoids accidentally loading huge object graphs into memory",
@@ -115,7 +115,7 @@
         "It removes the need for repositories entirely"
       ],
       "answer": [0, 1, 2],
-      "explanation": "Referencing by id keeps aggregates small, decoupled, and independently loadable, avoids loading large graphs, and respects the transaction boundary. It does NOT give immediate consistency between aggregates (that consistency is eventual), and aggregates are still loaded/saved through repositories."
+      "explanation": "Referencing by id keeps aggregates small, decoupled, and independently loadable, avoids loading large graphs, and respects the transaction boundary. It does NOT give immediate consistency between aggregates (that consistency is eventual), and aggregates are still loaded and saved through repositories."
     },
     {
       "subtopic": "Domain service vs application service",
@@ -124,13 +124,13 @@
       "type": "mcq",
       "question": "How do a **domain service** and an **application service** differ in DDD?",
       "options": [
-        "A domain service contains business logic spanning entities/VOs and uses the ubiquitous language; an application service is a thin orchestrator of a use case (transactions, repositories, events) with no business rules",
+        "A domain service holds business logic spanning entities/VOs; an application service is a thin use-case orchestrator with no business rules",
         "A domain service orchestrates transactions and repositories; an application service holds the core business rules",
         "Both contain business rules, but a domain service is stateful while an application service is stateless",
         "A domain service is part of the infrastructure layer; an application service is part of the domain layer"
       ],
       "answer": 0,
-      "explanation": "A domain service *is* business logic that fits no single entity or value object (stateless, in the domain layer). An application service is a thin use-case orchestrator with no business rules. Option B reverses the two; both are conceptually stateless, and their layer placement is reversed in option D."
+      "explanation": "A domain service *is* business logic that fits no single entity or value object (stateless, in the domain layer). An application service is a thin use-case orchestrator (transactions, repositories, events) with no business rules. Option B reverses the two; both are conceptually stateless, and their layer placement is reversed in option D."
     },
     {
       "subtopic": "Anemic domain model",
@@ -139,7 +139,7 @@
       "type": "truefalse",
       "question": "An anemic domain model — domain objects with getters/setters but no behavior, with all logic in services — is considered an anti-pattern for DDD, yet it can still be a pragmatic choice for simple/CRUD subdomains.",
       "answer": true,
-      "explanation": "Fowler labels the anemic model an anti-pattern for DDD because it is procedural code spreading invariants across services. But the reviewer notes it can be a pragmatic choice for simple/CRUD subdomains — you just shouldn't call that DDD."
+      "explanation": "Fowler labels the anemic model an anti-pattern for DDD because it is procedural code that spreads invariants across services. Even so, it can be a pragmatic choice for simple/CRUD subdomains — you just shouldn't call that DDD."
     },
     {
       "subtopic": "Repository granularity",
@@ -148,10 +148,10 @@
       "type": "mcq",
       "question": "In DDD, how should repositories be scoped, and what do they operate on?",
       "options": [
-        "One repository per aggregate root, loading and saving the whole aggregate through it",
+        "One repository per aggregate root, saving and loading the whole aggregate through it",
         "One repository per database table, loading individual rows",
         "One repository per entity, including non-root entities inside an aggregate",
-        "One shared generic repository for every type in the domain"
+        "One shared generic repository covering every type in the domain"
       ],
       "answer": 0,
       "explanation": "A repository gives collection-like access to aggregate roots: one per aggregate root, not per table or per entity, and you load/save the whole aggregate through it. Non-root internals are reached only through the root, so they don't get their own repositories."
@@ -163,7 +163,7 @@
       "type": "mcq",
       "question": "When classic DDD layers are arranged as Clean/Onion/Hexagonal architecture, which statement about dependencies is correct?",
       "options": [
-        "Dependencies point inward; the domain depends on nothing, and infrastructure implements interfaces the domain/application define",
+        "Dependencies point inward; the domain depends on nothing, and infrastructure implements interfaces the domain defines",
         "The domain layer depends on the infrastructure layer so it can persist itself directly",
         "The application layer depends inward on infrastructure, which holds the business rules",
         "All layers depend on a shared utility layer that contains the entities"
@@ -182,7 +182,7 @@
       "options": [
         "Option A — it returns a new `Money` instead of mutating, preserving immutability",
         "Option B — mutating in place is fine because `Money` is small",
-        "Both are equally valid implementations of a value object",
+        "Both are equally valid ways to implement a value object",
         "Neither — a value object must never expose an `Add` method"
       ],
       "answer": 0,
@@ -195,7 +195,7 @@
       "type": "multi",
       "question": "Which statements about bounded contexts are correct? (Select all that apply.)",
       "options": [
-        "A bounded context is a boundary within which one model and its ubiquitous language are internally consistent and unambiguous",
+        "A bounded context is a boundary within which one model and its ubiquitous language stay internally consistent",
         "The same term (e.g. \"Product\") can map to different models in different contexts",
         "A bounded context is a natural microservice boundary, with each service owning its model and data",
         "All bounded contexts in a system must share one global model to avoid duplication",
@@ -209,12 +209,12 @@
       "source": "architecture/domain-driven-design-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "An aggregate raises a domain event so a second aggregate can react. What is the most accurate description of when the event is published and the consistency model between the two aggregates?",
+      "question": "An aggregate raises a domain event so a second aggregate can react. What most accurately describes when the event is published and the consistency model between the two aggregates?",
       "options": [
-        "A dispatcher publishes the event after the transaction commits, and consistency between the two aggregates is eventual",
-        "The event is published synchronously inside the same transaction, giving immediate consistency across both aggregates",
-        "The event is published before the aggregate is saved, so handlers can veto the change",
-        "The event must be persisted as part of the second aggregate's transaction to remain strongly consistent"
+        "A dispatcher publishes it after the transaction commits, and consistency between the aggregates is eventual",
+        "It is published synchronously inside the same transaction, giving immediate consistency across both aggregates",
+        "It is published before the aggregate is saved, so handlers can veto the change",
+        "It is persisted as part of the second aggregate's transaction to stay strongly consistent"
       ],
       "answer": 0,
       "explanation": "Typically the aggregate raises the event and a dispatcher publishes it *after* the transaction commits; because a transaction touches only one aggregate, the second aggregate reacting separately means consistency between them is eventual. Publishing inside the same transaction to get immediate cross-aggregate consistency would violate the one-transaction-per-aggregate rule."
@@ -226,10 +226,10 @@
       "type": "mcq",
       "question": "A team designs a huge `Customer` aggregate containing every order, invoice, and support ticket the customer has ever had, all reachable through the root. What is the most likely consequence of this design?",
       "options": [
-        "High contention and loading large object graphs, because every change to any part goes through one root and one transaction boundary",
-        "Stronger decoupling, because everything the customer touches lives in one place",
-        "Better eventual consistency, because all data is now strongly consistent in one transaction",
-        "Smaller transactions, because the root batches all writes efficiently"
+        "High contention and loading large object graphs, since every change goes through one root and transaction boundary",
+        "Stronger decoupling, because everything the customer touches now lives in one place",
+        "Better eventual consistency, because all the data is strongly consistent in one transaction",
+        "Smaller transactions, because the root batches all of the writes efficiently"
       ],
       "answer": 0,
       "explanation": "Large aggregates cause contention (concurrent changes collide on the single root/transaction boundary) and force loading whole object graphs. DDD says keep aggregates small and link by id; the other options describe benefits a small-aggregate design provides, not this monolithic one."
@@ -243,9 +243,9 @@
       "code": "// Option A\npublic class Order {\n  private readonly List<OrderLine> _lines = new();\n  public IReadOnlyList<OrderLine> Lines => _lines;\n  public Money Total { get; private set; }\n  public void AddLine(Product p, int qty) { /* add line, recompute Total */ }\n}\n// Option B\npublic class Order {\n  public List<OrderLine> Lines { get; set; }\n  public Money Total { get; set; }\n}",
       "lang": "csharp",
       "options": [
-        "Option A — outside code mutates the aggregate only through root methods, so the root can keep `Total` consistent",
-        "Option B — exposing public setters lets callers update `Total` and `Lines` directly, which is simpler",
-        "Both work equally well since the invariant is just arithmetic",
+        "Option A — outside code mutates the aggregate only through root methods, so the root keeps `Total` consistent",
+        "Option B — public setters let callers update `Total` and `Lines` directly, which is simpler",
+        "Both work equally well, since the invariant is just simple arithmetic",
         "Neither — invariants like this belong in an application service, not the aggregate"
       ],
       "answer": 0,
@@ -256,7 +256,7 @@
       "source": "architecture/domain-driven-design-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "For which situations is investing in **full tactical** DDD most justified, versus going light? (Select all that are good fits for heavy tactical DDD.)",
+      "question": "For which situations is investing in **full tactical** DDD most justified? (Select all that are good fits for heavy tactical DDD.)",
       "options": [
         "A core domain with rich, evolving business rules and domain experts available to collaborate",
         "A subdomain where the genuine complexity lives in the business, not just the technology",

@@ -11,11 +11,11 @@
       "options": [
         "Functional = what the system does; non-functional = how well it must do it (scale, latency, availability, consistency, durability)",
         "Functional = the database schema; non-functional = the API contract",
-        "Functional = the parts you implement; non-functional = the parts you defer to later",
-        "Functional = read paths; non-functional = write paths"
+        "Functional = the parts you implement; non-functional = the parts you defer",
+        "Functional = the read paths; non-functional = the write paths"
       ],
       "answer": 0,
-      "explanation": "Functional requirements are the use cases/actors (what it does), while non-functional requirements describe quality attributes like scale, latency, availability, consistency, and durability. The reviewer stresses that NFRs drive the architecture more than features do."
+      "explanation": "Functional requirements are the use cases/actors (what it does), while non-functional requirements describe quality attributes like scale, latency, availability, consistency, and durability. NFRs drive the architecture more than features do."
     },
     {
       "subtopic": "Back-of-envelope estimates",
@@ -30,7 +30,7 @@
         "~1,200 req/s"
       ],
       "answer": 0,
-      "explanation": "1,000,000 / 86,400 seconds ≈ 12 req/s — the reviewer's handy constant '1 million/day ≈ 12 req/s'. A peak factor of 2–10x is then applied separately for the hot path."
+      "explanation": "1,000,000 / 86,400 seconds ≈ 12 req/s — the handy constant '1 million/day ≈ 12 req/s'. A peak factor of 2–10x is then applied separately for the hot path."
     },
     {
       "subtopic": "Stateless tier",
@@ -46,7 +46,7 @@
       "source": "system-design/system-design-interview-exercises-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Which lever is recommended as the primary response to a **read-heavy** workload bottlenecking the database?",
+      "question": "Which lever is the primary response to a **read-heavy** workload bottlenecking the database?",
       "options": [
         "Caching plus read replicas",
         "Sharding writes across a high-cardinality key",
@@ -69,7 +69,7 @@
         "~218 trillion (62⁸)"
       ],
       "answer": 0,
-      "explanation": "62⁷ ≈ 3.5 trillion codes, which the reviewer cites as plenty for a URL shortener. 62⁶ ≈ 56 billion is the 6-character capacity; moving from 6 to 7 chars multiplies capacity by 62."
+      "explanation": "62⁷ ≈ 3.5 trillion codes, which is plenty for a URL shortener. 62⁶ ≈ 56 billion is the 6-character capacity; moving from 6 to 7 chars multiplies capacity by 62."
     },
     {
       "subtopic": "Idempotency",
@@ -80,8 +80,8 @@
       "options": [
         "The server stores the key with its result under a unique constraint, so a replay returns the **same** orderId instead of creating a second order",
         "The server hashes the request body and rejects any request whose hash it has seen before",
-        "The client and server negotiate a sequence number so retries are dropped by TCP",
-        "The load balancer detects duplicate requests and discards all but the first"
+        "The client and server negotiate a TCP sequence number, so retries are dropped by the transport",
+        "The load balancer detects duplicate requests and discards all but the first one"
       ],
       "answer": 0,
       "explanation": "The server records the idempotency key alongside the stored result (with a unique constraint so concurrent duplicates collide at the DB); a replay short-circuits and returns the same orderId. It is not body-hashing, a transport-level trick, or LB deduplication."
@@ -108,7 +108,7 @@
       "type": "truefalse",
       "question": "A **saga** replaces a single distributed (two-phase-commit) transaction across order/inventory/payment with a sequence of local transactions plus compensating actions on failure.",
       "answer": true,
-      "explanation": "The reviewer recommends a saga precisely because 2PC across services is brittle and locks resources; a saga uses local transactions with compensations (cancel order / release reservation / refund), trading strict atomicity for availability and resilience."
+      "explanation": "A saga is preferred precisely because 2PC across services is brittle and locks resources; a saga uses local transactions with compensations (cancel order / release reservation / refund), trading strict atomicity for availability and resilience."
     },
     {
       "subtopic": "Notification dedupe",
@@ -117,7 +117,7 @@
       "type": "mcq",
       "question": "Why must the dedupe gate use Redis `SET key val NX EX` rather than a `GET` followed by a separate `SET`?",
       "options": [
-        "`SET … NX` is atomic, so under concurrent retries exactly one caller wins; a GET-then-SET has a race where two workers both see the key absent and both send",
+        "`SET … NX` is atomic, so under concurrent retries exactly one caller wins; GET-then-SET races so two workers both see the key absent and both send",
         "`SET … NX` is faster because it skips the network round trip entirely",
         "`GET` cannot read keys that have a TTL, so it would always miss",
         "`SET … NX` automatically retries the provider call if delivery fails"
@@ -158,14 +158,14 @@
         1,
         2
       ],
-      "explanation": "A good shard key has high cardinality, distributes access evenly, and aligns with the dominant query so reads hit one shard. Low-cardinality keys (status) and monotonic keys (timestamp) create hot partitions and are explicitly called out as bad choices."
+      "explanation": "A good shard key has high cardinality, distributes access evenly, and aligns with the dominant query so reads hit one shard. Low-cardinality keys (status) and monotonic keys (timestamp) create hot partitions and are bad choices."
     },
     {
       "subtopic": "Notification platform",
       "source": "system-design/system-design-interview-exercises-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which design choices does the reviewer prescribe for the multi-channel notification platform? (Select all that apply.)",
+      "question": "Which design choices fit the multi-channel notification platform? (Select all that apply.)",
       "options": [
         "Accept fast and return `202 Accepted`, doing slow provider calls in async workers",
         "Per-provider rate limiting (token bucket) enforced at the worker",
@@ -217,7 +217,7 @@
       "source": "system-design/system-design-interview-exercises-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A single short code goes viral and one Redis node serving it is overloaded (a hot key). Which mitigations does the reviewer list for hot keys/partitions?",
+      "question": "A single short code goes viral and one Redis node serving it is overloaded (a hot key). Which mitigations apply to hot keys/partitions?",
       "options": [
         "Consistent hashing with replication of the hot item, plus a small in-process cache in front of Redis for the very hottest entries",
         "Switch the redirect from 301 to 302 so fewer requests reach the cache",
@@ -225,14 +225,14 @@
         "Move the hot key to a relational database with a transaction per read"
       ],
       "answer": 0,
-      "explanation": "For hot keys the reviewer prescribes consistent hashing plus replicating the hot item, and adding a tiny in-process (local) cache in front of Redis for the hottest entries. Disabling caching, flipping the redirect type, or routing reads through a transactional SQL store would all worsen the hot-read problem."
+      "explanation": "For hot keys the fix is consistent hashing plus replicating the hot item, and adding a tiny in-process (local) cache in front of Redis for the hottest entries. Disabling caching, flipping the redirect type, or routing reads through a transactional SQL store would all worsen the hot-read problem."
     },
     {
       "subtopic": "Cache-aside staleness",
       "source": "system-design/system-design-interview-exercises-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "You add cache-aside (Redis) to a CPU-bound redirect service. What is the key trade-off the reviewer says this introduces?",
+      "question": "You add cache-aside (Redis) to a CPU-bound redirect service. What is the key trade-off this introduces?",
       "options": [
         "Cache invalidation/staleness — if a long URL is changed or deleted, cached entries can serve stale data until they expire or are evicted",
         "Strong consistency is now guaranteed on every read, eliminating the need for the DB",
@@ -247,7 +247,7 @@
       "source": "system-design/system-design-interview-exercises-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer says main memory is roughly **100,000x faster** than a disk seek, and uses this to justify caching. Which pair of figures supports that ratio?",
+      "question": "Main memory is roughly **100,000x faster** than a disk seek, which is the core justification for caching. Which pair of figures supports that ratio?",
       "options": [
         "Main memory ≈ 100 ns vs disk seek ≈ 2–10 ms",
         "Main memory ≈ 100 ns vs SSD random read ≈ 16 µs",
@@ -255,7 +255,7 @@
         "SSD random read ≈ 16 µs vs cross-continent round trip ≈ 150 ms"
       ],
       "answer": 0,
-      "explanation": "Main memory ≈ 100 ns and a disk seek ≈ 2–10 ms (≈ 10,000,000 ns) differ by roughly 100,000x — the reviewer's stated reason caching works. The other pairs compare different layers (memory vs SSD, L1 vs network, SSD vs WAN) and don't yield the ~100,000x memory-vs-disk-seek ratio."
+      "explanation": "Main memory ≈ 100 ns and a disk seek ≈ 2–10 ms (up to ≈ 10,000,000 ns) differ by roughly 100,000x — the reason caching works. The other pairs compare different layers (memory vs SSD, L1 vs network, SSD vs WAN) and don't yield the ~100,000x memory-vs-disk-seek ratio."
     },
     {
       "subtopic": "base62 encode code",
@@ -272,7 +272,7 @@
         "It produces variable-length output, which makes the codes non-unique"
       ],
       "answer": 0,
-      "explanation": "Counter + base62 gives guaranteed-unique, collision-free codes, but because the underlying id is monotonic the codes are sequential and thus enumerable/guessable — the reviewer's stated downside (use random base62 if guessability matters). It does not produce duplicates, handles large ids fine, and variable length does not break uniqueness."
+      "explanation": "Counter + base62 gives guaranteed-unique, collision-free codes, but because the underlying id is monotonic the codes are sequential and thus enumerable/guessable (use random base62 if guessability matters). It does not produce duplicates, handles large ids fine, and variable length does not break uniqueness."
     }
   ]
 }

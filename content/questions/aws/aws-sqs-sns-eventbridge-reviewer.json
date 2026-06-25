@@ -258,7 +258,7 @@
       "source": "aws/aws-sqs-sns-eventbridge-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which AWS-to-Azure mappings from the reviewer are correct? (Select all that apply.)",
+      "question": "Which AWS-to-Azure service mappings are correct? (Select all that apply.)",
       "options": [
         "SQS FIFO message-group ordering maps to Azure Service Bus sessions",
         "SQS FIFO deduplication maps to Service Bus duplicate detection",

@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "In Angular's built-in `@for` block, what is true about the `track` expression?",
       "options": [
-        "It is mandatory; the compiler errors (NG5002) if you omit it",
+        "It is mandatory; the compiler errors with NG5002 if you omit it",
         "It is optional and defaults to `track $index`",
-        "It is only required when iterating over objects, not primitives",
-        "It was removed in v18 in favor of automatic identity diffing"
+        "It is required only for objects, not for primitives",
+        "It was removed in v18 in favor of automatic diffing"
       ],
       "answer": 0,
       "explanation": "Unlike the old optional `trackBy`, `@for` makes `track` mandatory and the compiler errors with NG5002 when it is missing, forcing a stable identity for each row."
@@ -64,10 +64,10 @@
       "type": "mcq",
       "question": "What distinguishes an **attribute** directive from a **structural** directive?",
       "options": [
-        "An attribute directive changes appearance/behavior of an existing element but does not add or remove DOM",
+        "An attribute directive changes appearance or behavior but does not add or remove DOM",
         "An attribute directive can only set inline styles, never listen to events",
         "An attribute directive must always inject `TemplateRef` and `ViewContainerRef`",
-        "An attribute directive is applied via an element selector rather than an attribute selector"
+        "An attribute directive is applied via an element selector, not an attribute selector"
       ],
       "answer": 0,
       "explanation": "An attribute directive changes the appearance or behavior of an existing element/component/directive without adding or removing DOM — that is the job of a structural directive, which injects `TemplateRef`/`ViewContainerRef`."
@@ -96,11 +96,11 @@
       "options": [
         "`track item` — the loop variable itself, which you should review and refine afterward",
         "`track $index` automatically, which is always optimal",
-        "It leaves `track` off and emits a TODO comment",
+        "It leaves `track` off and emits a TODO comment instead",
         "It infers `item.id` by inspecting the item's type"
       ],
       "answer": 0,
-      "explanation": "The schematic defaults to `track item` (the loop variable itself) when no `trackBy` existed, and the docs advise reviewing and refining it afterward since the loop variable may not be the best identity."
+      "explanation": "The schematic defaults to `track item` (the loop variable itself) when no `trackBy` existed, and you should review and refine it afterward since the loop variable may not be the best identity."
     },
     {
       "subtopic": "@defer dependency constraints",
@@ -124,9 +124,9 @@
       "type": "mcq",
       "question": "What does `prefetch on idle` accomplish in a `@defer` block whose main trigger is `on viewport`?",
       "options": [
-        "Downloads the chunk early during browser idle while still showing the placeholder until the viewport trigger fires",
+        "Downloads the chunk early on idle while still showing the placeholder until the viewport trigger fires",
         "Renders the deferred content immediately on idle, ignoring the viewport trigger",
-        "Cancels the viewport trigger and loads only when idle",
+        "Cancels the viewport trigger and loads only when the browser is idle",
         "Keeps the `@loading` block visible for at least the idle period"
       ],
       "answer": 0,
@@ -140,8 +140,8 @@
       "question": "Which statement correctly describes `@let` in a template?",
       "options": [
         "It is reactive and recomputes on change detection, but is read-only and cannot be reassigned",
-        "It is a one-time snapshot that never updates after first render",
-        "It can be reassigned later in the template like a mutable JavaScript variable",
+        "It is a one-time snapshot that never updates after the first render",
+        "It can be reassigned later in the template like a mutable variable",
         "It is hoisted, so it can be referenced before its declaration"
       ],
       "answer": 0,
@@ -155,7 +155,7 @@
       "question": "Why is `@let user = user$ | async;` followed by reusing `user` across bindings preferred over repeating `user$ | async` in each binding?",
       "options": [
         "It subscribes to the stream only once instead of creating multiple subscriptions",
-        "It makes `user` mutable so child components can write back to the stream",
+        "It makes `user` mutable so children can write back to the stream",
         "It forces synchronous resolution of the observable before render",
         "It bypasses change detection for the bound value"
       ],
@@ -171,7 +171,7 @@
       "options": [
         "`[class.active]=\"isActive()\"` — a native binding requiring no import",
         "`[ngClass]=\"{ active: isActive() }\"` — always preferred for single tokens",
-        "Injecting `ElementRef` and writing `classList.toggle` directly",
+        "Injecting `ElementRef` and calling `classList.toggle` directly",
         "Importing `CommonModule` and using `*ngClass`"
       ],
       "answer": 0,

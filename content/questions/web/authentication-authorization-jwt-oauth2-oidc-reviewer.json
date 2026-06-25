@@ -11,8 +11,8 @@
       "options": [
         "Authorization always runs first, because you must know what is allowed before checking who is asking",
         "Authentication runs first; authorization is a function of the already-established identity",
-        "They are evaluated simultaneously and are interchangeable",
-        "Authorization can succeed even when authentication has not, as long as the scope is present"
+        "They are evaluated simultaneously and are fully interchangeable steps",
+        "Authorization can succeed even when authentication has not, as long as a scope is present"
       ],
       "answer": 1,
       "explanation": "Order is always AuthN then AuthZ: you cannot evaluate 'is this user an admin?' until you know who the user is and their claims. AuthZ is a function of identity, so it cannot precede or run without AuthN."
@@ -24,10 +24,10 @@
       "type": "mcq",
       "question": "A client presents an **expired** access token to an API. Which status code is correct, and what should the client do?",
       "options": [
-        "403 Forbidden — the client lacks permission and should not retry",
+        "403 Forbidden — the client lacks permission and should not retry the request",
         "401 Unauthorized — identity can no longer be established, so the client should refresh and retry",
-        "403 Forbidden — the client should refresh the token and retry",
-        "400 Bad Request — the token is malformed and cannot be parsed"
+        "403 Forbidden — the client should refresh the token and then retry the request",
+        "400 Bad Request — the token is malformed and therefore cannot be parsed"
       ],
       "answer": 1,
       "explanation": "An expired token means identity can no longer be established, which is an authentication failure: 401. The correct client move is to refresh and retry; returning 403 misleads the client into thinking it is a permissions problem with nothing to retry."
@@ -63,10 +63,10 @@
       "type": "mcq",
       "question": "Which statement correctly distinguishes the ID token from the access token?",
       "options": [
-        "The ID token's audience is the API and is sent on every call; the access token's audience is the client",
-        "The ID token's audience is the client and is consumed at sign-in; the access token's audience is the resource server and is the bearer credential sent to APIs",
-        "Both tokens have the same audience and are interchangeable as bearer credentials",
-        "The access token is always a JWT; the ID token may be opaque or a JWT"
+        "The ID token's audience is the API and it is sent as the bearer credential on every call",
+        "The ID token's audience is the client and is consumed at sign-in; the access token's audience is the API",
+        "Both tokens share one audience and are interchangeable as bearer credentials to any service",
+        "The access token is always a JWT, whereas the ID token may be either opaque or a JWT"
       ],
       "answer": 1,
       "explanation": "The ID token's audience is the client, consumed once at sign-in to start a session, and is not sent to APIs. The access token's audience is the resource server and is the bearer credential sent on every API call. The ID token is always a JWT; the access token may be opaque or JWT."
@@ -108,10 +108,10 @@
       "type": "mcq",
       "question": "Why is the OAuth2 Implicit flow now deprecated by RFC 9700?",
       "options": [
-        "It required a client secret that SPAs cannot keep confidential",
-        "It returned the access token in the redirect URL fragment, exposing it to history, Referer, logs, and scripts, and it is not safely refreshable",
-        "It relied on symmetric HS256 signing that resource servers could not verify",
-        "It used the back channel for tokens, which browsers can no longer reach"
+        "It required a client secret that public SPAs were never able to keep confidential",
+        "It returned the access token in the redirect URL fragment, exposing it to history, logs, and scripts",
+        "It relied on symmetric HS256 signing that resource servers were unable to verify at all",
+        "It used the back channel for tokens, a path that modern browsers can no longer reach"
       ],
       "answer": 1,
       "explanation": "Implicit returned the access token directly in the redirect URL fragment (front channel), exposing it in history, Referer headers, logs, and to any script, and it was not safely refreshable. It existed only because browsers once could not POST cross-origin to `/token`; CORS removed that constraint, so RFC 9700 says do not use it."
@@ -133,8 +133,8 @@
       "question": "In OIDC, how do `state` and `nonce` differ in what they protect?",
       "options": [
         "`state` provides replay protection bound into the ID token; `nonce` protects the redirect against CSRF",
-        "`state` protects the redirect against CSRF; `nonce` is echoed inside the ID token to bind it to this auth request (replay protection)",
-        "Both protect against authorization-code interception and are redundant with PKCE",
+        "`state` protects the redirect against CSRF; `nonce` is echoed inside the ID token to bind it to this auth request",
+        "Both protect against authorization-code interception and are redundant once PKCE is in use",
         "`state` is hashed with SHA-256 to produce the `code_challenge`; `nonce` is the `code_verifier`"
       ],
       "answer": 1,
@@ -213,7 +213,7 @@
       "question": "You need 'log a user out everywhere' to take effect immediately for all of a user's stateless JWTs after a password change. Which mechanism is the standard answer?",
       "options": [
         "A `jti` denylist with one entry per outstanding token",
-        "A security-stamp / token-version value per user that changes on sensitive events; a mismatch rejects the token",
+        "A per-user security-stamp / token-version value that changes on sensitive events; a mismatch rejects the token",
         "Lowering the access-token TTL to zero retroactively",
         "Rotating the issuer's JWKS signing key so old tokens fail signature validation"
       ],
@@ -249,7 +249,7 @@
       "question": "Why are mTLS-bound tokens (RFC 8705) and DPoP (RFC 9449) described as the real fix for token replay, rather than just short TTLs?",
       "options": [
         "They encrypt the token so its claims cannot be read in transit",
-        "They bind the token to a key the client must prove possession of on every call, so a stolen token is useless without the key",
+        "They bind the token to a key the client must prove possession of on every call, so a stolen token is useless",
         "They make the access token longer-lived, eliminating the need for refresh tokens",
         "They move the token from the Authorization header into an HttpOnly cookie"
       ],

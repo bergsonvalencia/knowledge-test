@@ -10,9 +10,9 @@
       "question": "What does a generic like `identity<T>(x: T): T` give you that `identity(x: any): any` does not?",
       "options": [
         "It preserves the relationship between the input and output types, so the caller keeps full type information",
-        "It runs faster at runtime because `T` is monomorphized into specialized code",
+        "It runs faster at runtime because `T` is compiled into specialized monomorphized code",
         "It allows the function to accept more types than the `any` version does",
-        "It performs a runtime check that the argument matches the declared type `T`"
+        "It performs a runtime check that the argument actually matches the declared type `T`"
       ],
       "answer": 0,
       "explanation": "A generic preserves the link between input and output (out is exactly in), whereas `any` erases all type relationships and disables checking. The other options are wrong: types are erased at runtime so there is no monomorphization or runtime check, and `any` is actually the more permissive escape hatch."
@@ -50,10 +50,10 @@
       "type": "mcq",
       "question": "Why prefer `function longest<T extends { length: number }>(a: T, b: T): T` over taking `a: any, b: any`?",
       "options": [
-        "The constraint lets you read `.length` in the body while still returning the caller's exact type `T`",
-        "The constraint makes the function run a runtime validation that both arguments have a `length`",
-        "`any` would reject arrays because arrays do not structurally have a `length` property",
-        "The constraint forces both arguments to be the literal type `{ length: number }` rather than the caller's type"
+        "You can read `.length` in the body while still returning the caller's exact type `T`",
+        "It makes the function run a runtime check that both arguments have a `length`",
+        "`any` would reject arrays, which lack a structural `length` property",
+        "It forces both arguments to be exactly `{ length: number }`, not the caller's type"
       ],
       "answer": 0,
       "explanation": "A constraint lets you safely touch known members (`.length`) while the return type still tracks the caller's concrete `T`. `any` would let you touch anything but erase the return type and disable checking. There is no runtime validation, and the return is the precise `T`, not the bound."
@@ -67,10 +67,10 @@
       "code": "class Registry<T> {\n  static last: T; // Error\n  items: T[] = [];\n}",
       "lang": "typescript",
       "options": [
-        "Statics belong to the class itself and are shared across all instantiations, so there is no single `T` for them",
+        "Statics belong to the class itself and are shared across all instantiations, so there is no single `T`",
         "Static members are evaluated before the type parameter is bound, causing a temporal dead zone",
         "TypeScript only allows type parameters on instance methods, never on fields of any kind",
-        "The `static` keyword erases the type parameter, leaving `T` as `any` which is disallowed in strict mode"
+        "The `static` keyword erases the type parameter, leaving `T` as `any`, which strict mode disallows"
       ],
       "answer": 0,
       "explanation": "The type parameter is per-instance; statics are shared across every instantiation, so there is no single `T` they could refer to. Instance members (fields and methods) can use `T` freely; only static members cannot."
@@ -82,7 +82,7 @@
       "type": "truefalse",
       "question": "A method inside a generic class can declare its own fresh type parameter (e.g. `map<U>`) that is independent of the class's type parameter.",
       "answer": true,
-      "explanation": "Methods can introduce their own type parameters independent of the class's. In the reviewer's `Box<T>`, `map<U>(fn: (t: T) => U): Box<U>` adds a fresh `U` while still using the class's `T`."
+      "explanation": "Methods can introduce their own type parameters independent of the class's. In a `Box<T>`, a method `map<U>(fn: (t: T) => U): Box<U>` adds a fresh `U` while still using the class's `T`."
     },
     {
       "subtopic": "Const-vs-let inference",
@@ -108,7 +108,7 @@
       "type": "mcq",
       "question": "Given `function parseJson<T>(text: string): T { return JSON.parse(text) as T; }`, why is `const u1 = parseJson(\"{}\")` inferred as `unknown`?",
       "options": [
-        "`T` appears only in the return position, so there is no argument value for the compiler to infer it from, and it falls back to its default",
+        "`T` appears only in the return position, so there is no argument value to infer it from, and it falls back to its default",
         "`JSON.parse` always returns `unknown`, which overrides any inferred `T`",
         "The `as T` cast is illegal, so the compiler discards `T` and substitutes `unknown`",
         "`text: string` widens `T` to `unknown` because string arguments cannot carry type information"
@@ -155,9 +155,9 @@
       "source": "typescript/generics-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "According to the 'appears at least twice' heuristic, why is `<T>` pointless in `function size<T>(x: T[]): number { return x.length; }`?",
+      "question": "By the 'appears at least twice' heuristic, why is `<T>` pointless in `function size<T>(x: T[]): number { return x.length; }`?",
       "options": [
-        "`T` appears in only one position and never links to the return or another parameter, so it constrains nothing",
+        "`T` appears in only one position and never links to the return or another parameter",
         "`T` cannot be used with `.length` because arrays are not generic over their element type",
         "`T` shadows the built-in array element type, which is a compile error",
         "`T` must always appear in the return type or the function will not type-check"
@@ -194,7 +194,7 @@
       "code": "class Shape { area = 0; }\nclass Circle extends Shape { radius = 1; }\nconst circles: Circle[] = [new Circle()];\nconst shapes: Shape[] = circles;\nshapes.push(new Shape());",
       "lang": "typescript",
       "options": [
-        "It compiles; because the arrays alias the same object, `circles` now holds a plain `Shape`, so a later `circles[1].radius` reads `undefined`",
+        "It compiles; the arrays alias the same object, so `circles` now holds a plain `Shape` and `circles[1].radius` reads `undefined`",
         "It fails to compile because arrays are invariant, so `Circle[]` is not assignable to `Shape[]`",
         "It compiles and is safe because `push` is checked contravariantly on the element type",
         "It fails to compile because `shapes.push(new Shape())` violates the readonly inference of `circles`"

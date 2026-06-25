@@ -236,9 +236,9 @@
       "lang": "typescript",
       "options": [
         "Method-shorthand parameters are checked bivariantly (a legacy carve-out), but `strictFunctionTypes` checks function-type-property parameters contravariantly, rejecting the narrower `Dog` parameter",
-        "Line B errors because `Dog` is not a subtype of `Animal`",
-        "Method shorthand is checked contravariantly while function-type properties are bivariant, so only line B is rejected",
-        "Both forms are bivariant, but `strictFunctionTypes` only applies to top-level function declarations, so line B's nested property is rejected"
+        "Line B errors because `Dog` is not a subtype of `Animal`, so a `Dog`-taking handler cannot satisfy an `Animal`-taking property under `strict`",
+        "Method shorthand is checked contravariantly while function-type properties are checked bivariantly, so only line B's looser property position is rejected",
+        "Both syntaxes are bivariant, but `strictFunctionTypes` applies only to top-level function declarations, so line B's nested object property is the one rejected"
       ],
       "answer": 0,
       "explanation": "`strictFunctionTypes` (part of `strict`) tightens *function-type-property* parameters to be contravariant, rejecting a handler that needs a narrower `Dog` where one taking any `Animal` is expected (line B). *Method-shorthand* parameters intentionally stay bivariant (line A). The mnemonic is: arrow property = strict, method shorthand = loose."

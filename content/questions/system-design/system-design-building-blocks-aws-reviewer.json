@@ -54,7 +54,7 @@
       "type": "truefalse",
       "question": "Amazon S3 is designed for 11 nines (99.999999999%) of durability for objects.",
       "answer": true,
-      "explanation": "The reviewer cites S3's canonical designed durability of 11 nines. Durability (not availability) is the figure quoted, reflecting redundant storage of each object."
+      "explanation": "S3's canonical designed durability is 11 nines. Durability (not availability) is the figure quoted, reflecting redundant storage of each object across multiple devices."
     },
     {
       "subtopic": "Well-Architected pillars",
@@ -169,7 +169,7 @@
       "type": "truefalse",
       "question": "DynamoDB Global Tables are multi-Region, multi-active and offer only eventual consistency, with no strong-consistency option.",
       "answer": false,
-      "explanation": "Global Tables are multi-Region multi-active and default to eventual consistency, but the reviewer notes an optional strong-consistency mode exists. Claiming they are eventually consistent only is explicitly flagged as a red flag."
+      "explanation": "Global Tables are multi-Region multi-active and default to eventual consistency, but an optional strong-consistency mode exists. Claiming they are eventually consistent only is incorrect."
     },
     {
       "subtopic": "Edge compute functions",
@@ -209,7 +209,7 @@
       "type": "truefalse",
       "question": "Per current AWS guidance, every AWS Region has 3 or more independent Availability Zones, and spreading a tier across them is the primary intra-region HA mechanism — to be exhausted before reaching for multi-region.",
       "answer": true,
-      "explanation": "The reviewer states every Region has 3+ AZs and that Multi-AZ is the primary intra-region HA mechanism, with multi-region added only after. The older '2 AZs per Region' claim is explicitly called stale, and reaching for multi-region before Multi-AZ is a red flag."
+      "explanation": "Every Region has 3+ AZs, and Multi-AZ is the primary intra-region HA mechanism, with multi-region added only after. The older '2 AZs per Region' claim is stale, and reaching for multi-region before Multi-AZ is a known anti-pattern."
     },
     {
       "subtopic": "RCP vs SCP intersection",
@@ -218,9 +218,9 @@
       "type": "mcq",
       "question": "An S3 bucket's resource policy allows a partner's cross-account principal, but an **RCP** on the account denies access to all principals outside the organization. The partner is external. What is the net result and why?",
       "options": [
-        "Access is denied, because effective access is the intersection of RCPs with identity/resource policies, and the RCP excludes external principals",
-        "Access is allowed, because a resource (bucket) policy that explicitly allows a principal overrides an RCP",
-        "Access is denied, because SCPs always block cross-account access regardless of RCPs",
+        "Access is denied, because effective access is the intersection of policies and the RCP excludes external principals",
+        "Access is allowed, because a bucket resource policy that explicitly allows a principal overrides an RCP",
+        "Access is denied, because SCPs always block cross-account access regardless of any RCPs",
         "Access is allowed, because RCPs only restrict principals inside the organization's own accounts"
       ],
       "answer": 0,
@@ -231,7 +231,7 @@
       "source": "system-design/system-design-building-blocks-aws-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A reviewer flags the snippet below before it ships. Per the basic-level AWS security pattern, what is the correct fix?",
+      "question": "The snippet below is flagged before it ships. Per the basic-level AWS security pattern, what is the correct fix?",
       "code": "TaskDefinition:\n  ContainerDefinitions:\n    - Name: api\n      Image: 123.dkr.ecr.amazonaws.com/api:latest\n      Environment:\n        - Name: AWS_ACCESS_KEY_ID\n          Value: AKIA...EXAMPLE\n        - Name: AWS_SECRET_ACCESS_KEY\n          Value: wJalr...EXAMPLE\n        - Name: DB_PASSWORD\n          Value: hunter2",
       "lang": "yaml",
       "options": [

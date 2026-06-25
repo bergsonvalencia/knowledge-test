@@ -7,7 +7,7 @@
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "The reviewer groups the ten patterns into three families with the mnemonic **Create, Compose, Communicate**. Which family is concerned with *how objects are composed into larger structures while staying flexible*?",
+      "question": "The ten patterns are grouped into three families with the mnemonic **Create, Compose, Communicate**. Which family is concerned with *how objects are composed into larger structures while staying flexible*?",
       "options": [
         "Structural",
         "Creational",
@@ -25,9 +25,9 @@
       "question": "In the C# Singleton example, why is the `Logger` constructor declared `private`?",
       "options": [
         "So external callers cannot `new` the class and must go through the single static access point",
-        "So the class can be inherited but not instantiated directly",
-        "To make the type thread-safe without any further mechanism",
-        "Because `Lazy<T>` requires the constructor to be private"
+        "So the class can be inherited but not instantiated directly from outside",
+        "To make the type thread-safe without any further mechanism being needed",
+        "Because `Lazy<T>` requires the wrapped type's constructor to be private"
       ],
       "answer": 0,
       "explanation": "A private constructor blocks external `new`, forcing all callers through `Instance` so there is exactly one shared instance. A private constructor actually prevents inheritance-based instantiation rather than enabling it, and `Lazy<T>` does not require a private constructor."
@@ -37,15 +37,15 @@
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "According to the distinguishing question, what is the core difference between Factory and Builder?",
+      "question": "What is the core difference between Factory and Builder?",
       "options": [
         "Factory chooses *which* type to instantiate in one step; Builder assembles *one* complex object step by step",
-        "Factory produces immutable objects; Builder produces mutable objects",
-        "Factory is a Structural pattern; Builder is a Behavioral pattern",
-        "Factory always uses subclassing; Builder always uses a static method"
+        "Factory produces only immutable objects, whereas Builder produces only mutable objects",
+        "Factory is a Structural pattern, whereas Builder is a Behavioral pattern",
+        "Factory always relies on subclassing, whereas Builder always uses a static method"
       ],
       "answer": 0,
-      "explanation": "The reviewer frames it as 'Am I choosing a type, or assembling parts?' — Factory picks a concrete type in one step, Builder assembles one object piece by piece. Both are Creational, and neither is tied to mutability or a fixed implementation mechanism."
+      "explanation": "The distinguishing question is 'Am I choosing a type, or assembling parts?' — Factory picks a concrete type in one step, Builder assembles one object piece by piece. Both are Creational, and neither is tied to mutability or a fixed implementation mechanism."
     },
     {
       "subtopic": "Strategy",
@@ -54,14 +54,14 @@
       "type": "truefalse",
       "question": "In the Strategy pattern, the Context delegates the work to a strategy reference without knowing which concrete strategy implementation it received.",
       "answer": true,
-      "explanation": "The reviewer states the Context 'holds a strategy reference and delegates the work to it, oblivious to which concrete one it got' — the concrete choice is made by the client/DI container at composition time."
+      "explanation": "The Context holds a strategy reference and delegates the work to it, oblivious to which concrete one it got — the concrete choice is made by the client/DI container at composition time."
     },
     {
       "subtopic": "Facade",
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Which .NET type does the reviewer cite as a Facade that fronts the change tracker, query pipeline, and connection management?",
+      "question": "Which .NET type is cited as a Facade that fronts the change tracker, query pipeline, and connection management?",
       "options": [
         "`DbContext`",
         "`StringBuilder`",
@@ -69,37 +69,37 @@
         "`IComparer<T>`"
       ],
       "answer": 0,
-      "explanation": "The reviewer names `DbContext` (and `HttpClient`) as Facades over complex subsystems. `StringBuilder` is the Builder example, `Lazy<T>` is used for Singleton, and `IComparer<T>` is the Strategy example."
+      "explanation": "`DbContext` (and `HttpClient`) are Facades over complex subsystems. `StringBuilder` is the Builder example, `Lazy<T>` is used for Singleton, and `IComparer<T>` is the Strategy example."
     },
     {
       "subtopic": "Singleton trade-offs",
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer recommends that, in modern .NET, you usually get your single shared instance not via a static `Instance` property but by registering the type with a Singleton lifetime in the DI container. What is the primary advantage of doing so?",
+      "question": "In modern .NET you usually obtain a single shared instance not via a static `Instance` property but by registering the type with a Singleton lifetime in the DI container. What is the primary advantage of doing so?",
       "options": [
-        "The dependency becomes injected and mockable instead of hidden global state that is hard to test and defeats DIP",
-        "The DI container guarantees the object is created eagerly at startup, improving cold-start latency",
+        "The dependency becomes injected and mockable instead of hidden global state that defeats DIP",
+        "The container guarantees the object is eagerly created at startup, improving cold-start latency",
         "It removes the need for the type to be thread-safe, since the container serializes all access",
-        "It allows multiple instances to be created on demand while still appearing as one"
+        "It lets multiple instances be created on demand while still appearing as a single one"
       ],
       "answer": 0,
-      "explanation": "The reviewer's point is that a static `Instance` is hidden global state that hard-wires dependencies, defeats DIP, and is hard to mock; a DI-registered singleton is injected and mockable. The container does not eager-create by default, does not make the type inherently thread-safe for its own state, and a singleton still means one instance."
+      "explanation": "A static `Instance` is hidden global state that hard-wires dependencies, defeats DIP, and is hard to mock; a DI-registered singleton is injected and mockable. The container does not eager-create by default, does not make the type inherently thread-safe for its own state, and a singleton still means one instance."
     },
     {
       "subtopic": "Adapter scope creep",
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer warns that an Adapter that does more than translate has 'drifted into Decorator or Proxy territory'. Which added responsibility would still be legitimate for an Adapter?",
+      "question": "An Adapter that does more than translate has 'drifted into Decorator or Proxy territory'. Which added responsibility would still be legitimate for an Adapter?",
       "options": [
         "Reshaping a method signature, e.g. converting a dollars-based call into the adaptee's cents-based call",
-        "Caching the results of the wrapped object's calls",
-        "Enforcing access control before delegating to the wrapped object",
-        "Adding logging behavior around the wrapped object's calls"
+        "Caching the results returned by the wrapped object's calls",
+        "Enforcing access control checks before delegating to the wrapped object",
+        "Adding logging behavior around each of the wrapped object's calls"
       ],
       "answer": 0,
-      "explanation": "Pure interface/signature translation (dollars to cents, like `StripeAdapter`) is the Adapter's job. Caching and access control are Proxy concerns; adding behavior such as logging is Decorator territory — the reviewer explicitly flags these as drift."
+      "explanation": "Pure interface/signature translation (dollars to cents, like `StripeAdapter`) is the Adapter's job. Caching and access control are Proxy concerns; adding behavior such as logging is Decorator territory — these are all scope-creep drift."
     },
     {
       "subtopic": "Proxy vs Decorator",
@@ -109,9 +109,9 @@
       "question": "Proxy 'shares Decorator's exact shape'. What distinguishes Proxy from Decorator?",
       "options": [
         "Intent: Proxy's purpose is to *control access* (lazy, security, caching, remoting), whereas Decorator's is to *add behavior*",
-        "Proxy implements a different interface than the wrapped object; Decorator keeps the same interface",
-        "Proxy can only wrap one object, while a Decorator can wrap many",
-        "Proxy is a Creational pattern, while Decorator is Structural"
+        "Proxy implements a different interface than the wrapped object, while Decorator keeps the same one",
+        "Proxy can only ever wrap a single object, whereas a Decorator can wrap many at once",
+        "Proxy is a Creational pattern, whereas Decorator is a Structural pattern"
       ],
       "answer": 0,
       "explanation": "Both keep the same interface and wrap a single object, so the difference is intent: Proxy controls access; Decorator adds behavior. Proxy keeps the same interface (it doesn't convert it like Adapter), and Decorator is not Creational."
@@ -134,7 +134,7 @@
         1,
         2
       ],
-      "explanation": "The reviewer lists the memory leak from missed unsubscription, non-deterministic notification order, and a slow/throwing observer stalling the broadcast. The subject depends only on the observer abstraction (not concrete types), and Observer is one-to-many broadcast — not many-to-many coordination (that is Mediator)."
+      "explanation": "Genuine pitfalls are the memory leak from missed unsubscription, non-deterministic notification order, and a slow/throwing observer stalling the broadcast. The subject depends only on the observer abstraction (not concrete types), and Observer is one-to-many broadcast — not many-to-many coordination (that is Mediator)."
     },
     {
       "subtopic": "Command pattern code reading",
@@ -158,7 +158,7 @@
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer distinguishes Factory variants. Which description correctly matches **Abstract Factory**?",
+      "question": "Among the Factory variants, which description correctly matches **Abstract Factory**?",
       "options": [
         "One factory builds a *family* of related products",
         "A subclass overrides the creation step to decide the concrete type",
@@ -192,17 +192,17 @@
       "type": "truefalse",
       "question": "In the Builder example, `Build()` is the terminal step that validates the accumulated parts (e.g. throwing if the URL is empty) and returns the finished, often immutable, product.",
       "answer": true,
-      "explanation": "The reviewer describes `Build()` as the terminal step that validates and returns the finished product; the example throws `InvalidOperationException` when the URL is missing and returns an immutable `record`."
+      "explanation": "`Build()` is the terminal step that validates and returns the finished product; the example throws `InvalidOperationException` when the URL is missing and returns an immutable `record`."
     },
     {
       "subtopic": "Mediator vs Observer vs Facade",
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A team has many UI components that must react to each other's changes — selecting a value in one re-filters several others, and toggles enable/disable still more, with the rules spread across pairwise event handlers. Per the distinctions, which pattern best replaces this tangle?",
+      "question": "A team has many UI components that must react to each other's changes — selecting a value in one re-filters several others, and toggles enable/disable still more, with the rules spread across pairwise event handlers. Which pattern best replaces this tangle?",
       "options": [
         "Mediator — centralize the many-to-many coordination logic in one hub the colleagues talk through",
-        "Observer — have each component broadcast one-to-many to subscribers",
+        "Observer — have each component broadcast one-to-many to its subscribers",
         "Facade — put a single simplified entry point in front of the components",
         "Strategy — inject interchangeable algorithms for each component's behavior"
       ],
@@ -216,10 +216,10 @@
       "type": "mcq",
       "question": "The `Logger` uses `private static readonly Lazy<Logger> _lazy = new(() => new Logger());`. Why does this give thread-safe lazy initialization without hand-written double-checked locking?",
       "options": [
-        "`Lazy<T>` uses thread-safe publication by default, so the runtime serializes the factory and ensures the value is created at most once",
+        "`Lazy<T>` uses thread-safe publication by default, so the runtime serializes the factory and creates the value at most once",
         "`static readonly` fields are inherently immutable, so no synchronization of the instance is ever needed",
-        "Marking the class `sealed` prevents subclasses from racing on construction",
-        "`Console.WriteLine` inside `Log` acquires a lock that protects the instance"
+        "Marking the class `sealed` prevents subclasses from racing on construction of the instance",
+        "`Console.WriteLine` inside `Log` acquires a lock that ends up protecting the instance"
       ],
       "answer": 0,
       "explanation": "`Lazy<T>` defaults to `LazyThreadSafetyMode.ExecutionAndPublication`, so the runtime serializes the value factory and guarantees a single instance — replacing hand-written double-checked locking. `static readonly` only fixes the `Lazy<T>` reference, not the lazy creation of the inner value; `sealed` and `Console.WriteLine`'s locking are irrelevant to instance creation safety."
@@ -233,10 +233,10 @@
       "code": "public string Read(string user)\n{\n    if (!allowed.Contains(user)) throw new UnauthorizedAccessException(user);\n    _real ??= new RealReport();   // lazy: no DB hit until someone is let in\n    return _real.Read(user);\n}",
       "lang": "csharp",
       "options": [
-        "It throws `UnauthorizedAccessException` before `_real` is assigned, so `RealReport` (the DB load) is never constructed for an unauthorized caller",
-        "It constructs `RealReport` first, then throws, so the DB is hit even for unauthorized callers",
+        "It throws `UnauthorizedAccessException` before `_real` is assigned, so `RealReport` (the DB load) is never constructed",
+        "It constructs `RealReport` first and only then throws, so the DB is hit even for unauthorized callers",
         "It returns `\"Q2 financials\"` because the proxy delegates regardless of the allow-list",
-        "It throws a `NullReferenceException` because `_real` is still null"
+        "It throws a `NullReferenceException` because `_real` is still null at that point"
       ],
       "answer": 0,
       "explanation": "The guard runs first and throws for a disallowed user, so the `_real ??= new RealReport()` line is never reached — the expensive load is skipped. This is the point of combining the protection and virtual proxy: no DB hit until an authorized caller arrives."
@@ -246,7 +246,7 @@
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "The reviewer disambiguates Strategy, State, and Command (noting State is not one of the 10). Which statements are accurate per the reviewer? (Select all that apply.)",
+      "question": "Considering the distinctions between Strategy, State, and Command (where State is not one of the 10), which statements are accurate? (Select all that apply.)",
       "options": [
         "Strategy is an interchangeable *algorithm* the client picks at composition time",
         "State is behavior that changes as the object's internal state transitions — the object swaps its *own* strategy",
@@ -259,14 +259,14 @@
         1,
         2
       ],
-      "explanation": "The reviewer defines Strategy as a client-picked algorithm, State as self-changing behavior across transitions, and Command as a storable/undoable request. Undo/redo via a history stack is a Command benefit, not Strategy; and selecting among sorting algorithms is Strategy's job, not Command's."
+      "explanation": "Strategy is a client-picked algorithm, State is self-changing behavior across transitions, and Command is a storable/undoable request. Undo/redo via a history stack is a Command benefit, not Strategy; and selecting among sorting algorithms is Strategy's job, not Command's."
     },
     {
       "subtopic": "Factory and DIP",
       "source": "software-design/design-patterns-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer says Factory 'pairs so naturally with DI and DIP' and that a DI container 'is itself just a configurable factory'. Which statement best captures the shared principle that makes this pairing natural?",
+      "question": "Factory 'pairs so naturally with DI and DIP', and a DI container 'is itself just a configurable factory'. Which statement best captures the shared principle that makes this pairing natural?",
       "options": [
         "Both keep callers depending on an abstraction and never on a `new` of a concrete type",
         "Both guarantee exactly one instance of each registered type is ever created",
@@ -274,7 +274,7 @@
         "Both assemble a single complex object step by step before returning it"
       ],
       "answer": 0,
-      "explanation": "The reviewer's point is that Factory and DI/DIP both keep callers depending on an abstraction rather than on a `new ConcreteType()`. Singleton lifetime (one instance) is a separate concern, DI relies on abstractions rather than eliminating interfaces, and step-by-step assembly is Builder."
+      "explanation": "Factory and DI/DIP both keep callers depending on an abstraction rather than on a `new ConcreteType()`. Singleton lifetime (one instance) is a separate concern, DI relies on abstractions rather than eliminating interfaces, and step-by-step assembly is Builder."
     }
   ]
 }

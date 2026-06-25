@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "Which statement best captures the difference between a **command** and an **event** in EDA?",
       "options": [
-        "A command is a request aimed at exactly one receiver that can reject it; an event is a past-tense fact whose producer doesn't know who consumes it",
-        "A command is always asynchronous while an event is always synchronous",
-        "A command can have many consumers while an event must have exactly one",
-        "A command travels over HTTP while an event must travel over a message broker"
+        "A command is a request aimed at one receiver that can reject it; an event is a past-tense fact whose producer doesn't know who consumes it",
+        "A command is always asynchronous, whereas an event is always delivered synchronously to its handler",
+        "A command may have many consumers, whereas an event must have exactly one named consumer",
+        "A command always travels over HTTP, whereas an event must always travel over a message broker"
       ],
       "answer": 0,
       "explanation": "The distinction is about intent and ownership of the decision: a command is imperative, directed at one receiver that can refuse it; an event is a fact that already happened with zero-to-many unknown consumers. Transport (HTTP vs broker, sync vs async) is orthogonal — the same queue can carry both."
@@ -33,9 +33,9 @@
       "type": "mcq",
       "question": "In **event-carried state transfer (ECST)**, what is the primary benefit compared with thin event notifications?",
       "options": [
-        "It removes the runtime callback dependency on the producer because consumers keep a local copy of the data they need",
-        "It eliminates data duplication across services",
-        "It guarantees strong consistency across all consumer copies",
+        "It removes the runtime callback dependency on the producer because consumers keep a local copy of the data",
+        "It eliminates data duplication across the services that consume the event",
+        "It guarantees strong consistency across every consumer's local copy",
         "It makes the event log the single source of truth for the whole system"
       ],
       "answer": 0,
@@ -48,10 +48,10 @@
       "type": "mcq",
       "question": "What is the difference between a **topic** and a **queue** in messaging?",
       "options": [
-        "A topic fans out a copy to every subscription; a queue delivers each message to exactly one of the competing consumers",
+        "A topic fans out a copy to every subscription; a queue delivers each message to one competing consumer",
         "A topic delivers each message to exactly one consumer; a queue fans out copies to all consumers",
-        "A topic guarantees global ordering while a queue does not",
-        "A topic stores messages durably while a queue is always in-memory only"
+        "A topic guarantees global ordering of messages, whereas a queue gives no ordering at all",
+        "A topic stores messages durably on disk, whereas a queue is always held only in memory"
       ],
       "answer": 0,
       "explanation": "Topic = pub/sub fan-out, where each subscription receives its own copy. Queue = point-to-point, where one message is consumed by exactly one of the competing consumers. Ordering and durability are separate concerns unrelated to the topic-vs-queue distinction."
@@ -61,11 +61,11 @@
       "source": "architecture/event-driven-architecture-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "The reviewer says \"effectively-once\" processing is achieved by combining which two things?",
+      "question": "\"Effectively-once\" processing is achieved by combining which two things?",
       "options": [
         "At-least-once delivery plus idempotent consumer processing",
         "Exactly-once broker delivery plus a distributed 2PC transaction",
-        "At-most-once delivery plus a retry limit",
+        "At-most-once delivery plus a per-consumer retry limit",
         "Global topic ordering plus a dead-letter queue"
       ],
       "answer": 0,
@@ -79,9 +79,9 @@
       "question": "A team complains they can never tell \"where the order got stuck\" in a multi-service flow, and there is no single place describing the end-to-end process. Which coordination style are they most likely using, and what is the standard mitigation?",
       "options": [
         "Choreography — the flow is implicit/emergent, so add correlation ids and distributed tracing to follow it",
-        "Orchestration — the central coordinator hides the flow, so remove it to make steps visible",
-        "Choreography — switch to at-most-once delivery to reduce noise in the logs",
-        "Orchestration — the orchestrator is a SPOF, so the fix is to add more partitions"
+        "Orchestration — the central coordinator hides the flow, so remove it to make the steps visible again",
+        "Choreography — switch to at-most-once delivery to cut the noise that hides the flow in the logs",
+        "Orchestration — the orchestrator is a SPOF, so the fix is to add more broker partitions"
       ],
       "answer": 0,
       "explanation": "Choreography spreads control across reacting services so no single place describes the flow, making 'where did it get stuck?' hard. The mitigation is correlation/causation ids and distributed tracing. Orchestration is the style that centralizes and exposes the flow, so it's not the cause here."
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "A service calls `SaveChanges()` to its DB and then `bus.Publish(orderPlaced)`. Occasionally an order exists with no `OrderPlaced` event downstream. What is the anti-pattern, and what makes the transactional outbox fix it?",
       "options": [
-        "The dual-write problem; the outbox inserts the event in the same local DB transaction as the business write, so one DB transaction is the single point of atomicity",
-        "A poison message; the outbox routes failed publishes to a dead-letter queue",
-        "A race condition in the broker; the outbox enables exactly-once delivery end-to-end",
-        "Lost updates; the outbox holds a distributed 2PC transaction across the DB and broker"
+        "The dual-write problem; the outbox inserts the event in the same DB transaction as the business write, so one transaction is the single point of atomicity",
+        "A poison message; the outbox routes the failed publish attempts to a dead-letter queue for later retry",
+        "A race condition in the broker; the outbox enables true exactly-once delivery end-to-end across the flow",
+        "Lost updates; the outbox holds a distributed 2PC transaction spanning the DB and the broker together"
       ],
       "answer": 0,
       "explanation": "Two non-atomic writes (DB then broker) is the dual-write problem — a crash between them leaves them inconsistent. The outbox writes the event into an outbox table in the same DB transaction, so the single DB transaction provides atomicity. It explicitly avoids 2PC and does not give end-to-end exactly-once."
@@ -117,10 +117,10 @@
       "type": "mcq",
       "question": "When building a dedup/inbox table to drop duplicate deliveries, which identifier should you key on?",
       "options": [
-        "A stable producer-assigned message id (e.g. the outbox row id)",
+        "A stable producer-assigned message id, such as the outbox row id",
         "The broker's per-delivery id, which is unique to each delivery attempt",
-        "A hash of the entire payload recomputed on each receipt",
-        "The consumer's local timestamp at the moment of processing"
+        "A hash of the entire payload, recomputed fresh on each receipt",
+        "The consumer's local timestamp at the moment it processes the message"
       ],
       "answer": 0,
       "explanation": "Dedup needs a key that is stable across redeliveries; the producer-assigned MessageId (such as the outbox row id) stays constant. The broker's delivery id changes on each redelivery, so deduplicating on it would let duplicates slip through."
@@ -135,9 +135,9 @@
       "lang": "sql",
       "options": [
         "Record the processed MessageId in an inbox table and apply the increment in the same transaction, skipping if the id was already seen",
-        "Switch the broker to at-most-once delivery so duplicates can never arrive",
-        "Move the increment outside the transaction so it commits faster",
-        "Add a retry limit so the message is dead-lettered after the first attempt"
+        "Switch the broker over to at-most-once delivery so that duplicate messages can never arrive at the consumer",
+        "Move the increment outside the surrounding transaction so that it commits faster and holds no locks",
+        "Add a retry limit so that the message is dead-lettered immediately after its very first attempt"
       ],
       "answer": 0,
       "explanation": "`balance += 10` is not naturally idempotent, so a duplicate double-applies. Deduplicating on a stable MessageId in an inbox table — inserting the id and applying the effect in one transaction — makes replays no-ops. At-most-once risks data loss, and the other options don't address duplicate processing."
@@ -149,10 +149,10 @@
       "type": "mcq",
       "question": "Orders for a given customer must be processed strictly in the sequence they were placed, but the topic gives no global ordering. What is the standard approach?",
       "options": [
-        "Route all of a customer's events to the same partition key / session (e.g. `CustomerId`) so they serialize, while different customers still process in parallel",
-        "Disable parallel consumers entirely so the whole topic is single-threaded",
-        "Rely on the broker's global topic ordering, which is guaranteed by default",
-        "Use at-most-once delivery so retries can never reorder messages"
+        "Route all of one customer's events to the same partition key / session (e.g. `CustomerId`) so they serialize, while other customers still run in parallel",
+        "Disable parallel consumers entirely so that the whole topic is processed by a single thread",
+        "Rely on the broker's global topic ordering, which every broker guarantees by default",
+        "Use at-most-once delivery so that retries can never reorder the customer's messages"
       ],
       "answer": 0,
       "explanation": "Brokers order only within a partition/session, so routing by CustomerId serializes one customer's events to a single consumer while preserving cross-customer parallelism. Global topic ordering is not guaranteed, and single-threading the whole topic needlessly destroys throughput."
@@ -180,10 +180,10 @@
       "type": "mcq",
       "question": "Your Ordering context raises an internal `OrderConfirmed` domain event handled in the same transaction. A separate Marketing service now wants to react. How should you expose it?",
       "options": [
-        "Translate it into a versioned integration event (e.g. `OrderConfirmedIntegrationEvent`) published to the broker, keeping the domain event free to change internally",
+        "Translate it into a versioned integration event (e.g. `OrderConfirmedIntegrationEvent`) published to the broker",
         "Publish the internal `OrderConfirmed` domain event directly onto the bus as the cross-service contract",
-        "Have Marketing query the Ordering database directly for confirmed orders",
-        "Make `OrderConfirmed` synchronous and call Marketing inline before committing"
+        "Have Marketing query the Ordering service's database directly for confirmed orders",
+        "Make `OrderConfirmed` synchronous and call Marketing inline before the transaction commits"
       ],
       "answer": 0,
       "explanation": "Leaking a domain event onto the bus makes internal refactors break every external consumer. Translate domain → integration at the boundary into a versioned, backward-compatible public contract delivered with eventual consistency. The domain event stays internal and free to change."
@@ -238,9 +238,9 @@
       "question": "Comparing a **change-data-capture (CDC)** outbox relay with a **polling** relay, which characterization is correct?",
       "options": [
         "CDC tails the transaction log to avoid polling overhead and reduce lag, while polling is simpler but adds latency and load",
-        "CDC requires a distributed 2PC transaction across the DB and broker, while polling avoids it",
-        "Polling guarantees exactly-once publication, while CDC is only at-least-once",
-        "CDC eliminates the need for a stable message id, while polling requires one"
+        "CDC requires a distributed 2PC transaction across the DB and broker, whereas polling avoids needing 2PC",
+        "Polling guarantees exactly-once publication of each event, whereas CDC can only manage at-least-once",
+        "CDC removes the need for any stable message id on the event, whereas polling still requires one"
       ],
       "answer": 0,
       "explanation": "CDC tails the DB log so it avoids polling overhead and lag; polling is simpler to build but adds latency and load. Either approach is still at-least-once and carries a stable message id for dedup; neither uses 2PC."
@@ -253,8 +253,8 @@
       "question": "A team chose thin **event notifications** (id only) to keep messages small and coupling low. What hidden downside does this specifically reintroduce that ECST avoids?",
       "options": [
         "A runtime query dependency, because consumers must call back to the producer for details",
-        "Unbounded data duplication, because every consumer stores a full local copy",
-        "A loss of audit history, because notifications cannot be replayed",
+        "Unbounded data duplication, because every consumer now stores a full local copy",
+        "A loss of audit history, because thin notifications cannot be replayed later",
         "Strong consistency, because the callback forces a synchronous write path"
       ],
       "answer": 0,

@@ -15,7 +15,7 @@
         "It has fewer than a fixed number of lines of code"
       ],
       "answer": 0,
-      "explanation": "The reviewer stresses the boundary is the unit of independence: a service is worth carving out only if it can change, deploy, fail, and scale on its own. Polyglot stacks and REST are possible consequences, not the defining property, and size is not a defining metric."
+      "explanation": "The boundary is the unit of independence: a service is worth carving out only if it can change, deploy, fail, and scale on its own. Polyglot stacks and REST are possible consequences, not the defining property, and size is not a defining metric."
     },
     {
       "subtopic": "Why microservices",
@@ -54,7 +54,7 @@
       "type": "truefalse",
       "question": "A 'distributed monolith' — services that must be deployed together and share a database — is considered worse than either a clean monolith or true microservices.",
       "answer": true,
-      "explanation": "The reviewer calls the distributed monolith the anti-pattern: you pay every network cost while keeping every coupling cost, making it worse than either pure option."
+      "explanation": "The distributed monolith is the classic anti-pattern: you pay every network cost while keeping every coupling cost, making it worse than either pure option."
     },
     {
       "subtopic": "Circuit Breaker states",
@@ -106,7 +106,7 @@
       "source": "architecture/microservices-architecture-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Select all reasons the reviewer gives for avoiding Two-Phase Commit (2PC/XA) across microservices.",
+      "question": "Select all reasons Two-Phase Commit (2PC/XA) is generally avoided across microservices.",
       "options": [
         "Participants hold locks through the prepare phase, so a stalled coordinator blocks everyone and sacrifices availability",
         "Cross-technology distributed-transaction support is patchy and slow, and many brokers/cloud stores don't support it",
@@ -119,7 +119,7 @@
         1,
         2
       ],
-      "explanation": "The reviewer lists blocking/coupling (locks through prepare), poor scaling and weak cross-technology support, and violation of autonomy. 2PC is unrelated to message delivery semantics, and it coordinates separate stores rather than requiring one shared database."
+      "explanation": "The real reasons are blocking/coupling (locks held through prepare), poor scaling and weak cross-technology support, and violation of autonomy. 2PC is unrelated to message delivery semantics, and it coordinates separate stores rather than requiring one shared database."
     },
     {
       "subtopic": "Saga compensation",
@@ -149,7 +149,7 @@
         "Having the consumer poll the producer's database directly to detect new business changes"
       ],
       "answer": 0,
-      "explanation": "The outbox writes the event atomically with the business change in one local transaction; a separate relay/poller publishes and marks rows sent, retrying until success (at-least-once). It deliberately avoids 2PC across DB and broker, which the reviewer says you cannot do."
+      "explanation": "The outbox writes the event atomically with the business change in one local transaction; a separate relay/poller publishes and marks rows sent, retrying until success (at-least-once). It deliberately avoids 2PC across DB and broker, which is not possible."
     },
     {
       "subtopic": "Idempotent consumer",
@@ -158,7 +158,7 @@
       "type": "truefalse",
       "question": "Because most brokers deliver at-least-once, an 'exactly-once' end-to-end effect is achieved by combining at-least-once delivery with idempotent consumer processing, not by the broker alone.",
       "answer": true,
-      "explanation": "The reviewer states exactly-once is effectively at-least-once delivery plus idempotent processing. Consumers must dedupe (inbox table / unique constraint) since duplicates are expected."
+      "explanation": "Exactly-once is effectively at-least-once delivery plus idempotent processing. Consumers must dedupe (inbox table / unique constraint) since duplicates are expected."
     },
     {
       "subtopic": "Service Bus PeekLock",
@@ -180,7 +180,7 @@
       "source": "architecture/microservices-architecture-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Match the workload to the right Azure messaging service per the reviewer. Select all correct pairings.",
+      "question": "Match each workload to the right Azure messaging service. Select all correct pairings.",
       "options": [
         "High-throughput telemetry ingestion with replay by offset → Event Hubs / Kafka",
         "Commands and work requiring ordering, sessions, transactions, and a DLQ → Service Bus",
@@ -217,7 +217,7 @@
       "source": "architecture/microservices-architecture-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer recommends a typical nesting order for resilience strategies around a remote call. From the call outward, which order is correct?",
+      "question": "What is the typical nesting order for resilience strategies around a remote call, from the call outward?",
       "options": [
         "timeout → retry → circuit breaker → fallback (outermost)",
         "fallback → timeout → retry → circuit breaker (outermost)",
@@ -225,7 +225,7 @@
         "retry → timeout → fallback → circuit breaker (outermost)"
       ],
       "answer": 0,
-      "explanation": "The reviewer states the typical order is timeout → retry → circuit breaker → fallback, outermost. Timeout bounds each attempt, retry handles transient blips, the circuit breaker trips on sustained failure, and fallback degrades gracefully as the outermost layer."
+      "explanation": "The typical order is timeout → retry → circuit breaker → fallback, outermost. Timeout bounds each attempt, retry handles transient blips, the circuit breaker trips on sustained failure, and fallback degrades gracefully as the outermost layer."
     },
     {
       "subtopic": "Saga isolation gotcha",
@@ -240,14 +240,14 @@
         "Compensations cannot be retried; mitigate by making them run exactly once"
       ],
       "answer": 0,
-      "explanation": "Sagas have no ACID isolation across steps, so other transactions can see intermediate states. The reviewer's mitigations are semantic locks (PENDING/reserved), commutative updates, or re-reads. Compensations are in fact designed to be idempotent and retryable."
+      "explanation": "Sagas have no ACID isolation across steps, so other transactions can see intermediate states. The mitigations are semantic locks (PENDING/reserved), commutative updates, or re-reads. Compensations are in fact designed to be idempotent and retryable."
     },
     {
       "subtopic": "Event-carried state transfer",
       "source": "architecture/microservices-architecture-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "For database-per-service systems, why does the reviewer often favor 'event-carried state transfer' (a fat event) over a thin 'event notification'?",
+      "question": "For database-per-service systems, why is 'event-carried state transfer' (a fat event) often favored over a thin 'event notification'?",
       "options": [
         "The fat event carries enough data for consumers to update their local replicas with no synchronous callback to the producer",
         "The thin event guarantees ordering while the fat event does not",
@@ -262,7 +262,7 @@
       "source": "architecture/microservices-architecture-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which of the following are symptoms of badly chosen service boundaries ?",
+      "question": "Which of the following are symptoms of badly chosen service boundaries?",
       "options": [
         "Cascading deploys where changing service A forces B and C to be redeployed",
         "Anemic entity services such as a CustomerService that is just CRUD over one table",

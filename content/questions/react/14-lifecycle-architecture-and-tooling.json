@@ -52,7 +52,7 @@
       "source": "react/14-lifecycle-architecture-and-tooling.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Which styling approach gives locally-scoped, hashed class names with no runtime cost, and is described as the common scoped default?",
+      "question": "Which styling approach gives locally-scoped, hashed class names with no runtime cost, and is the common scoped default?",
       "options": [
         "CSS Modules (`*.module.css`)",
         "CSS-in-JS (styled-components / Emotion)",
@@ -212,7 +212,7 @@
       "type": "truefalse",
       "question": "Create React App is deprecated, and react.dev now points new projects toward Vite or a framework.",
       "answer": true,
-      "explanation": "The reviewer states CRA is deprecated and react.dev now points to Vite (native-ESM dev server, fast HMR, Rollup production build) or a framework."
+      "explanation": "Create React App is deprecated; react.dev now points new projects to Vite (native-ESM dev server, fast HMR, Rollup production build) or a framework."
     },
     {
       "subtopic": "StrictMode effect double-invoke",
@@ -221,13 +221,13 @@
       "type": "mcq",
       "question": "In development with `StrictMode` enabled, a `useEffect` with `[]` deps creates a WebSocket on setup but its cleanup never closes it. What symptom does StrictMode surface that production would hide?",
       "options": [
-        "After the initial mount the effect runs setup → cleanup → setup, so a leaked second connection (or unbalanced setup) becomes visible immediately.",
+        "After the initial mount the effect runs setup → cleanup → setup, so a leaked second connection becomes visible immediately.",
         "The component fails to mount at all until the cleanup function is added.",
         "React throws a compile-time error refusing to render the component.",
         "The effect silently runs only once, exactly as it would in production."
       ],
       "answer": 0,
-      "explanation": "StrictMode simulates an instant remount (setup → cleanup → setup) right after mount, so a missing/incomplete cleanup leaves a leaked connection or unbalanced state that is visible in dev but not in production. It does not block mounting or throw a compile error."
+      "explanation": "StrictMode simulates an instant remount (setup → cleanup → setup) right after mount, so a missing or incomplete cleanup leaves a leaked connection that is visible in dev but not in production. It does not block mounting or throw a compile error."
     },
     {
       "subtopic": "getDerivedStateFromProps replacement",

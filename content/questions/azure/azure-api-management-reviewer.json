@@ -204,10 +204,10 @@
       "type": "mcq",
       "question": "Backends run on-prem and data must not leave the corporate network, but the team wants Azure-based API management. What is the correct deployment, and what is its key constraint?",
       "options": [
-        "A self-hosted gateway container deployed next to the backends; it still phones home to Azure for config/telemetry and requires the Developer or Premium (classic) tier — v2 tiers do not support it",
-        "A Consumption-tier gateway, because it scales to zero and keeps traffic local",
-        "A managed gateway in a nearby Azure region, because managed gateways never egress data",
-        "A self-hosted gateway on any tier, including Basic v2 and Standard v2"
+        "A self-hosted gateway container deployed next to the backends, on Developer/Premium (classic) tier — not v2 tiers",
+        "A Consumption-tier gateway, since it scales to zero and conveniently keeps all backend traffic on the local network",
+        "A managed gateway placed in a nearby Azure region, since managed gateways are guaranteed never to egress backend data",
+        "A self-hosted gateway running on any tier you like, including the newer Basic v2 and Standard v2 platforms"
       ],
       "answer": 0,
       "explanation": "The self-hosted gateway is a container you run where the backends live so local traffic stays local, while management/telemetry stays in Azure; it requires Developer/Premium (classic) and is not supported on v2 tiers. The Consumption tier explicitly does not support the self-hosted gateway, and a managed gateway runs in Azure."

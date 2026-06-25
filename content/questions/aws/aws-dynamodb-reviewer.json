@@ -24,10 +24,10 @@
       "type": "mcq",
       "question": "What is the maximum size of a single DynamoDB item, and how should you handle data larger than that?",
       "options": [
-        "400 KB including attribute names and values; store large blobs in S3 and keep a pointer in the item",
-        "1 MB including names and values; compress the item to fit",
+        "400 KB including names and values; store large blobs in S3 and keep a pointer in the item",
+        "1 MB including names and values; compress the item until it fits the limit",
         "400 KB excluding attribute names; split the item across multiple tables",
-        "16 MB to match the batch limit; no special handling is needed"
+        "16 MB to match the batch limit; no special handling is needed at all"
       ],
       "answer": 0,
       "explanation": "The item-size cap is 400 KB counting both attribute names and values. The standard pattern for larger payloads is to store the blob in S3 and keep only a pointer in DynamoDB."
@@ -63,13 +63,13 @@
       "type": "mcq",
       "question": "How does DynamoDB **TTL** decide when to delete an item, and how timely is the deletion?",
       "options": [
-        "It reads a numeric attribute holding a Unix epoch timestamp in seconds; deletion is asynchronous and best-effort, often within a few days of expiry",
-        "It reads an ISO-8601 string attribute and deletes the item at the exact expiry second",
-        "It deletes items when a query encounters them past their expiry time",
+        "It reads a numeric epoch-seconds attribute; deletion is asynchronous and best-effort, often within a few days of expiry",
+        "It reads an ISO-8601 string attribute and deletes the item exactly at the expiry second",
+        "It deletes each item the moment a query first encounters it past expiry",
         "It uses the item's last-modified system timestamp and deletes synchronously on the next write"
       ],
       "answer": 0,
-      "explanation": "TTL uses a designated numeric attribute holding an epoch-seconds timestamp. Deletion is asynchronous and best-effort (typically within a few days), so you should still filter expired-but-not-yet-deleted items if precise expiry matters."
+      "explanation": "TTL uses a designated numeric attribute holding a Unix epoch-seconds timestamp. Deletion is asynchronous and best-effort (typically within a few days), so you should still filter expired-but-not-yet-deleted items if precise expiry matters."
     },
     {
       "subtopic": "LSI vs GSI trade-offs",
@@ -94,10 +94,10 @@
       "type": "mcq",
       "question": "A table uses `country` as its partition key and most traffic is `US`. Despite generous provisioned throughput, writes still throttle. What is the root cause and best fix?",
       "options": [
-        "The partition key is low-cardinality, so traffic concentrates on one hot partition; fix it with a high-cardinality key or by write-sharding the hot value",
-        "The table is under-provisioned overall; raise the table's total WCUs until throttling stops",
-        "Eventually consistent reads are interfering with writes; switch all reads to strongly consistent",
-        "The sort key is missing; add a sort key so writes spread across partitions"
+        "The key is low-cardinality, so traffic concentrates on one hot partition; fix it with a high-cardinality key or by write-sharding the hot value",
+        "The table is under-provisioned overall, so raise the table's total WCUs until throttling stops",
+        "Eventually consistent reads are interfering with writes, so switch all reads to strongly consistent",
+        "The sort key is missing, so add a sort key to spread writes across partitions"
       ],
       "answer": 0,
       "explanation": "Low cardinality funnels nearly all traffic to the `US` partition, creating a hot partition that throttles even though the table looks under-utilized. The cure is a high-cardinality, evenly-accessed key, or write-sharding the hot value (`US#<0..N>`). Raising total capacity does not help because the limit is per-partition."
@@ -213,10 +213,10 @@
       "type": "mcq",
       "question": "Two regions of a Global Table both write to the *same* item at nearly the same time. What is the result, and what is the correct design response?",
       "options": [
-        "Last-writer-wins by timestamp resolves it, so one update can be silently dropped; design so different regions own different keys or accept the loss",
-        "DynamoDB merges the two writes attribute-by-attribute so no data is lost",
+        "Last-writer-wins by timestamp resolves it, so one update can be silently dropped; design so different regions own different keys",
+        "DynamoDB merges the two writes attribute-by-attribute so that no data is ever lost",
         "The second write is rejected with a conflict error that the application must retry",
-        "A quorum across regions blocks the write until all replicas agree, guaranteeing serializability"
+        "A cross-region quorum blocks the write until all replicas agree, guaranteeing serializability"
       ],
       "answer": 0,
       "explanation": "Global Tables use last-writer-wins by timestamp, which is not true conflict reconciliation — a concurrent same-item cross-region write can be dropped. The senior design response is to partition key ownership by region or accept that one update may be lost."

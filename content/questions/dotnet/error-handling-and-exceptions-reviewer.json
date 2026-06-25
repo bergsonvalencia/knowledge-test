@@ -10,9 +10,9 @@
       "question": "Inside a `catch` block, what is the difference between bare `throw;` and `throw ex;`?",
       "options": [
         "`throw;` preserves the original stack trace; `throw ex;` resets it to the rethrow line",
-        "`throw;` resets the stack trace; `throw ex;` preserves the original",
-        "They are identical; the compiler treats them the same way",
-        "`throw ex;` wraps the exception in a new `AggregateException`, `throw;` does not"
+        "`throw;` resets the stack trace to the rethrow line; `throw ex;` preserves the original",
+        "They are identical; the compiler emits the same IL for both forms",
+        "`throw ex;` wraps the exception in a new `AggregateException`, while `throw;` does not"
       ],
       "answer": 0,
       "explanation": "Bare `throw;` rethrows the current exception with its original stack trace intact. `throw ex;` throws the same object but overwrites the stack trace with the current line, erasing where the error actually originated — the classic stack-trace-destroying bug."
@@ -79,9 +79,9 @@
       "question": "What is the key behavioral advantage of an exception filter `catch (X e) when (predicate)` over catching and then re-checking the condition inside the catch body?",
       "options": [
         "If the predicate returns false, the stack is NOT unwound and the exception keeps searching with its original frame intact",
-        "The filter automatically retries the protected block until the predicate returns true",
-        "The filter converts the exception into a `Result<T>` so the caller cannot ignore it",
-        "The filter suppresses the exception entirely if the predicate throws"
+        "It automatically retries the protected block until the predicate eventually returns true",
+        "It converts the exception into a `Result<T>` so the calling code cannot ignore it",
+        "It suppresses the exception entirely whenever the predicate itself happens to throw"
       ],
       "answer": 0,
       "explanation": "A filter decides whether the catch applies before the stack unwinds; when the predicate is false the catch body never runs and the stack/original frame is preserved for debugging and first-chance logging. Catching-then-rethrowing has already unwound the stack to the catch site."
@@ -98,7 +98,7 @@
         "At `await t;` — the exception is captured onto the Task and \"after call\" prints first",
         "At `LoadAsync();` — the call site throws immediately, before \"after call\" prints",
         "At `Console.WriteLine` — the pending exception interrupts the next statement",
-        "It is never thrown; it is silently swallowed because the Task is discarded"
+        "Never — it is silently swallowed because the returned Task is discarded"
       ],
       "answer": 0,
       "explanation": "An exception in an `async` method is captured and stored on the returned `Task`; it re-throws when the Task is awaited. So nothing throws at the call, \"after call\" prints, and the exception surfaces at `await t;` with its original stack trace."
@@ -113,9 +113,9 @@
       "lang": "csharp",
       "options": [
         "`BHandler` — handlers run in registration order and the first to return true wins",
-        "`AHandler` — the first registered handler always produces the response regardless of return value",
-        "Both run and their responses are merged into one body",
-        "Neither — returning false from `AHandler` aborts the chain and yields the default 500"
+        "`AHandler` — the first registered handler always responds regardless of its return value",
+        "Both run, and their two responses are merged into a single body",
+        "Neither — returning false from `AHandler` aborts the chain into the default 500"
       ],
       "answer": 0,
       "explanation": "Handlers run in registration order; `TryHandleAsync` returning `true` means \"handled, stop\" and `false` means \"not mine, try the next.\" `AHandler` returns false so the middleware calls `BHandler`, which returns true and writes the response."
@@ -127,10 +127,10 @@
       "type": "mcq",
       "question": "Why is `logger.LogError(ex, \"Order {OrderId} failed\", id)` preferred over `logger.LogError($\"Order {id} failed: {ex}\")`?",
       "options": [
-        "It captures the exception type/message/stack and `OrderId` as structured fields you can query, instead of flattening everything into one string",
-        "It is the only overload that prevents the exception from being rethrown",
+        "It captures the exception and `OrderId` as structured fields you can query, instead of flattening everything into one string",
+        "It is the only overload that prevents the exception from being rethrown afterward",
         "Interpolated strings cannot be passed to `LogError` and would fail to compile",
-        "The interpolated form logs at Warning level instead of Error level"
+        "The interpolated form silently downgrades the entry to Warning level instead of Error"
       ],
       "answer": 0,
       "explanation": "Passing the exception as the first argument and using named message templates preserves structured properties (exception details plus `OrderId`) for querying. String interpolation throws away that structure by baking everything into one flat message — it still compiles and logs at Error, but is far less useful."
@@ -145,7 +145,7 @@
         "The failure is genuinely transient (e.g. timeout, 429, 503, a transient SQL error number)",
         "The operation is idempotent so re-execution is safe",
         "The failure is a `400 Bad Request` caused by invalid user input",
-        "Retries are implemented via a configured resilience pipeline rather than a hand-rolled catch loop",
+        "Retries run via a configured resilience pipeline rather than a hand-rolled catch loop",
         "The failure is an unhandled `NullReferenceException` from a server bug"
       ],
       "answer": [0, 1, 3],
@@ -203,7 +203,7 @@
         "Prints the type of the first exception only; read `t.Exception.InnerExceptions` after the await to see both",
         "Prints `AggregateException`; awaiting always surfaces the aggregate so both are already in `e`",
         "Prints both type names on separate lines because the catch runs once per inner exception",
-        "Prints nothing because `await` on a multi-fault Task rethrows only after the Task is garbage-collected"
+        "Prints nothing because `await` only rethrows after the faulted Task is garbage-collected"
       ],
       "answer": 0,
       "explanation": "`WhenAll` collects every exception into an `AggregateException`, but `await` unwraps and rethrows only the first. To see them all, inspect the faulted task's `Exception.InnerExceptions` after the await — the catch block runs exactly once."
@@ -216,9 +216,9 @@
       "question": "Why is `async void` (outside of event handlers) considered dangerous for exception handling?",
       "options": [
         "Its exceptions are not stored on an awaitable Task, so they escape to the synchronization context / `AppDomain` and can crash the process",
-        "It silently converts every exception into a returned `Result<T>` the caller must inspect",
-        "It forces all exceptions to be wrapped in `AggregateException`, hiding the real type",
-        "The compiler rejects any `try/catch` inside an `async void` method"
+        "It silently converts every thrown exception into a returned `Result<T>` the caller must inspect",
+        "It forces all exceptions to be wrapped in `AggregateException`, hiding the real exception type",
+        "The compiler rejects any `try/catch` written inside an `async void` method body"
       ],
       "answer": 0,
       "explanation": "An `async void` method returns nothing awaitable, so a thrown exception is not captured onto a Task — it propagates to the synchronization context or `AppDomain` and can crash the process. Use `async void` only for event handlers; everything else should return `Task`."
@@ -232,10 +232,10 @@
       "code": "try { DoWork(); }\ncatch (Exception e) when (LogFirstChance(e)) { /* body */ }\n\nstatic bool LogFirstChance(Exception e)\n{\n    Console.Error.WriteLine($\"first-chance: {e.GetType().Name}\");\n    return false;\n}",
       "lang": "csharp",
       "options": [
-        "Logs the exception type via the filter, then lets the exception propagate up with its stack trace intact — the catch body never runs",
-        "Logs the exception, runs the catch body, and swallows the exception",
-        "Skips logging entirely because a filter returning false is never evaluated",
-        "Throws a `StackOverflowException` because the filter re-enters `DoWork`"
+        "Logs the exception type via the filter, then lets the exception propagate with its stack trace intact — the body never runs",
+        "Logs the exception, runs the catch body, and then swallows the exception entirely",
+        "Skips logging entirely, because a filter that returns false is never evaluated",
+        "Throws a `StackOverflowException` because the filter recursively re-enters `DoWork`"
       ],
       "answer": 0,
       "explanation": "The filter predicate runs (logging as a side effect) before the stack unwinds, then returns false, so this catch does not apply and the exception keeps searching up the stack with its trace preserved. The body is never reached — this is the first-chance-logging trick."
@@ -245,7 +245,7 @@
       "source": "dotnet/error-handling-and-exceptions-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "An inner service catches an exception, calls `_logger.LogError(ex, \"failed\")`, and then `throw;`, while the global `IExceptionHandler` also logs it. What is the senior critique, and the better approach?",
+      "question": "An inner service catches an exception, calls `_logger.LogError(ex, \"failed\")`, and then `throw;`, while the global `IExceptionHandler` also logs it. What is the critique, and the better approach?",
       "options": [
         "It double-logs one failure; the inner layer should add context (e.g. wrap with an inner exception) without logging, and let the boundary log exactly once",
         "It is correct; logging at every layer the exception passes through is the recommended defense-in-depth pattern",

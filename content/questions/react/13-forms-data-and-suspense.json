@@ -61,7 +61,7 @@
         "A simple/large form where you only need values at submit time"
       ],
       "answer": [0, 1, 4],
-      "explanation": "File inputs are always uncontrolled, non-React integration and simple/large forms suit uncontrolled (less code, no per-keystroke re-render). Live validation and format-as-you-type require the value to flow through state each keystroke, which is the controlled pattern."
+      "explanation": "File inputs are always uncontrolled, and non-React integration plus simple/large forms suit uncontrolled (less code, no per-keystroke re-render). Live validation and format-as-you-type require the value to flow through state each keystroke, which is the controlled pattern."
     },
     {
       "subtopic": "Switching controlled/uncontrolled",

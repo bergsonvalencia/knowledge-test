@@ -12,10 +12,10 @@
         "JSX has no `if` statement, so branching must be done with expressions inside `{}`",
         "`if` statements are slower than ternaries when React reconciles",
         "React strips all `if` statements out of components at build time",
-        "`if` statements are only allowed inside hooks, not in the render body"
+        "`if` statements are only allowed inside hooks, not the render body"
       ],
       "answer": 0,
-      "explanation": "The reviewer states JSX has no `if` statement, so you branch with JavaScript expressions inside `{}` (early return, ternary, or `&&`). It is a syntactic fact about JSX, not a performance concern."
+      "explanation": "JSX has no `if` statement, so you branch with JavaScript expressions inside `{}` (early return, ternary, or `&&`). It is a syntactic fact about JSX, not a performance concern."
     },
     {
       "subtopic": "Rendering nothing",
@@ -24,7 +24,7 @@
       "type": "truefalse",
       "question": "When a component returns `null` to render nothing, the component still runs and its hooks still fire.",
       "answer": true,
-      "explanation": "The reviewer notes returning `null` (or `false`/`undefined`) renders nothing, but the component body still executes and its hooks still run — which is why the guard must come after all hooks."
+      "explanation": "Returning `null` (or `false`/`undefined`) renders nothing, but the component body still executes and its hooks still run — which is why the guard must come after all hooks."
     },
     {
       "subtopic": "The 0 trap with &&",
@@ -36,9 +36,9 @@
       "lang": "tsx",
       "options": [
         "The literal text `0`, because `&&` short-circuits and returns `0`, a falsy but renderable value",
-        "Nothing, because `0` is falsy and React always renders falsy values as nothing",
+        "Nothing, because React always renders any falsy value as nothing",
         "The `<Badge/>` element, because `&&` coerces `0` to `true`",
-        "A runtime error, because `&&` cannot be used inside JSX braces"
+        "A runtime error, because `&&` is not allowed inside JSX braces"
       ],
       "answer": 0,
       "explanation": "`&&` short-circuits and returns its left operand `0` when falsy. React renders `null`/`undefined`/booleans as nothing, but a falsy number like `0` is a renderable value and shows as text. Guard with `count > 0 && ...`."
@@ -88,10 +88,10 @@
         "Unique among its siblings (the elements in that same list)",
         "Globally unique across the entire application",
         "Unique among all elements rendered by the same component",
-        "Unique per render, regenerated each time the list renders"
+        "Unique per render, regenerated on each list render"
       ],
       "answer": 0,
-      "explanation": "The reviewer states a key must be unique among its siblings, not globally. Keys are scoped to the list they belong to."
+      "explanation": "A key must be unique among its siblings, not globally. Keys are scoped to the list they belong to."
     },
     {
       "subtopic": "key is not a prop",
@@ -111,7 +111,7 @@
       "options": [
         "The draft text and state stay attached to the slot/position, so the new top row shows the old first row's draft text",
         "React throws a duplicate-key error and refuses to render the list",
-        "Every row unmounts and remounts, clearing all draft text across the whole list",
+        "Every row unmounts and remounts, clearing all draft text in the list",
         "The list renders correctly because indices are always stable and unique"
       ],
       "answer": 0,
@@ -144,8 +144,8 @@
       "question": "You want to deliberately reset a child component's internal state when a particular value changes. What does changing that component's `key` do, and why does it work?",
       "options": [
         "A changed key makes React unmount the old node and mount a fresh one, discarding the old state",
-        "A changed key forces React to re-run the child's render without touching its state",
-        "A changed key tells React to merge the new props into the existing state",
+        "A changed key re-runs the child's render without touching its state",
+        "A changed key merges the new props into the existing state",
         "A changed key has no effect on a single (non-list) element"
       ],
       "answer": 0,
@@ -159,7 +159,7 @@
       "question": "What happens when you write `onClick={handleClick()}` instead of `onClick={handleClick}`?",
       "options": [
         "`handleClick` is called during render and its return value is used as the handler",
-        "React debounces the handler so it only fires once per render",
+        "React debounces the handler so it fires only once per render",
         "The handler is correctly bound and fires on click, just with extra parentheses",
         "React throws a compile error because handlers must be arrow functions"
       ],
@@ -223,7 +223,7 @@
         1,
         4
       ],
-      "explanation": "`stopPropagation` halts bubbling but not the default action; `preventDefault` cancels the default action but not bubbling. The two effects are independent, so the cross-claims (3 and 4) are wrong."
+      "explanation": "`stopPropagation` halts bubbling but not the default action; `preventDefault` cancels the default action but not bubbling. The two effects are independent, so the cross-claims (options 3 and 4) are wrong."
     },
     {
       "subtopic": "Capture phase",
@@ -233,8 +233,8 @@
       "question": "How does `onClickCapture` differ from `onClick`, and what is it useful for?",
       "options": [
         "It runs top-down from the root toward the target, before the bubbling pass — useful for routers/analytics that must see every click first",
-        "It runs only after `onClick`, capturing clicks the bubble phase missed",
-        "It captures the click and prevents `onClick` from ever firing on that element",
+        "It runs only after `onClick`, catching clicks the bubble phase missed",
+        "It captures the click and prevents `onClick` from ever firing at all",
         "It runs bottom-up like `onClick` but on a separate, isolated event queue"
       ],
       "answer": 0,

@@ -19,10 +19,10 @@
       "type": "mcq",
       "question": "What distinguishes a `LEFT OUTER JOIN` from an `INNER JOIN`?",
       "options": [
-        "`LEFT JOIN` keeps all left rows, NULL-padding the right side when there is no match; `INNER JOIN` drops unmatched rows from both sides",
-        "`LEFT JOIN` returns only the rows where the left key is NULL; `INNER JOIN` returns the rest",
-        "`LEFT JOIN` removes duplicate rows automatically; `INNER JOIN` keeps duplicates",
-        "`LEFT JOIN` keeps all right rows; `INNER JOIN` keeps all left rows"
+        "`LEFT JOIN` keeps all left rows, NULL-padding the right side when there is no match; `INNER JOIN` keeps only matching pairs",
+        "`LEFT JOIN` returns only rows where the left key is NULL; `INNER JOIN` returns all the rest",
+        "`LEFT JOIN` removes duplicate rows automatically; `INNER JOIN` keeps every duplicate row",
+        "`LEFT JOIN` keeps all right rows and NULL-pads the left; `INNER JOIN` keeps all left rows"
       ],
       "answer": 0,
       "explanation": "A `LEFT JOIN` preserves every left row and fills the right columns with NULL where no match exists, whereas an `INNER JOIN` keeps only matching pairs. The other options confuse left/right preservation or invent dedup behavior joins do not have."
@@ -112,9 +112,9 @@
       "lang": "sql",
       "options": [
         "15 — NULLs are ignored, so it averages only the two non-NULL values",
-        "7.5 — it divides the sum by all four rows",
+        "7.5 — it divides the sum by all four rows including the NULLs",
         "7 — it divides by all four rows using integer division",
-        "30 — it sums the non-NULL values without dividing"
+        "30 — it sums the non-NULL values but never divides at all"
       ],
       "answer": 0,
       "explanation": "`AVG` ignores NULLs, dividing the sum by the count of non-NULL values: `(10 + 20) / 2 = 15`. To treat NULLs as zero (and average over all four rows) you would use `AVG(COALESCE(Score, 0))`."
@@ -226,10 +226,10 @@
       "type": "mcq",
       "question": "A self-join is used to fetch each employee with their manager's name via `LEFT JOIN dbo.Employees AS m ON m.Id = e.ManagerId`. What are the two relevant correctness considerations?",
       "options": [
-        "Use `LEFT JOIN` so the manager-less root survives, and switch to a recursive CTE if you need the entire multi-level hierarchy",
-        "Use `INNER JOIN` so the root is excluded, and a single self-join already returns the whole tree",
-        "Use `CROSS JOIN` to pair every employee with every manager, then filter in `WHERE`",
-        "Use `RIGHT JOIN` so managers without reports are preserved, and a self-join handles arbitrary depth"
+        "Use `LEFT JOIN` so the manager-less root survives, and switch to a recursive CTE for the entire multi-level hierarchy",
+        "Use `INNER JOIN` so the root is excluded, since a single self-join already returns the whole tree",
+        "Use `CROSS JOIN` to pair every employee with every manager, then filter the pairs in `WHERE`",
+        "Use `RIGHT JOIN` so reportless managers survive, since a self-join handles arbitrary depth"
       ],
       "answer": 0,
       "explanation": "A `LEFT JOIN` preserves the root row whose `ManagerId` is NULL (an `INNER JOIN` would drop the CEO). A single self-join only resolves one level; traversing an arbitrary-depth org tree requires a recursive CTE."
@@ -239,7 +239,7 @@
       "source": "sql/sql-joins-and-fundamentals-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A two-table query unexpectedly returns millions of rows even though both tables are small. Besides a missing `ON` predicate, what is the other classic cause described for this row explosion?",
+      "question": "A two-table query unexpectedly returns millions of rows even though both tables are small. Besides a missing `ON` predicate, what is the other classic cause of this row explosion?",
       "options": [
         "A join key that is non-unique on both sides, so each row on one side matches many rows on the other (m × n)",
         "A `WHERE` clause that filters the preserved table of a `LEFT JOIN`",

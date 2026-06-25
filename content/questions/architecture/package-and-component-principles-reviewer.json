@@ -94,9 +94,9 @@
       "question": "Your service depends on a utility package to use one helper class, but that package also bundles many unrelated helpers. Every time *any* class in the bundle changes, your service must re-validate and re-release. Which principle does this situation argue you should have followed?",
       "options": [
         "Common Reuse Principle (CRP) — don't force users to depend on things they don't use",
-        "Stable Dependencies Principle (SDP) — depend toward stability",
-        "Common Closure Principle (CCP) — group by reason to change",
-        "Release Reuse Equivalency Principle (REP) — release as a reusable unit"
+        "Stable Dependencies Principle (SDP) — depend toward stability, not volatility",
+        "Common Closure Principle (CCP) — group classes by their reason to change",
+        "Release Reuse Equivalency Principle (REP) — release code as a reusable versioned unit"
       ],
       "answer": 0,
       "explanation": "CRP states that classes used together are packaged together — equivalently, don't depend on a package for things you don't use. Bundling unrelated helpers forces consumers to absorb churn from code they never call, the exact CRP pain. SDP and CCP address a different concern (dependency direction and reason-to-change)."
@@ -108,10 +108,10 @@
       "type": "mcq",
       "question": "Which statement best describes the inherent tension between **CCP** and **CRP**?",
       "options": [
-        "CCP pushes packages to be larger (group everything that changes together) while CRP pushes them smaller (split out anything not used together), so they pull in opposite directions",
-        "CCP and CRP are restatements of the same rule, so they can never conflict",
-        "CCP applies only to abstract classes while CRP applies only to concrete classes",
-        "CCP governs runtime coupling while CRP governs compile-time coupling exclusively"
+        "CCP pushes packages larger (group everything that changes together) while CRP pushes them smaller (split out anything not used together), so they pull in opposite directions",
+        "CCP and CRP are restatements of one rule, so the two principles can never actually conflict",
+        "CCP applies only to abstract classes, whereas CRP applies only to the concrete classes",
+        "CCP governs runtime coupling exclusively, while CRP governs compile-time coupling exclusively"
       ],
       "answer": 0,
       "explanation": "CCP is inclusive (keep things that change together together, making packages bigger); CRP is exclusive (split out what isn't reused together, making packages smaller). They are genuinely opposing forces a designer must balance, not the same rule and not split by abstract/concrete or runtime/compile-time."
@@ -123,10 +123,10 @@
       "type": "mcq",
       "question": "Why does REP insist that the unit of *reuse* be the same as the unit of *release*?",
       "options": [
-        "Reusers depend on released, versioned units; without a release with a version number, consumers cannot track changes, integrate updates safely, or be notified of breaking changes",
-        "Because smaller packages always compile faster than larger ones",
+        "Reusers depend on released, versioned units; without a version number consumers cannot track changes, integrate updates safely, or be warned of breaking changes",
+        "Because smaller packages always compile faster than larger ones at build time",
         "Because abstract classes cannot be reused unless released separately from concrete ones",
-        "Because cyclic dependencies are only detectable at release time"
+        "Because cyclic dependencies between packages are only detectable at release time"
       ],
       "answer": 0,
       "explanation": "REP is about release management: you can only responsibly reuse code that is tracked, versioned, and released as a coherent unit so consumers can manage upgrades and breaking changes. The other options conflate REP with compile time, abstractness, or cycle detection."
@@ -138,10 +138,10 @@
       "type": "mcq",
       "question": "Instability **I** is commonly computed as `I = Ce / (Ca + Ce)`, where `Ca` is afferent (incoming) couplings and `Ce` is efferent (outgoing) couplings. Under SDP, a dependency edge should always point from a package with a **higher** I toward one with a **lower** I. What does I = 0 indicate?",
       "options": [
-        "Maximally stable — nothing it depends on, many things depend on it, so it is hard to change",
-        "Maximally unstable — it depends on everything and nothing depends on it",
-        "Maximally abstract — it contains only interfaces",
-        "Maximally cohesive — all its classes change together"
+        "Maximally stable — it depends on nothing, many things depend on it, so it is hard to change",
+        "Maximally unstable — it depends on everything while nothing depends back on it",
+        "Maximally abstract — it contains only interfaces and no concrete classes",
+        "Maximally cohesive — all of its classes change together for one reason"
       ],
       "answer": 0,
       "explanation": "I ranges 0 (maximally stable: Ce = 0, only incoming dependencies) to 1 (maximally unstable: Ca = 0, only outgoing dependencies). Stability is about resistance to change, not abstractness (that is the A metric) or cohesion."
@@ -153,10 +153,10 @@
       "type": "mcq",
       "question": "The **Stable Abstractions Principle (SAP)** says abstractness should increase with stability. What problem does this prevent for a package that is highly stable (many things depend on it) but highly concrete?",
       "options": [
-        "It becomes rigid — hard to change because of all its dependents, yet hard to extend because it lacks abstractions, so it can neither be modified nor extended cleanly",
-        "It becomes too abstract to instantiate at runtime",
-        "It develops cyclic dependencies with its dependents automatically",
-        "It can no longer be released independently of its consumers"
+        "It becomes rigid — hard to change because of its dependents, yet hard to extend because it lacks abstractions, so it can neither be modified nor extended cleanly",
+        "It becomes so abstract that it can no longer be instantiated at runtime",
+        "It automatically develops cyclic dependencies with each of its dependents",
+        "It can no longer be released independently of any of its consumers"
       ],
       "answer": 0,
       "explanation": "A stable + concrete package is the worst quadrant (the 'zone of pain'): heavily depended-upon so it can't change, yet concrete so it can't be extended via abstraction. SAP pairs stability with abstractness so stable packages stay extensible through interfaces. The distractors describe unrelated failure modes."
@@ -181,7 +181,7 @@
         "Extract the classes responsible for the back edge into a new package that both sides can depend on",
         "Merge all three packages into one giant package permanently as the standard fix",
         "Add a fourth package D that also depends back into A, completing a larger loop",
-        "Renaming the packages so the cycle is harder to see in the build output"
+        "Rename the packages so the cycle is harder to spot in the build output"
       ],
       "answer": [
         0,
@@ -197,9 +197,9 @@
       "question": "What is the most direct practical consequence of allowing a dependency *cycle* among packages (violating ADP)?",
       "options": [
         "The packages in the cycle effectively become one indivisible unit — they must be built, tested, and released together, defeating independent releasability",
-        "The cycle guarantees a runtime deadlock the first time the packages are loaded",
-        "The cycle makes every class in the packages automatically abstract",
-        "The cycle silently increases the instability (I) of every package to 1"
+        "The cycle guarantees a runtime deadlock the first time the packages are loaded together",
+        "The cycle makes every class inside the affected packages automatically abstract",
+        "The cycle silently increases the instability (I) of every package in it to exactly 1"
       ],
       "answer": 0,
       "explanation": "A cycle couples its members so tightly that you cannot release or test one without the others — they collapse into a 'morning-after' mega-unit, killing independent releasability (and complicating REP). Cycles do not cause automatic deadlocks, abstractness changes, or fixed I values."
@@ -211,10 +211,10 @@
       "type": "mcq",
       "question": "A volatile package `OrderRules` (changes weekly, I ≈ 0.9) is directly depended upon by a very stable, widely-used package `CoreDomain` (I ≈ 0.1). According to SDP, why is this dependency edge a problem and what is the standard remedy?",
       "options": [
-        "It points from stable to unstable, so CoreDomain inherits OrderRules' volatility; invert the dependency by having CoreDomain depend on an abstraction that OrderRules implements",
-        "It points from unstable to stable, which is already correct, so no change is needed",
-        "It violates CRP, and the fix is to merge the two packages into one",
-        "It violates SAP, and the fix is to make OrderRules fully concrete"
+        "It points from stable to unstable, so CoreDomain inherits OrderRules' volatility; invert it by having CoreDomain depend on an abstraction that OrderRules implements",
+        "It points from unstable to stable, which is already the correct direction, so no change is needed",
+        "It violates CRP, and the proper fix is to merge the two packages into a single one",
+        "It violates SAP, and the proper fix is to make the OrderRules package fully concrete"
       ],
       "answer": 0,
       "explanation": "SDP requires depending toward stability; here a stable package depends on a volatile one, so the stable package is dragged into frequent change. The remedy is dependency inversion — place an interface in (or below) CoreDomain that OrderRules implements, flipping the source-code dependency. Merging or making things concrete does not address the direction problem."
@@ -227,9 +227,9 @@
       "question": "Combining SDP and SAP yields the idea of a package's distance from the 'main sequence' line `A + I = 1`. A package measured at **A = 0, I = 0** (concrete *and* maximally stable) falls into which problematic region?",
       "options": [
         "The 'zone of pain' — rigid and hard to change because it is depended upon yet cannot be extended through abstraction",
-        "The 'zone of uselessness' — abstract code that nobody depends on",
-        "Exactly on the main sequence, which is the ideal target",
-        "The acyclic region, which automatically satisfies ADP"
+        "The 'zone of uselessness' — abstract code that nobody actually depends on",
+        "Exactly on the main sequence line, which is the ideal target to aim for",
+        "The acyclic region, which by itself automatically satisfies ADP"
       ],
       "answer": 0,
       "explanation": "A=0, I=0 means maximally stable but fully concrete — the classic 'zone of pain'. The 'zone of uselessness' is the opposite corner (A=1, I=1: abstract with no dependents). The main sequence is the line A+I=1, on which this point does not lie (0+0=0)."
@@ -261,7 +261,7 @@
       "type": "truefalse",
       "question": "These six principles (REP, CCP, CRP, ADP, SDP, SAP) operate at the **package/component** level, which is a higher level of granularity than the class-level SOLID principles.",
       "answer": true,
-      "explanation": "Correct. SOLID governs the design of individual classes; the package principles govern how classes are grouped into components and how those components depend on one another — a coarser, architectural level of granularity, as the reviewer's 'Related: SOLID' link signals."
+      "explanation": "Correct. SOLID governs the design of individual classes; the package principles govern how classes are grouped into components and how those components depend on one another — a coarser, architectural level of granularity."
     }
   ]
 }

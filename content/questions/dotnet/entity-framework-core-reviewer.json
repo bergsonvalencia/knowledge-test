@@ -154,7 +154,7 @@
         "Apply each migration's `Up` method manually in code on every request to stay current"
       ],
       "answer": 0,
-      "explanation": "For production the reviewer recommends an idempotent script applied via the pipeline; `Database.Migrate()` at startup is reserved for dev/single-instance because multiple instances racing it on boot can conflict. `EnsureCreated()` must not be mixed with migrations."
+      "explanation": "For production, generate an idempotent script and apply it via the pipeline; `Database.Migrate()` at startup is reserved for dev/single-instance because multiple instances racing it on boot can conflict. `EnsureCreated()` must not be mixed with migrations."
     },
     {
       "subtopic": "Optimistic concurrency resolution",
@@ -224,7 +224,7 @@
         1,
         2
       ],
-      "explanation": "Projecting with `Select`, using `AsNoTracking` for reads, and diagnosing with `ToQueryString()` are all on the checklist. Defaulting to lazy loading invites N+1, and materializing then filtering in memory is the anti-pattern the reviewer warns against."
+      "explanation": "Projecting with `Select`, using `AsNoTracking` for reads, and diagnosing with `ToQueryString()` are all on the checklist. Defaulting to lazy loading invites N+1, and materializing then filtering in memory is the anti-pattern to avoid."
     },
     {
       "subtopic": "Transactions",

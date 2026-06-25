@@ -39,9 +39,9 @@
       "type": "mcq",
       "question": "What is the main reason teams use `DefaultAzureCredential` from `Azure.Identity`?",
       "options": [
-        "It encrypts secrets at rest with a customer-managed key",
-        "It lets the same code authenticate locally and in Azure with no code change",
-        "It eliminates the need for any managed identity in Azure",
+        "It encrypts stored secrets at rest with a customer-managed key",
+        "The same code authenticates locally and in Azure with no code change",
+        "It removes the need for any managed identity when running in Azure",
         "It caches secret values so the app never calls Key Vault twice"
       ],
       "answer": 1,
@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "On a vault configured for the Azure RBAC model, a user holds the **Owner** role on the vault but no Key Vault data-plane role. What can they do?",
       "options": [
-        "Read and write secret values, because Owner implies all permissions",
+        "Read and write secret values, because Owner implies every permission",
         "Manage the vault (delete it, change its firewall) but not read secret values",
-        "Nothing — Owner alone does not allow even management-plane operations",
-        "Read secret values but not modify the vault configuration"
+        "Nothing at all — Owner alone does not permit management-plane operations",
+        "Read secret values but not change any of the vault configuration"
       ],
       "answer": 1,
       "explanation": "Management-plane RBAC (Owner/Contributor) lets you manage the vault but, under the RBAC model, does not grant data-plane access to read secret values — that requires a role like Key Vault Secrets User. (Under access policies, Contributor could self-grant a policy, which is why RBAC is preferred.)"
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "A team needs to grant Key Vault access **before** the App Service that will use it has been deployed, and the same identity must survive blue/green slot swaps. Which managed identity fits, and why?",
       "options": [
-        "System-assigned, because it is automatically created with the app",
+        "System-assigned, because it is created automatically along with the app",
         "User-assigned, because it is a standalone resource you can pre-provision and share",
-        "System-assigned, because it is cheaper than user-assigned",
-        "User-assigned, because system-assigned identities cannot access Key Vault"
+        "System-assigned, because it costs less than a user-assigned identity",
+        "User-assigned, because system-assigned identities cannot reach Key Vault"
       ],
       "answer": 1,
       "explanation": "A user-assigned identity is a standalone resource created independently, so you can grant it access before the app exists (breaking the chicken-and-egg) and reuse it across slots. System-assigned identities don't exist until the resource does; both flavors are free and both can access Key Vault."
@@ -123,10 +123,10 @@
       "type": "mcq",
       "question": "An App Service setting is `@Microsoft.KeyVault(SecretUri=https://kv.vault.azure.net/secrets/Db--ConnStr/abc123)`. You rotate the secret (new version), but the app keeps using the old value. What is the minimal fix?",
       "options": [
-        "Grant the identity the Key Vault Secrets Officer role",
+        "Grant the identity the Key Vault Secrets Officer role on the vault",
         "Drop the version segment so the reference resolves to latest, or update the version and restart the app",
-        "Enable purge protection on the vault",
-        "Switch the vault from RBAC to access policies"
+        "Enable purge protection on the vault that holds the secret",
+        "Switch the vault from RBAC over to vault access policies"
       ],
       "answer": 1,
       "explanation": "The reference pins version `abc123`; references resolve at startup and a pinned version never advances. Drop the version to reference latest (refreshes on the ~24h cadence) or update the setting to the new version and restart. Roles, purge protection, and the access model are unrelated to which version is served."
@@ -164,10 +164,10 @@
       "code": "var cred = new DefaultAzureCredential();\nbuilder.Configuration.AddAzureKeyVault(\n    new Uri(\"https://contoso-kv.vault.azure.net/\"),\n    cred);",
       "lang": "csharp",
       "options": [
-        "It always uses the system-assigned identity, which may lack the role",
+        "It always falls back to the system-assigned identity, which may lack the role",
         "Token acquisition is ambiguous because multiple managed identities are attached and none is specified",
         "DefaultAzureCredential cannot be used inside App Service at all",
-        "The vault URI must end in `/secrets/` or the provider throws"
+        "The vault URI must end in `/secrets/` or the provider throws an error"
       ],
       "answer": 1,
       "explanation": "When a resource has multiple managed identities, you must disambiguate by setting `ManagedIdentityClientId` (or use an explicit `ManagedIdentityCredential`); otherwise token acquisition is ambiguous. DefaultAzureCredential works fine in App Service, and the URI need not end in `/secrets/`."
@@ -181,10 +181,10 @@
       "code": "builder.Configuration.AddAzureKeyVault(\n    new Uri(\"https://contoso-kv.vault.azure.net/\"),\n    new DefaultAzureCredential());",
       "lang": "csharp",
       "options": [
-        "The vault firewall blocks the laptop, so no fix exists in code or RBAC",
+        "The vault firewall blocks the laptop, so no code or RBAC fix exists",
         "Locally the chain resolves to the developer's az login/VS identity, which lacks a Key Vault data-plane role",
-        "DefaultAzureCredential is not supported outside Azure",
-        "The secret name uses `--` which is invalid on Windows"
+        "DefaultAzureCredential is simply not supported outside of Azure",
+        "The secret name uses `--`, which is invalid on Windows machines"
       ],
       "answer": 1,
       "explanation": "In Azure the chain resolves to the managed identity (which has the role); locally it falls through to the developer's az login/Visual Studio identity, which lacks a Key Vault data-plane role. The fix is to grant that user Key Vault Secrets User on the dev vault — no code change. DefaultAzureCredential is designed for exactly this local scenario."
@@ -216,10 +216,10 @@
       "type": "mcq",
       "question": "An IaC pipeline deletes and recreates a vault with the same name each run. After **purge protection** is enabled, redeploys fail with a name conflict. What is the correct fix?",
       "options": [
-        "Purge the soft-deleted vault first, then recreate it with the same name",
+        "Purge the soft-deleted vault first, then recreate it under the same name",
         "Change the pipeline to `recover` the soft-deleted vault instead of delete-then-create",
-        "Disable soft-delete so the name is freed immediately",
-        "Give the pipeline identity the Owner role so it can force-delete the vault"
+        "Disable soft-delete so the reserved name is freed immediately",
+        "Give the pipeline identity the Owner role so it can force-delete it"
       ],
       "answer": 1,
       "explanation": "Soft-delete reserves the name during retention; with purge protection on you cannot purge early, even as an admin, so delete-then-create is impossible. The pipeline must `recover` the soft-deleted vault and update idempotently. Purging is blocked, soft-delete cannot be disabled, and no role overrides purge protection."
@@ -229,12 +229,12 @@
       "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A secret has an `exp` (expiry) date that has already passed, but `enabled` is still true. What does the reviewer say happens when an app requests that secret's value?",
+      "question": "A secret has an `exp` (expiry) date that has already passed, but `enabled` is still true. What happens when an app requests that secret's value?",
       "options": [
-        "Key Vault refuses to return the value because it is past expiry",
+        "Key Vault refuses to return the value because it is past its expiry date",
         "Key Vault returns the value; expiry is metadata your app and monitoring must honor",
-        "Key Vault automatically rotates to a new version and returns that",
-        "Key Vault returns the value only if purge protection is disabled"
+        "Key Vault automatically rotates to a new version and returns that instead",
+        "Key Vault returns the value only when purge protection is disabled"
       ],
       "answer": 1,
       "explanation": "Key Vault does not block secret retrieval based on expiry the way you might expect — `exp` is metadata, so the value is still returned and your app/monitoring must honor and alert on it. There is no automatic rotation on expiry, and purge protection is unrelated."
@@ -264,12 +264,12 @@
       "source": "azure/azure-key-vault-and-managed-identity-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "You want automated, event-driven secret rotation: when a secret nears expiry, regenerate the credential at the source and write a new version. Which mechanism does the reviewer describe for triggering the rotation logic?",
+      "question": "You want automated, event-driven secret rotation: when a secret nears expiry, regenerate the credential at the source and write a new version. Which mechanism triggers the rotation logic?",
       "options": [
         "Key Vault polls the source system directly and rewrites the secret itself",
         "Key Vault emits Event Grid events like `SecretNearExpiry` that trigger a Function/Logic App",
         "The .NET config provider's `ReloadInterval` regenerates the source credential",
-        "Purge protection fires a webhook when the secret expires"
+        "Purge protection fires a webhook whenever the secret reaches expiry"
       ],
       "answer": 1,
       "explanation": "Key Vault emits near-expiry/rotation events (`SecretNearExpiry`, `SecretExpired`, `SecretNewVersionCreated`) via Event Grid, which trigger a Function or Logic App to regenerate at the source and write a new version. `ReloadInterval` only refreshes consumers; Key Vault does not poll sources itself, and purge protection has nothing to do with rotation events."

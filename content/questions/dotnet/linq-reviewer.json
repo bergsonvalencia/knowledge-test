@@ -42,7 +42,7 @@
       "source": "dotnet/linq-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Using the SQL-table mental model from the reviewer, what does `Where` do versus `Select`?",
+      "question": "Using the SQL-table mental model, what does `Where` do versus `Select`?",
       "options": [
         "`Where` filters rows; `Select` projects columns",
         "`Where` projects columns; `Select` filters rows",
@@ -50,7 +50,7 @@
         "`Where` flattens nested sequences; `Select` groups them"
       ],
       "answer": 0,
-      "explanation": "The reviewer's mental model is `Where` filters *rows* while `Select` projects *columns* (shapes the output). Flattening is `SelectMany`, not `Select`."
+      "explanation": "In the SQL-table mental model, `Where` filters *rows* while `Select` projects *columns* (shapes the output). Flattening is `SelectMany`, not `Select`."
     },
     {
       "subtopic": "Any vs Count",
@@ -74,7 +74,7 @@
       "type": "truefalse",
       "question": "`ToList()` and `ToArray()` both execute the query immediately, but only the `List<T>` returned by `ToList()` is resizable.",
       "answer": true,
-      "explanation": "Both materialize the query right away. `ToList` returns a resizable `List<T>`; `ToArray` returns a fixed-size `T[]`. The reviewer recommends defaulting to `ToList` unless an array is required."
+      "explanation": "Both materialize the query right away. `ToList` returns a resizable `List<T>`; `ToArray` returns a fixed-size `T[]`. Default to `ToList` unless an array is specifically required."
     },
     {
       "subtopic": "IQueryable vs IEnumerable",
@@ -83,9 +83,9 @@
       "type": "mcq",
       "question": "With EF, what is the key practical difference between keeping a query as `IQueryable<T>` versus calling `AsEnumerable()` early?",
       "options": [
-        "`IQueryable` translates the filter to SQL so only matching rows return; `AsEnumerable()` pulls all rows and filters in app memory",
+        "`IQueryable` translates the filter to SQL so only matching rows return; `AsEnumerable()` pulls all rows and filters in memory",
         "`IQueryable` always buffers the full result set; `AsEnumerable()` streams rows one at a time from SQL",
-        "`AsEnumerable()` runs the query in the database, while `IQueryable` always runs it in memory",
+        "`AsEnumerable()` runs the query in the database, while `IQueryable` always runs it in app memory",
         "Both run identical SQL, but `AsEnumerable()` opens a second database connection"
       ],
       "answer": 0,
@@ -130,7 +130,7 @@
       "type": "mcq",
       "question": "What is the key execution difference between `GroupBy` and `ToLookup`?",
       "options": [
-        "`GroupBy` is deferred; `ToLookup` executes immediately and produces a reusable lookup",
+        "`GroupBy` is deferred; `ToLookup` executes immediately into a reusable lookup",
         "`ToLookup` is deferred; `GroupBy` executes immediately",
         "Both are deferred, but `ToLookup` cannot be indexed by key",
         "Both execute immediately, but `GroupBy` requires unique keys"
@@ -162,10 +162,10 @@
       "code": "var ok = db.Users\n    .Where(u => u.IsActive)\n    .AsEnumerable()\n    .Where(u => MyCustomFunction(u.Name));",
       "lang": "csharp",
       "options": [
-        "Do the translatable filter in SQL first, then `AsEnumerable()`, then apply the custom logic in memory",
+        "Filter on a translatable predicate in SQL first, then `AsEnumerable()`, then apply the custom logic in memory",
         "Call `AsEnumerable()` before any filter so all logic runs client-side",
-        "Wrap `MyCustomFunction` in `Expression.Call` so EF translates it to SQL automatically",
-        "Replace `Where` with `ToList().Where(...)` to avoid the translation error entirely"
+        "Wrap `MyCustomFunction` in `Expression.Call` so EF translates it to SQL",
+        "Replace `Where` with `ToList().Where(...)` to avoid the error entirely"
       ],
       "answer": 0,
       "explanation": "Push the translatable predicate (`IsActive`) into SQL to reduce rows, then switch to client-side with `AsEnumerable()` and run the untranslatable custom function in memory. Calling `AsEnumerable()` first over-fetches every row; `ToList()` first does the same."
@@ -220,9 +220,9 @@
       "type": "mcq",
       "question": "Compared to LINQ to Objects, why does operator order matter more for an EF `IQueryable`?",
       "options": [
-        "For EF, order affects SQL translation and pushdown; a client-side hop (e.g., `AsEnumerable`) before a filter forces every row into memory",
+        "For EF, order affects SQL translation and pushdown; a client-side hop before a filter forces every row into memory",
         "For EF, operators are evaluated right-to-left, so reversing them changes the result set",
-        "For LINQ to Objects the order changes the output, but for EF the output is always identical",
+        "For LINQ to Objects the order changes the output, but for EF it is always identical",
         "EF requires `Select` before `Where`, otherwise the query fails to compile"
       ],
       "answer": 0,
@@ -255,7 +255,7 @@
       "type": "mcq",
       "question": "On an EF `IQueryable`, what is the essential difference between `AsEnumerable()` and `ToList()`?",
       "options": [
-        "`ToList()` executes the query and buffers results; `AsEnumerable()` does not execute — it only changes the static type to `IEnumerable`",
+        "`ToList()` executes and buffers results; `AsEnumerable()` does not execute — it only changes the static type",
         "Both execute the query, but `AsEnumerable()` buffers into an array and `ToList()` into a list",
         "`AsEnumerable()` executes immediately; `ToList()` stays deferred until first enumerated",
         "Neither executes the query; both only change the compile-time type"

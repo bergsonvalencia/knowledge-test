@@ -60,7 +60,7 @@
         "Override every inherited method to remove ambiguity"
       ],
       "answer": 0,
-      "explanation": "The reviewer's solution is 'Contain and Delegate' — favor composition over inheritance — to sidestep the ambiguity multiple class inheritance creates. Deeper hierarchies or forcing abstract bases do not resolve the ambiguity of which inherited member to use."
+      "explanation": "The prescribed solution is 'Contain and Delegate' — favor composition over inheritance — to sidestep the ambiguity multiple class inheritance creates. Deeper hierarchies or forcing abstract bases do not resolve the ambiguity of which inherited member to use."
     },
     {
       "subtopic": "Program to types",
@@ -69,7 +69,7 @@
       "type": "truefalse",
       "question": "Programming to types (interfaces) rather than to concrete classes helps maintain flexibility.",
       "answer": true,
-      "explanation": "The reviewer states that 'Type is equivalent to the interface of a class' and that 'Programming to types, not classes, maintains flexibility.'"
+      "explanation": "A type is equivalent to the interface of a class, and programming to types, not concrete classes, maintains flexibility by decoupling callers from specific implementations."
     },
     {
       "subtopic": "Aggregation vs composition",
@@ -99,14 +99,14 @@
         "All three are unrelated relationship kinds with no containment among them"
       ],
       "answer": 0,
-      "explanation": "The reviewer states the containment as Association ⊃ Aggregation ⊃ Composition: aggregation is a special case of association, and composition is a restricted (special) form of aggregation."
+      "explanation": "The containment runs Association ⊃ Aggregation ⊃ Composition: aggregation is a special case of association, and composition is a restricted (special) form of aggregation."
     },
     {
       "subtopic": "Abstraction vs encapsulation",
       "source": "software-design/object-oriented-programming-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "How do abstraction and encapsulation relate to each other ?",
+      "question": "How do abstraction and encapsulation relate to each other?",
       "options": [
         "Encapsulation enables a programmer to implement the desired level of abstraction by hiding implementation details",
         "Abstraction is achieved through access modifiers, while encapsulation models essential features",
@@ -114,7 +114,7 @@
         "Abstraction hides data while encapsulation exposes the public interface"
       ],
       "answer": 0,
-      "explanation": "The reviewer says encapsulation 'enables a programmer to implement the desired level of abstraction.' Access modifiers belong to encapsulation, and abstraction is about modeling essential features — so the distractor swapping those is wrong."
+      "explanation": "Encapsulation enables a programmer to implement the desired level of abstraction. Access modifiers belong to encapsulation, and abstraction is about modeling essential features — so the distractor swapping those is wrong."
     },
     {
       "subtopic": "Messaging",
@@ -135,7 +135,7 @@
         2,
         3
       ],
-      "explanation": "The reviewer defines a message as having four parts: a receiver object, a method name, optional method arguments, and an optional return value. The sender's call stack depth is not part of that definition."
+      "explanation": "A message has four parts: a receiver object, a method name, optional method arguments, and an optional return value. The sender's call stack depth is not part of that definition."
     },
     {
       "subtopic": "Polymorphism code reading",
@@ -159,16 +159,16 @@
       "source": "software-design/object-oriented-programming-reviewer.md",
       "difficulty": "medium",
       "type": "truefalse",
-      "question": "The reviewer ties abstraction to abstract classes by noting that an abstract class is used when you need to inherit from a class but do not need to instantiate an object of that class.",
+      "question": "An abstract class is appropriate when you need to inherit from a class but do not need to instantiate an object of that class.",
       "answer": true,
-      "explanation": "The reviewer states abstraction is 'done when we only need to inherit from a class (abstract class), but do not need to instantiate the object of that class.'"
+      "explanation": "Abstraction is done when we only need to inherit from a class (an abstract class) but do not need to instantiate an object of that class, so the abstract class itself cannot be instantiated directly."
     },
     {
       "subtopic": "Inheritance purpose",
       "source": "software-design/object-oriented-programming-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Which design goal does inheritance most directly serve ?",
+      "question": "Which design goal does inheritance most directly serve?",
       "options": [
         "Code reuse and managing generalization/specialization by extending an existing class",
         "Hiding the implementation details of a class behind access modifiers",
@@ -183,7 +183,7 @@
       "source": "software-design/object-oriented-programming-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which statements about association are correct per the reviewer? (Select all that apply.)",
+      "question": "Which statements about association are correct?",
       "options": [
         "Association defines the multiplicity between objects (e.g., one-to-one, one-to-many, many-to-many)",
         "Aggregation is a special form of association",
@@ -196,29 +196,29 @@
         1,
         2
       ],
-      "explanation": "Association defines multiplicity, aggregation is a special form of association, and associated objects have independent lifetimes. Requiring one object cannot exist without the other describes composition, and composition is more restricted (not more general) than association."
+      "explanation": "Association defines multiplicity, aggregation is a special form of association, and associated objects have independent lifetimes. Requiring that one object cannot exist without the other describes composition, and composition is more restricted (not more general) than association."
     },
     {
       "subtopic": "Composition over inheritance",
       "source": "software-design/object-oriented-programming-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A team needs behavior from two unrelated base classes in a language that forbids multiple class inheritance. Following the guidance, what is the soundest approach?",
+      "question": "A team needs behavior from two unrelated base classes in a language that forbids multiple class inheritance. What is the soundest approach?",
       "options": [
         "Hold instances of both as fields and delegate to them (contain and delegate)",
         "Create an intermediate class that inherits from both to merge their behavior",
-        "Copy the needed methods from both classes into the new class to avoid any references",
-        "Make the new class inherit from one base and re-declare the other's methods as abstract"
+        "Copy the needed methods from both classes into the new class to avoid references",
+        "Inherit from one base and re-declare the other's methods as abstract members"
       ],
       "answer": 0,
-      "explanation": "The reviewer's prescribed answer to the multiple-inheritance/diamond limitation is to contain and delegate — favor composition over inheritance. Inheriting from both is exactly the forbidden multiple inheritance, and copying methods duplicates code and breaks reuse."
+      "explanation": "The prescribed answer to the multiple-inheritance/diamond limitation is to contain and delegate — favor composition over inheritance. Inheriting from both is exactly the forbidden multiple inheritance, and copying methods duplicates code and breaks reuse."
     },
     {
       "subtopic": "Type vs class",
       "source": "software-design/object-oriented-programming-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer distinguishes 'type' from 'class.' Which statement best captures that distinction and its practical implication?",
+      "question": "Which statement best captures the distinction between 'type' and 'class' and its practical implication?",
       "options": [
         "Type is equivalent to the interface (capabilities/behavior) of a class, so coding against types rather than concrete classes preserves flexibility",
         "Type and class are interchangeable, so depending on either has the same coupling effect",
@@ -226,7 +226,7 @@
         "Type determines memory layout, while class determines behavior, so neither affects flexibility"
       ],
       "answer": 0,
-      "explanation": "The reviewer says type is equivalent to the interface of a class and determines capabilities/behavior, and that programming to types (not classes) maintains flexibility. The distractor that reverses type and class (type = concrete) inverts the definition."
+      "explanation": "Type is equivalent to the interface of a class and determines capabilities/behavior, and programming to types (not concrete classes) maintains flexibility. The distractor that reverses type and class (type = concrete) inverts the definition."
     },
     {
       "subtopic": "Diamond problem reasoning",
@@ -265,7 +265,7 @@
       "source": "software-design/object-oriented-programming-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which of the following are among the four pillars of OOP as listed in the reviewer? (Select all that apply.)",
+      "question": "Which of the following are among the four pillars of OOP? (Select all that apply.)",
       "options": [
         "Abstraction",
         "Encapsulation",

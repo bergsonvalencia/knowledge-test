@@ -160,10 +160,10 @@
       "type": "mcq",
       "question": "You created a `static readonly ActivitySource(\"MyApp.Orders\")` and start spans from it, but none appear in your backend. The OTLP exporter is wired and ASP.NET Core spans show up fine. What is the most likely cause?",
       "options": [
-        "You never called `.AddSource(\"MyApp.Orders\")` on the tracing builder, so your custom source's spans are dropped",
-        "An `ActivitySource` cannot be `static` and must be created per request",
-        "Custom `ActivitySource` spans require a separate exporter from the auto-instrumentation",
-        "The source name must exactly equal the assembly name or spans are discarded"
+        "You never called `.AddSource(\"MyApp.Orders\")` on the tracing builder, so the source's spans are dropped",
+        "An `ActivitySource` cannot be `static` and must instead be created per request to emit spans",
+        "Custom `ActivitySource` spans need a separate exporter from the auto-instrumentation's exporter",
+        "The source name must exactly equal the project's assembly name or its spans are discarded"
       ],
       "answer": 0,
       "explanation": "The SDK only listens to sources you register; you must `AddSource(name)` matching the `ActivitySource` name or its spans are silently dropped. Static singletons are correct and recommended, one exporter handles all spans, and the name need not match the assembly."
@@ -207,10 +207,10 @@
       "code": "for (var i = 0; i < items.Length; i++)\n    _logger.LogDebug(\"Item {Index} of {Total}: {@Item}\", i, items.Length, items[i]);",
       "lang": "csharp",
       "options": [
-        "The arguments are boxed into an `object[]` and `{@Item}` work is set up before the filter short-circuits; guard with `IsEnabled(LogLevel.Debug)` and/or use a `[LoggerMessage]` method",
-        "`LogDebug` ignores configuration and always writes, so the only fix is to remove the call entirely",
-        "Destructuring with `{@Item}` is what enables the level filter, so removing `@` makes it free",
-        "The cost is the disk I/O of writing each line; redirecting Console output fixes it"
+        "Args are boxed into `object[]` and `{@Item}` set up before the filter short-circuits; guard with `IsEnabled` or use `[LoggerMessage]`",
+        "`LogDebug` ignores configuration and always writes, so the call must be removed entirely",
+        "Destructuring with `{@Item}` is what enables the level filter, so dropping `@` makes it free",
+        "The cost is the disk I/O of each written line; redirecting the Console output fixes it"
       ],
       "answer": 0,
       "explanation": "Each convenience call boxes value-type args into an `object[]` and prepares destructuring before the level filter fully short-circuits the cost; over a tight loop that is expensive. Guarding with `IsEnabled` and/or using `[LoggerMessage]` (which checks the level before any argument work) eliminates it. `LogDebug` does honor configuration, `@` does not control filtering, and no I/O happens when Debug is off."

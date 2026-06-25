@@ -7,12 +7,12 @@
       "source": "angular/11-exam-prep-and-recall.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "What best describes the architectural difference between Angular and React as characterized in the reviewer?",
+      "question": "What best describes the architectural difference between Angular and React?",
       "options": [
-        "Angular is an opinionated, batteries-included framework using inversion of control (router/DI/lifecycle call your code), while React is a focused view library you compose with separate routing/state libraries",
-        "Both are full frameworks, but Angular renders on the server only and React renders on the client only",
+        "Angular is an opinionated, batteries-included framework using inversion of control, while React is a focused view library composed with separate routing/state libraries",
+        "Both are full frameworks, but Angular renders only on the server and React renders only on the client",
         "Angular is a view library you compose, while React ships routing, forms, and HttpClient in-box",
-        "They are functionally identical; the only difference is that Angular uses TypeScript and React uses JavaScript"
+        "They are functionally identical apart from Angular using TypeScript and React using JavaScript"
       ],
       "answer": 0,
       "explanation": "Angular ships the stack (routing, forms, HttpClient, DI, CLI, SSR) and uses inversion of control; React is a focused view library that owns rendering and leaves the rest to separate libraries. Option 3 reverses the two roles."
@@ -34,7 +34,7 @@
       "question": "A counter's click handler runs and calls `count.update(n => n + 1)`, but the template `{{ count }}` never updates on screen. Why?",
       "options": [
         "Binding `count` without parentheses binds the signal function object, which never registers the template as a dependency, so the view is never refreshed",
-        "`signal()` is not reactive; you must use `BehaviorSubject` with the async pipe to update the view",
+        "`signal()` is not reactive; you must use a `BehaviorSubject` with the async pipe to update the view",
         "`update()` does not mutate the signal; only `set()` triggers change detection",
         "The component must use `ChangeDetectionStrategy.Default` for signal reads to refresh"
       ],
@@ -48,7 +48,7 @@
       "type": "mcq",
       "question": "Why does the `@for` block require a `track` expression when `*ngFor`'s `trackBy` was optional?",
       "options": [
-        "`track` gives each item a stable identity so Angular can move and reuse existing DOM nodes instead of destroying and recreating them; making it mandatory prevents the common untracked-list re-render bug",
+        "`track` gives each item a stable identity so Angular can move and reuse existing DOM nodes instead of destroying and recreating them, and making it mandatory prevents the common untracked-list re-render bug",
         "`track` is required only to enable the `$index` contextual variable, which `*ngFor` lacked",
         "`track` tells the compiler the array length so it can pre-allocate DOM nodes for performance",
         "`track` is required because `@for` cannot iterate over arrays without an explicit numeric counter"
@@ -166,10 +166,10 @@
       "type": "mcq",
       "question": "With strictly typed reactive forms (v14+), what are the two value-type gotchas and their remedies?",
       "options": [
-        "A control's value type includes `null` (because `reset()` sets `null`) — drop it with `nonNullable: true`; a group's `.value` is a `Partial` because disabled controls are omitted — use `getRawValue()` for the full shape",
-        "A control's value is always `any` until validated — cast it manually; a group's `.value` excludes pristine controls — use `markAllAsTouched()`",
-        "A control's value type is `string` regardless of declared type — set the type via a generic on `FormControl`; disabled controls throw — re-enable them before reading",
-        "A control's value includes `undefined` after `reset()` — use `nonNullable: true`; a group's `.value` includes disabled controls by default — use `value` directly"
+        "A control's value includes `null` (because `reset()` sets `null`), dropped with `nonNullable: true`; a group's `.value` is a `Partial` because disabled controls are omitted, fixed with `getRawValue()`",
+        "A control's value is always `any` until validated, so cast it manually; a group's `.value` excludes pristine controls, fixed with `markAllAsTouched()`",
+        "A control's value type is `string` regardless of declared type, fixed via a generic on `FormControl`; disabled controls throw, so re-enable them before reading",
+        "A control's value includes `undefined` after `reset()`, fixed with `nonNullable: true`; a group's `.value` includes disabled controls by default, so use `value` directly"
       ],
       "answer": 0,
       "explanation": "Control values are `T | null` by default because reset() sets null (fixed with nonNullable), and a group's `.value` is a Partial because disabled controls are omitted (use getRawValue() for the complete, non-partial value)."

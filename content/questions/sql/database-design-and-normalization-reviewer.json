@@ -129,8 +129,8 @@
       "question": "Which statement about primary keys and UNIQUE constraints in SQL Server is correct?",
       "options": [
         "A table can have one PK but many UNIQUE constraints, and a FK may reference a UNIQUE key, not only the PK",
-        "A table can have multiple primary keys as long as each is NOT NULL",
-        "A UNIQUE constraint forbids NULLs entirely, just like a primary key",
+        "A table can have multiple primary keys as long as each column is marked NOT NULL",
+        "A UNIQUE constraint forbids NULLs entirely, exactly like a primary key does",
         "A foreign key can only ever reference a primary key, never a UNIQUE constraint"
       ],
       "answer": 0,
@@ -168,9 +168,9 @@
       "question": "A nullable column `Status` has `DEFAULT 'A'`. An application runs `INSERT INTO Account (Email, Status) VALUES ('x@y.com', NULL)`. What value does `Status` end up with?",
       "options": [
         "NULL, because an explicit NULL was supplied and the DEFAULT does not fire",
-        "'A', because the DEFAULT always overrides a supplied NULL",
-        "An error, because DEFAULT and an explicit NULL conflict",
-        "'A', but only if the column is also marked NOT NULL"
+        "'A', because the DEFAULT always overrides any supplied NULL value",
+        "An error, because a DEFAULT and an explicit NULL directly conflict",
+        "'A', but only when the column is additionally marked NOT NULL"
       ],
       "answer": 0,
       "explanation": "A DEFAULT only fires when the column is omitted from the INSERT or set to the `DEFAULT` keyword. Inserting an explicit NULL into a nullable column stores NULL — the default is not applied. There is no conflict error."
@@ -180,12 +180,12 @@
       "source": "sql/database-design-and-normalization-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "What is the senior-default key strategy this reviewer recommends for a typical SQL Server table?",
+      "question": "What is the recommended senior-default key strategy for a typical SQL Server table?",
       "options": [
-        "A narrow surrogate PK (`INT`/`BIGINT IDENTITY` or sequence) plus a `UNIQUE` constraint on the natural/business key",
-        "A composite primary key built from all the natural business attributes",
-        "A random `GUID` (`NEWID()`) clustered primary key for global uniqueness",
-        "The natural key as the PK, with no surrogate, to avoid an extra column"
+        "A narrow surrogate PK (`INT`/`BIGINT IDENTITY` or sequence) plus a `UNIQUE` constraint on the natural key",
+        "A composite primary key built from all of the natural business attributes combined",
+        "A random `GUID` (`NEWID()`) used as the clustered primary key for global uniqueness",
+        "The natural business key as the PK, with no surrogate, to avoid an extra column"
       ],
       "answer": 0,
       "explanation": "The recommended default is a narrow, stable surrogate PK for lean joins/indexes, plus a UNIQUE constraint that still enforces the real-world uniqueness rule. A random GUID makes a poor clustered key, and using a mutable natural value as the PK cascades changes through every FK."
@@ -217,9 +217,9 @@
       "question": "Why does the optimizer treat a trusted `CHECK` constraint or `FOREIGN KEY` differently from a trigger that enforces the same rule?",
       "options": [
         "Constraints are declarative and the optimizer can trust them for predicate elimination; triggers are imperative and not trusted",
-        "Triggers are evaluated at compile time while constraints run only at execution time",
-        "Constraints are cached in the plan cache whereas triggers bypass it entirely",
-        "Triggers always run faster, so the optimizer prefers them over constraints"
+        "Triggers are evaluated entirely at compile time, while constraints run only at execution time",
+        "Constraints are stored in the plan cache, whereas triggers bypass the plan cache entirely",
+        "Triggers always run faster, so the optimizer prefers them over equivalent constraints"
       ],
       "answer": 0,
       "explanation": "A trusted declarative constraint lets the optimizer reason about and even eliminate predicates (it knows the data already satisfies the rule). A trigger is imperative procedural code the optimizer cannot trust for such reasoning, which is why constraints are preferred when the rule fits."
@@ -263,10 +263,10 @@
       "type": "mcq",
       "question": "In SQL Server, which side of a foreign key relationship is automatically indexed, and what is the practical consequence?",
       "options": [
-        "Only the referenced (parent) side is auto-indexed via its PK/UNIQUE; the referencing FK column is not, so FK-checked deletes and joins scan the child table unless you index it",
-        "Both the parent and child columns are auto-indexed when the FK is created, so no manual indexing is needed",
-        "Only the referencing (child) FK column is auto-indexed; the parent PK is left to the developer",
-        "Neither side is indexed, so foreign keys provide no performance benefit at all"
+        "Only the referenced (parent) side via its PK/UNIQUE; the referencing FK column is not, so FK-checked deletes and joins scan the child table unless indexed",
+        "Both the parent key and the child FK column are auto-indexed when the FK is created, so no manual indexing is needed",
+        "Only the referencing (child) FK column is auto-indexed; the parent PK index is left to the developer",
+        "Neither side is auto-indexed, so foreign keys provide no query performance benefit at all"
       ],
       "answer": 0,
       "explanation": "SQL Server indexes the referenced side through its PK/UNIQUE key, but it does not create an index on the referencing FK column. Without one, parent-delete checks, cascades, and joins on that FK scan the child table — a classic hidden performance trap, so you should index FK columns yourself."

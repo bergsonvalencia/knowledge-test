@@ -11,8 +11,8 @@
       "options": [
         "Only members present on every union member (the intersection of their member sets)",
         "All members of both `Bird` and `Fish` (the combined member set)",
-        "Only members unique to `Bird`",
-        "No members at all until you cast the value"
+        "Only the members that are unique to `Bird`",
+        "No members at all until you cast the value to a member type"
       ],
       "answer": 0,
       "explanation": "On a bare union the compiler only exposes members guaranteed on every branch, since at runtime the value could be either type. Accessing the combined set is what an intersection gives you, not a union."
@@ -40,8 +40,8 @@
       "question": "What are the identity elements of union and intersection, respectively (the types that leave `T` unchanged)?",
       "options": [
         "`never` for union (`T | never` = `T`); `unknown` for intersection (`T & unknown` = `T`)",
-        "`unknown` for union; `never` for intersection",
-        "`any` for both",
+        "`unknown` for union (`T | unknown` = `T`); `never` for intersection (`T & never` = `T`)",
+        "`any` for both union and intersection",
         "`null` for union; `undefined` for intersection"
       ],
       "answer": 0,
@@ -98,9 +98,9 @@
       "lang": "typescript",
       "options": [
         "It compiles: after the guard, `r` is narrowed to the `{ ok: false; error: string }` member",
-        "It errors: `error` is not accessible because `r` is still the full union",
-        "It errors: `ok` is a `boolean`, not a literal, so it can't discriminate",
-        "It compiles only if you add an explicit `as` cast on `r`"
+        "It errors: `error` is unreachable because `r` is still the full `Result` union",
+        "It errors: `ok` is a `boolean`, not a literal, so it cannot discriminate",
+        "It compiles only if you add an explicit `as` cast on the value of `r`"
       ],
       "answer": 0,
       "explanation": "`ok: true | false` is itself a discriminated union. After `if (r.ok) return`, the complement narrows `r` to the `ok: false` member, so `r.error.length` is valid. Writing `r.value` there would instead error."
@@ -131,8 +131,8 @@
       "options": [
         "`if (count !== undefined)` — `0` takes the THEN branch as a valid number",
         "`if (count)` — `0` takes the THEN branch as a valid number",
-        "`if (!!count)` — coercion makes `0` truthy",
-        "`if (count || count === null)` — keeps `0` as present"
+        "`if (!!count)` — the coercion makes `0` truthy",
+        "`if (count || count === null)` — this keeps `0` as present"
       ],
       "answer": 0,
       "explanation": "`if (count)` (and `!!count`) sends `0` to the ELSE branch because `0` is falsy, silently treating real zero as absent. An explicit `count !== undefined` (or `count != null`) keeps `0` and `\"\"` as data."
@@ -145,9 +145,9 @@
       "question": "How does an assertion function (`asserts x is T`) differ from a user-defined type guard (`x is T`) in terms of where narrowing applies?",
       "options": [
         "The assertion narrows `x` for the rest of the current scope after the call; the guard narrows only inside the `if` that calls it",
-        "Both narrow only inside the calling `if` block",
+        "Both the assertion and the guard narrow only inside the calling `if` block",
         "The assertion narrows only inside the calling `if`; the guard narrows the rest of the scope",
-        "The assertion narrows globally for every reference to `x` in the file, including before the call"
+        "The assertion narrows globally for every reference to `x`, including lines before the call"
       ],
       "answer": 0,
       "explanation": "A guard narrows within its `if` branch only. An assertion function either returns or throws, so after the call the value is known to be `T` for the remainder of the scope — no surrounding `if` needed."
@@ -160,7 +160,7 @@
       "question": "Under TS strict mode (`useUnknownInCatchVariables`, on by default in TS 6.0 strict), what is the type of `e` in `catch (e)`, and why?",
       "options": [
         "`unknown`, because JavaScript can `throw` any value, so you must narrow before use",
-        "`any`, so you can immediately access `e.message`",
+        "`any`, so that you can immediately access `e.message`",
         "`Error`, because almost everything thrown is an `Error`",
         "`never`, because the catch only runs on failure"
       ],
@@ -178,8 +178,8 @@
       "options": [
         "Both `a` and `b` narrow to `string`",
         "`a` stays `string | number`; `b` stays `string | boolean`",
-        "Both narrow to `string | number | boolean`",
-        "Both narrow to `never` because the unions don't fully overlap"
+        "Both `a` and `b` narrow to `string | number | boolean`",
+        "Both narrow to `never` because the unions do not fully overlap"
       ],
       "answer": 0,
       "explanation": "Equality narrows two variables relative to each other to their common type. The only type both unions share is `string`, so inside the branch both `a` and `b` are `string`."
@@ -194,7 +194,7 @@
         "The discriminant property must be a literal type (e.g. `\"loading\"`, `200`, `true`), not a general `string`/`number`",
         "`switch (x.kind)` narrows the whole object `x`, not just `x.kind`, so each case sees that member's unique fields",
         "They pair naturally with a `never` exhaustiveness check so adding a member breaks the build until handled",
-        "A general `string`-typed tag works just as well for distinguishing members"
+        "A general `string`-typed tag works just as well for distinguishing the members"
       ],
       "answer": [
         0,
@@ -212,7 +212,7 @@
       "options": [
         "`typeof` — narrows primitives by their runtime type string",
         "`in` — narrows a union by the presence of a property",
-        "`instanceof` — narrows plain object literals that match an interface",
+        "`instanceof` — narrows a plain object literal that structurally matches an interface",
         "`instanceof` — narrows a value to a class/built-in via the prototype chain"
       ],
       "answer": [
@@ -231,7 +231,7 @@
       "options": [
         "`string & number`, which reduces to `never` — the property is unusable",
         "`string | number`, since either branch could supply it",
-        "`string`, because the first operand wins",
+        "`string`, because the first operand listed wins",
         "`unknown`, because the two declarations conflict"
       ],
       "answer": 0,
@@ -248,8 +248,8 @@
       "options": [
         "In `default`, the reachable type of `s` is the unhandled `triangle` member, which is not assignable to `assertNever`'s `never` parameter",
         "`assertNever` can only be called once per file, and `area` already exhausted it",
-        "`switch` without a matching `case` is always a syntax error in strict mode",
-        "`s.kind` widens to `string` once three members exist, breaking narrowing"
+        "A `switch` without a matching `case` is always a syntax error in strict mode",
+        "`s.kind` widens to `string` once three members exist, which breaks narrowing"
       ],
       "answer": 0,
       "explanation": "After handling circle and square, CFA leaves the triangle member as the reachable type in `default`. Passing a non-`never` value to a parameter typed `never` is an error, pointing exactly at the missing case."
@@ -264,7 +264,7 @@
         "Reassigning a variable resets its narrowing to the declared type (or the assigned value's type)",
         "`const` locals stay narrowed longer than `let`, because the compiler knows they can't be reassigned",
         "A variable captured and possibly mutated by a later closure call is conservatively widened back inside the closure",
-        "Once narrowed, a `let` variable keeps that narrowed type for the rest of the function regardless of reassignment"
+        "Once narrowed, a `let` variable keeps that narrowed type for the rest of the function even after reassignment"
       ],
       "answer": [
         0,

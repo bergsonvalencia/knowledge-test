@@ -39,7 +39,7 @@
       "type": "truefalse",
       "question": "A default export is, under the hood, just a named export whose name is `default`, so `import D from \"./m\"` is equivalent to `import { default as D } from \"./m\"`.",
       "answer": true,
-      "explanation": "The reviewer states a default export is a named export named `default`; the two import forms import the same binding."
+      "explanation": "A default export is simply a named export named `default`, so both import forms bind the exact same export. `import D from \"./m\"` is sugar for importing the `default` binding under the name `D`."
     },
     {
       "subtopic": "re-export forms",
@@ -112,7 +112,7 @@
       "code": "import { type User, UserStore } from \"./model\";\nimport type { Config } from \"./config\";\nconst s = new UserStore();\nlet u: User;",
       "lang": "typescript",
       "options": [
-        "`import { UserStore } from \"./model\";` plus `const s = new UserStore();` and `let u;` — the second import is fully erased",
+        "`import { UserStore } from \"./model\";`, `const s = new UserStore();`, and `let u;` — the second import is erased",
         "Both import statements are kept verbatim because the file uses both modules",
         "Both import statements are erased because each contains a type specifier",
         "`import { type User, UserStore } from \"./model\";` is kept exactly as written"
@@ -149,7 +149,7 @@
       "source": "typescript/modules-and-declaration-files-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Which compiler option emits a `.d.ts` next to each `.js` **but no JavaScript at all**, typically used when a bundler produces the runtime output?",
+      "question": "Which compiler option emits the `.d.ts` type declarations **but no JavaScript at all**, typically used when a bundler produces the runtime output?",
       "options": [
         "`emitDeclarationOnly: true`",
         "`declaration: true`",
@@ -166,10 +166,10 @@
       "type": "mcq",
       "question": "What does `\"skipLibCheck\": true` actually do, and what is the cost?",
       "options": [
-        "It skips type-checking the *contents* of all `.d.ts` files, speeding builds and avoiding conflicts between incompatible third-party declarations, at the cost of not validating those files",
+        "It skips type-checking the contents of all `.d.ts` files, speeding builds and avoiding declaration conflicts, but leaves those files unvalidated",
         "It skips downloading `@types` packages, reducing install size but losing IntelliSense",
         "It skips emitting `.d.ts` files, making builds faster but breaking library consumers",
-        "It skips type-checking only third-party `.d.ts` files, while still fully checking your own generated declarations"
+        "It skips checking only third-party `.d.ts` files, while still fully checking your own generated declarations"
       ],
       "answer": 0,
       "explanation": "`skipLibCheck` skips checking the contents of all `.d.ts` files — yours and dependencies' alike — which speeds builds and sidesteps mutually-incompatible declarations, but means errors in declaration files (including your own generated ones) go undetected."
@@ -214,7 +214,7 @@
       "code": "\"exports\": {\n  \".\":     { \"types\": \"./d.ts\",     \"import\": \"./i.mjs\" },\n  \"./sub\": { \"types\": \"./sub.d.ts\", \"import\": \"./sub.mjs\" }\n}",
       "lang": "json",
       "options": [
-        "`import z from \"pkg/dist/internal\"` fails: an `exports` map encapsulates the package, so any subpath not listed is blocked even if the file exists",
+        "`import z from \"pkg/dist/internal\"` fails: an `exports` map blocks any subpath not listed, even if the file exists",
         "`import y from \"pkg/sub\"` fails: subpath exports require a trailing slash like `\"./sub/\"`",
         "`import x from \"pkg\"` fails: the `\".\"` entry must list a `default` condition to be importable",
         "None fail: an `exports` map only adds entry points and never blocks deep imports"

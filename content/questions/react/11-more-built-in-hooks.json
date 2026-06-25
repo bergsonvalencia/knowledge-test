@@ -11,8 +11,8 @@
       "options": [
         "Synchronously after DOM mutation but before the browser paints",
         "Asynchronously after the browser paints the new frame",
-        "Before React commits any DOM mutations",
-        "On the server during SSR, before hydration begins"
+        "Before React commits any DOM mutations to the tree",
+        "On the server during SSR, before client hydration begins"
       ],
       "answer": 0,
       "explanation": "`useLayoutEffect` runs synchronously after React commits DOM mutations but before paint, letting you measure and adjust layout with no visible flicker. Firing after paint describes `useEffect`, and it does not run on the server."
@@ -24,10 +24,10 @@
       "type": "mcq",
       "question": "Which hook is the recommended default for data fetching, subscriptions, logging, and timers?",
       "options": [
-        "`useEffect`, because it runs asynchronously after paint and doesn't block rendering",
+        "`useEffect`, because it runs after paint and doesn't block rendering",
         "`useLayoutEffect`, because blocking paint guarantees the data is ready",
-        "`useImperativeHandle`, because side effects belong on the ref",
-        "`useSyncExternalStore`, because all subscriptions must go through it"
+        "`useImperativeHandle`, because side effects belong on the exposed ref",
+        "`useSyncExternalStore`, because every subscription must be routed through it"
       ],
       "answer": 0,
       "explanation": "`useEffect` is the default for non-layout side effects since it runs after paint and doesn't delay what the user sees. `useLayoutEffect` is reserved for layout reads that must happen before paint."
@@ -42,7 +42,7 @@
         "Producing a stable, unique ID that matches between server render and client hydration",
         "Generating efficient, collision-free keys for items in a rendered list",
         "Creating globally unique database primary keys on the client",
-        "Memoizing an expensive computed value across renders"
+        "Memoizing an expensive computed value across component renders"
       ],
       "answer": 0,
       "explanation": "`useId` produces deterministic IDs so SSR markup and client markup agree and React doesn't warn about a hydration mismatch. It is explicitly NOT for list keys (those come from data identity)."
@@ -63,10 +63,10 @@
       "type": "mcq",
       "question": "What is the main reason to use `useImperativeHandle`?",
       "options": [
-        "Expose a narrow, intentional imperative API on a ref while keeping the underlying DOM node private",
+        "Expose a narrow, intentional imperative API on a ref while keeping the DOM node private",
         "Replace props and state as the primary mechanism for passing data to children",
-        "Subscribe a component to an external store without tearing",
-        "Generate hydration-safe IDs for form controls"
+        "Subscribe a component to an external store without tearing under concurrency",
+        "Generate hydration-safe IDs for accessible form controls and labels"
       ],
       "answer": 0,
       "explanation": "It customizes the handle exposed through a ref so a parent can call a deliberate API (`focus()`, `play()`) without reaching into arbitrary internals. Data flow should still use props/state, not this escape hatch."
@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "In `useSyncExternalStore`, why must `getSnapshot()` return a referentially stable value when the underlying data hasn't changed?",
       "options": [
-        "Returning a fresh object each call makes React think the value changed every render, causing an infinite re-render loop",
+        "Returning a fresh object each call makes React think the value changed, causing an infinite re-render loop",
         "React serializes the snapshot to JSON, and unstable values fail serialization",
-        "A new reference each call disables concurrent rendering for the whole tree",
-        "Unstable snapshots are silently ignored, so subscriptions never fire"
+        "A new reference each call disables concurrent rendering for the entire tree",
+        "Unstable snapshots are silently ignored, so subscriptions never fire at all"
       ],
       "answer": 0,
       "explanation": "React compares snapshot references to decide whether to re-render; building a new object/array every call always looks like a change and loops infinitely. Caching and returning the same reference for unchanged data prevents this."
@@ -109,9 +109,9 @@
       "question": "A component needs several related IDs (a field, its hint, its error message). What is recommended?",
       "options": [
         "Call `useId` once and append suffixes like `${id}-hint` and `${id}-error`",
-        "Call `useId` separately for each element to guarantee independence",
-        "Use the array index of each element as its ID",
-        "Generate the IDs with `Math.random()` so they never collide"
+        "Call `useId` separately for each element to guarantee their independence",
+        "Use the array index of each element within the form as its ID",
+        "Generate the IDs with `Math.random()` so that they never collide"
       ],
       "answer": 0,
       "explanation": "Calling `useId` once and suffixing keeps related IDs consistent and unique with a single hook call. Multiple `useId` calls are unnecessary, and random IDs break hydration determinism."
@@ -132,10 +132,10 @@
       "type": "mcq",
       "question": "What is the purpose of passing a format function as the second argument to `useDebugValue`, e.g. `useDebugValue(date, d => d.toISOString())`?",
       "options": [
-        "React calls the formatter only when DevTools inspects the value, keeping expensive formatting off the hot path",
-        "It runs the formatter on every render to keep the label up to date",
+        "React calls the formatter only when DevTools inspects the value, keeping costly formatting off the hot path",
+        "It runs the formatter on every render so the displayed label always stays up to date",
         "It memoizes the value so the hook skips re-running when the input is unchanged",
-        "It validates the value's type and throws if formatting fails"
+        "It validates the value's type and throws an error if the formatting fails"
       ],
       "answer": 0,
       "explanation": "The optional formatter is lazy: React invokes it only when DevTools actually inspects the hook, so costly formatting doesn't run on normal renders."
@@ -147,10 +147,10 @@
       "type": "mcq",
       "question": "How does `ref` work with function components in React 19 when using `useImperativeHandle`?",
       "options": [
-        "`ref` is a normal prop, so no `forwardRef` wrapper is needed (though `forwardRef` still works)",
+        "`ref` is a normal prop, so no `forwardRef` wrapper is needed to receive it",
         "`forwardRef` is now mandatory and the only supported way to receive a ref",
-        "Function components cannot receive refs; you must convert to a class",
-        "`ref` must be passed through React Context instead of as a prop"
+        "Function components cannot receive refs; you must convert them to a class",
+        "`ref` must be passed down through React Context instead of as a prop"
       ],
       "answer": 0,
       "explanation": "In React 19 `ref` is just a regular prop, so a function component can accept it directly without `forwardRef`. `forwardRef` still works but is slated for deprecation."
@@ -164,7 +164,7 @@
       "options": [
         "The handle is recreated on every render",
         "The handle is created once and frozen for the component's lifetime",
-        "React throws because `deps` is required",
+        "React throws an error because `deps` is required",
         "The handle is recreated only when the ref identity changes"
       ],
       "answer": 0,
@@ -181,8 +181,8 @@
       "options": [
         "It measures and repositions before paint, so the tooltip never flashes at the wrong position",
         "`useEffect` cannot call `getBoundingClientRect`, which only works synchronously",
-        "`useLayoutEffect` runs during server rendering, ensuring the position is correct in the SSR HTML",
-        "`useEffect` would never re-run when `targetRef` changes, so the position would be stale"
+        "`useLayoutEffect` runs during SSR, baking the correct position into the server HTML",
+        "`useEffect` would never re-run when `targetRef` changes, leaving the position stale"
       ],
       "answer": 0,
       "explanation": "Reading layout and setting state in `useLayoutEffect` happens before paint, so the user never sees the tooltip in the wrong spot. With `useEffect` the initial (top:0) frame would paint first, causing a visible jump."
@@ -205,10 +205,10 @@
       "code": "useSyncExternalStore(\n  (cb) => {\n    window.addEventListener(\"online\", cb);\n    window.addEventListener(\"offline\", cb);\n    return () => { /* remove listeners */ };\n  },\n  () => navigator.onLine,\n  () => true,\n);",
       "lang": "tsx",
       "options": [
-        "It is `getServerSnapshot`, supplying the value used during SSR and initial hydration when `navigator` is unavailable",
-        "It is a fallback subscribe function used if the first one throws",
-        "It forces the component to always re-render on every store change",
-        "It is the unsubscribe function returned to React"
+        "It is `getServerSnapshot`, supplying the value used during SSR and initial hydration",
+        "It is a fallback subscribe function used if the first subscribe function throws",
+        "It forces the component to always re-render on every single store change",
+        "It is the unsubscribe function that React returns when cleaning up"
       ],
       "answer": 0,
       "explanation": "The optional third argument is `getServerSnapshot`, used during server rendering and initial hydration (here assuming online), since `navigator.onLine` isn't available on the server."
@@ -260,10 +260,10 @@
       "type": "mcq",
       "question": "Why does React in development StrictMode mount an effect, run its cleanup, then mount it again?",
       "options": [
-        "To surface missing or incorrect cleanup, pushing you to write idempotent setup with a matching teardown",
+        "To surface missing or incorrect cleanup, pushing you toward idempotent setup with a matching teardown",
         "To benchmark whether `useLayoutEffect` or `useEffect` is faster for the effect",
-        "Because effects always run twice in production for reliability",
-        "To pre-fetch data twice so the cache is warm before paint"
+        "Because effects always run twice in production for added reliability",
+        "To pre-fetch data twice so the cache is warm before the first paint"
       ],
       "answer": 0,
       "explanation": "StrictMode's dev-only mount/cleanup/re-mount cycle exposes effects that lack proper cleanup, encouraging idempotent setup paired with a correct teardown. This behavior is development-only, not production."

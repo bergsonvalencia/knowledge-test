@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "In the **cache-aside (lazy loading)** pattern, who owns and populates the cache?",
       "options": [
-        "The **application** — it checks the cache, loads from the source on a miss, and populates the cache itself",
-        "The cache layer — it transparently loads from the database on a miss without app involvement",
-        "The database — it pushes changed rows into the cache as they are written",
-        "The load balancer — it routes misses to a warm node that owns the entry"
+        "The application — it checks the cache, loads from the source on a miss, and populates it",
+        "The cache layer — it transparently loads from the database on a miss with no app code involved",
+        "The database — it pushes every changed row into the cache as part of each write transaction",
+        "The load balancer — it routes misses to a warm node that already owns the entry in memory"
       ],
       "answer": 0,
       "explanation": "Cache-aside puts the application in control: check the cache, on a miss load from the source, populate, and return. The cache layer loading transparently on a miss describes read-through, not cache-aside."
@@ -48,10 +48,10 @@
       "type": "mcq",
       "question": "What is a **cache stampede** (thundering herd / dog-piling)?",
       "options": [
-        "A hot key expires (or the cache is cold) and many concurrent requests all miss at once, hammering the source to recompute the same value",
-        "The cache grows without bound because entries have no TTL, eventually exhausting memory",
-        "Two app instances hold divergent copies of the same key after a write to only one",
-        "An attacker floods the cache with junk keys built from untrusted input"
+        "A hot key expires (or is cold) and many concurrent requests all miss, hammering the source at once",
+        "The cache grows without bound because entries have no TTL, eventually exhausting available memory",
+        "Two app instances hold divergent copies of the same key after a write reaches only one of them",
+        "An attacker floods the cache with junk keys built from raw untrusted user input to exhaust it"
       ],
       "answer": 0,
       "explanation": "A stampede is N concurrent misses on the same hot/cold key all recomputing simultaneously, saturating the source. The other options describe an unbounded-cache memory leak, per-instance divergence, and cache poisoning/DoS respectively."
@@ -63,10 +63,10 @@
       "type": "mcq",
       "question": "Where does the cached copy live for **output caching** versus **response caching**?",
       "options": [
-        "Output caching: server-side in your app; response caching: in the client/proxy, driven by `Cache-Control` headers",
-        "Output caching: in the client/proxy; response caching: server-side in your app",
-        "Both store the copy server-side; they differ only in TTL granularity",
-        "Both store the copy in the client; they differ only in which headers they emit"
+        "Output caching: server-side in your app; response caching: in the client/proxy via `Cache-Control`",
+        "Output caching: in the client/proxy; response caching: server-side in your app's process",
+        "Both store the copy server-side; they differ only in expiration granularity and TTL units",
+        "Both store the copy in the client; they differ only in which HTTP headers they emit"
       ],
       "answer": 0,
       "explanation": "Output caching stores the generated response server-side (authoritative, tag-evictable). Response caching only emits/honors `Cache-Control` headers so a downstream client or proxy may cache — the server can't force or invalidate it."
@@ -79,9 +79,9 @@
       "question": "You configure `AddMemoryCache(o => o.SizeLimit = 10_000)`. A later call to `cache.Set(key, value, options)` is made where `options` does **not** set `Size`. What happens?",
       "options": [
         "The call throws — once `SizeLimit` is set, every entry must declare a `Size`",
-        "The entry is stored with an implicit `Size` of 1",
-        "The entry is stored but exempt from size-based eviction",
-        "The entry is silently dropped and `Set` returns without caching it"
+        "The entry is stored with an implicit default `Size` of 1 unit applied automatically",
+        "The entry is stored but is exempt from size-based eviction for its whole lifetime",
+        "The entry is silently dropped and `Set` returns without caching anything at all"
       ],
       "answer": 0,
       "explanation": "If `SizeLimit` is configured, every entry must declare a `Size` or `Set`/`GetOrCreate` throws. There is no implicit size of 1, no silent exemption, and no silent drop."
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "A popular endpoint computes a 2-second report and caches it via plain `IMemoryCache.GetOrCreateAsync` with a 10-minute TTL. The TTL elapses during peak traffic and 500 requests arrive in the same second. How many times can the factory run?",
       "options": [
-        "Up to 500 times — `IMemoryCache` does not coalesce concurrent misses, so each request may run the factory before any populates the cache",
-        "Exactly once — `GetOrCreateAsync` locks the key so only one caller runs the factory",
-        "Exactly twice — one for the read path and one for the write-back path",
-        "Zero times — an expired entry is served stale until the factory completes"
+        "Up to 500 times — `IMemoryCache` does not coalesce concurrent misses, so each can run the factory",
+        "Exactly once — `GetOrCreateAsync` locks the key so that only one caller ever runs the factory",
+        "Exactly twice — once for the read path and once again for the separate write-back path",
+        "Zero times — the expired entry keeps being served stale until the factory eventually completes"
       ],
       "answer": 0,
       "explanation": "`IMemoryCache` has no built-in request coalescing, so all 500 concurrent misses can run the factory. To get single-flight behavior you need HybridCache or a per-key `SemaphoreSlim` with double-checked locking."
@@ -109,9 +109,9 @@
       "question": "Using HybridCache with a Redis L2, you call `RemoveByTagAsync` on **server A**. What happens to **server B's** in-process L1 entries for that tag?",
       "options": [
         "They are not actively purged; they remain until they expire on their own `LocalCacheExpiration`",
-        "They are purged immediately because L2 invalidation broadcasts to all L1 caches",
-        "They are purged the next time server B reads any key, regardless of tag",
-        "They become permanently stale until server B is restarted"
+        "They are purged immediately because every L2 invalidation broadcasts a flush to all L1 caches",
+        "They are purged the next time server B reads any key from L1, regardless of that key's tag",
+        "They become permanently stale and can only be cleared by fully restarting the server B process"
       ],
       "answer": 0,
       "explanation": "Invalidation hits the current server and the shared L2, but other servers' L1 isn't actively purged — those entries expire on their own `LocalCacheExpiration`. Keep L1 windows short if cross-node freshness matters."
@@ -156,10 +156,10 @@
       "lang": "csharp",
       "question": "The `/me/dashboard` endpoint is authenticated and user-specific. With the **default** output-cache policy applied as shown, what is the behavior?",
       "options": [
-        "The default policy does not cache authenticated requests, so the response is not cached by default",
-        "It caches the first user's dashboard and serves it to every other user",
-        "It caches a separate copy per authenticated user automatically",
-        "It throws at startup because per-user endpoints cannot use `CacheOutput()`"
+        "The default policy does not cache authenticated requests, so the response is not cached",
+        "It caches the very first user's dashboard and then serves that same copy to every other user",
+        "It transparently caches a separate, correctly-keyed copy per authenticated user on its own",
+        "It throws an exception at application startup because per-user endpoints cannot call `CacheOutput()`"
       ],
       "answer": 0,
       "explanation": "The default output-cache policy will not cache authenticated requests, so this authenticated endpoint simply isn't cached. It would only leak one user's data to another if you forced caching without varying by user."
@@ -172,9 +172,9 @@
       "question": "For a **distributed** output cache, why should you register `AddStackExchangeRedisOutputCache` rather than relying on the generic `IDistributedCache`?",
       "options": [
         "The generic `IDistributedCache` lacks the atomic operations that tag-based eviction needs",
-        "The generic `IDistributedCache` cannot store byte arrays large enough for HTML responses",
-        "`AddStackExchangeRedisOutputCache` is the only way to set a `Cache-Control` header",
-        "The generic `IDistributedCache` is in-process only and can't be shared across a farm"
+        "The generic `IDistributedCache` cannot store byte arrays large enough to hold full HTML responses",
+        "`AddStackExchangeRedisOutputCache` is the only supported way to emit a `Cache-Control` header",
+        "The generic `IDistributedCache` is in-process only and therefore can't be shared across a farm"
       ],
       "answer": 0,
       "explanation": "Output caching's tag eviction requires atomic operations that the generic `IDistributedCache` abstraction doesn't expose, so you use `AddStackExchangeRedisOutputCache` (or a custom `IOutputCacheStore`). `IDistributedCache` is out-of-process, not in-process."
@@ -186,10 +186,10 @@
       "type": "mcq",
       "question": "What kind of caching does EF Core provide out of the box?",
       "options": [
-        "Only the per-`DbContext` change tracker — entity identity within a single context — not a cross-request result cache",
-        "A built-in second-level cache that stores query results across requests",
-        "A distributed result cache shared by all `DbContext` instances in the app",
-        "No caching of any kind; every `Find` always hits the database"
+        "Only the per-`DbContext` change tracker (entity identity in one context), not a cross-request result cache",
+        "A built-in second-level cache that automatically stores materialized query results across requests",
+        "A distributed result cache that is shared by all `DbContext` instances running across the app",
+        "No caching of any kind at all, so every single `Find` call always issues a fresh database query"
       ],
       "answer": 0,
       "explanation": "EF Core's only built-in cache is the change tracker (first-level): entity identity within one Scoped `DbContext`. There is no built-in second-level/cross-request cache — you cache-aside DTOs yourself or add a community library."
@@ -203,10 +203,10 @@
       "lang": "csharp",
       "question": "After `InvalidateAll()` runs, how does this versioned-key scheme make readers see fresh data, and what is the trade-off?",
       "options": [
-        "Readers now compose a new key (`...:v8`), miss, and reload; the old `...:v7` entries linger until their TTL expires",
-        "The old `...:v7` entries are immediately deleted from the cache by the increment",
-        "Readers keep hitting `...:v7` until the process restarts, so the bump has no effect until then",
-        "The increment blocks all readers until every old entry is physically purged"
+        "Readers compose a new key (`...:v8`), miss, and reload; the old `...:v7` entries linger until TTL",
+        "The increment immediately deletes every old `...:v7` entry from both the L1 and L2 cache tiers",
+        "Readers keep hitting the old `...:v7` key until the process restarts, so the bump has no real effect",
+        "The increment blocks all readers from the cache until every old-version entry is physically purged"
       ],
       "answer": 0,
       "explanation": "Bumping the version routes every reader to a brand-new key (atomic switch-over, no coordinated deletes), but the stale older-version entries aren't deleted — they age out via TTL, which is the key sprawl/lingering trade-off."
@@ -218,10 +218,10 @@
       "type": "mcq",
       "question": "Two app instances sit behind a load balancer. Instance A updates a value in its `IMemoryCache` after a POST, but instance B keeps serving the old value. What is the root cause and the correct fix?",
       "options": [
-        "`IMemoryCache` is per-instance, so B never saw A's update; use a shared `IDistributedCache`/Redis (or HybridCache with an L2) and invalidate on write",
-        "A's TTL was too long; shorten the TTL on both instances and the problem disappears",
-        "The load balancer lacks sticky sessions; enable session affinity so each user always hits A",
-        "B's cache is corrupt; clear B's heap on every deploy to keep both instances in sync"
+        "`IMemoryCache` is per-instance, so B never saw A's write; use a shared `IDistributedCache`/Redis and invalidate on write",
+        "A's TTL was set too long; just shorten the absolute expiration on both instances and the divergence goes away",
+        "The load balancer lacks sticky sessions; enable session affinity so each user is always pinned to instance A",
+        "Instance B's heap is corrupt; clear B's entire process memory on every deploy to keep the two instances in sync"
       ],
       "answer": 0,
       "explanation": "Each instance has its own in-process heap, so an update on A is invisible to B. The fix is a shared out-of-process store (Redis/`IDistributedCache`, or HybridCache's L2) plus invalidate-on-write. Sticky sessions just mask divergence rather than fixing the shared-view problem."
@@ -259,9 +259,9 @@
       "question": "In HybridCache, what is the effect of marking a cached type `sealed` and annotating it with `[ImmutableObject(true)]`?",
       "options": [
         "HybridCache may reuse the same instance across callers and skip per-call deserialization",
-        "HybridCache exempts the entry from `MaximumPayloadBytes` limits",
-        "HybridCache stores the entry only in L2 and never in L1",
-        "HybridCache disables stampede protection for that key because the value can't change"
+        "HybridCache exempts the entry from the configured `MaximumPayloadBytes` size limit entirely",
+        "HybridCache stores the entry only in the L2 distributed tier and never keeps it in the L1 tier",
+        "HybridCache disables stampede protection for that key on the grounds the value cannot change"
       ],
       "answer": 0,
       "explanation": "Marking a type `sealed` + `[ImmutableObject(true)]` signals it is safe to share, so HybridCache can hand back the same instance and skip per-call deserialization. It has nothing to do with payload limits, tier placement, or stampede protection."

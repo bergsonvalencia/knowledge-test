@@ -10,8 +10,8 @@
       "question": "What does a **clustered index** define for a SQL Server table?",
       "options": [
         "The physical sort order of the table — its leaf level *is* the table",
-        "A separate B+-tree whose leaf holds key columns plus a row locator",
-        "An in-memory copy of the rows used only for read caching",
+        "A separate B+-tree whose leaf holds the key columns plus a row locator",
+        "An in-memory copy of the rows kept purely for read caching",
         "A constraint that forces every indexed column to be unique"
       ],
       "answer": 0,
@@ -63,10 +63,10 @@
       "type": "mcq",
       "question": "Where do `INCLUDE` columns of a non-clustered index live, and what are they used for?",
       "options": [
-        "In every level of the B+-tree; usable for seeking and ordering",
-        "Only at the leaf level; payload for the SELECT output, not seekable or sortable",
-        "In a separate filtered structure; usable only with a WHERE clause",
-        "In the clustered index leaf; they replace the row locator"
+        "In every level of the B+-tree, usable for seeking and ordering",
+        "Only at the leaf level, as payload for the SELECT output (not seekable or sortable)",
+        "In a separate filtered structure, usable only with a WHERE clause",
+        "In the clustered index leaf, where they replace the row locator"
       ],
       "answer": 1,
       "explanation": "INCLUDE columns are stored only at the leaf level as payload, so they cover SELECT-list output without bloating the navigation levels or counting against the key-size limit. They cannot be used for seeking, range predicates, or ORDER BY."
@@ -79,8 +79,8 @@
       "question": "A non-clustered seek finds **N** matching rows but needs columns the index lacks, forcing a Key Lookup whose own descent costs 3 reads. If the seek descent is 3 reads, what is the total logical-read cost, and why is it a scaling problem?",
       "options": [
         "3 + N reads — each lookup costs one read, so cost grows slowly",
-        "3 × N reads — the seek repeats per row",
-        "3 + 3N reads — each row pays a full per-row tree descent back to the base table",
+        "3 × N reads — the seek descent repeats once per row",
+        "3 + 3N reads — each row pays a full per-row tree descent into the base table",
         "3 reads — the lookup is free once the seek locates the leaf"
       ],
       "answer": 2,
@@ -95,10 +95,10 @@
       "code": "-- (a) WHERE ProductId = 99\n-- (b) WHERE CustomerId = 7 AND SaleDate > '2026-01-01'\n-- (c) WHERE SaleDate = '2026-01-01'\n-- (d) WHERE ProductId = 99 AND SaleDate = '2026-01-01'",
       "lang": "sql",
       "options": [
-        "(a) — ProductId is in the index",
+        "(a) — ProductId is present in the index",
         "(b) — seeks on CustomerId, with SaleDate as a residual filter",
         "(c) — SaleDate is the last key column",
-        "(d) — both columns are equality predicates"
+        "(d) — both columns use equality predicates"
       ],
       "answer": 1,
       "explanation": "Only (b) starts at the leading column: it seeks on `CustomerId` and applies `SaleDate` as a residual (the `ProductId` gap stops further seeking). (a), (c), and (d) all omit the leading `CustomerId`, so there is no usable left-most prefix and the engine scans."
@@ -127,10 +127,10 @@
       "type": "mcq",
       "question": "In an actual execution plan you see a large gap between **Estimated rows** and **Actual rows** on an operator. What does this most strongly indicate?",
       "options": [
-        "The query is being parameterized incorrectly by the application",
+        "The application is parameterizing the query incorrectly",
         "Stale or insufficient statistics producing a bad cardinality estimate",
         "Fragmentation on the clustered index leaf pages",
-        "The plan was compiled with the legacy cardinality estimator only"
+        "The plan was compiled with the legacy cardinality estimator"
       ],
       "answer": 1,
       "explanation": "A wide estimated-vs-actual gap is the classic signal of stale/insufficient statistics or a bad cardinality estimate, which leads the optimizer to pick the wrong operator. Fragmentation does not change row-count estimates."
@@ -144,8 +144,8 @@
       "options": [
         "Missing statistics on the whale's rows that auto-update never refreshed",
         "Parameter sniffing — the cached plan was compiled for a low-row value and is wrong for the high-row value",
-        "Index fragmentation that only affects the whale's partition",
-        "An implicit conversion that only triggers for large customers"
+        "Index fragmentation that affects only the whale's partition",
+        "An implicit conversion that triggers only for large customers"
       ],
       "answer": 1,
       "explanation": "The plan was sniffed and cached for a low-row customer (Nested Loops + lookups), which is catastrophic for a high-row customer that needs a Hash Join + scan. The same cached plan is reused regardless of the parameter — that reuse on skewed data is the defining symptom."
@@ -157,13 +157,13 @@
       "type": "mcq",
       "question": "Which scenario is a canonical, valid use of a **filtered index**?",
       "options": [
-        "Enforcing one active email per user while allowing many NULL/inactive rows via `WHERE IsActive = 1`",
+        "Enforcing one active email per user while allowing many inactive rows via `WHERE IsActive = 1`",
         "Indexing a `bit` column across all rows to speed up any boolean filter",
         "Replacing the clustered index to change the table's physical order",
         "Combining two single-column indexes into one with an `OR` filter"
       ],
       "answer": 0,
-      "explanation": "A filtered unique index on the non-NULL/active subset enforces uniqueness there while allowing many NULLs — a canonical use. Filtered indexes generally cannot use `OR`, do not replace the clustered index, and indexing a low-selectivity `bit` over all rows is exactly what they avoid."
+      "explanation": "A filtered unique index on the active subset enforces uniqueness there while allowing many inactive rows — a canonical use. Filtered indexes generally cannot use `OR`, do not replace the clustered index, and indexing a low-selectivity `bit` over all rows is exactly what they avoid."
     },
     {
       "subtopic": "Index maintenance thresholds",
@@ -219,10 +219,10 @@
       "type": "mcq",
       "question": "If you create a **non-unique** clustered index, how does SQL Server guarantee each row still has a unique identity, and why does it matter?",
       "options": [
-        "It rejects duplicate key values at insert time",
-        "It adds a hidden 4-byte uniquifier to duplicate keys — and that locator is copied into every non-clustered index",
+        "It rejects duplicate clustering-key values at insert time",
+        "It adds a hidden 4-byte uniquifier to duplicates — and that locator is copied into every non-clustered index",
         "It silently promotes the index to UNIQUE and fails later inserts",
-        "It stores a RID per duplicate row as on a heap"
+        "It stores a RID per duplicate row, exactly as on a heap"
       ],
       "answer": 1,
       "explanation": "SQL Server appends a hidden 4-byte uniquifier to duplicate clustering keys. Because the clustering key is the row locator copied into every NCI, a wider/non-unique key inflates all NCIs — a reason to prefer a unique, narrow clustering key. A non-unique clustered index does not use RIDs (that is a heap)."
@@ -259,8 +259,8 @@
       "question": "A senior engineer says 'an Index Seek is always better than an Index Scan.' Why is this oversimplified?",
       "options": [
         "Seeks always read the entire leaf level, so they are never cheaper",
-        "A seek over a huge range can read more pages than a scan you genuinely needed; judge by rows-read-vs-returned and logical reads",
-        "Scans never touch the buffer cache, so they have zero logical reads",
+        "A seek over a huge range can read more pages than a scan you genuinely needed; judge by rows read vs returned",
+        "Scans never touch the buffer cache, so they cost zero logical reads",
         "The optimizer cannot choose a scan once a seekable index exists"
       ],
       "answer": 1,

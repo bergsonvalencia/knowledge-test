@@ -78,9 +78,9 @@
       "type": "mcq",
       "question": "On a database write in a cache-aside design, why is **deleting** the cache key preferred over **updating** it with the new value?",
       "options": [
-        "Two concurrent writers updating the cache can interleave and leave a stale value; deleting forces a clean repopulate on the next read",
-        "Deleting is faster than writing because Redis deletes are always O(1)",
-        "Updating the key would violate Redis single-threaded atomicity guarantees",
+        "Concurrent writers updating the cache can interleave and leave a stale value; deleting forces a clean repopulate",
+        "Deleting is faster because Redis key deletes are always O(1) operations",
+        "Updating the key would violate Redis's single-threaded atomicity guarantees",
         "Deleting guarantees the next read is served from L1 memory instead of L2"
       ],
       "answer": 0,
@@ -139,10 +139,10 @@
       "type": "mcq",
       "question": "Two ASP.NET Core API instances sit behind a load balancer using `IMemoryCache`. Users occasionally see a value they just updated appear stale. What is the root cause and the right fix?",
       "options": [
-        "`IMemoryCache` is per-instance, so an update on instance A leaves instance B's copy stale; move to a shared `IDistributedCache` (or `HybridCache` with invalidation broadcast)",
-        "`IMemoryCache` serializes to `byte[]` too slowly; raise the serialization buffer size",
-        "The TTL is too short, causing premature eviction; increase the absolute expiration",
-        "Redis async replication lost the write; enable `WAIT` on every set"
+        "`IMemoryCache` is per-instance, so instance A's update leaves instance B's copy stale; move to a shared `IDistributedCache`",
+        "`IMemoryCache` serializes to `byte[]` too slowly; raise the serialization buffer size limit",
+        "The TTL is too short and causes premature eviction; increase the absolute expiration window",
+        "Redis async replication lost the write; enable `WAIT` on every cache set operation"
       ],
       "answer": 0,
       "explanation": "`IMemoryCache` is in-process, so each server has its own copy and instances diverge after a write. A shared `IDistributedCache` (Redis) or `HybridCache` with cross-instance invalidation fixes it. Redis isn't even involved in a pure `IMemoryCache` setup."
@@ -155,7 +155,7 @@
       "question": "A multi-key command on Redis Cluster fails with `CROSSSLOT`. Without disabling clustering, how do you make `order:1001:items` and `order:1001:total` usable in one multi-key operation?",
       "options": [
         "Use hash tags so only the shared substring is hashed: `order:{1001}:items` and `order:{1001}:total`",
-        "Increase the number of hash slots beyond 16384 so the keys collide",
+        "Increase the number of hash slots beyond 16384 so the two keys collide",
         "Wrap both keys in a `MULTI`/`EXEC` transaction, which ignores slot boundaries",
         "Prefix both keys with the same node IP so they target one server"
       ],
@@ -211,10 +211,10 @@
       "type": "mcq",
       "question": "A read misses and loads the old value from the DB; concurrently a write updates the DB and deletes the cache key. The system still ends up serving the old value. What happened, and which mitigation directly addresses it?",
       "options": [
-        "The slow read wrote its stale value back after the delete, resurrecting it; mitigate with versioned keys, short TTL, or delete-after-delay / read-through locking",
-        "The delete failed silently; mitigate by switching the eviction policy to `allkeys-lfu`",
-        "The write-through path skipped the cache; mitigate by enabling AOF persistence",
-        "The cache and DB are on different slots; mitigate with a hash tag"
+        "The slow read wrote its stale value back after the delete; mitigate with versioned keys, short TTL, or delete-after-delay",
+        "The delete failed silently; mitigate by switching the eviction policy to `allkeys-lfu` instead",
+        "The write-through path skipped the cache; mitigate by enabling AOF persistence on the node",
+        "The cache and DB ended up on different slots; mitigate by adding a shared hash tag"
       ],
       "answer": 0,
       "explanation": "The classic resurrection race: a read that loaded the old value populates the cache after the concurrent write deleted the key. Versioned/immutable keys, short TTLs, or delete-after-delay / read-through locking address it. Eviction policy, AOF, and hash tags are unrelated."
@@ -226,10 +226,10 @@
       "type": "mcq",
       "question": "A nightly batch job does a one-time scan over millions of rarely-used keys, and afterward your genuinely hot keys keep getting evicted. Which `maxmemory-policy` best protects the warm set, and why?",
       "options": [
-        "`allkeys-lfu`, because it evicts by access frequency (a decaying counter), so a burst of one-time reads won't displace frequently-used keys",
-        "`allkeys-lru`, because recency tracking inherently protects keys touched long ago",
-        "`volatile-ttl`, because it evicts whatever has the longest remaining TTL first",
-        "`noeviction`, because it keeps every key including the cold scan keys"
+        "`allkeys-lfu`, because it evicts by frequency so a burst of one-time reads won't displace frequently-used keys",
+        "`allkeys-lru`, because recency tracking inherently protects keys that were touched long ago",
+        "`volatile-ttl`, because it evicts whatever key has the longest remaining TTL value first",
+        "`noeviction`, because it keeps every key including all of the cold one-time scan keys"
       ],
       "answer": 0,
       "explanation": "LFU tracks frequency with a decaying counter, so one-time scan reads don't accumulate enough frequency to evict the warm set — exactly the cache-pollution case LRU suffers from. `volatile-ttl` evicts the shortest remaining TTL, and `noeviction` errors writes once full."

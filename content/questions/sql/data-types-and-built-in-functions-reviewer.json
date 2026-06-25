@@ -52,7 +52,7 @@
       "source": "sql/data-types-and-built-in-functions-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "For `DECLARE @s NVARCHAR(50) = N' Hello World ';`, what do `LEN(@s)` and `DATALENGTH(@s)` return respectively?",
+      "question": "For `DECLARE @s NVARCHAR(50) = N'  Hello World  ';` (two leading and two trailing spaces), what do `LEN(@s)` and `DATALENGTH(@s)` return respectively?",
       "code": "DECLARE @s NVARCHAR(50) = N'  Hello World  ';\nSELECT LEN(@s) AS CharLen, DATALENGTH(@s) AS Bytes;",
       "lang": "sql",
       "options": [
@@ -62,7 +62,7 @@
         "`13` and `15` — `LEN` ignores trailing spaces and `DATALENGTH` counts characters"
       ],
       "answer": 0,
-      "explanation": "`LEN` returns the character count and ignores trailing (but not leading) spaces, giving 13. `DATALENGTH` returns the byte count, counting all 15 characters at 2 bytes each for NVARCHAR, giving 30."
+      "explanation": "`LEN` returns the character count and ignores trailing (but not leading) spaces: the two leading spaces plus `Hello World` give 13. `DATALENGTH` returns the byte count, counting all 15 characters at 2 bytes each for NVARCHAR, giving 30."
     },
     {
       "subtopic": "Modern date types",
@@ -134,7 +134,7 @@
         "`1` — `DATEDIFF` counts the number of period boundaries crossed (one year boundary), not the elapsed duration",
         "`0` — only one day elapsed, which is far less than a year",
         "`365` — it returns the number of days normalized to the requested unit",
-        "`1` — it rounds the elapsed fraction of a year up to the nearest whole year"
+        "`2` — it counts both the start and end years as full units"
       ],
       "answer": 0,
       "explanation": "`DATEDIFF` counts how many boundaries of the given unit lie between the two dates, not the true elapsed time. One year boundary (2025→2026) sits between the dates, so it returns `1` even though only a day passed. To measure elapsed time, diff a smaller unit."
@@ -183,7 +183,7 @@
         "When `OrderCount` is `0`, the expression returns `NULL` instead of raising a divide-by-zero error",
         "It rounds the quotient to the nearest integer to avoid fractional results",
         "It replaces a zero `OrderCount` with `1` so the division always succeeds",
-        "It forces the division to use exact decimal arithmetic rather than integer division"
+        "It forces the division to use exact decimal arithmetic instead of integer division"
       ],
       "answer": 0,
       "explanation": "`NULLIF(OrderCount, 0)` returns `NULL` when `OrderCount` equals `0`, and dividing by `NULL` yields `NULL` rather than raising a divide-by-zero error. It does not substitute `1` or change the arithmetic type."

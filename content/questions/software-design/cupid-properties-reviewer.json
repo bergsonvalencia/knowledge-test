@@ -25,12 +25,12 @@
       "question": "CUPID frames its five items as **properties** rather than **principles**. What is the key distinction this framing makes?",
       "options": [
         "Properties define a centre to move toward (a direction); principles are pass/fail rules you comply with or violate",
-        "Properties are enforced by the compiler; principles are enforced by code review",
+        "Properties are enforced by the compiler; principles are enforced only by code review",
         "Properties apply only to functions; principles apply only to classes",
-        "Properties are testable; principles cannot be tested"
+        "Properties can be tested automatically; principles cannot be tested at all"
       ],
       "answer": 0,
-      "explanation": "North contrasts SOLID's pass/fail principles (a bounded set) with CUPID's properties — qualities defining a centre to move toward, a direction rather than a destination. The compiler/class/test distinctions are fabricated."
+      "explanation": "North contrasts SOLID's pass/fail principles (a bounded set) with CUPID's properties — qualities defining a centre to move toward, a direction rather than a destination. The compiler, function/class, and testability distinctions are fabricated."
     },
     {
       "subtopic": "Composable facets",
@@ -45,14 +45,14 @@
         "Microservices, event sourcing, eventual consistency"
       ],
       "answer": 0,
-      "explanation": "Composable is defined as small surface area, intention-revealing, and minimal dependencies. The other options list real engineering ideas, but they are not how the reviewer defines Composable."
+      "explanation": "Composable is defined as small surface area, intention-revealing, and minimal dependencies. The other options list real engineering ideas, but none of them is how Composable is defined."
     },
     {
       "subtopic": "Predictable definition",
       "source": "software-design/cupid-properties-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "The reviewer describes **Predictable** as a generalization of which quality?",
+      "question": "**Predictable** is described as a generalization of which quality?",
       "options": [
         "Testability",
         "Performance",
@@ -60,7 +60,7 @@
         "Portability"
       ],
       "answer": 0,
-      "explanation": "Predictable is explicitly called \"a generalization of testability,\" covering behaves-as-expected, deterministic, and observable. Performance, reusability, and portability are not the basis North generalizes from."
+      "explanation": "Predictable is explicitly called \"a generalization of testability,\" covering behaves-as-expected, deterministic, and observable. Performance, reusability, and portability are not the basis it generalizes from."
     },
     {
       "subtopic": "Authors of CUPID and SOLID",
@@ -69,7 +69,7 @@
       "type": "truefalse",
       "question": "CUPID was authored by Dan North, whereas SOLID is attributed to Robert C. Martin.",
       "answer": true,
-      "explanation": "The CUPID vs SOLID table credits CUPID to Dan North and SOLID to Robert C. Martin."
+      "explanation": "The CUPID vs SOLID comparison credits CUPID to Dan North and SOLID to Robert C. Martin."
     },
     {
       "subtopic": "Unix philosophy vs SRP",
@@ -84,7 +84,7 @@
         "Unix is about runtime performance; SRP is about compile-time checking"
       ],
       "answer": 0,
-      "explanation": "The reviewer stresses Unix \"do one thing well\" is outside-in (whole external purpose) while SRP is inside-out (internal organization), and North warns SRP can introduce artificial seams. The other options invent mechanical rules not in the text."
+      "explanation": "\"Do one thing well\" is outside-in (a component's whole external purpose) while SRP is inside-out (internal organization), and North warns SRP can introduce artificial seams. The other options invent mechanical rules not in the source."
     },
     {
       "subtopic": "Idiomatic and cognitive load",
@@ -99,7 +99,7 @@
         "In a separate idioms microservice consulted at build time"
       ],
       "answer": 0,
-      "explanation": "Idiomatic guidance says to capture agreed local idioms in ADRs, linters, and formatters, treating them as real technical decisions. Opinionated languages (Python's one obvious way, Go's gofmt) reduce this need; the other options are invented."
+      "explanation": "Agreed local idioms should be captured in ADRs, linters, and formatters, treated as real technical decisions. Opinionated languages (Python's one obvious way, Go's gofmt) reduce this need; the other options are invented."
     },
     {
       "subtopic": "Domain-based: domain language",
@@ -121,7 +121,7 @@
       "source": "software-design/cupid-properties-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer prefers a top-level project layout like `appointments/` and `staffing/` over `models/`, `views/`, `controllers/`. What is the main reason given?",
+      "question": "Why prefer a top-level project layout like `appointments/` and `staffing/` over `models/`, `views/`, and `controllers/`?",
       "options": [
         "Framework buckets scatter a single feature across folders, while domain structure keeps a use case together",
         "Framework buckets compile faster than domain folders",
@@ -136,7 +136,7 @@
       "source": "software-design/cupid-properties-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Within **Predictable**, the \"observable\" facet is described as a ladder. Which ordering matches the reviewer?",
+      "question": "Within **Predictable**, the \"observable\" facet is described as a ladder. Which ordering is correct?",
       "options": [
         "instrumentation → telemetry → monitoring → alerting",
         "logging → tracing → profiling → debugging",
@@ -144,7 +144,7 @@
         "metrics → dashboards → SLOs → incident review"
       ],
       "answer": 0,
-      "explanation": "The reviewer gives the observability ladder as instrumentation → telemetry → monitoring → alerting, letting you infer internal state from outputs. The reversed order and the other ladders are not what the text lists."
+      "explanation": "The observability ladder is instrumentation → telemetry → monitoring → alerting, letting you infer internal state from outputs. The reversed order and the other ladders are not what the source lists."
     },
     {
       "subtopic": "Predictable: deterministic facet",
@@ -153,22 +153,22 @@
       "type": "truefalse",
       "question": "Under the \"deterministic\" facet of Predictable, code that is inherently random or non-deterministic can never satisfy Predictable.",
       "answer": false,
-      "explanation": "The reviewer says even random/non-deterministic code should have defined bounds (robustness, reliability, resilience) — so it can still move toward Predictable, rather than being disqualified outright."
+      "explanation": "Even random/non-deterministic code should have defined bounds (robustness, reliability, resilience) — so it can still move toward Predictable, rather than being disqualified outright."
     },
     {
       "subtopic": "CUPID is not a SOLID remap",
       "source": "software-design/cupid-properties-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "What does the reviewer say about CUPID's relationship to SOLID?",
+      "question": "What is CUPID's relationship to SOLID?",
       "options": [
-        "It is not a one-to-one remap of SOLID; CUPID is a backronym whose letters North chose as foundational qualities",
+        "It is not a one-to-one remap of SOLID; CUPID is a backronym whose letters were chosen as foundational qualities",
         "Each CUPID letter directly replaces one SOLID letter in the same order",
         "CUPID is a strict superset that includes all five SOLID principles unchanged",
         "CUPID deprecates SOLID and forbids using its principles together"
       ],
       "answer": 0,
-      "explanation": "The text states CUPID is not a one-to-one remap and is a backronym chosen because the five qualities feel foundational. There is no letter-for-letter mapping, no superset claim, and no deprecation of SOLID."
+      "explanation": "CUPID is not a one-to-one remap and is a backronym chosen because the five qualities feel foundational. There is no letter-for-letter mapping, no superset claim, and no deprecation of SOLID."
     },
     {
       "subtopic": "Centred vs bounded sets",
@@ -194,7 +194,7 @@
       "source": "software-design/cupid-properties-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The **domain boundaries** facet claims that when structure mirrors domain boundaries, a useful downstream benefit emerges. What is it?",
+      "question": "Under the **domain boundaries** facet, what downstream benefit emerges when structure mirrors domain boundaries?",
       "options": [
         "Subdomains map to deployable subcomponents, so deployment granularity matches risk",
         "All subdomains must be deployed together as one monolith for consistency",
@@ -202,14 +202,14 @@
         "Each subdomain automatically becomes a separate database with its own schema"
       ],
       "answer": 0,
-      "explanation": "Domain boundaries lets subdomains map to deployable subcomponents so deployment granularity matches risk. The text does not claim forced monolith deployment, removal of integration testing, or automatic per-subdomain databases."
+      "explanation": "Domain boundaries lets subdomains map to deployable subcomponents so deployment granularity matches risk. There is no claim of forced monolith deployment, removal of integration testing, or automatic per-subdomain databases."
     },
     {
       "subtopic": "Practical/Human/Layered meta-properties",
       "source": "software-design/cupid-properties-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "The reviewer says the five CUPID properties were themselves chosen to be Practical, Human, and Layered. Which descriptions match? Select all that apply.",
+      "question": "The five CUPID properties were themselves chosen to be Practical, Human, and Layered. Which descriptions match? Select all that apply.",
       "options": [
         "Practical — adopt incrementally, with no all-in commitment",
         "Human — about how it feels to work with the code",
@@ -222,14 +222,14 @@
         1,
         2
       ],
-      "explanation": "Practical means incremental adoption (no all-in commitment), Human means how the code feels to work with, and Layered means beginner guidance plus expert nuance. The last two options contradict Practical (it is explicitly not all-or-nothing) and Human (it is about feel, not static-analysis scores)."
+      "explanation": "Practical means incremental adoption (no all-in commitment), Human means how the code feels to work with, and Layered means beginner guidance plus expert nuance. The last two options contradict Practical (explicitly not all-or-nothing) and Human (about feel, not static-analysis scores)."
     },
     {
       "subtopic": "Composable: minimal dependencies trade-off",
       "source": "software-design/cupid-properties-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Why does **Composable** favor **minimal dependencies**, per the reasoning?",
+      "question": "Why does **Composable** favor **minimal dependencies**?",
       "options": [
         "Fewer external libraries mean fewer version conflicts and incompatibilities",
         "Dependencies always slow down application startup time",
@@ -244,7 +244,7 @@
       "source": "software-design/cupid-properties-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer traces CUPID's \"joyful code\" goal to prior ideas it builds on and pushes further. Which lineage does it cite?",
+      "question": "CUPID's \"joyful code\" goal builds on and pushes further which prior lineage of ideas?",
       "options": [
         "Martin Fowler's \"code humans can understand\" and Richard Gabriel's code \"habitability,\" pushed toward joy",
         "Kent Beck's \"make it work, make it right, make it fast\" and TDD's red-green-refactor",
@@ -252,7 +252,7 @@
         "Edsger Dijkstra's structured programming and the goto-considered-harmful argument"
       ],
       "answer": 0,
-      "explanation": "The reviewer names Martin Fowler (\"good programmers write code that humans can understand\") and Richard Gabriel (code \"habitability\") as the lineage, pushed one step further toward joy. The other figures and ideas, while real, are not the cited lineage."
+      "explanation": "The cited lineage is Martin Fowler (\"good programmers write code that humans can understand\") and Richard Gabriel (code \"habitability\"), pushed one step further toward joy. The other figures and ideas, while real, are not the cited lineage."
     },
     {
       "subtopic": "Mapping a code smell to a CUPID property",

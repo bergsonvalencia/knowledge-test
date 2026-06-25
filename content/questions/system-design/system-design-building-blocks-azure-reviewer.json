@@ -9,13 +9,13 @@
       "type": "mcq",
       "question": "What is the recommended Azure pattern for letting an App Service call Key Vault, SQL, and Storage **without storing any secrets in code or config**?",
       "options": [
-        "A system-assigned **Managed Identity** plus **Microsoft Entra ID**, granting that identity RBAC on each target",
-        "A connection string per service kept in App Service application settings",
-        "A shared service-principal client secret rotated weekly via a pipeline",
+        "A system-assigned **Managed Identity** plus **Microsoft Entra ID**, with that identity granted RBAC on each target",
+        "A per-service connection string kept in App Service application settings",
+        "A shared service-principal client secret rotated weekly by a pipeline",
         "A SAS token embedded in the deployment Bicep and read at startup"
       ],
       "answer": 0,
-      "explanation": "Managed Identity backed by Entra ID issues the service an identity and you grant it RBAC on the target; the app fetches a token at runtime with no credential in code. The distractors all still store a secret (connection string, client secret, SAS token), which the reviewer calls a basic-level red flag."
+      "explanation": "Managed Identity backed by Entra ID issues the service an identity, and you grant it RBAC on the target; the app fetches a token at runtime with no credential in code. The distractors all still store a secret (connection string, client secret, SAS token), which is a basic-level security red flag."
     },
     {
       "subtopic": "Front Door is the CDN",
@@ -39,7 +39,7 @@
       "type": "truefalse",
       "question": "To let the platform recycle and horizontally scale instances freely, a basic-level Azure app should keep its app tier stateless and externalize session/state to Redis or the database.",
       "answer": true,
-      "explanation": "The reviewer's core basic-level rule is to externalize state so the platform can recycle and scale instances; stateful app servers are listed as a red flag."
+      "explanation": "The core basic-level rule is to externalize state so the platform can recycle and scale instances freely; stateful app servers are a red flag."
     },
     {
       "subtopic": "Recommended Functions plan",
@@ -54,14 +54,14 @@
         "Classic Consumption plan"
       ],
       "answer": 0,
-      "explanation": "Flex Consumption is named as the recommended serverless plan (scale to zero, VNet integration, always-ready instances, per-function scaling). The others exist but are not the recommended default for a new serverless API."
+      "explanation": "Flex Consumption is the recommended serverless plan (scale to zero, VNet integration, always-ready instances, per-function scaling). The others exist but are not the recommended default for a new serverless API."
     },
     {
       "subtopic": "Availability Zones vs paired regions",
       "source": "system-design/system-design-building-blocks-azure-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "What is the **primary intra-region high-availability mechanism** the reviewer says to lead with on Azure?",
+      "question": "What is the **primary intra-region high-availability mechanism** you should lead with on Azure?",
       "options": [
         "Availability Zones (zone-redundant deployments)",
         "Paired regions with Microsoft-managed failover",
@@ -98,8 +98,8 @@
       "type": "mcq",
       "question": "A candidate proposes attaching a Web Application Firewall to an **Azure Load Balancer (Standard SKU)**. Why is this wrong?",
       "options": [
-        "Load Balancer is an L4 TCP/UDP service with no payload awareness, so a WAF cannot attach to it; a WAF runs only on Front Door or Application Gateway",
-        "Load Balancer supports WAF only in the Premium SKU, which the candidate didn't specify",
+        "Load Balancer is L4 (TCP/UDP) with no payload awareness, so a WAF can run only on Front Door or Application Gateway",
+        "Load Balancer supports a WAF only in the Premium SKU, which the candidate didn't specify",
         "A WAF on Load Balancer requires DDoS Network Protection to be enabled first",
         "Load Balancer can host a WAF, but only for outbound traffic, not inbound"
       ],
@@ -139,26 +139,26 @@
       "options": [
         "Hyperscale (up to 30 named read replicas, up to 128 TB)",
         "Business Critical (one free readable secondary)",
-        "General Purpose (single primary)",
-        "PostgreSQL Single Server with read replicas"
+        "General Purpose (single primary, no read replica)",
+        "Azure SQL Managed Instance (lift-and-shift compatibility)"
       ],
       "answer": 0,
-      "explanation": "Hyperscale scales storage to 128 TB and adds up to 30 named read replicas for read scale-out. Business Critical gives only one free readable secondary, General Purpose has no read replica, and Postgres Single Server is retired (and is not Azure SQL)."
+      "explanation": "Hyperscale scales storage to 128 TB and adds up to 30 named read replicas for read scale-out. Business Critical gives only one free readable secondary, General Purpose has no read replica, and Managed Instance targets SQL-Server compatibility rather than maximum read scale-out."
     },
     {
       "subtopic": "Container Apps cold-start trade-off",
       "source": "system-design/system-design-building-blocks-azure-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "A latency-sensitive synchronous microservice chain runs on Azure Container Apps with scale-to-zero enabled. What is the specific gotcha the reviewer flags, and the mitigation?",
+      "question": "A latency-sensitive synchronous microservice chain runs on Azure Container Apps with scale-to-zero enabled. What is the specific gotcha here, and the mitigation?",
       "options": [
         "Scale-to-zero adds cold-start latency that compounds across the synchronous call chain; keep a minimum number of instances warm",
-        "KEDA cannot scale on HTTP traffic, so you must switch to AKS Standard",
+        "KEDA cannot scale on HTTP traffic at all, so you must switch to AKS Standard",
         "Container Apps lacks Dapr, so synchronous calls fail; enable Envoy instead",
         "Scale-to-zero drops in-flight requests; enable session affinity to retain them"
       ],
       "answer": 0,
-      "explanation": "Scaling from zero incurs cold-start latency that compounds across synchronous hops; the reviewer's mitigation is to keep min instances warm. The other options misstate KEDA/Dapr/Envoy capabilities and the failure mode."
+      "explanation": "Scaling from zero incurs cold-start latency that compounds across synchronous hops; the mitigation is to keep min instances warm. The other options misstate KEDA/Dapr/Envoy capabilities and the failure mode."
     },
     {
       "subtopic": "Service Bus tiers and limits",
@@ -208,7 +208,7 @@
         "Reliability, Security, Cost Optimization, Operational Excellence, Sustainability"
       ],
       "answer": 0,
-      "explanation": "The reviewer stresses the exact names: Reliability, Security, Cost Optimization, Operational Excellence, Performance Efficiency. 'Cost' (not 'Cost Optimization') and renamed/added pillars like Sustainability or Scalability are the traps."
+      "explanation": "The exact names matter: Reliability, Security, Cost Optimization, Operational Excellence, Performance Efficiency. 'Cost' (not 'Cost Optimization') and renamed/added pillars like Sustainability or Scalability are the traps."
     },
     {
       "subtopic": "CAF methodologies sequencing",
@@ -245,7 +245,7 @@
       "source": "system-design/system-design-building-blocks-azure-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which statements about Azure region pairs and disaster recovery are correct per the reviewer? Select all that apply.",
+      "question": "Which statements about Azure region pairs and disaster recovery are correct? Select all that apply.",
       "options": [
         "Deploying to a paired region does not automatically make resources resilient",
         "Microsoft advises against relying on Microsoft-managed paired-region failover as your DR strategy",
@@ -265,9 +265,9 @@
       "source": "system-design/system-design-building-blocks-azure-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A team wants zero-downtime deploys via **deployment slots + slot-swap**. Which statement is correct given the hosts in the reviewer?",
+      "question": "A team wants zero-downtime deploys via **deployment slots + slot-swap**. Which statement is correct for these Azure hosts?",
       "options": [
-        "App Service supports deployment slots on Standard tier and above, but Functions on the Flex Consumption plan does not support slots — use rolling site updates there",
+        "App Service supports slots on Standard tier and above, but Functions on Flex Consumption has no slots — use rolling site updates there",
         "Both App Service Free tier and Functions Flex Consumption support deployment slots out of the box",
         "Deployment slots are available only on Functions Flex Consumption, not on App Service",
         "Slot-swap requires Azure Front Door Premium to route between the slots"

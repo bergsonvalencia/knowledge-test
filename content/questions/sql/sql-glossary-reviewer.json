@@ -36,9 +36,9 @@
       "lang": "sql",
       "options": [
         "The subquery returns a NULL, so every `c.Id <> NULL` comparison is UNKNOWN and no row qualifies for `NOT IN`",
-        "`NOT IN` requires the subquery to be correlated, and this one is not, so it short-circuits to an empty result",
-        "`NOT IN` silently de-duplicates the outer table and removes all rows when duplicates exist in the subquery",
-        "The optimizer rewrites `NOT IN` as an inner join, which drops all unmatched customers"
+        "`NOT IN` requires the subquery to be correlated, so an uncorrelated one short-circuits to an empty result",
+        "`NOT IN` silently de-duplicates the outer table and drops every row when the subquery has duplicates",
+        "The optimizer rewrites `NOT IN` as an inner join, which then drops all the unmatched customers"
       ],
       "answer": 0,
       "explanation": "With a NULL in the subquery list, `NOT IN` expands to `c.Id <> val1 AND c.Id <> val2 AND ... AND c.Id <> NULL`; the NULL comparison is UNKNOWN, making the whole conjunction UNKNOWN for every row, so nothing qualifies. The fix is `NOT EXISTS`, which is NULL-safe."
@@ -135,9 +135,9 @@
       "question": "Under `REPEATABLE READ`, a transaction runs `SELECT COUNT(*) FROM dbo.Orders WHERE Status = N'Open'` twice. Between the two reads, another transaction inserts and commits a new `Open` order. What happens?",
       "options": [
         "The second read returns a higher count — a phantom read, which REPEATABLE READ does not prevent",
-        "The second read returns the original count, because REPEATABLE READ takes a range lock blocking the insert",
-        "The second read returns a higher count — a non-repeatable read, the exact anomaly REPEATABLE READ prevents",
-        "The insert is blocked until the first transaction commits, so neither read can complete"
+        "The second read returns the original count, because REPEATABLE READ range-locks and blocks the insert",
+        "The second read returns a higher count — a non-repeatable read, the anomaly REPEATABLE READ prevents",
+        "The insert is blocked until the first transaction commits, so neither read can finish until then"
       ],
       "answer": 0,
       "explanation": "REPEATABLE READ locks the rows it already read (preventing dirty and non-repeatable reads) but does not take range locks, so a brand-new row matching the filter can still appear — a phantom. Only SERIALIZABLE's range locks (or SNAPSHOT) would prevent it."
@@ -195,10 +195,10 @@
       "type": "mcq",
       "question": "A compliance requirement says that even a DBA with full server access must not be able to read certain column values in plaintext. Which feature meets this, and why does Transparent Data Encryption (TDE) not?",
       "options": [
-        "Always Encrypted: encryption/decryption happen in the client driver so keys and plaintext never reach the engine; TDE only encrypts files at rest while the engine sees plaintext",
-        "TDE with a column master key: it encrypts individual columns so the DBA sees ciphertext; Always Encrypted only protects whole database files",
-        "Dynamic Data Masking: it hides values from all users including DBAs; TDE merely slows down disk reads",
-        "Row-level security: it blocks the DBA's queries from returning the rows; TDE has no effect on query results"
+        "Always Encrypted: crypto happens in the client driver, so keys and plaintext never reach the engine; TDE only encrypts files at rest while the engine sees plaintext",
+        "TDE with a column master key: it encrypts individual columns so a DBA sees only ciphertext, whereas Always Encrypted protects whole files",
+        "Dynamic Data Masking: it hides the real values from every user including DBAs, whereas TDE merely slows down the disk reads",
+        "Row-level security: it stops a DBA's queries from returning those rows at all, whereas TDE has no effect on query results"
       ],
       "answer": 0,
       "explanation": "Always Encrypted does crypto in the client driver, so the engine (and thus a DBA) only ever handles ciphertext. TDE encrypts data and log files at rest but the engine decrypts pages into memory and works with plaintext, so it does nothing against an authenticated privileged session. DDM is a display convenience, not a boundary, and RLS filters rows, not values from a DBA."

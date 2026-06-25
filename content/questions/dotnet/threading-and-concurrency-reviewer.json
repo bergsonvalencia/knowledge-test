@@ -12,7 +12,7 @@
         "`Task.Run`, which queues to the thread pool and returns an observable `Task`",
         "`new Thread(...)`, to get a dedicated OS thread for the work",
         "A named `Mutex` to coordinate the worker",
-        "`Parallel.Invoke`, since it always uses the calling thread"
+        "`Parallel.Invoke`, since it always runs on the calling thread"
       ],
       "answer": 0,
       "explanation": "`Task.Run` is the modern default for short CPU-bound work: it uses the pool's efficiency and hands back a `Task` you can await and observe for exceptions. `new Thread` is reserved for long-lived dedicated work; a `Mutex` is a synchronization primitive, not a way to run work."
@@ -24,7 +24,7 @@
       "type": "mcq",
       "question": "Which statement about foreground vs background threads in .NET is correct?",
       "options": [
-        "A `new Thread` defaults to foreground and will keep the process alive unless `IsBackground = true` is set",
+        "A `new Thread` defaults to foreground and keeps the process alive unless `IsBackground = true` is set",
         "Thread-pool threads are foreground and keep the process alive until all queued work completes",
         "`Task.Run` work runs on a foreground thread, so it always finishes before the process exits",
         "Setting `IsBackground = true` makes a thread keep the process alive longer"
@@ -42,7 +42,7 @@
         "Cooperative cancellation via a `CancellationToken`",
         "`Thread.Abort()`, which raises an exception on the target thread",
         "`Thread.Interrupt()` followed by `Thread.Abort()`",
-        "Setting `Thread.Priority` to the lowest value so the work stops"
+        "Setting `Thread.Priority` to its lowest value so the work stops"
       ],
       "answer": 0,
       "explanation": "`Thread.Abort` is removed/obsolete on modern .NET (it throws `PlatformNotSupportedException` on .NET 5+); cooperative cancellation via `CancellationToken` is the only correct mechanism. Lowering priority only deprioritizes, it does not stop work."
@@ -52,14 +52,14 @@
       "source": "dotnet/threading-and-concurrency-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "What does this code reliably print, and why?",
+      "question": "What does this code typically print, and why?",
       "code": "int counter = 0;\nParallel.For(0, 100_000, _ => counter++);\nConsole.WriteLine(counter);",
       "lang": "csharp",
       "options": [
         "Usually less than 100000, varying per run, because `counter++` is a non-atomic read-modify-write executed concurrently",
         "Always exactly 100000, because `Parallel.For` serializes the body internally",
         "Always exactly 100000, because `int` increments are atomic in .NET",
-        "Always 0, because each parallel partition gets its own copy of `counter`"
+        "Always 0, because each partition gets its own copy of `counter`"
       ],
       "answer": 0,
       "explanation": "`counter++` is read-add-write; with many threads running concurrently, increments are lost to the race, so the result is usually below 100000 and varies. The fix is `Interlocked.Increment` or a thread-local accumulator combined at the end."
@@ -199,7 +199,7 @@
       "options": [
         "When you need cross-process synchronization, e.g. a single-instance app using a named mutex",
         "When you need the fastest possible in-process mutual exclusion",
-        "When you need to `await` inside the critical section without blocking a thread",
+        "When you must `await` inside the critical section without blocking a thread",
         "When you want many concurrent readers but a single writer"
       ],
       "answer": 0,
@@ -221,7 +221,7 @@
       "type": "mcq",
       "question": "What is the purpose of `EnterUpgradeableReadLock` on `ReaderWriterLockSlim`, and what is its key restriction?",
       "options": [
-        "It lets a thread read while reserving the right to upgrade to a write lock without releasing first; only one upgradeable reader is allowed at a time",
+        "It reads while reserving the right to upgrade to a write lock without releasing first; only one upgradeable reader is allowed at a time",
         "It lets unlimited threads hold upgradeable read locks so any of them can later become the writer",
         "It is a faster form of `EnterReadLock` with no ability to write",
         "It promotes all current readers to writers simultaneously when contention is detected"
@@ -251,7 +251,7 @@
       "type": "truefalse",
       "question": "If access to shared state already goes through a `lock` or a concurrent collection, you also need to mark the underlying field `volatile` to guarantee visibility.",
       "answer": false,
-      "explanation": "`lock`, `Interlocked`, and `Task`/`await` boundaries already establish the necessary memory barriers, so adding `volatile` on top is redundant — the reviewer explicitly says you do not also need `volatile` in that case."
+      "explanation": "`lock`, `Interlocked`, and `Task`/`await` boundaries already establish the necessary memory barriers, so adding `volatile` on top is redundant — when shared access already goes through a lock or concurrent collection, you do not also need `volatile`."
     },
     {
       "subtopic": "ConcurrentDictionary GetOrAdd",
@@ -292,7 +292,7 @@
       "type": "mcq",
       "question": "For which workload is `ConcurrentBag<T>` the right concurrent collection, and what should you prefer otherwise?",
       "options": [
-        "When the same thread both adds and removes (thread-local pools); prefer `ConcurrentQueue<T>` when producers and consumers are different threads",
+        "When the same thread both adds and removes (thread-local pools); prefer `ConcurrentQueue<T>` when producers and consumers differ",
         "When you need strict FIFO ordering across many producers; otherwise use `ConcurrentStack<T>`",
         "When you need a bounded blocking queue with backpressure; otherwise use `BlockingCollection<T>`",
         "When you need atomic keyed lookups; otherwise use `ConcurrentDictionary<K,V>`"

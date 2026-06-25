@@ -10,9 +10,9 @@
       "question": "Which of these is a **transient** fault that a retry policy is appropriate for?",
       "options": [
         "HTTP 503 Service Unavailable from a momentarily overloaded dependency",
-        "HTTP 401 Unauthorized due to bad credentials",
-        "HTTP 400 Bad Request from malformed input",
-        "HTTP 404 Not Found for a resource that doesn't exist"
+        "HTTP 401 Unauthorized caused by invalid, expired credentials",
+        "HTTP 400 Bad Request caused by structurally malformed input",
+        "HTTP 404 Not Found for a resource that does not exist"
       ],
       "answer": 0,
       "explanation": "Transient faults are temporary and self-correcting (503, 429, network blips), so retrying makes sense. 400/401/404 are non-transient — the result won't change on retry, so retrying just wastes resources."
@@ -40,9 +40,9 @@
       "question": "The default `HttpClient.Timeout` in .NET is:",
       "options": [
         "100 seconds — almost always too long for a service call",
-        "30 seconds — a reasonable default for service calls",
-        "Infinite — there is no default timeout",
-        "5 seconds — aggressive by design"
+        "30 seconds — a reasonable default for most service calls",
+        "Infinite — there is no default timeout at all",
+        "5 seconds — aggressive and tuned for low latency"
       ],
       "answer": 0,
       "explanation": "The default is 100 seconds, which is almost never what you want for a service call. You should set an explicit, aggressive timeout on every outbound call."
@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "Why is **jitter** (randomization) added to exponential backoff at scale?",
       "options": [
-        "To de-correlate retries so many clients that failed at the same instant don't retry in lockstep and re-kill the recovering dependency",
-        "To make each retry wait shorter so the overall latency budget stays small",
-        "To guarantee retries happen at exact, predictable intervals for easier debugging",
-        "To increase the number of retry attempts beyond the configured cap during outages"
+        "To de-correlate retries so simultaneously-failing clients don't retry in lockstep and re-kill the dependency",
+        "To shorten each retry wait so the overall latency budget stays small under load",
+        "To force retries onto exact, predictable intervals that are easier to debug",
+        "To raise the number of retry attempts beyond the configured cap during outages"
       ],
       "answer": 0,
       "explanation": "Without jitter, clients that failed simultaneously retry in lockstep — a thundering herd / retry storm that re-synchronizes load. Jitter spreads retries out so they de-correlate."
@@ -94,9 +94,9 @@
       "question": "When combining retry and circuit breaker, retry should be placed **inside** the breaker. What goes wrong if retry instead wraps the breaker (retry outside)?",
       "options": [
         "Every retry attempt hits the already-open breaker and throws `BrokenCircuitException`, burning the attempt budget for nothing",
-        "The breaker can never open because retries reset its failure counter on each attempt",
-        "The breaker counts each individual attempt instead of the final outcome, opening far too slowly",
-        "The retry delays are ignored and all attempts fire instantly"
+        "The breaker can never open because each retry attempt resets its internal failure counter",
+        "The breaker counts each individual attempt instead of the final outcome, so it opens far too slowly",
+        "The configured retry delays are ignored and all attempts fire instantly back to back"
       ],
       "answer": 0,
       "explanation": "With retry outside, once the breaker is open every retry attempt immediately hits the open breaker and throws `BrokenCircuitException` — accomplishing nothing but wasting the attempt budget and adding latency. Retry inside lets the breaker count the final retried outcome."
@@ -120,9 +120,9 @@
       "lang": "csharp",
       "options": [
         "The stored original result is returned and `ChargeAsync` is **not** called again, so the card isn't charged twice",
-        "`ChargeAsync` runs again because the key only affects logging, double-charging the card",
-        "The method throws a duplicate-key exception and returns a 500",
-        "A new charge runs but the second result overwrites the first in the store"
+        "`ChargeAsync` runs again because the key only affects logging, so the card is double-charged",
+        "The method throws a duplicate-key exception and returns an HTTP 500 to the caller",
+        "A second charge runs and its result overwrites the first entry in the store"
       ],
       "answer": 0,
       "explanation": "On replay, `TryGetResultAsync` finds the cached result and returns it immediately, skipping `ChargeAsync`. That is the whole point of an idempotency key: replays return the original outcome without re-executing the side effect."
@@ -135,9 +135,9 @@
       "question": "What is the distinction between a **per-attempt** timeout and a **total** timeout when retries are in play?",
       "options": [
         "Per-attempt bounds a single try; total bounds the whole retry sequence — you generally want both",
-        "Per-attempt bounds the whole retry sequence; total bounds a single try",
-        "They are two names for the same setting; configuring either one is sufficient",
-        "Per-attempt applies only to HTTP calls; total applies only to database calls"
+        "Per-attempt bounds the whole retry sequence; total bounds a single individual try",
+        "They are two names for the same setting, so configuring either one alone is sufficient",
+        "Per-attempt applies only to HTTP calls while total applies only to database calls"
       ],
       "answer": 0,
       "explanation": "Per-attempt timeout bounds one individual try; total/overall timeout caps the entire retry sequence. With retries you want both (e.g. 1s per attempt, 5s total) so retries can't blow the latency SLA."
@@ -149,10 +149,10 @@
       "type": "mcq",
       "question": "Where should the **fallback** strategy sit in a composed resilience pipeline, and why?",
       "options": [
-        "Outermost — so it can catch failures from every inner strategy (timeout, retry exhausted, breaker open, bulkhead rejected)",
+        "Outermost — so it can catch failures from every inner strategy (timeout, retry, breaker, bulkhead)",
         "Innermost — so it runs before any network call and avoids the cost of the other strategies",
         "Directly inside the retry — so it can supply a value for each individual failed attempt",
-        "Between the circuit breaker and the bulkhead — so it only catches breaker failures"
+        "Between the circuit breaker and the bulkhead — so it only catches breaker-open failures"
       ],
       "answer": 0,
       "explanation": "Fallback is the terminal strategy and sits outermost so it catches failures bubbling up from any inner strategy. It also shouldn't silence alerts — an open breaker should still page someone."
@@ -165,9 +165,9 @@
       "question": "Server-side rate limiting and client-side retry form a cooperative contract. What does that contract look like?",
       "options": [
         "The server returns 429 with `Retry-After`; the client honors it and backs off before retrying",
-        "The client sends requests as fast as possible; the server silently drops excess and never signals",
-        "The server returns 400 for excess load; the client treats it as fatal and stops",
-        "The client opens a circuit breaker; the server then increases its capacity automatically"
+        "The client sends requests as fast as possible while the server silently drops the excess",
+        "The server returns 400 for excess load and the client treats it as fatal and stops",
+        "The client opens a circuit breaker and the server then scales up its capacity automatically"
       ],
       "answer": 0,
       "explanation": "Deliberate load shedding returns 429 Too Many Requests with a `Retry-After` header telling the client when to come back; the client backs off accordingly. This beats letting the server tip over and fail everyone."
@@ -212,7 +212,7 @@
       "question": "What is the recommended composition order of strategies around a dependency call, from **outermost to innermost**?",
       "options": [
         "Fallback → rate limiter/bulkhead → total timeout → retry → circuit breaker → per-attempt timeout",
-        "Retry → fallback → circuit breaker → total timeout → per-attempt timeout → rate limiter",
+        "Retry → fallback → circuit breaker → total timeout → per-attempt timeout → rate limiter/bulkhead",
         "Circuit breaker → retry → fallback → bulkhead → total timeout → per-attempt timeout",
         "Per-attempt timeout → retry → total timeout → circuit breaker → rate limiter → fallback"
       ],
@@ -224,7 +224,7 @@
       "source": "architecture/resiliency-patterns-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "What is the core distinction between a **bulkhead** and a **rate limiter** as described here?",
+      "question": "What is the core distinction between a **bulkhead** and a **rate limiter**?",
       "options": [
         "Bulkhead caps *concurrency* per resource; rate limiter caps *throughput* over time",
         "Bulkhead caps *throughput* over time; rate limiter caps *concurrency* per resource",
@@ -239,12 +239,12 @@
       "source": "architecture/resiliency-patterns-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The decorrelated-jitter formula (AWS Architecture blog) is `sleep = min(cap, random_between(base, previous_sleep * 3))`. What is the key behavior this produces compared to plain exponential backoff?",
+      "question": "The decorrelated-jitter formula `sleep = min(cap, random_between(base, previous_sleep * 3))` produces what key behavior compared to plain exponential backoff?",
       "options": [
-        "Each delay is randomized within a window that grows from the previous sleep, so clients de-correlate instead of all waiting the same fixed exponential value",
-        "Each delay is exactly three times the previous one, making waits deterministic and synchronized",
+        "Each delay is randomized within a window that grows from the previous sleep, so clients de-correlate instead of all waiting the same value",
+        "Each delay is exactly three times the previous one, which keeps waits deterministic and tightly synchronized",
         "The delay shrinks geometrically toward `base`, so later retries fire faster than earlier ones",
-        "The delay is fixed at `cap` from the first attempt, removing any backoff growth"
+        "The delay is pinned at `cap` from the very first attempt, removing any backoff growth"
       ],
       "answer": 0,
       "explanation": "Decorrelated jitter randomizes each delay within a growing window (between `base` and `previous_sleep * 3`, capped) rather than using a fixed exponential value, so simultaneously-failing clients spread out instead of retrying in lockstep."
@@ -256,9 +256,9 @@
       "type": "mcq",
       "question": "Polly v8's circuit breaker uses a **failure-ratio** trip (e.g. `FailureRatio = 0.5`, `SamplingDuration = 30s`, `MinimumThroughput = 10`) rather than a raw consecutive-failure count. Why is the `MinimumThroughput` knob important?",
       "options": [
-        "It requires a minimum number of calls in the window before the ratio is evaluated, so the breaker doesn't trip on a tiny, statistically meaningless sample under low traffic",
+        "It requires a minimum number of calls in the window before the ratio is evaluated, so the breaker doesn't trip on a tiny, meaningless sample",
         "It caps the number of concurrent calls allowed through the breaker while it is closed",
-        "It sets how long the breaker stays open before moving to half-open",
+        "It sets how long the breaker stays open before it moves to the half-open state",
         "It defines how many trial calls the half-open state permits before deciding"
       ],
       "answer": 0,

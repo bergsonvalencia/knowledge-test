@@ -9,12 +9,12 @@
       "type": "mcq",
       "question": "In the SQL Server security model, what is the correct division of responsibility between a **login** and a **database user**?",
       "options": [
-        "A login is a server-level principal that authenticates a connection; a database user is a database-level principal that holds permissions inside one database",
-        "A login holds permissions inside a database; a database user authenticates the connection at the server",
+        "A login holds permissions inside one database; a database user authenticates the connection at the server level",
+        "A login authenticates a connection at the server level; a database user holds permissions inside one database",
         "Both are server-level principals stored in `master`; the user is just an alias for the login",
-        "A login is a per-table grant; a database user is a per-schema grant"
+        "A login is a per-table grant, while a database user is a per-schema grant"
       ],
-      "answer": 0,
+      "answer": 1,
       "explanation": "A login (server-level, in `master`) proves who you are; a database user (database-level, usually mapped by SID) decides what you may do in that one database. The other options invert or confuse the two scopes."
     },
     {
@@ -24,12 +24,12 @@
       "type": "mcq",
       "question": "Every authorization check in SQL Server evaluates which triad?",
       "options": [
-        "principal → securable → permission",
         "login → password → connection",
         "schema → table → column",
+        "principal → securable → permission",
         "role → user → login"
       ],
-      "answer": 0,
+      "answer": 2,
       "explanation": "Authorization is nothing more than checking whether a principal (login, user, role, app role) has a permission (SELECT, EXECUTE, ...) on a securable (server, database, schema, table, column, procedure)."
     },
     {
@@ -39,10 +39,10 @@
       "type": "mcq",
       "question": "What does `REVOKE` do, and how does it differ from `DENY`?",
       "options": [
-        "`REVOKE` removes a previously granted or denied permission, returning to neutral; the user may still get the permission through another role",
-        "`REVOKE` explicitly forbids the permission and overrides any grant, just like `DENY` but only at table scope",
-        "`REVOKE` is an alias for `DENY` and guarantees the user can never access the securable",
-        "`REVOKE` grants the permission to everyone except the named principal"
+        "It removes a prior grant or deny, returning to neutral; the user may still get the permission through another role",
+        "It explicitly forbids the permission and overrides any grant, just like `DENY` but only at table scope",
+        "It is an alias for `DENY` and guarantees the user can never access the securable",
+        "It grants the permission to everyone except the named principal"
       ],
       "answer": 0,
       "explanation": "`REVOKE` simply deletes the grant/deny row (back to neutral); it is not a deny, so the user can still inherit the permission via another role. To guarantee no access you must use `DENY`."
@@ -63,12 +63,12 @@
       "type": "mcq",
       "question": "What threat does Transparent Data Encryption (TDE) primarily protect against?",
       "options": [
-        "Stolen media — a lifted backup (`.bak`) or detached `.mdf`/`.ldf` data files at rest",
         "A malicious DBA running normal SELECT queries against the live database",
         "Snooping the network wire between the client and the server",
-        "An over-privileged application account running ad-hoc DML"
+        "An over-privileged application account running ad-hoc DML",
+        "Stolen media — a lifted backup or detached `.mdf`/`.ldf` data files at rest"
       ],
-      "answer": 0,
+      "answer": 3,
       "explanation": "TDE encrypts data and log files (and backups) at rest, so a thief with the raw files gets ciphertext. It is transparent to any legitimate privileged query (the DBA still sees plaintext), does not protect the wire, and is not an authorization control."
     },
     {
@@ -78,8 +78,8 @@
       "type": "mcq",
       "question": "A user has `DENY SELECT ON dbo.Orders` and also `GRANT SELECT ON dbo.Orders(Amount)`. Ignoring `sysadmin`, what is the user's effective access to `dbo.Orders`?",
       "options": [
-        "They can read only the `Amount` column — the column-level GRANT overrides the object-level DENY for that one column",
-        "They can read nothing — DENY at the table level overrides every grant, including the column grant",
+        "They can read only the `Amount` column — the column-level GRANT overrides the object-level DENY",
+        "They can read nothing — the table-level DENY overrides every grant, including the column grant",
         "They can read every column — the GRANT promotes them to full table access",
         "The two statements conflict and SQL Server raises an error at grant time"
       ],
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "A user has `EXECUTE` on `dbo.usp_GetData` but no `SELECT` on `dbo.Salaries`, which the proc reads. The proc and table share owner `dbo`. The query succeeds. Now the proc is rewritten to read the table via `EXEC(@sql)`. What happens?",
       "options": [
-        "It now fails for the user — the ownership chain breaks inside dynamic SQL, so permissions are re-checked against the caller, who lacks SELECT on `dbo.Salaries`",
-        "It still succeeds — dynamic SQL preserves the ownership chain because the proc is still owned by `dbo`",
-        "It still succeeds — once EXECUTE is granted on a proc the caller permanently inherits SELECT on every table it touches",
-        "It fails even in the original (non-dynamic) version because EXECUTE never lets a proc read a table the caller can't"
+        "It now fails — the ownership chain breaks inside dynamic SQL, so permissions are re-checked against the caller, who lacks SELECT",
+        "It still succeeds — dynamic SQL preserves the chain because the proc is still owned by `dbo`",
+        "It still succeeds — granting EXECUTE permanently gives the caller SELECT on every table the proc touches",
+        "It fails even in the original version — EXECUTE never lets a proc read a table the caller can't"
       ],
       "answer": 0,
       "explanation": "Ownership chaining skips the permission check on referenced objects only when they share the same owner AND access is static. Inside `EXEC(@sql)`/`sp_executesql` the chain breaks and permissions are re-checked against the caller, who lacks SELECT."
@@ -108,12 +108,12 @@
       "type": "mcq",
       "question": "What is the senior least-privilege pattern for an application's database account?",
       "options": [
-        "A custom role with `EXECUTE` on a curated set of procedures and no direct table access, relying on ownership chaining for the procs to reach tables",
         "Membership in `db_datareader` plus `db_datawriter` so the ORM can read and write any table",
         "Membership in `db_owner` so schema migrations and DML both work without extra grants",
+        "A custom role with `EXECUTE` on a curated procedure set and no direct table access, relying on ownership chaining",
         "A login mapped to `sysadmin` but restricted to a single database via the default schema"
       ],
-      "answer": 0,
+      "answer": 2,
       "explanation": "The least-privilege design gives the app a custom role with EXECUTE on a curated proc surface and no table grants; ownership chaining lets the procs touch the tables. A leaked connection string then can't run ad-hoc DML, DROP TABLE, or bulk-exfiltrate. db_owner/db_datawriter/sysadmin are the opposite of least privilege."
     },
     {
@@ -154,7 +154,7 @@
       "type": "mcq",
       "question": "You need to JOIN and run equality lookups on an Always Encrypted column. Which encryption type must you choose, and what is the trade-off?",
       "options": [
-        "Deterministic — same plaintext yields same ciphertext so equality/joins/indexing work, but it is more vulnerable to inference on low-cardinality data",
+        "Deterministic — same plaintext yields same ciphertext, so equality/joins/indexing work, but it is more vulnerable to inference on low-cardinality data",
         "Randomized — it is the only type that supports server-side equality, at the cost of larger ciphertext",
         "Deterministic — it allows full range comparisons and `LIKE` without a secure enclave",
         "Randomized — it supports joins because the ciphertext is salted identically across rows"
@@ -178,10 +178,10 @@
       "type": "mcq",
       "question": "User `maria` is in `Sales_RW` (`GRANT SELECT ON dbo.Orders`) and `PII_Lockdown` (`DENY SELECT ON dbo.Orders(CreditCardNo)`). She is not a `sysadmin`. What happens when she runs `SELECT * FROM dbo.Orders;`?",
       "options": [
-        "The statement fails — `*` includes `CreditCardNo`, and the column-level DENY overrides the table grant, so the query is rejected",
-        "The statement succeeds and `CreditCardNo` is returned as NULL for every row",
-        "The statement succeeds and `CreditCardNo` is silently dropped from the result set",
-        "The statement succeeds in full because the table-level GRANT covers all columns"
+        "The statement fails — `*` includes `CreditCardNo`, the column DENY overrides the table grant, so the query is rejected",
+        "It succeeds and `CreditCardNo` is returned as NULL for every row",
+        "It succeeds and `CreditCardNo` is silently dropped from the result set",
+        "It succeeds in full because the table-level GRANT covers all columns"
       ],
       "answer": 0,
       "explanation": "`SELECT *` touches `CreditCardNo`, which is denied; DENY wins over the table grant, so the whole statement is rejected (Msg 230, SELECT permission denied). She must explicitly omit the denied column. RLS-style silent removal does not apply to column DENY."
@@ -193,10 +193,10 @@
       "type": "mcq",
       "question": "Compliance requires that even a `sysadmin` DBA cannot read patient SSNs. Why does Always Encrypted satisfy this when TDE does not?",
       "options": [
-        "Always Encrypted encrypts in the client driver and the engine never holds the keys, so a DBA query returns only ciphertext; TDE decrypts pages in memory so a live query returns plaintext",
+        "Always Encrypted encrypts in the client driver and the engine never holds the keys, so a DBA query returns only ciphertext; TDE decrypts pages in memory, so a live query returns plaintext",
         "Always Encrypted stores the Column Master Key inside the database so only the application schema can decrypt it, blocking the DBA",
         "Always Encrypted runs the decryption inside `tempdb`, which sysadmins cannot access",
-        "TDE and Always Encrypted both expose plaintext to a DBA; only column-level DENY can hide it from sysadmin"
+        "Both expose plaintext to a DBA; only a column-level DENY can hide it from a sysadmin"
       ],
       "answer": 0,
       "explanation": "Always Encrypted draws the trust boundary at the client driver: keys (CMK/CEK) live with the app, so the engine stores only ciphertext and cannot decrypt. TDE decrypts pages into memory on read, so any live privileged query sees plaintext. Note sysadmin bypasses permission checks, so a column DENY cannot stop it."
@@ -210,7 +210,7 @@
       "options": [
         "The predicate becomes part of every query plan against the table and runs under the query's context, so it taxes every read on the table",
         "RLS re-evaluates the predicate once per connection only, so the cost is amortized and harmless",
-        "A FILTER predicate runs with elevated DBO context, so an expensive lookup risks a privilege-escalation, not a performance issue",
+        "A FILTER predicate runs with elevated DBO context, so an expensive lookup risks privilege escalation, not a slowdown",
         "The predicate executes only on writes, so it slows INSERT/UPDATE but never SELECT"
       ],
       "answer": 0,
@@ -226,7 +226,7 @@
         "The chain runs Service Master Key → Database Master Key → certificate → Database Encryption Key, which performs the AES encryption of pages",
         "If you lose the certificate and its private key, the encrypted backups become unrecoverable",
         "Once any database on the instance uses TDE, `tempdb` is also encrypted",
-        "TDE encrypts pages in memory as well as on disk, so a memory dump yields ciphertext",
+        "TDE keeps pages encrypted in memory too, so a memory dump yields ciphertext",
         "The Database Encryption Key is stored in the client's key store, never on the server"
       ],
       "answer": [0, 1, 2],
@@ -239,7 +239,7 @@
       "type": "mcq",
       "question": "Why does a contained database largely eliminate orphaned-user problems on restore/failover?",
       "options": [
-        "Its users authenticate against the database itself with `CREATE USER ... WITH PASSWORD`, so authentication metadata travels with the database and there is no separate server login SID to re-map",
+        "Its users authenticate against the database itself with `CREATE USER ... WITH PASSWORD`, so authentication metadata travels with the database and there is no server login SID to re-map",
         "It automatically recreates matching server logins on the target instance during restore",
         "It disables SID-based mapping and authorizes every user as `dbo` after a restore",
         "It stores all logins in `master` on the target instance before the restore completes"

@@ -63,10 +63,10 @@
       "type": "mcq",
       "question": "How does a conditional type `T extends U ? X : Y` decide which branch to take?",
       "options": [
-        "By whether `T` is assignable to `U`; if so it picks `X`, otherwise `Y`",
-        "By whether `T` and `U` are the exact same type by name",
-        "By whether `U` is assignable to `T`",
-        "By comparing the runtime values of `T` and `U`"
+        "By whether `T` is assignable to `U`; if so pick `X`, else `Y`",
+        "By whether `T` and `U` are the same type by name",
+        "By whether `U` is assignable to `T`, picking `X` if so",
+        "By comparing the runtime values held by `T` and `U`"
       ],
       "answer": 0,
       "explanation": "The conditional's test is assignability in the direction `T` assignable to `U`. It is structural (not name-based), purely type-level (no runtime values), and the direction matters: `U extends T` would invert the test."
@@ -211,7 +211,9 @@
       "source": "typescript/advanced-types-and-type-operators-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Given `type Sign = \"+\" | \"-\"; type Axis = \"x\" | \"y\"; type Move = ` followed by the template literal `` `${Sign}${Axis}` ``, what is `Move`?",
+      "question": "What is `Move`?",
+      "code": "type Sign = \"+\" | \"-\";\ntype Axis = \"x\" | \"y\";\ntype Move = `${Sign}${Axis}`;",
+      "lang": "typescript",
       "options": [
         "`\"+x\" | \"+y\" | \"-x\" | \"-y\"`",
         "`\"+x\" | \"-y\"`",
@@ -245,10 +247,10 @@
       "type": "mcq",
       "question": "A deeply recursive type triggers error **ts2589** (\"Type instantiation is excessively deep and possibly infinite\"). What is the recommended structural fix?",
       "options": [
-        "Restructure to tail recursion (e.g. thread an accumulator tuple) so the compiler can apply its tail-recursion optimization, or cap the depth",
+        "Restructure to tail recursion with an accumulator, or cap the depth",
         "Add `// @ts-ignore` above the type alias so the compiler skips it",
         "Replace the recursive type with `any` to short-circuit evaluation",
-        "Increase the compiler's instantiation-depth cap via a `tsconfig.json` flag"
+        "Raise the compiler's instantiation-depth cap via a `tsconfig.json` flag"
       ],
       "answer": 0,
       "explanation": "Tail-recursive conditionals (typically with an accumulator) raise the practical recursion ceiling from ~50 to ~1000, avoiding ts2589; for unbounded depth you add a depth counter. Suppressing with `@ts-ignore`, falling back to `any`, or a (non-existent) depth-cap flag do not fix the underlying instantiation explosion."

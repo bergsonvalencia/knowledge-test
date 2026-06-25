@@ -9,13 +9,13 @@
       "type": "mcq",
       "question": "Why is BenchmarkDotNet preferred over a hand-rolled `Stopwatch` loop for micro-benchmarking a hot method?",
       "options": [
-        "A `Stopwatch` loop mostly measures JIT warmup and noise, while BenchmarkDotNet runs warmup, many iterations, and statistical analysis in an isolated Release process",
+        "It runs warmup, many iterations, and statistical analysis in an isolated Release process, whereas a `Stopwatch` loop mostly measures JIT warmup and noise",
         "`Stopwatch` cannot measure intervals shorter than one millisecond, so it is useless for fast methods",
         "BenchmarkDotNet runs the benchmark in Debug configuration, which produces more stable numbers",
-        "BenchmarkDotNet disables the garbage collector during measurement so allocations never affect the result"
+        "BenchmarkDotNet disables the garbage collector during measurement so allocations never affect results"
       ],
       "answer": 0,
-      "explanation": "BenchmarkDotNet isolates each benchmark in its own Release-config process, handles warmup and many iterations, and does statistical analysis, whereas a raw `Stopwatch` loop measures JIT warmup and noise. It runs in Release (not Debug) and does not disable the GC."
+      "explanation": "BenchmarkDotNet isolates each benchmark in its own Release-config process, handles warmup and many iterations, and does statistical analysis, whereas a raw `Stopwatch` loop measures JIT warmup and noise. It runs in Release (not Debug) and does not disable the GC. `Stopwatch` resolution is sub-millisecond, so that distractor is also false."
     },
     {
       "subtopic": "MemoryDiagnoser",
@@ -39,7 +39,7 @@
       "type": "truefalse",
       "question": "In a high-throughput service, reducing the number of Gen0 allocations per request generally reduces GC frequency and improves p99 tail latency.",
       "answer": true,
-      "explanation": "Fewer allocations fill Gen0 more slowly, triggering fewer collections and less pause/CPU time, which improves throughput and tail latency. Reducing allocations is the consumer-side lever the reviewer emphasizes."
+      "explanation": "Fewer allocations fill Gen0 more slowly, triggering fewer collections and less pause/CPU time, which improves throughput and tail latency. Reducing allocations is the consumer-side lever you control, as opposed to tuning the collector itself."
     },
     {
       "subtopic": "Span constraints",
@@ -197,11 +197,11 @@
       "options": [
         "`FrozenDictionary` — high one-time build cost but the fastest read performance, ideal for build-once/read-constantly",
         "`ImmutableDictionary` — copy-on-write gives the fastest reads of any immutable collection",
-        "`ConcurrentDictionary` — required because many requests read it at the same time",
-        "A regular `Dictionary` with no pre-sizing — frozen collections are slower to read than `Dictionary`"
+        "`ConcurrentDictionary` — required because many requests read the map at the same time",
+        "A plain `Dictionary` — frozen collections are actually slower to read than a regular `Dictionary`"
       ],
       "answer": 0,
-      "explanation": "`FrozenDictionary` pays a high build cost once and then outperforms `Dictionary`/`HashSet` on lookup, matching the build-once/read-constantly profile. `ImmutableDictionary` is slower to read, a plain read-only `Dictionary` needs no concurrency control for reads, and frozen is faster than `Dictionary` on lookups."
+      "explanation": "`FrozenDictionary` pays a high build cost once and then outperforms `Dictionary`/`HashSet` on lookup, matching the build-once/read-constantly profile. `ImmutableDictionary` is slower to read, a read-only `Dictionary` needs no concurrency control for concurrent reads, and frozen is faster than `Dictionary` on lookups — not slower."
     },
     {
       "subtopic": "CollectionsMarshal",
@@ -210,7 +210,7 @@
       "type": "mcq",
       "question": "What does `CollectionsMarshal.GetValueRefOrAddDefault(dict, key, out _)` give you, and what is the main risk?",
       "options": [
-        "A `ref` to the dictionary's value slot (adding a default if absent), enabling read-and-update in a single hash lookup — but the ref is unsafe and invalidated by a structural change to the dictionary",
+        "A `ref` to the value slot (adding a default if absent), enabling read-and-update in one hash lookup — but it is unsafe and invalidated by a structural change to the dictionary",
         "A defensive copy of the value that you mutate and then write back, doubling the number of hash lookups",
         "An `out` flag indicating whether the key existed, but no way to update the value without a second indexer write",
         "A thread-safe atomic increment of the value, safe to call concurrently from multiple threads"
@@ -251,7 +251,7 @@
       "type": "mcq",
       "question": "In a portable `Vector<T>`-based loop, why is a scalar tail loop after the vectorized loop necessary?",
       "options": [
-        "`Vector<int>.Count` (the lane width) is decided at JIT time by the hardware, so the element count is rarely an exact multiple of it — the tail handles the leftover elements",
+        "`Vector<int>.Count` (the lane width) is decided at JIT time by the hardware, so the count is rarely an exact multiple — the tail handles the leftover elements",
         "The JIT cannot vectorize the final iteration, so the tail re-runs the last `Vector<int>.Count` elements scalarly as a correctness check",
         "`Vector<T>` cannot read the first few elements of a span, so the tail processes the head that the vector loop skipped",
         "Scalar operations are always faster than SIMD on the last elements, so the tail exists purely for speed"
@@ -266,7 +266,7 @@
       "type": "mcq",
       "question": "Which statement correctly contrasts Native AOT with ReadyToRun (R2R)?",
       "options": [
-        "Native AOT compiles fully ahead of time with no JIT — fastest startup and lowest memory, but no runtime codegen and limited reflection; R2R precompiles native code with a JIT fallback, improving startup without AOT's restrictions",
+        "Native AOT compiles fully ahead of time with no JIT (fastest startup, lowest memory, but limited reflection); R2R precompiles native code while keeping a JIT fallback and the full feature set",
         "Native AOT keeps the JIT for hot methods while precompiling cold ones, whereas R2R removes the JIT entirely",
         "R2R forbids reflection-based serialization and DI, while Native AOT supports them fully via runtime codegen",
         "Both disable the JIT, but only R2R produces a single self-contained native executable"

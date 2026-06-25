@@ -69,7 +69,7 @@
       "difficulty": "medium",
       "type": "mcq",
       "question": "A developer's `logger.LogInformation(...)` calls never appear in App Insights, while their warnings and errors do. What is the most likely cause?",
-      "options": ["Adaptive sampling is dropping all Information logs", "The default App Insights logger capture level is `Warning`, so `Information` is dropped until you lower it", "Information logs go only to Live Metrics and are never stored", "The connection string is missing so only severe logs are sent"],
+      "options": ["Adaptive sampling is configured to drop all Information-level logs", "The default App Insights logger capture level is `Warning`, so `Information` is dropped", "Information logs go only to Live Metrics and are never stored in the workspace", "The connection string is missing, so only severe logs reach the backend"],
       "answer": 1,
       "explanation": "The default capture level for the App Insights logger category is `Warning`; `Information` is silently dropped until you lower the level in configuration (e.g. `Logging:ApplicationInsights:LogLevel`). Sampling keeps whole operations together rather than dropping by severity, and a missing connection string would drop everything."
     },
@@ -79,7 +79,7 @@
       "difficulty": "medium",
       "type": "mcq",
       "question": "On a hot path you need accurate per-minute counts of a custom measurement without inflating ingestion cost or risking throttling. Which API and why?",
-      "options": ["`TrackMetric` — it samples high-volume metrics automatically", "`GetMetric().TrackValue()` — it pre-aggregates in-process (count/sum/min/max per minute), emitting far fewer items", "`TrackEvent` — events are cheaper than metrics", "`TrackMetric` — it pre-aggregates per minute before sending"],
+      "options": ["`TrackMetric` — it automatically samples high-volume metric calls", "`GetMetric().TrackValue()` — it pre-aggregates in-process (count/sum/min/max per minute)", "`TrackEvent` — custom events are always cheaper than custom metrics", "`TrackMetric` — it pre-aggregates each value per minute before sending"],
       "answer": 1,
       "explanation": "`GetMetric` pre-aggregates in-process per minute, so it emits far fewer telemetry items and is cheap. `TrackMetric` sends one item per call with no pre-aggregation — high ingestion volume and possible throttling; neither API is subject to sampling."
     },
@@ -142,7 +142,7 @@
       "question": "In the classic ASP.NET Core SDK, what must you do before configuring pure fixed-rate sampling?",
       "code": "builder.Services.AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions\n{\n    EnableAdaptiveSampling = false\n});",
       "lang": "csharp",
-      "options": ["Nothing — fixed-rate is the SDK default", "Disable adaptive sampling first, because `AddApplicationInsightsTelemetry()` turns on adaptive sampling by default", "Switch the connection string to an OTLP endpoint", "Set the default log level to `Information`"],
+      "options": ["Nothing — fixed-rate is the SDK default", "Disable adaptive sampling first, because `AddApplicationInsightsTelemetry()` enables it by default", "Switch the connection string to an OTLP endpoint", "Set the default log level to `Information`"],
       "answer": 1,
       "explanation": "`AddApplicationInsightsTelemetry()` enables adaptive sampling by default, so to get pure fixed-rate behavior you must disable adaptive sampling first (e.g. `EnableAdaptiveSampling = false`) and then add the fixed-rate processor."
     },
@@ -152,7 +152,7 @@
       "difficulty": "hard",
       "type": "mcq",
       "question": "A team wants to keep only the slow or failing traces and discard fast successful ones. Why can't the in-process App Insights SDK do this, and what can?",
-      "options": ["The SDK already does this; just enable adaptive sampling", "SDK sampling is head-based (decides at the start of an operation), so it can't selectively keep slow/failing traces; tail sampling in the OTel Collector can", "Fixed-rate sampling automatically keeps the slowest 5% of traces", "Ingestion sampling keeps only failed operations by default"],
+      "options": ["The SDK already does this once you enable adaptive sampling", "SDK sampling is head-based (decides at operation start), so the OTel Collector's tail sampling is needed", "Fixed-rate sampling automatically retains the slowest 5% of all traces", "Ingestion sampling keeps only the failed operations by default"],
       "answer": 1,
       "explanation": "App Insights SDK sampling is head-based: it decides at the start of an operation, before duration or outcome is known, so it cannot preferentially keep slow/failing traces. Tail sampling, which decides after the trace completes, requires the OpenTelemetry Collector — the in-process SDK cannot do it."
     },
@@ -162,7 +162,7 @@
       "difficulty": "hard",
       "type": "mcq",
       "question": "To ensure a caught exception's full stack trace and type land in the `exceptions` table with proper correlation, how should you log it?",
-      "options": ["Concatenate `ex.ToString()` into the message string: `logger.LogError(\"Failed: \" + ex)`", "Pass the exception object as the first argument: `logger.LogError(ex, \"Payment failed for order {OrderId}\", orderId)`", "Use `logger.LogInformation` so it isn't filtered by the default level", "Call `TrackEvent(\"Exception\")` with the message as a property"],
+      "options": ["Concatenate `ex.ToString()` into the message: `logger.LogError(\"Failed: \" + ex)`", "Pass the exception object first: `logger.LogError(ex, \"Payment failed for order {OrderId}\", orderId)`", "Use `logger.LogInformation` so the default level doesn't filter it out", "Call `TrackEvent(\"Exception\")` with the message text as a property"],
       "answer": 1,
       "explanation": "Passing the exception as the first argument captures its type and stack trace and routes it to the `exceptions` table, while named placeholders remain queryable. Stuffing the exception into the message string loses the structured stack/type, and `TrackEvent` is for business events, not exceptions."
     },
@@ -182,7 +182,7 @@
       "difficulty": "hard",
       "type": "mcq",
       "question": "You need a low-latency, cheap SLO threshold alert on server response time with ML-tuned baselines. Which alert type fits best, and why not the alternative?",
-      "options": ["A log (search) alert, because KQL queries run continuously with sub-second latency", "A metric alert on pre-aggregated metrics, because it is low-latency and cheap and supports dynamic thresholds; log alerts run KQL on a schedule with more latency and per-evaluation cost", "A log (search) alert, because only KQL alerts support dynamic thresholds", "A metric alert, because metric alerts can express any arbitrary KQL condition"],
+      "options": ["A log (search) alert, because KQL queries run continuously with sub-second latency", "A metric alert on pre-aggregated metrics — low-latency, cheap, and supports dynamic thresholds", "A log (search) alert, because only KQL-backed alerts can use dynamic thresholds", "A metric alert, because metric alerts can express any arbitrary KQL condition"],
       "answer": 1,
       "explanation": "Metric alerts fire on pre-aggregated metrics with low latency and low cost and support dynamic (ML-tuned) thresholds, ideal for SLO-style thresholds. Log alerts run a KQL query on a schedule — more flexible but higher latency and per-evaluation cost — so they're not the best fit here."
     }

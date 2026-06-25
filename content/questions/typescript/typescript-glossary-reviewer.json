@@ -24,10 +24,10 @@
       "type": "mcq",
       "question": "You receive a value typed `unknown` from `JSON.parse`. What must you do before calling `value.toUpperCase()`?",
       "options": [
-        "Narrow `value` (e.g. with `typeof value === \"string\"`) so the compiler proves it is a string",
-        "Nothing — `unknown` accepts any member access, just like `any`",
-        "Cast the whole module to `any` so checking is disabled project-wide",
-        "Re-declare the variable as `void` so the result is ignored"
+        "Narrow `value` with a check like `typeof value === \"string\"` so the compiler proves it is a string",
+        "Nothing — `unknown` accepts any member access directly, exactly the way `any` does",
+        "Cast the entire surrounding module to `any` so type checking is disabled project-wide",
+        "Re-declare the variable with the `void` type so that any result it produces is ignored"
       ],
       "answer": 0,
       "explanation": "`unknown` is the safe top type: it accepts any value in but forbids member access until you narrow. That narrowing requirement is exactly what distinguishes it from `any`, which would let `value.toUpperCase()` through unchecked."
@@ -80,10 +80,10 @@
       "code": "type Opts = { id: number };\ndeclare function run(o: Opts): void;\nrun({ id: 1, extra: true });   // line A\nconst o = { id: 1, extra: true };\nrun(o);                         // line B",
       "lang": "typescript",
       "options": [
-        "Line A is a fresh object literal, which triggers the excess-property check; once stored in a variable the literal is no longer fresh, so plain structural compatibility applies",
-        "Line A fails because `extra: true` makes the object structurally incompatible with `Opts`; the variable version coerces the type",
-        "Line B errors too — both lines are rejected for the unknown `extra` property",
-        "Line A errors because object literals cannot be passed to functions without a type annotation"
+        "Line A is a fresh object literal, which triggers the excess-property check; once stored in a variable the literal is no longer fresh, so structural compatibility applies",
+        "Line A fails because the `extra` property makes the object structurally incompatible with `Opts`, while the variable assignment quietly coerces its type",
+        "Line B errors too — both lines are equally rejected by the compiler for the unknown `extra` property",
+        "Line A errors because an object literal can never be passed to a function without an explicit type annotation"
       ],
       "answer": 0,
       "explanation": "Excess-property checks fire only on fresh literals passed directly. Storing the object in a variable removes freshness, so structural compatibility (which permits extra members) takes over. The object is structurally compatible with `Opts` in both cases."
@@ -95,10 +95,10 @@
       "type": "mcq",
       "question": "An array method expects a callback typed `(x: T) => void`, yet passing `array.push` (which returns a `number`) compiles without error. Why?",
       "options": [
-        "A `void` return type means the result is ignored, so a function returning a value is still assignable to that slot",
-        "`push` is special-cased by the compiler to be callback-compatible",
-        "The compiler widens the callback's return type to `number` to match `push`",
-        "`void` and `number` are mutually assignable, so any return type fits"
+        "A `void` return type means the result is ignored, so a function returning a value is still assignable there",
+        "`push` is individually special-cased by the compiler so that it is always callback-compatible everywhere",
+        "The compiler silently widens the callback's declared return type to `number` so that it matches `push`",
+        "The types `void` and `number` are mutually assignable, so any function return type fits the slot"
       ],
       "answer": 0,
       "explanation": "The `void`-return rule says callers must ignore the result, so a function that returns something is assignable where `() => void` is expected. This is exactly what lets `array.push` be passed to `forEach`. `void` and `number` are not generally interchangeable."
@@ -181,7 +181,7 @@
         "`string[] | number[]`",
         "`(string | number)[]`",
         "`never`",
-        "`Array<string | number>` which equals `string[]` only"
+        "`string[]` only — the union collapses to its first member"
       ],
       "answer": 0,
       "explanation": "Because the checked type is a naked (bare) type parameter, the conditional distributes over each union member: `ToArray<string> | ToArray<number>` = `string[] | number[]`. To get `(string | number)[]` you would wrap the parameter in a tuple: `[T] extends [unknown] ? T[] : never`."

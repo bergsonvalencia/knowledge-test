@@ -10,9 +10,9 @@
       "question": "What is distinctive about the flagship Cloud Load Balancing (Application Load Balancer) on Google Cloud compared with a typical regional LB?",
       "options": [
         "It is a single global anycast front end — one IP routes each user to the nearest healthy backend, so geo-steering happens at the LB, not at DNS",
-        "It requires a separate GeoDNS service to steer users to the closest region before traffic reaches the LB",
-        "It is always regional and you must deploy one LB per region with DNS round-robin across them",
-        "It only balances raw TCP/UDP at L4 and cannot route HTTP(S) by path or host"
+        "It requires a separate GeoDNS service to steer each user to the closest region before traffic ever reaches the load balancer",
+        "It is always regional, so you must deploy one LB per region and use DNS round-robin to spread traffic across them",
+        "It only balances raw TCP/UDP at L4 and cannot route HTTP(S) traffic by URL path or by host header at all"
       ],
       "answer": 0,
       "explanation": "GCP's global Application Load Balancer is a single anycast IP that routes to the nearest healthy region, collapsing 'GeoDNS + regional LB' into one front end. The DNS-based steering and per-region options describe other clouds' patterns, and the L4-only option describes the Network LB."
@@ -25,12 +25,12 @@
       "question": "What is the recommended way to let a Cloud Run service authenticate to other Google Cloud services without managing keys?",
       "options": [
         "Attach a service account to the compute; it receives short-lived credentials automatically (Workload Identity on GKE)",
-        "Download a service-account key JSON and bake it into the container image",
-        "Store a long-lived API key in an environment variable on the service",
-        "Embed the project owner's user password in Secret Manager and read it at startup"
+        "Download a service-account key JSON file and bake it directly into the deployed container image",
+        "Store a long-lived static API key in an environment variable set on the running service",
+        "Put the project owner's user password in Secret Manager and read it back at service startup"
       ],
       "answer": 0,
-      "explanation": "Attaching a service account gives the workload short-lived credentials with no key files (Workload Identity on GKE). A downloaded key JSON in the repo is an explicit red flag, and secrets/passwords in env vars are exactly the anti-patterns the reviewer warns against."
+      "explanation": "Attaching a service account gives the workload short-lived credentials with no key files (Workload Identity on GKE). A downloaded key JSON in the repo is an explicit red flag, and secrets or passwords in env vars are exactly the anti-patterns to avoid."
     },
     {
       "subtopic": "Cloud Storage classes",
@@ -54,7 +54,7 @@
       "type": "truefalse",
       "question": "By default, Pub/Sub delivers messages with exactly-once semantics, so subscribers never need to handle duplicate deliveries.",
       "answer": false,
-      "explanation": "Pub/Sub is at-least-once by default; exactly-once is an opt-in feature (GA on pull subscriptions within one region). Treating Pub/Sub as exactly-once by default is called out as a red flag, so consumers must be idempotent."
+      "explanation": "Pub/Sub is at-least-once by default; exactly-once is an opt-in feature (GA on pull subscriptions within one region). Because the default can redeliver, consumers must be idempotent."
     },
     {
       "subtopic": "Well-Architected pillars",
@@ -79,9 +79,9 @@
       "question": "A single-region app must survive the loss of one zone. What is the primary intra-region mechanism, and what does Cloud SQL HA provide?",
       "options": [
         "Deploy regionally across multiple zones; Cloud SQL HA keeps a synchronous standby in a second zone with ~60s failover on the same IP",
-        "Immediately go multi-region; Cloud SQL HA asynchronously replicates to a second region with zero RPO",
-        "Run a single zone with larger machines; Cloud SQL HA snapshots the disk hourly for restore",
-        "Use a global anycast LB only; Cloud SQL HA promotes a cross-region read replica automatically"
+        "Immediately go multi-region; Cloud SQL HA asynchronously replicates to a second region with a guaranteed zero RPO",
+        "Run a single larger-machine zone; Cloud SQL HA simply snapshots the underlying disk every hour for later restore",
+        "Use only a global anycast LB; Cloud SQL HA automatically promotes a cross-region read replica on any failure"
       ],
       "answer": 0,
       "explanation": "Multi-zone (regional) deployment is the primary intra-region HA mechanism, and Cloud SQL HA is a regional instance with a synchronous standby in a second zone (~60s failover, same IP). Jumping to multi-region before exhausting multi-zone is a red flag, and HA is zonal/synchronous, not cross-region async."
@@ -94,9 +94,9 @@
       "question": "How does Cloud Run's request-based (default) billing model differ from instance-based billing?",
       "options": [
         "Request-based bills CPU only during requests plus a per-request fee; instance-based bills CPU for the whole instance lifetime",
-        "Request-based bills a flat monthly fee per instance; instance-based bills only per HTTP request",
-        "Request-based never scales to zero; instance-based always scales to zero",
-        "Request-based bills for memory only; instance-based bills for network egress only"
+        "Request-based bills a flat monthly fee for each instance; instance-based bills purely per inbound HTTP request",
+        "Request-based can never scale an instance to zero; instance-based instances always scale down to zero",
+        "Request-based bills for allocated memory only; instance-based bills exclusively for outbound network egress"
       ],
       "answer": 0,
       "explanation": "Request-based billing charges CPU only during request processing plus a per-request fee, while instance-based charges CPU for the entire instance lifetime. The other options invert or fabricate the billing dimensions."
@@ -109,9 +109,9 @@
       "question": "In the GCP resource hierarchy (Organization → Folder → Project), how is a project's effective IAM policy determined?",
       "options": [
         "It is the union of the project's own bindings plus all bindings inherited from its ancestor folders and the organization",
-        "It is only the bindings set directly on the project; ancestor bindings are ignored",
-        "It is the intersection of the project's bindings with the organization's bindings",
-        "A child folder's bindings override and replace any bindings set at the organization level"
+        "It is only the bindings set directly on the project itself, and every binding from an ancestor is ignored",
+        "It is the intersection of the project's own bindings with the bindings set at the organization level",
+        "A child folder's bindings always override and fully replace any bindings set at the organization level"
       ],
       "answer": 0,
       "explanation": "IAM bindings are inherited downward, and a project's effective policy is the union of its own bindings with all ancestors'. It is not an intersection, ancestors are not ignored, and child policies add to (not replace) ancestor grants."
@@ -125,8 +125,8 @@
       "options": [
         "Adaptive Protection — ML-based L7 DDoS detection",
         "Attaching the WAF rules to the load balancer backend",
-        "The preconfigured OWASP Top 10 rule set",
-        "Basic L3/L4 volumetric DDoS protection"
+        "Using the preconfigured OWASP Top 10 rule set",
+        "Baseline L3/L4 volumetric DDoS protection"
       ],
       "answer": 0,
       "explanation": "Adaptive Protection (ML-based L7 DDoS detection) is gated to the Cloud Armor Enterprise tier. Attaching WAF rules to the LB, the preconfigured OWASP rules, and L3/L4 DDoS protection are part of the standard offering."
@@ -153,7 +153,7 @@
       "type": "truefalse",
       "question": "Configuring a BigQuery multi-region (e.g. US or EU) automatically provides cross-region replication that protects against a full regional outage.",
       "answer": false,
-      "explanation": "A BigQuery multi-region is for higher quotas and data residency — it does NOT provide automatic cross-region replication or regional-outage redundancy. For a total-region outage you need BigQuery managed disaster recovery; treating multi-region as automatic DR is the named trap."
+      "explanation": "A BigQuery multi-region is for higher quotas and data residency — it does NOT provide automatic cross-region replication or regional-outage redundancy. For a total-region outage you need BigQuery managed disaster recovery; treating multi-region as automatic DR is a well-known trap."
     },
     {
       "subtopic": "Spanner vs Cloud SQL",
@@ -163,9 +163,9 @@
       "question": "When is Cloud Spanner the right choice over Cloud SQL?",
       "options": [
         "When you need horizontal write scaling AND strong global consistency with relational semantics — a single-primary DB has outgrown vertical scale",
-        "When you need a cheap, simple regional database for a small CRUD app",
-        "When you need a serverless document database with real-time mobile listeners",
-        "When you need a serverless columnar analytics warehouse for ad-hoc SQL over petabytes"
+        "When you need a cheap, simple single-region relational database for a small low-traffic CRUD application",
+        "When you need a serverless document database with real-time mobile listeners and offline sync support",
+        "When you need a serverless columnar analytics warehouse for ad-hoc SQL queries over petabytes of data"
       ],
       "answer": 0,
       "explanation": "Spanner is for horizontal write scaling with strong global consistency and relational semantics, when a single-primary DB has outgrown vertical scale. A small regional CRUD app fits Cloud SQL, mobile documents fit Firestore, and analytics fits BigQuery."
@@ -188,14 +188,14 @@
         1,
         2
       ],
-      "explanation": "Cloud CDN/Cloud Armor attach to the LB backend, the Network LB is a regional L4 passthrough that preserves client IP, and Media CDN handles high-volume video. Claiming DNS does global steering and putting the WAF off the load balancer are both explicit red flags."
+      "explanation": "Cloud CDN/Cloud Armor attach to the LB backend, the Network LB is a regional L4 passthrough that preserves client IP, and Media CDN handles high-volume video. On GCP geo-steering happens at the global anycast LB (not DNS), and the WAF belongs on the load balancer, not on each instance."
     },
     {
       "subtopic": "Pub/Sub retention and replay",
       "source": "system-design/system-design-building-blocks-gcp-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Select ALL statements that are TRUE about Pub/Sub as described in the reviewer.",
+      "question": "Select ALL statements that are TRUE about Pub/Sub on Google Cloud.",
       "options": [
         "It is a global serverless pub/sub bus that doubles as the streaming-ingestion layer",
         "Default message retention is 7 days, extendable to a maximum of 31 days, with seek/replay",
@@ -216,12 +216,12 @@
       "source": "system-design/system-design-building-blocks-gcp-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Why does the reviewer say GCP's global-by-design building blocks reduce — but do not eliminate — disaster-recovery work for a multi-region architecture?",
+      "question": "Why do GCP's global-by-design building blocks reduce — but not eliminate — disaster-recovery work for a multi-region architecture?",
       "options": [
         "The global anycast LB already does automatic cross-region failover for traffic, but the data tier still needs an explicit RPO/RTO decision and customer-owned failover",
-        "Every GCP data store automatically replicates and fails over across regions, so DR is fully handled by the platform",
-        "The LB cannot fail over across regions, so you must engineer all traffic steering by hand with DNS",
-        "Multi-region is cheaper than multi-zone, so the only remaining work is cost optimization"
+        "Every GCP data store automatically replicates and fails over across regions, so disaster recovery is fully handled by the platform with no further work",
+        "The load balancer cannot fail over across regions at all, so you must engineer every bit of traffic steering by hand using DNS records",
+        "Multi-region deployments are always cheaper than multi-zone ones, so the only remaining disaster-recovery task is cost optimization"
       ],
       "answer": 0,
       "explanation": "The global anycast LB handles the traffic side of DR automatically, but the data tier still demands an explicit RPO/RTO choice with customer-owned failover. Not all data stores auto-fail-over (e.g. the BigQuery trap), the LB does fail over across regions, and smaller RPO/RTO costs more."
@@ -234,12 +234,12 @@
       "question": "A senior engineer must distinguish Cloud SQL's HA standby from its read replicas. Which statement is correct?",
       "options": [
         "The HA standby is a synchronous failover target in a second zone; read replicas are separate instances (same- or cross-region) used to scale reads",
-        "The HA standby serves read traffic to scale reads, while read replicas exist only for failover",
-        "Read replicas and the HA standby are the same mechanism with two names",
-        "The HA standby asynchronously replicates across regions and is the primary way to serve read-heavy traffic"
+        "The HA standby itself serves read traffic to scale reads, while read replicas exist purely for failover when the primary dies",
+        "Read replicas and the HA standby are really the same underlying mechanism described under two different names",
+        "The HA standby asynchronously replicates across regions and is the main way you serve heavy read-only query traffic"
       ],
       "answer": 0,
-      "explanation": "The HA standby is a synchronous, second-zone failover target (separate from replicas), while read replicas (same- or cross-region) scale reads. The reviewer explicitly notes read replicas are 'separate from the HA standby', so they are not the same mechanism and the standby is not a read-scaling tool."
+      "explanation": "The HA standby is a synchronous, second-zone failover target (separate from replicas), while read replicas (same- or cross-region) scale reads. Read replicas are separate from the HA standby, so they are not the same mechanism and the standby is not a read-scaling tool."
     },
     {
       "subtopic": "Org Policy vs IAM",
@@ -249,9 +249,9 @@
       "question": "In a governed landing zone, how do Organization Policy Service constraints and IAM policies differ in what they control?",
       "options": [
         "Org Policy constraints define what is *allowed* (guardrails); IAM policies define who can do *what* (grants) — and both are inherited down the hierarchy",
-        "Org Policy defines who can do what; IAM defines what is allowed on each resource type",
-        "Org Policy applies only to the root organization and is never inherited; IAM is set only per project",
-        "Org Policy and IAM are interchangeable ways to grant roles to principals"
+        "Org Policy defines who can do what, while IAM defines which actions are allowed on each individual resource type in the hierarchy",
+        "Org Policy applies only to the root organization and is never inherited, whereas IAM bindings can be set only at the project level",
+        "Org Policy and IAM are simply two interchangeable ways to grant the same roles to the same principals in a project"
       ],
       "answer": 0,
       "explanation": "Org Policy constraints are guardrails on what is allowed; IAM bindings are grants of who can do what — and both are inherited down the hierarchy. The other options swap the two roles, deny inheritance, or wrongly equate guardrails with role grants."
@@ -266,9 +266,9 @@
       "lang": "python",
       "options": [
         "Idempotency — charge_card must be safe to run more than once, because Pub/Sub is at-least-once and may redeliver the same message",
-        "Nothing extra — Pub/Sub guarantees exactly-once by default, so a single charge per message is assured",
-        "Strict global ordering — Pub/Sub guarantees total ordering, so duplicates cannot occur",
-        "Synchronous acks before processing — calling ack() first prevents any redelivery"
+        "Nothing extra — Pub/Sub guarantees exactly-once delivery by default, so exactly one charge per message is always assured",
+        "Strict global ordering — Pub/Sub guarantees total message ordering by default, which means duplicate deliveries cannot occur",
+        "Synchronous acks before processing — calling ack() before the work runs is what reliably prevents any later redelivery"
       ],
       "answer": 0,
       "explanation": "Pub/Sub is at-least-once by default, so the same message can be redelivered; charge_card must be idempotent or it may double-charge. Exactly-once is opt-in (not the default), Pub/Sub does not provide total ordering by default, and acking before the side effect risks losing work, not preventing duplicates."

@@ -9,9 +9,9 @@
       "type": "mcq",
       "question": "In Clean Architecture, which element sits at the **center** of the design, with everything else pointing inward toward it?",
       "options": [
-        "The database schema",
+        "The database schema and ORM mappings",
         "The business logic / domain core",
-        "The web framework and UI",
+        "The web framework and the UI layer",
         "The dependency-injection container"
       ],
       "answer": 1,
@@ -22,7 +22,7 @@
       "source": "architecture/clean-architecture-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Clean Architecture is described as essentially the same idea as several other named styles. Which set names those equivalents?",
+      "question": "Clean Architecture is essentially the same idea as several other named styles. Which set names those equivalents?",
       "options": [
         "Onion, Hexagonal / Ports & Adapters",
         "MVC, MVVM, MVP",
@@ -46,7 +46,7 @@
       "source": "architecture/clean-architecture-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "What is the distinction the reviewer draws between *layers* and *tiers*?",
+      "question": "What is the distinction between *layers* and *tiers*?",
       "options": [
         "Layers are physical deployment targets; tiers are logical groupings",
         "Layers are logical separations; tiers are physical deployment targets",
@@ -121,7 +121,7 @@
       "source": "architecture/clean-architecture-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "According to the 'What goes where' table, which of the following belong in the **Application Core** (Core / Domain)? Select all that apply.",
+      "question": "Which of the following belong in the **Application Core** (Core / Domain)? Select all that apply.",
       "options": [
         "Entities, aggregates, and value objects",
         "The interfaces that outer layers implement",
@@ -205,7 +205,7 @@
       "answer": 1,
       "options": [
         "Core references Infrastructure so it can reach the DbContext",
-        "Core references no other project; every other project's references point inward toward Core",
+        "Core references no other project; every other reference points inward toward Core",
         "Web references only Core and never Infrastructure",
         "UseCases references Infrastructure to call repositories directly"
       ],

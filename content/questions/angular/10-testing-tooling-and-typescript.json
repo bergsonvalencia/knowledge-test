@@ -45,7 +45,7 @@
         "Call `TestBed.flushEffects()` directly"
       ],
       "answer": 0,
-      "explanation": "`await fixture.whenStable()` runs change detection and waits for the fixture to settle, the pattern the docs use under the zoneless default. Manual `detectChanges()` is the legacy/zoneful approach and can throw `NG0100` under zoneless."
+      "explanation": "`await fixture.whenStable()` runs change detection and waits for the fixture to settle, the recommended pattern under the zoneless default. Manual `detectChanges()` is the legacy/zoneful approach and can throw `NG0100` under zoneless."
     },
     {
       "subtopic": "Setting inputs in tests",
@@ -110,7 +110,7 @@
       "type": "truefalse",
       "question": "The authoring APIs — `TestBed`, `ComponentFixture`, `HttpTestingController`, and CDK harnesses — are runner-agnostic and behave the same whether the spec runs under Vitest or the legacy Karma+Jasmine stack.",
       "answer": true,
-      "explanation": "True. The reviewer states the authoring APIs are runner-agnostic; the configure → create → stabilize → query/harness pipeline is identical under Vitest or Karma+Jasmine. Only the runner changes."
+      "explanation": "True. The authoring APIs are runner-agnostic; the configure → create → stabilize → query/harness pipeline is identical under Vitest or Karma+Jasmine. Only the runner changes."
     },
     {
       "subtopic": "Vitest migration status",
@@ -125,7 +125,7 @@
         "The migration schematic is stable but the new-project Vitest runner is still experimental"
       ],
       "answer": 0,
-      "explanation": "The new-project Vitest runner is stable in v21, but the migration schematic for existing projects is currently marked experimental — a distinction the reviewer calls out explicitly."
+      "explanation": "The new-project Vitest runner is stable in v21, but the migration schematic for existing projects is currently marked experimental — a deliberate distinction between the two."
     },
     {
       "subtopic": "ng update migrations",
@@ -199,7 +199,7 @@
       "source": "angular/10-testing-tooling-and-typescript.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "How does the reviewer characterize Angular's modern decorator trajectory?",
+      "question": "How is Angular's modern decorator trajectory best characterized?",
       "options": [
         "Member decorators (`@Input`/`@Output`/`@ViewChild`) migrate to signal functions, but class decorators (`@Component`/`@Injectable`/`@Directive`/`@Pipe`) stay as the declaration mechanism",
         "All decorators, including `@Component`, are being removed in favor of plain functions",
@@ -216,7 +216,7 @@
       "type": "truefalse",
       "question": "Angular's decorators are the legacy/experimental-stage TC39 form compiled by the Angular compiler with its own metadata; they are not identical to the now-standardized TC39 decorators, and Angular relies on its compiler rather than native runtime decorators.",
       "answer": true,
-      "explanation": "True. The reviewer explicitly notes Angular's decorators use its own compiler-emitted metadata and differ from the standardized TC39 decorators, so decorator behavior should be treated as Angular-defined, not stage-3 JS semantics."
+      "explanation": "True. Angular's decorators use its own compiler-emitted metadata and differ from the standardized TC39 decorators, so decorator behavior should be treated as Angular-defined, not stage-3 JS semantics."
     },
     {
       "subtopic": "Why signal functions win",
@@ -266,7 +266,7 @@
         "A global `window` variable read directly from each service"
       ],
       "answer": 0,
-      "explanation": "`environment.ts`/`environment.prod.ts` are swapped at build time via `fileReplacements`, so they are compile-time constants. For true runtime config the reviewer prefers DI-provided tokens, which can supply values determined at runtime."
+      "explanation": "`environment.ts`/`environment.prod.ts` are swapped at build time via `fileReplacements`, so they are compile-time constants. For true runtime config, DI-provided tokens are preferred because they can supply values determined at runtime."
     }
   ]
 }

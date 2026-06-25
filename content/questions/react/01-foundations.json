@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "Which statement best characterizes React's core design philosophy?",
       "options": [
-        "It is a declarative library where you describe the UI as a function of state and React reconciles the screen to match",
-        "It is an imperative library where you hand-write each DOM mutation in response to events",
-        "It is a full framework that prescribes routing, dependency injection, and HTTP out of the box",
-        "It is a CSS-in-JS styling engine with an optional component layer"
+        "It is declarative: you describe the UI as a function of state and React reconciles the screen to match",
+        "It is imperative: you hand-write each DOM mutation in response to events as the page changes",
+        "It is a full framework prescribing routing, dependency injection, and HTTP out of the box",
+        "It is a CSS-in-JS styling engine that bundles an optional component layer on top"
       ],
       "answer": 0,
       "explanation": "React is declarative: you describe the target UI as a function of state and React derives the DOM operations. The imperative-mutation description is the opposite of React's model, and React is a library, not a batteries-included framework."
@@ -27,8 +27,8 @@
       "lang": "typescript",
       "options": [
         "`createRoot` from `react-dom/client`",
-        "`render` from `react` core",
-        "`mount` from `react-native`",
+        "`render` from the `react` core package",
+        "`mount` from the `react-native` package",
         "`hydrate` from `react-dom/server`"
       ],
       "answer": 0,
@@ -60,9 +60,9 @@
       "question": "Which app concern does React itself provide built in, rather than requiring a companion library?",
       "options": [
         "Component state and effects",
-        "URL-to-view routing",
+        "URL-to-view routing and nested routes",
         "Server-state caching and request deduplication",
-        "Schema-based form validation"
+        "Schema-based form validation and submission"
       ],
       "answer": 0,
       "explanation": "React provides the component model with built-in state and effects. Routing, data-fetching/server-state caching, and form validation are each external concerns handled by companion libraries like React Router, TanStack Query, and React Hook Form."
@@ -74,10 +74,10 @@
       "type": "mcq",
       "question": "How do meta-frameworks like Next.js and React Router relate to React itself?",
       "options": [
-        "They wrap React with routing, data fetching, and server rendering, giving a framework-like experience while React stays a library",
-        "They are forks of React core that replace the reconciler with their own diffing engine",
-        "They are required to render any React component to the DOM",
-        "They convert React into an imperative DOM-scripting toolkit"
+        "They wrap React with routing, data fetching, and server rendering, while React stays a library",
+        "They are forks of React core that swap the reconciler for their own diffing engine",
+        "They are required before any React component can be rendered to the DOM",
+        "They convert React into a low-level imperative DOM-scripting toolkit"
       ],
       "answer": 0,
       "explanation": "Meta-frameworks layer routing, data fetching, and server rendering on top of React to deliver a framework-like experience; React itself remains a library. They do not replace the reconciler, are not required for basic DOM rendering, and do not make React imperative."
@@ -89,10 +89,10 @@
       "type": "mcq",
       "question": "Why does React maintain a virtual DOM instead of mutating the real DOM directly on every change?",
       "options": [
-        "Building and diffing lightweight in-memory JS objects is far cheaper than touching real DOM nodes, so React can compute and apply the minimal set of real mutations",
-        "The virtual DOM is always faster than any hand-written DOM update in every case",
-        "The browser cannot mutate the real DOM without a virtual representation",
-        "The virtual DOM eliminates layout, reflow, and repaint entirely"
+        "Building and diffing in-memory JS objects is cheap, so React can apply just the minimal real mutations",
+        "The virtual DOM is unconditionally faster than any hand-written DOM update in every possible case",
+        "The browser is unable to mutate the real DOM without a virtual representation backing it",
+        "The virtual DOM removes layout, reflow, and repaint from the rendering pipeline entirely"
       ],
       "answer": 0,
       "explanation": "Comparing plain JS objects is cheap relative to real DOM work, letting React commit only the minimal mutations. It is not unconditionally faster than every hand-tuned update, the browser needs no virtual DOM, and reflow/repaint still occur when the real DOM actually changes."
@@ -104,10 +104,10 @@
       "type": "mcq",
       "question": "What is the correct order of the phases React runs in response to a state change?",
       "options": [
-        "Render (build new virtual tree) → Reconcile (diff against previous tree) → Commit (apply minimal real-DOM mutations)",
-        "Commit → Render → Reconcile",
-        "Reconcile → Render → Commit",
-        "Render → Commit → Reconcile"
+        "Render (build new virtual tree) → Reconcile (diff against previous tree) → Commit (apply DOM mutations)",
+        "Commit (apply DOM mutations) → Render (build virtual tree) → Reconcile (diff the trees)",
+        "Reconcile (diff the trees) → Render (build virtual tree) → Commit (apply DOM mutations)",
+        "Render (build virtual tree) → Commit (apply DOM mutations) → Reconcile (diff the trees)"
       ],
       "answer": 0,
       "explanation": "A state change triggers Render (produce a new virtual tree), then Reconcile (diff new vs. retained previous tree), then Commit (apply only the minimal real-DOM mutations the browser must paint). The diff cannot run before the new tree exists, and committing precedes nothing in this cycle."
@@ -130,10 +130,10 @@
       "code": "// render 1\n<div className=\"a\">{children}</div>\n// render 2\n<div className=\"b\">{children}</div>",
       "lang": "typescript",
       "options": [
-        "React keeps the existing DOM node and patches only the changed attribute, no remount",
-        "React tears down the node and builds a fresh one, destroying child state",
-        "React ignores the change because className is not part of the diff",
-        "React clones the node and renders both versions side by side"
+        "React keeps the existing DOM node and patches only the changed attribute, with no remount",
+        "React tears down the existing node and builds a fresh one, destroying any child state",
+        "React ignores the change because `className` is not included in the diff comparison",
+        "React clones the node and renders both the old and new versions side by side"
       ],
       "answer": 0,
       "explanation": "Same element type means update in place: React reuses the existing DOM node and patches only the changed attribute. A teardown/remount happens only when the element type itself changes."
@@ -161,10 +161,10 @@
       "type": "mcq",
       "question": "Why is using the array index as a `key` for a reorderable list considered a bug-prone choice?",
       "options": [
-        "When items reorder, the index-to-item mapping shifts, so React reuses the wrong nodes and can mismatch state to the wrong row",
-        "Index keys throw a runtime error in React 19",
-        "Index keys force every list item to remount on every render",
-        "Index keys disable reconciliation for the entire list"
+        "When items reorder, the index stays put while items move, so React reuses nodes for the wrong rows",
+        "Index keys throw a runtime error in React 19 whenever a list is reordered or filtered",
+        "Index keys force every single list item to fully remount on each and every render",
+        "Index keys turn off reconciliation for the entire list, so nothing in it ever updates"
       ],
       "answer": 0,
       "explanation": "Keys identify siblings across renders; an index key stays the same while the underlying item moves, so React reuses nodes for the wrong items and state can attach to the wrong row. It is not a thrown error, nor does it force full remounts or disable reconciliation."
@@ -177,9 +177,9 @@
       "question": "What is the purpose of React's `StrictMode` double-invoking renders and re-running effect setup/cleanup in development?",
       "options": [
         "To surface impure renders and missing effect cleanup; it has no effect in production",
-        "To make production renders run twice for safety margins",
-        "To permanently disable component memoization",
-        "To batch network requests across components"
+        "To deliberately make production renders run twice as a runtime safety margin",
+        "To permanently disable component memoization across the whole component tree",
+        "To batch and deduplicate outgoing network requests issued across components"
       ],
       "answer": 0,
       "explanation": "In development StrictMode double-invokes renders and mounts/unmounts/re-mounts effects to expose impure renders and missing cleanup. It is a development-only aid and has no effect in production builds."
@@ -193,10 +193,10 @@
       "code": "{useA ? <ProfileA /> : <ProfileB />}",
       "lang": "typescript",
       "options": [
-        "State is reset each toggle, because swapping the component type tears down the old subtree and mounts a fresh one",
-        "State is preserved across toggles, because both occupy the same slot",
-        "State is shared between ProfileA and ProfileB",
-        "Only ProfileA's state persists; ProfileB starts fresh each time"
+        "State is reset each toggle, because swapping the type tears down the old subtree and mounts fresh",
+        "State is preserved across every toggle, because both components occupy the same DOM slot",
+        "State is shared between `ProfileA` and `ProfileB` since they render into one position",
+        "Only `ProfileA`'s state persists across toggles, while `ProfileB` starts fresh each time"
       ],
       "answer": 0,
       "explanation": "Different element type at the same position is a remount: React destroys the old subtree (and its state) and builds the new type fresh, so each toggle resets state. Sharing position does not preserve or share state across distinct component types."
@@ -234,10 +234,10 @@
       "type": "mcq",
       "question": "Across the render → reconcile → commit cycle, which stage is the comparatively expensive one and why?",
       "options": [
-        "Commit, because it touches the real DOM, which is costly relative to building and diffing in-memory JS objects",
-        "Render, because constructing JS objects for the virtual tree dominates the cost",
-        "Reconcile, because the O(n) diff is more expensive than mutating the DOM",
-        "All three stages cost the same since they all operate on the virtual tree"
+        "Commit, because it touches the real DOM, which is costly relative to building and diffing JS objects",
+        "Render, because constructing the JS objects for the virtual tree dominates the overall cost",
+        "Reconcile, because running the O(n) diff is more expensive than mutating the real DOM",
+        "All three stages cost roughly the same, since each one only operates on the virtual tree"
       ],
       "answer": 0,
       "explanation": "Render (building JS objects) and reconcile (an O(n) diff) are cheap; the commit stage is comparatively expensive because it mutates the real DOM. Reconcile operates on virtual trees, and commit is the only stage that touches the real DOM."
@@ -249,10 +249,10 @@
       "type": "mcq",
       "question": "React deliberately does **not** compute a provably optimal diff between two virtual trees. What is the senior-level justification?",
       "options": [
-        "An optimal general tree diff is O(n³); React accepts O(n) heuristics (type-based matching, sibling keys) that are near-optimal for how real UIs actually change",
-        "Optimal diffing is impossible to implement in JavaScript",
-        "An optimal diff would require mutating the real DOM during the reconcile phase",
-        "Heuristic diffing is only used in development and replaced by an optimal diff in production"
+        "An optimal general tree diff is O(n³); O(n) heuristics are near-optimal for how real UIs change",
+        "An optimal tree diff is simply impossible to implement in JavaScript at any reasonable scale",
+        "An optimal diff would require mutating the real DOM during the reconcile phase to stay correct",
+        "Heuristic diffing runs only in development and is replaced by an optimal diff in production builds"
       ],
       "answer": 0,
       "explanation": "The optimal general tree diff is O(n³), impractical at UI scale, so React uses O(n) heuristics (same-type-in-place, key-based sibling matching) that are near-optimal for real UI mutations. Optimal diffing is computable but too slow; the heuristics run in both dev and production, and reconcile never touches the real DOM."

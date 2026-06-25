@@ -25,9 +25,9 @@
       "question": "How many instances does a **Transient** service produce when it is resolved twice within a single HTTP request?",
       "options": [
         "Two — a Transient gives a fresh instance on every single resolve, even twice in one request",
-        "One — Transient still shares a single instance per request like Scoped",
-        "One — the container caches Transient instances for the life of the request",
-        "Zero — Transient services are only created lazily when the request completes"
+        "One — Transient still shares a single instance per request, just like Scoped does",
+        "One — the container caches each Transient instance for the rest of the request",
+        "Zero — Transient services are only created lazily once the request completes"
       ],
       "answer": 0,
       "explanation": "Transient means a new instance on every resolve, so two resolves in one request yield two distinct instances. Sharing one instance per request describes Scoped, not Transient."
@@ -40,9 +40,9 @@
       "question": "What lifetime does `AddDbContext<AppDbContext>()` register the `DbContext` with by default, and why is that the correct choice?",
       "options": [
         "Scoped — one `DbContext` per request matches the unit-of-work model and avoids sharing a non-thread-safe context",
-        "Singleton — one shared `DbContext` minimizes connection overhead across the app",
-        "Transient — a brand-new `DbContext` per resolve guarantees the change tracker is always empty",
-        "Scoped, but only because EF Core forbids any other lifetime from compiling"
+        "Singleton — one shared `DbContext` minimizes connection overhead across the whole app",
+        "Transient — a brand-new `DbContext` per resolve keeps the change tracker permanently empty",
+        "Scoped — but only because EF Core forbids any other lifetime from compiling at all"
       ],
       "answer": 0,
       "explanation": "`AddDbContext` registers the context as Scoped, giving one instance per request, which fits the unit-of-work model and avoids sharing the non-thread-safe context across threads. Singleton would corrupt the change tracker, and EF Core does not forbid other lifetimes at compile time."
@@ -54,7 +54,7 @@
       "type": "truefalse",
       "question": "ASP.NET Core's built-in DI container supports property injection out of the box, the same way it supports constructor injection.",
       "answer": false,
-      "explanation": "Constructor injection is first-class in the built-in container; property injection is not supported out of the box. The reviewer lists property injection as a code smell that the built-in container does not perform automatically."
+      "explanation": "Constructor injection is first-class in the built-in container; property injection is not supported out of the box. Property injection is generally a code smell that the built-in container does not perform automatically."
     },
     {
       "subtopic": "GetService vs GetRequiredService",
@@ -64,9 +64,9 @@
       "question": "When resolving a service manually from an `IServiceProvider`, why is `GetRequiredService<T>()` preferred over `GetService<T>()`?",
       "options": [
         "`GetRequiredService<T>()` throws if `T` isn't registered, so a missing registration fails loudly instead of returning `null`",
-        "`GetRequiredService<T>()` is faster because it skips the container's lifetime checks",
+        "`GetRequiredService<T>()` is faster because it skips the container's internal lifetime checks",
         "`GetService<T>()` always creates a new Transient instance, breaking Singleton semantics",
-        "`GetRequiredService<T>()` automatically registers `T` as Scoped if it is missing"
+        "`GetRequiredService<T>()` automatically registers `T` as Scoped whenever it is missing"
       ],
       "answer": 0,
       "explanation": "`GetRequiredService` throws when the type isn't registered, surfacing the bug immediately, whereas `GetService` silently returns null. It does not change performance, lifetime semantics, or auto-register anything."
@@ -79,8 +79,8 @@
       "question": "A `Singleton` service takes a `Scoped` service as a constructor parameter, in a default Development host. What happens?",
       "options": [
         "It throws at `app.Build()` because both `ValidateScopes` and `ValidateOnBuild` are on in Development",
-        "It works fine; the singleton simply gets a fresh scoped instance on each request",
-        "It throws a compile-time error because the lifetimes are incompatible",
+        "It works fine; the singleton simply gets a fresh scoped instance on each new request",
+        "It throws a compile-time error because the two lifetimes are incompatible",
         "It silently downgrades the singleton to a scoped lifetime to resolve the conflict"
       ],
       "answer": 0,
@@ -94,9 +94,9 @@
       "question": "A singleton background processor legitimately needs to use a `Scoped` repository. What is the correct pattern?",
       "options": [
         "Inject `IServiceScopeFactory`, create a scope per operation, and resolve the scoped service inside that scope",
-        "Inject the scoped repository directly and reuse the same instance for the app lifetime",
-        "Re-register the repository as a Singleton so the lifetimes match",
-        "Call `services.BuildServiceProvider()` inside the processor each time you need the repository"
+        "Inject the scoped repository directly and reuse that same instance for the whole app lifetime",
+        "Re-register the repository as a Singleton so that the two lifetimes match up",
+        "Call `services.BuildServiceProvider()` inside the processor each time the repository is needed"
       ],
       "answer": 0,
       "explanation": "The safe pattern is to inject `IServiceScopeFactory`, create a scope per unit of work, and resolve the scoped service inside it. Injecting it directly captures it forever, re-registering as Singleton makes a non-thread-safe service shared, and calling `BuildServiceProvider()` builds a duplicate container (ASP0000)."
@@ -112,8 +112,8 @@
       "options": [
         "A `PushChannel` — a single resolution returns the **last** registered implementation",
         "An `EmailChannel` — a single resolution returns the **first** registered implementation",
-        "All three, wrapped automatically into a composite channel",
-        "It throws because the same interface was registered more than once"
+        "All three, wrapped automatically into one composite channel by the container",
+        "It throws, because the same interface was registered more than once"
       ],
       "answer": 0,
       "explanation": "A single (non-enumerable) resolution returns the last-registered implementation, here `PushChannel`. Resolving `IEnumerable<INotificationChannel>` would return all three in registration order; the container does not throw on duplicate registrations."
@@ -141,9 +141,9 @@
       "question": "A **scoped** service must observe configuration changes that are reloaded at runtime, picking up the latest values per request. Which options accessor should it inject?",
       "options": [
         "`IOptionsSnapshot<T>` — scoped, recomputed per request, reflecting config reloads",
-        "`IOptions<T>` — a singleton snapshot bound once at startup",
+        "`IOptions<T>` — a singleton snapshot bound once at app startup",
         "`IOptionsMonitor<T>` — but only when injected into a Transient service",
-        "`IConfiguration` read directly with magic-string keys per request"
+        "`IConfiguration` read directly, with magic-string keys per request"
       ],
       "answer": 0,
       "explanation": "`IOptionsSnapshot<T>` is scoped and recomputed per request, so it reflects config reloads for scoped consumers. `IOptions<T>` is a singleton bound once; `IOptionsMonitor<T>` suits singletons/background services needing live change notifications; reading `IConfiguration` directly is exactly the magic-string approach the options pattern replaces."
@@ -175,9 +175,9 @@
       "question": "Why should you avoid calling `services.BuildServiceProvider()` yourself inside `Program.cs` to grab a service during registration?",
       "options": [
         "It builds a second, separate container with duplicate singletons and no scope validation (analyzer warning ASP0000)",
-        "It permanently disables constructor injection for the rest of the app",
-        "It is only legal in non-Development environments and throws in Development",
-        "It forces every subsequent registration to become Transient"
+        "It permanently disables constructor injection for the rest of the application",
+        "It is only legal in non-Development environments and otherwise throws at startup",
+        "It forces every registration that comes after it to become Transient"
       ],
       "answer": 0,
       "explanation": "Calling `BuildServiceProvider()` during registration creates a second container with duplicate singletons and no scope validation, which the ASP0000 analyzer flags. The recommended fix is the factory overload that hands you the `IServiceProvider`. It does not disable injection, throw by environment, or change lifetimes."
@@ -196,7 +196,7 @@
       "source": "dotnet/dependency-injection-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "What is the most common accidental memory leak the reviewer describes around `IDisposable` services?",
+      "question": "What is the most common accidental memory leak involving `IDisposable` services in the DI container?",
       "options": [
         "A Transient `IDisposable` resolved from the **root** provider — its disposal is deferred until shutdown, so they accumulate for the app's lifetime",
         "A Scoped `IDisposable` — the container never disposes it, so each request leaks one instance",
@@ -230,12 +230,12 @@
       "source": "dotnet/dependency-injection-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Why is it recommended to explicitly enabling `ValidateScopes` in **all** environments rather than relying on the defaults?",
+      "question": "Why is it recommended to explicitly enable `ValidateScopes` in **all** environments rather than relying on the defaults?",
       "options": [
         "In non-Development environments scope validation is off by default, so a captive dependency is created silently and ships as a latent bug",
         "In all environments scope validation is off by default, so captive dependencies are never caught automatically",
-        "Enabling it in Production makes singletons thread-safe automatically",
-        "It is required for keyed services to resolve correctly in Production"
+        "Enabling it in Production makes every singleton thread-safe automatically",
+        "It is required for keyed services to resolve correctly when in Production"
       ],
       "answer": 0,
       "explanation": "Scope validation is on by default only in Development; in Production and other non-Development environments it is off, so a captive dependency slips through silently. Forcing `ValidateScopes` on everywhere catches it. It does not make singletons thread-safe and is unrelated to keyed-service resolution."
@@ -248,9 +248,9 @@
       "question": "A host has `ValidateScopes` enabled but `ValidateOnBuild` disabled. A singleton captures a scoped service. When and how does the failure surface?",
       "options": [
         "A bare `InvalidOperationException` with \"Cannot consume scoped service ... from singleton ...\" at resolve time, not at build",
-        "An `AggregateException` thrown at `app.Build()` during startup",
+        "An `AggregateException` thrown at `app.Build()` during application startup",
         "No exception at all — `ValidateScopes` alone never detects captive dependencies",
-        "A compile-time error, because `ValidateScopes` runs the analyzer at build"
+        "A compile-time error, because `ValidateScopes` runs an analyzer at build time"
       ],
       "answer": 0,
       "explanation": "With only `ValidateScopes` on (no `ValidateOnBuild`), the captive dependency is caught when the graph is resolved, surfacing as a bare `InvalidOperationException` with that exact message. The `AggregateException` at `app.Build()` requires `ValidateOnBuild`; `ValidateScopes` does detect the problem and is a runtime check, not a compile-time analyzer."
@@ -262,9 +262,9 @@
       "type": "mcq",
       "question": "A library extension method wants to register a default `INotificationChannel` only if the host hasn't already supplied that same implementation, while still allowing other channels to coexist. Which API matches that intent?",
       "options": [
-        "`services.TryAddEnumerable(ServiceDescriptor.Scoped<INotificationChannel, EmailChannel>())` — adds to the multi-registration set, de-duped by implementation type",
+        "`services.TryAddEnumerable(ServiceDescriptor.Scoped<INotificationChannel, EmailChannel>())` — adds to the set, de-duped by implementation type",
         "`services.TryAddScoped<INotificationChannel, EmailChannel>()` — registers only if no `INotificationChannel` of any kind exists yet",
-        "`services.AddScoped<INotificationChannel, EmailChannel>()` — always adds, even if `EmailChannel` is already in the set",
+        "`services.AddScoped<INotificationChannel, EmailChannel>()` — always adds, even when `EmailChannel` is already in the set",
         "`services.AddKeyedScoped<INotificationChannel, EmailChannel>(\"email\")` — keying it prevents any duplicate registration"
       ],
       "answer": 0,

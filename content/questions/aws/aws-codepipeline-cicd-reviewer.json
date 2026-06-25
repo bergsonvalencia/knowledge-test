@@ -196,12 +196,12 @@
       "question": "Given this buildspec, which statement is correct about the `reports` block and the `--no-restore`/`--no-build` flags?",
       "options": [
         "The `reports` block fails the build whenever any test in the TRX is marked failed, overriding the phase exit codes",
-        "The TRX is parsed into a report group for pass/fail trends independent of build success, and `--no-build` reuses the output `dotnet build` produced earlier in the same phase",
-        "`--no-restore` will error because `dotnet restore` ran in a different phase than `dotnet build`",
+        "The TRX feeds a report group for pass/fail trends independent of build success, and `--no-build` reuses the output `dotnet build` just produced",
+        "`--no-restore` will error because `dotnet restore` ran in a different phase from `dotnet build`",
         "The `reports` block runs before `pre_build`, so the TRX must already exist when restore happens"
       ],
       "answer": 1,
-      "explanation": "Test reports populate a report group for trend visibility independent of whether the build fails. `--no-build`/`--no-restore` work because restore ran in pre_build and build ran earlier in the build phase within the same ephemeral workspace; phase artifacts persist across phases of one build."
+      "explanation": "Test reports populate a report group for trend visibility independent of whether the build fails. `--no-build`/`--no-restore` work because restore ran in pre_build and build ran earlier in the build phase within the same ephemeral workspace; phase outputs persist across phases of one build."
     },
     {
       "subtopic": "Alarm-driven rollback semantics",

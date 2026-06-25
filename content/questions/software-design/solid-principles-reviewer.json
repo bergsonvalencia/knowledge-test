@@ -34,9 +34,9 @@
       "question": "A `ReportService` generates a report, saves it to the database, and emails it to stakeholders. Which SOLID principle does this most directly violate?",
       "options": [
         "SRP — there are multiple unrelated reasons the class would need to change",
-        "OCP — adding a new report type forces editing the class",
-        "LSP — a subclass could not substitute for it",
-        "DIP — it depends on a concrete database type"
+        "OCP — adding a new report type forces editing the existing class",
+        "LSP — a subclass could not safely substitute for it",
+        "DIP — it depends directly on a concrete database type"
       ],
       "answer": 0,
       "explanation": "Generating, persisting, and emailing are three unrelated responsibilities (three reasons to change), which is the classic SRP violation. The other principles describe different concerns and aren't what this scenario demonstrates."
@@ -66,7 +66,7 @@
         "High-level and low-level modules should both depend on abstractions, not on concretions",
         "Every dependency should be resolved through a DI container at runtime",
         "Low-level modules should depend directly on high-level modules",
-        "Concrete details should be depended upon so behavior is predictable"
+        "Concrete details should be depended upon so behavior stays predictable"
       ],
       "answer": 0,
       "explanation": "DIP: high-level modules should not depend on low-level modules — both should depend on abstractions, and abstractions should not depend on details. A DI container is one technique, not the principle itself."
@@ -80,8 +80,8 @@
       "options": [
         "No — you only moved the modification point; selection must be extensible too (DI registration, factory, or a dictionary keyed by type)",
         "Yes — using the Strategy pattern automatically satisfies OCP regardless of how strategies are selected",
-        "Yes — because each discount value now lives in its own class",
-        "No — Strategy is the wrong pattern; only the Decorator pattern can satisfy OCP"
+        "Yes — because each discount value now lives in its own dedicated class",
+        "No — Strategy is the wrong pattern here; only the Decorator pattern can ever satisfy OCP"
       ],
       "answer": 0,
       "explanation": "OCP is only satisfied if *which* strategy is selected is also extensible. A surviving central switch still forces an edit per new type — the modification point moved, it didn't disappear. Resolve selection via DI, a factory, or a type-keyed dictionary."
@@ -109,7 +109,7 @@
       "question": "A caller contains `if (animal is Penguin) { /* skip flying */ } else { animal.Fly(); }` to route around a subtype that throws in `Fly()`. What does this indicate, and what is the correct fix?",
       "options": [
         "An LSP violation; replace the type check with polymorphism so the subtype honors (or doesn't advertise) the contract",
-        "An ISP violation; split `IAnimal` into smaller interfaces and keep the type check",
+        "An ISP violation; split `IAnimal` into smaller interfaces but keep the existing type check",
         "A correct defensive pattern; add more `is` checks as new non-flying subtypes appear",
         "An OCP violation; wrap the call in a Decorator and leave the conditional in place"
       ],
@@ -135,7 +135,7 @@
         "DIP is the principle (depend on abstractions); DI is one technique to achieve it, and you can do DI while still violating DIP",
         "DIP and DI are synonyms — using a DI container always satisfies DIP",
         "DI is the principle; DIP is the specific container implementation that enforces it",
-        "Honoring DIP is impossible without a DI container"
+        "Honoring DIP is impossible without a DI container being present"
       ],
       "answer": 0,
       "explanation": "DIP is the principle; DI is one technique that implements it. You can inject a *concrete* type via DI (violating DIP), and you can honor DIP without a container (abstract factories, plain constructor passing)."
@@ -165,7 +165,7 @@
       "source": "software-design/solid-principles-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which techniques does the reviewer list for achieving OCP in C#? Select all that apply.",
+      "question": "Which techniques can be used to achieve OCP in C#? Select all that apply.",
       "options": [
         "Decorator pattern (runtime, via dependency injection)",
         "Strategy pattern (runtime, via DI)",
@@ -178,7 +178,7 @@
         1,
         2
       ],
-      "explanation": "The reviewer cites Decorator and Strategy (runtime, via DI) and extension methods (compile-time, with the caveat you can't switch at runtime). Editing the method is the OCP *violation*, and `sealed` prevents extension rather than enabling it."
+      "explanation": "Decorator and Strategy (runtime, via DI) and extension methods (compile-time, with the caveat you can't switch at runtime) all enable OCP. Editing the method is the OCP *violation*, and `sealed` prevents extension rather than enabling it."
     },
     {
       "subtopic": "OCP — Decorator constraint",
@@ -190,12 +190,12 @@
       "question": "This Decorator adds behavior around `IService.DoSomething`. What is a key constraint on using the Decorator pattern this way?",
       "options": [
         "It only works if the method is public and part of the interface being decorated",
-        "It only works if the wrapped service is a `sealed` class",
-        "It requires the decorated method to be a `static` method",
-        "It cannot be combined with dependency injection"
+        "It only works if the wrapped service is itself a `sealed` class",
+        "It requires the decorated method to be declared `static`",
+        "It cannot be combined with dependency injection at all"
       ],
       "answer": 0,
-      "explanation": "The reviewer notes the Decorator can only wrap a method that is public and included in the interface — otherwise there is nothing for the decorator to intercept. Decorators are in fact resolved via DI at runtime, contradicting the last option."
+      "explanation": "A Decorator can only wrap a method that is public and included in the interface — otherwise there is nothing for the decorator to intercept. Decorators are in fact resolved via DI at runtime, contradicting the last option."
     },
     {
       "subtopic": "Testability and SOLID",
@@ -205,12 +205,12 @@
       "question": "On a rapid-fire interview, \"Which SOLID principle most directly improves testability by allowing test doubles to be substituted?\" The expected answer is:",
       "options": [
         "DIP — depending on abstractions lets you inject mocks/fakes in place of real dependencies",
-        "SRP — small classes are the only thing that makes code testable",
-        "LSP — substitutability of subtypes is what mocking relies on",
-        "OCP — closing code to modification is what enables fakes"
+        "SRP — small classes are the only thing that ever makes code testable",
+        "LSP — subtype substitutability is what mocking fundamentally relies on",
+        "OCP — closing code to modification is what enables fakes to be used"
       ],
       "answer": 0,
-      "explanation": "DIP is the standard answer: depending on abstractions lets you swap in test doubles. The reviewer notes SRP and ISP also contribute materially, but DIP is the most *directly* associated with substituting mocks."
+      "explanation": "DIP is the standard answer: depending on abstractions lets you swap in test doubles. SRP and ISP also contribute materially, but DIP is the most *directly* associated with substituting mocks."
     },
     {
       "subtopic": "ISP — method count nuance",
@@ -228,12 +228,12 @@
       "type": "mcq",
       "code": "public interface IRepoReader<T>  { T Get(int id); }\npublic interface IRepoWriter<T>  { void Add(T entity); }\npublic interface IRepoRemover<T> { void Remove(T entity); }\n\npublic interface IRepo<T> : IRepoReader<T>, IRepoWriter<T>, IRepoRemover<T> { }",
       "lang": "csharp",
-      "question": "The reviewer splits a bulky `IRepo<T>` into reader/writer/remover and then re-declares `IRepo<T>` inheriting all three. Why does this recomposition not reintroduce the original ISP problem?",
+      "question": "A bulky `IRepo<T>` is split into reader/writer/remover, and then `IRepo<T>` is re-declared inheriting all three. Why does this recomposition not reintroduce the original ISP problem?",
       "options": [
         "Clients can depend on just the narrow role they need (e.g. `IRepoReader<T>`); the composed `IRepo<T>` is only used where all three are genuinely required",
         "Inherited interface members are excluded from each client's dependency surface by the compiler",
         "Composing interfaces converts them into a single concrete class, removing the coupling",
-        "Because `IRepo<T>` is generic, ISP no longer applies to it"
+        "Because `IRepo<T>` is generic, ISP simply no longer applies to it"
       ],
       "answer": 0,
       "explanation": "ISP is satisfied because a read-only client can depend on only `IRepoReader<T>` and is never forced to know about Add/Remove. The composed `IRepo<T>` exists only for clients that legitimately need all three operations."
@@ -243,12 +243,12 @@
       "source": "software-design/solid-principles-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A `Manager` class can eat, sleep, work, and cook. A `Child` is made to inherit from `Manager` but cannot work or cook, so callers using a `Manager` reference break when given a `Child`. Per the reviewer, what is the correct fix?",
+      "question": "A `Manager` class can eat, sleep, work, and cook. A `Child` is made to inherit from `Manager` but cannot work or cook, so callers using a `Manager` reference break when given a `Child`. What is the correct fix?",
       "options": [
         "Introduce a common `Human` base type that both `Manager` and `Child` inherit from, keeping only the truly shared behavior in it",
-        "Override `Work()` and `Cook()` in `Child` to throw `NotSupportedException`",
+        "Override `Work()` and `Cook()` in `Child` so they throw `NotSupportedException`",
         "Add `if (x is Child)` checks at every call site that invokes `Work()`",
-        "Make `Manager` `sealed` so `Child` can no longer inherit from it"
+        "Make `Manager` `sealed` so that `Child` can no longer inherit from it"
       ],
       "answer": 0,
       "explanation": "The LSP fix is to model the real shared abstraction: extract a `Human` base with only common behavior, so neither subtype is forced to fake capabilities it lacks. Throwing or adding caller type-checks just relocates the broken contract."
@@ -265,7 +265,7 @@
         "No — the constructor takes the concrete `SqlOrderRepository`, so the high-level service still depends on a concretion despite using DI",
         "Yes — any use of constructor injection satisfies DIP by definition",
         "Yes — because a DI container is involved, the dependency is automatically inverted",
-        "No — DIP is impossible to satisfy with constructor injection; only property injection qualifies"
+        "No — DIP is impossible with constructor injection; only property injection ever qualifies"
       ],
       "answer": 0,
       "explanation": "This is DI without DIP: the high-level service depends on a concrete type, not an abstraction. To honor DIP the constructor should take an interface (e.g. `IOrderRepository`). DI is a technique; it does not guarantee the dependency is inverted."

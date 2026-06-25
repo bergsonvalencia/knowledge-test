@@ -87,7 +87,7 @@
       "type": "mcq",
       "question": "How does **One Zone-IA** differ from the other standard storage classes with respect to data loss risk?",
       "options": [
-        "It has lower designed durability because it keeps one copy in a single AZ; losing that AZ loses the data",
+        "It keeps one copy in a single AZ, so losing that AZ loses the data",
         "It has the same multi-AZ durability but simply a lower availability target",
         "It replicates across two AZs instead of three, halving durability",
         "It stores no redundant copies at all, so any disk failure loses data"
@@ -103,7 +103,7 @@
       "question": "On a versioning-enabled bucket, you issue a `DELETE` on key `data.json` without specifying a version ID. What happens, and how do you restore the object?",
       "options": [
         "The latest version is permanently erased; restore from a backup or replica",
-        "A delete marker is added as the new latest version (GETs return 404); restore by deleting the marker",
+        "A delete marker becomes the new latest version (GETs return 404); restore by deleting the marker",
         "All versions are removed at once; restore by re-enabling versioning",
         "The delete is rejected because a version ID is required on a versioned bucket"
       ],
@@ -119,7 +119,7 @@
       "options": [
         "Only a bucket policy in account A naming account B's role as principal",
         "Only an IAM policy on account B's role allowing the S3 actions",
-        "An allow on both sides: a bucket policy in A naming B's role and an IAM policy on B's role",
+        "An allow on both sides: a bucket policy in A and an IAM policy on B's role",
         "An ACL on each object setting `bucket-owner-full-control` for account B"
       ],
       "answer": 2,
@@ -148,7 +148,7 @@
       "question": "A backend generates a presigned PUT URL using a role that only has `s3:GetObject` (not `s3:PutObject`). A client uses the URL to upload. What happens?",
       "options": [
         "The upload succeeds because the presigned URL itself grants the PUT permission",
-        "The upload fails because the URL cannot grant more than the signer's own permissions",
+        "The upload fails because the URL cannot grant more than the signer's permissions",
         "The upload succeeds but the object is quarantined until an admin approves it",
         "The upload succeeds only if Block Public Access is turned off"
       ],
@@ -165,7 +165,7 @@
       "lang": "csharp",
       "options": [
         "TransferUtility always uses a single PUT regardless of file size",
-        "TransferUtility automatically switches to multipart with parallel parts for large files, handling part sizing and retries",
+        "TransferUtility auto-switches to multipart with parallel parts for large files, handling sizing and retries",
         "This code fails for files over 100 MB unless you call InitiateMultipartUpload first",
         "TransferUtility disables retries, so a failed part restarts the whole upload"
       ],
@@ -221,7 +221,7 @@
       "question": "Your application needs far more than 5,500 GET/s against a single bucket. What is the correct way to scale request throughput?",
       "options": [
         "Request an account-level bucket request-rate quota increase from AWS Support",
-        "Spread keys across many prefixes, since the ~5,500 GET/s and ~3,500 write/s limits are per prefix and prefixes are unlimited",
+        "Spread keys across many prefixes, since the rate limits are per prefix and prefixes are unlimited",
         "Shard the data across multiple buckets because the limit is per bucket",
         "Enable Transfer Acceleration, which removes the per-bucket request-rate ceiling"
       ],

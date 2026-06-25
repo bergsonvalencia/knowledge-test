@@ -30,7 +30,7 @@
         "POST /api/users/123/delete"
       ],
       "answer": 1,
-      "explanation": "Resources are nouns and the HTTP method is the verb, so `DELETE /api/users/123` is correct. The others embed an action (`createUser`, `getUser`, `delete`) in the path, which the reviewer explicitly says to avoid."
+      "explanation": "Resources are nouns and the HTTP method is the verb, so `DELETE /api/users/123` is correct. The others embed an action (`createUser`, `getUser`, `delete`) in the path, which you should avoid."
     },
     {
       "subtopic": "401 vs 403",
@@ -54,7 +54,7 @@
       "type": "truefalse",
       "question": "A `POST` that successfully creates a new resource should return **201 Created** and include a `Location` header pointing at the new resource.",
       "answer": true,
-      "explanation": "The reviewer states a creating POST returns 201 plus a `Location` header — returning 200 for a create is a classic trap."
+      "explanation": "A creating POST returns 201 plus a `Location` header — returning 200 for a create is a classic trap."
     },
     {
       "subtopic": "Failed requests and 200",
@@ -63,7 +63,7 @@
       "type": "truefalse",
       "question": "It is acceptable to return `200 OK` with a body like `{\"error\": ...}` for a failed request, as long as the body clearly describes the error.",
       "answer": false,
-      "explanation": "The reviewer is explicit: never return 200 for a failure — it breaks clients, caches, retries, and monitoring. Use the correct 4xx/5xx with a machine-readable error body."
+      "explanation": "Never return 200 for a failure — it breaks clients, caches, retries, and monitoring. Use the correct 4xx/5xx with a machine-readable error body."
     },
     {
       "subtopic": "PUT vs PATCH semantics",
@@ -85,12 +85,12 @@
       "source": "web/rest-api-design-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Why does the reviewer say PATCH is idempotent only conditionally (`Yes*`)?",
+      "question": "PATCH is marked idempotent only conditionally (`Yes*`). Which statement explains why?",
       "options": [
-        "PATCH is never idempotent because it has a request body",
+        "PATCH is never idempotent because it carries a request body",
         "An absolute patch like `{\"status\":\"paid\"}` is idempotent, but a relative one like \"increment quantity by 1\" is not",
-        "PATCH is idempotent only when it uses JSON Patch (RFC 6902) but not JSON Merge Patch",
-        "PATCH is idempotent only if the server returns 204 instead of 200"
+        "PATCH is idempotent only with JSON Patch (RFC 6902), never with JSON Merge Patch",
+        "PATCH is idempotent only if the server returns 204 rather than 200"
       ],
       "answer": 1,
       "explanation": "Idempotency depends on the patch's nature: absolute patches set a value (repeatable with the same effect), while relative patches (e.g., increment) accumulate. The patch document format (6902 vs 7386) does not determine this, nor does the status code."
@@ -115,7 +115,7 @@
       "source": "web/rest-api-design-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The server receives a syntactically valid JSON body that parses cleanly, but it violates a business rule (e.g., the requested transfer exceeds the account balance). Which is the **most specific** correct status code per the reviewer?",
+      "question": "The server receives a syntactically valid JSON body that parses cleanly, but it violates a business rule (e.g., the requested transfer exceeds the account balance). Which is the **most specific** correct status code?",
       "options": [
         "400 Bad Request",
         "409 Conflict",
@@ -123,7 +123,7 @@
         "500 Internal Server Error"
       ],
       "answer": 2,
-      "explanation": "422 is for a request that is syntactically valid but semantically invalid (violates business rules). 400 is for content the server can't parse/understand; the reviewer notes many APIs collapse both into 400 but asks you to know the distinction."
+      "explanation": "422 is for a request that is syntactically valid but semantically invalid (violates business rules). 400 is for content the server can't parse/understand; many APIs collapse both into 400, but the distinction is worth knowing."
     },
     {
       "subtopic": "Pagination trade-offs",
@@ -175,9 +175,9 @@
       "source": "web/rest-api-design-reviewer.md",
       "difficulty": "medium",
       "type": "truefalse",
-      "question": "Adding a new **optional** field to a response is an additive change that, per the reviewer, does not by itself require a new API version.",
+      "question": "Adding a new **optional** field to a response is an additive change that does not by itself require a new API version.",
       "answer": true,
-      "explanation": "The reviewer says to version only on breaking changes (removing/renaming a field, changing a type or meaning); additive changes like a new optional field don't need a new version."
+      "explanation": "Version only on breaking changes (removing/renaming a field, changing a type or meaning); additive changes like a new optional field don't need a new version."
     },
     {
       "subtopic": "Mass assignment / over-posting",
@@ -197,7 +197,7 @@
         1,
         4
       ],
-      "explanation": "DTOs stop a caller from setting fields like `IsAdmin=true`; whitelisting sort/filter fields and using parameterized queries/LINQ prevent injection and DoS. Trusting client-side checks and string-concatenating SQL are exactly the anti-patterns the reviewer warns against."
+      "explanation": "DTOs stop a caller from setting fields like `IsAdmin=true`; whitelisting sort/filter fields and using parameterized queries/LINQ prevent injection and DoS. Trusting client-side checks and string-concatenating SQL are exactly the anti-patterns to avoid."
     },
     {
       "subtopic": "Idempotent methods",
@@ -240,15 +240,15 @@
       "source": "web/rest-api-design-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "An API uses many resource URIs, the correct HTTP verbs, and proper status codes, but its responses do **not** embed hypermedia links for next actions. Where does it sit on the Richardson Maturity Model, and what does the reviewer say about this?",
+      "question": "An API uses many resource URIs, the correct HTTP verbs, and proper status codes, but its responses do **not** embed hypermedia links for next actions. Where does it sit on the Richardson Maturity Model?",
       "options": [
-        "Level 1 — it still effectively uses one verb",
-        "Level 2 — and most production APIs deliberately stop here because few clients consume hypermedia",
-        "Level 3 — proper verbs and status codes already constitute HATEOAS",
+        "Level 1 — it still effectively uses a single verb",
+        "Level 2 — where most production APIs deliberately stop",
+        "Level 3 — verbs and status codes already constitute HATEOAS",
         "Level 0 — without hypermedia it is just RPC over HTTP"
       ],
       "answer": 1,
-      "explanation": "Proper verbs + status codes without hypermedia is Level 2, where the reviewer says most production APIs sit, since few clients follow links and HATEOAS adds real complexity. Level 3 specifically requires HATEOAS/hypermedia."
+      "explanation": "Proper verbs + status codes without hypermedia is Level 2, where most production APIs sit, since few clients follow links and HATEOAS adds real complexity. Level 3 specifically requires HATEOAS/hypermedia."
     },
     {
       "subtopic": "Long-running operations",
@@ -263,7 +263,7 @@
         "Return 504 Gateway Timeout if it cannot finish within the request window"
       ],
       "answer": 1,
-      "explanation": "For long-running work the reviewer prescribes 202 Accepted plus a status resource the client polls (or a push channel) — don't hold an HTTP connection open for minutes. 201 implies the resource is already created; 504 is a fault, not a design pattern."
+      "explanation": "For long-running work the right pattern is 202 Accepted plus a status resource the client polls (or a push channel) — don't hold an HTTP connection open for minutes. 201 implies the resource is already created; 504 is a fault, not a design pattern."
     }
   ]
 }

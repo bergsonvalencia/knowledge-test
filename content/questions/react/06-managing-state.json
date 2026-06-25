@@ -52,7 +52,7 @@
       "source": "react/06-managing-state.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "When two sibling components must stay in sync, where does the reviewer say the shared state should live?",
+      "question": "When two sibling components must stay in sync, where should the shared state live?",
       "options": [
         "Duplicated in both siblings and kept in sync with an effect",
         "In their closest common ancestor, which passes value and a setter callback down as props",
@@ -60,7 +60,7 @@
         "In the topmost root component so every component can reach it"
       ],
       "answer": 1,
-      "explanation": "Lifting state up means moving it to the closest common ancestor, which becomes the single source of truth and passes value plus an onChange setter down. The reviewer warns against hoisting higher than necessary and against duplicated copies."
+      "explanation": "Lifting state up means moving it to the closest common ancestor, which becomes the single source of truth and passes value plus an onChange setter down. You should not hoist higher than necessary, nor keep duplicated copies."
     },
     {
       "subtopic": "State identity",
@@ -76,15 +76,15 @@
       "source": "react/06-managing-state.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "A senior dev is modeling a form that can be empty, typing, submitting, successful, or in error. What is the recommended way to drive the UI?",
+      "question": "A form can be empty, typing, submitting, successful, or in error. What is the recommended way to drive its UI?",
       "options": [
-        "Keep one boolean per visual state and toggle each one in the relevant handler",
-        "Identify the visual states, store a single status value, and derive every label, disabled flag, and visibility from it",
-        "Read the DOM in each handler to decide which widgets to show next",
-        "Store the visual state in a ref and force re-renders manually when it changes"
+        "Keep one boolean per visual state and toggle each boolean inside the relevant event handler",
+        "Store a single status value and derive every label, disabled flag, and visibility from it",
+        "Read the DOM in each handler to decide which widgets to show next time around",
+        "Store the visual state in a ref and force re-renders by hand when it changes"
       ],
       "answer": 1,
-      "explanation": "The reviewer says to enumerate the visual states, store a single status value (a small state machine), and derive all UI from it. One-boolean-per-widget invites impossible combinations, and reaching into the DOM is the imperative approach React avoids."
+      "explanation": "Enumerate the visual states, store a single status value (a small state machine), and derive all UI from it. One boolean per widget invites impossible combinations, and reaching into the DOM is the imperative approach React avoids."
     },
     {
       "subtopic": "Avoiding duplicated state",
@@ -106,9 +106,9 @@
       "source": "react/06-managing-state.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer advises grouping a cursor's `x` and `y` into a single `{ x, y }` object rather than two separate state variables. What is the primary benefit?",
+      "question": "Grouping a cursor's `x` and `y` into a single `{ x, y }` object rather than two separate state variables has what primary benefit?",
       "options": [
-        "It reduces the number of re-renders React performs per move",
+        "It reduces the number of re-renders React performs per pointer move",
         "Updates that always change together stay atomic, so the two values can't get out of step",
         "Objects in state are compared by value, so React skips redundant updates",
         "It lets React batch the two `setState` calls that would otherwise happen separately"
@@ -123,13 +123,13 @@
       "type": "mcq",
       "question": "A `ProfileForm` keeps internal draft state. When the selected user changes, the previous user's draft leaks into the new form. What is the idiomatic fix?",
       "options": [
-        "Wrap the form in `React.memo` so it re-renders with the new `userId`",
+        "Wrap the form in `React.memo` so it re-renders when the `userId` prop changes",
         "Give the form `key={userId}` so a changed key remounts it with fresh state",
-        "Move the draft state up to the parent and pass it down as a prop",
-        "Call a reset function inside `useEffect` whenever `userId` changes"
+        "Move the draft state up to the parent and pass it back down as a prop",
+        "Call a reset function inside `useEffect` whenever the `userId` changes"
       ],
       "answer": 1,
-      "explanation": "Giving the component a `key` tied to the entity makes React treat a key change as a new component, unmounting the old instance and mounting a fresh one with reset state. `React.memo` affects re-render skipping, not remounting; the effect-based reset is the manual workaround the reviewer's key approach replaces."
+      "explanation": "Giving the component a `key` tied to the entity makes React treat a key change as a new component, unmounting the old instance and mounting a fresh one with reset state. `React.memo` affects re-render skipping, not remounting; the effect-based reset is the manual workaround the key approach replaces."
     },
     {
       "subtopic": "Same position, same type",
@@ -177,7 +177,7 @@
       "source": "react/06-managing-state.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which of the following are state-structure smells the reviewer says to fix? (Select all that apply.)",
+      "question": "Which of the following are state-structure smells that should be fixed? (Select all that apply.)",
       "options": [
         "A `useState` that mirrors a prop or other piece of state",
         "Separate `isLoading`, `isError`, and `isDone` booleans for one process",
@@ -190,7 +190,7 @@
         1,
         2
       ],
-      "explanation": "Mirroring state in `useState`, multiple mutually-exclusive booleans, and deeply nested tree state are all listed smells (fixed by deriving, a status enum, and normalizing by id). Computing a value during render and lifting state to a common ancestor are the recommended practices, not smells."
+      "explanation": "Mirroring state in `useState`, multiple mutually-exclusive booleans, and deeply nested tree state are all smells (fixed by deriving, a status enum, and normalizing by id). Computing a value during render and lifting state to a common ancestor are the recommended practices, not smells."
     },
     {
       "subtopic": "When to reach for Context",
@@ -205,7 +205,7 @@
         "Whenever a component re-renders more than once per second"
       ],
       "answer": 2,
-      "explanation": "Lifting trades a little prop-passing for consistency, but when props thread through many layers, the reviewer says to reach for Context. Two siblings sharing a value is solved by simple lifting; persistence across reloads and render frequency are unrelated concerns."
+      "explanation": "Lifting trades a little prop-passing for consistency, but when props thread through many layers, you should reach for Context. Two siblings sharing a value is solved by simple lifting; persistence across reloads and render frequency are unrelated concerns."
     },
     {
       "subtopic": "Component defined inside another",
@@ -238,7 +238,7 @@
       "source": "react/06-managing-state.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Two `<Counter />` siblings are rendered next to each other, both the same component type. What does the reviewer say about their state?",
+      "question": "Two `<Counter />` siblings are rendered next to each other, both the same component type. What is true of their state?",
       "options": [
         "They share one state because they are the same component type",
         "Each gets its own independent state because they occupy different positions in the tree",
@@ -253,7 +253,7 @@
       "source": "react/06-managing-state.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which statements about preserving and resetting React state are correct per the reviewer? (Select all that apply.)",
+      "question": "Which statements about preserving and resetting React state are correct? (Select all that apply.)",
       "options": [
         "Conditionally rendering the same component in different branches can accidentally preserve state you meant to clear",
         "Giving a same-type component a different `key` makes React mount a fresh instance and reset its state",

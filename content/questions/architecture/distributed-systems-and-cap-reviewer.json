@@ -7,12 +7,12 @@
       "source": "architecture/distributed-systems-and-cap-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "According to the CAP theorem as taught in the reviewer, what is the real choice a distributed system makes?",
+      "question": "According to the CAP theorem, what is the real choice a distributed system makes?",
       "options": [
         "Pick any 2 of Consistency, Availability, and Partition tolerance up front",
         "Keep Partition tolerance and choose between Consistency and Availability, only while partitioned",
         "Keep Consistency always and choose between Availability and Partition tolerance",
-        "Choose Latency vs Consistency whenever the network is healthy"
+        "Trade Latency against Consistency only when the network is healthy"
       ],
       "answer": 1,
       "explanation": "Partitions are unavoidable on real networks, so P is mandatory; the genuine trade is C vs A and only during a partition. 'Pick 2 of 3' is the explicitly-rejected framing, and the latency-vs-consistency trade belongs to PACELC's Else branch, not CAP."
@@ -39,7 +39,7 @@
         "Replication is for write scaling; partitioning is for read scaling"
       ],
       "answer": 1,
-      "explanation": "Replication keeps copies of the same data for durability, availability, and read scaling; partitioning splits different data subsets across nodes to scale write throughput and dataset size. Option A reverses the two; the read/write scaling claim in D is also backwards."
+      "explanation": "Replication keeps copies of the same data for durability, availability, and read scaling; partitioning splits different data subsets across nodes to scale write throughput and dataset size. The first option reverses the two; the read/write scaling claim in the last is also backwards."
     },
     {
       "subtopic": "Quorum N/W/R",
@@ -91,7 +91,7 @@
       "source": "architecture/distributed-systems-and-cap-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Which consistency model is described as the strongest one still achievable while staying available under partitions?",
+      "question": "Which consistency model is the strongest one still achievable while staying available under partitions?",
       "options": [
         "Linearizable / strong consistency",
         "Sequential consistency",
@@ -134,7 +134,7 @@
       "options": [
         "It preserves efficient range scans across the keyspace",
         "Adding or removing a node moves only a minimal fraction of keys, instead of nearly all of them",
-        "It eliminates the need for replication of each shard",
+        "It removes the need to replicate each shard for durability",
         "It removes the possibility of hot partitions entirely"
       ],
       "answer": 1,
@@ -164,10 +164,10 @@
       "code": "await using var tx = await db.Database.BeginTransactionAsync(ct);\nif (await db.ProcessedMessages.AnyAsync(m => m.Id == msg.MessageId, ct))\n    return;\ndb.Payments.Add(new Payment(msg.OrderId, msg.Amount));\ndb.ProcessedMessages.Add(new ProcessedMessage(msg.MessageId));\nawait db.SaveChangesAsync(ct);\nawait tx.CommitAsync(ct);",
       "lang": "csharp",
       "options": [
-        "To make the message broker switch into exactly-once delivery mode",
-        "So a redelivery is a no-op: the side effect and its dedup record are committed atomically, preventing a partial state where the payment applied but the message was not recorded as processed",
-        "To hold database locks across the network until every other consumer acknowledges",
-        "Because transactions make the handler run faster under high load"
+        "So the message broker switches into exactly-once delivery mode automatically",
+        "So the payment and its processed-message record commit atomically, making a redelivery a safe no-op instead of a second charge",
+        "So database locks are held across the network until every other consumer acknowledges",
+        "So the handler runs faster under high load by batching its writes"
       ],
       "answer": 1,
       "explanation": "Committing the side effect and the dedup record atomically guarantees that if the payment is applied, the message is recorded as processed too, so a redelivery is safely ignored. Separating them risks applying the payment without recording it (or vice versa), reopening the double-charge window. The broker mode and performance claims are unrelated."
@@ -189,7 +189,7 @@
       "question": "What is the well-known 'blocking problem' that makes two-phase commit (2PC) risky across services?",
       "options": [
         "Participants vote yes but the coordinator never sends prepare, so nothing happens",
-        "If the coordinator crashes after participants voted yes but before sending the decision, those participants are stuck holding locks with no safe way to proceed",
+        "The coordinator crashes after participants voted yes but before sending the decision, leaving them stuck holding locks with no safe way to proceed",
         "Participants commit independently and then discover the coordinator wanted them to abort",
         "Reads are blocked because every read must also run through the coordinator"
       ],
@@ -204,8 +204,8 @@
       "question": "Compared to a 2PC distributed transaction, which ACID-like property does a saga give up entirely, and how is the resulting problem mitigated?",
       "options": [
         "Atomicity; mitigated by a global lock held by the orchestrator",
-        "Durability; mitigated by writing to multiple disks",
-        "Isolation; mitigated with countermeasures like semantic locks (e.g. a PENDING status)",
+        "Durability; mitigated by writing each step to multiple disks",
+        "Isolation; mitigated with countermeasures like semantic locks (a PENDING status)",
         "Consistency; mitigated by running all steps in one database transaction"
       ],
       "answer": 2,
@@ -216,7 +216,7 @@
       "source": "architecture/distributed-systems-and-cap-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Select all properties that compensating transactions in a saga should have, and the reasons given.",
+      "question": "Select all properties that compensating transactions in a saga should have, with the correct reasons.",
       "options": [
         "They must be idempotent, because they may be retried",
         "They acquire a global lock across all participating services until the saga completes",
@@ -251,7 +251,7 @@
       "question": "Why are vector clocks preferred over Lamport clocks when a system needs to surface true write-write conflicts?",
       "options": [
         "Lamport clocks require special GPS and atomic-clock hardware, while vector clocks do not",
-        "Lamport clocks impose an ordering but cannot detect concurrency, whereas vector clocks can identify two events as concurrent when neither vector dominates the other",
+        "Lamport clocks impose an ordering but cannot detect concurrency, whereas vector clocks flag two events as concurrent when neither vector dominates the other",
         "Vector clocks are synchronized to wall-clock time, so they order events by real timestamp",
         "Lamport clocks lose data on every write, while vector clocks never do"
       ],

@@ -9,7 +9,7 @@
       "type": "mcq",
       "question": "Which statement best describes a `computed()` signal?",
       "options": [
-        "A read-only signal that is lazily evaluated and memoized, recomputing only after a tracked dependency changes",
+        "A read-only signal that is lazy, memoized, and recomputes after a dependency changes",
         "A writable signal whose value can be set with `set()` and `update()`",
         "A side-effect runner that re-executes whenever a read signal changes",
         "A signal that eagerly recomputes on every upstream write whether or not anyone reads it"
@@ -30,7 +30,7 @@
         "`count.mutate(n => n + 1)`"
       ],
       "answer": 0,
-      "explanation": "`update(prev => next)` derives the next value from the current one. `set(v)` replaces the value (and `count + 1` is invalid — `count` is a function, not a number), calling `count(...)` only reads, and `mutate` is not part of the documented API here."
+      "explanation": "`update(prev => next)` derives the next value from the current one. `set(v)` replaces the value (and `count + 1` is invalid — `count` is a function, not a number), calling `count(...)` only reads, and `mutate` is not part of the documented signal API."
     },
     {
       "subtopic": "effect injection context",
@@ -39,7 +39,7 @@
       "type": "truefalse",
       "question": "An `effect()` must run in an injection context unless you explicitly pass it an `{ injector }`.",
       "answer": true,
-      "explanation": "`effect()` requires an injection context (e.g. a constructor or field initializer) so it can tie its lifetime to a scope; the only escape hatch documented here is passing `{ injector }` explicitly."
+      "explanation": "`effect()` requires an injection context (e.g. a constructor or field initializer) so it can tie its lifetime to a scope; the only escape hatch is passing `{ injector }` explicitly."
     },
     {
       "subtopic": "computed vs effect usage",
@@ -72,7 +72,7 @@
       "type": "mcq",
       "question": "Inside an `effect()`, why would you wrap a signal read in `untracked(() => mySignal())`?",
       "options": [
-        "To read its current value without registering it as a dependency, so changes to it do not re-trigger the effect",
+        "To read its current value without registering it as a dependency that re-triggers the effect",
         "To force the effect to re-run synchronously whenever that signal changes",
         "To make the read return the previous value instead of the current one",
         "To pause all dependency tracking permanently for the rest of the effect's life"
@@ -221,7 +221,7 @@
       "type": "mcq",
       "question": "Two source values change together inside one synchronous burst, and a derived value depends on both. What real correctness difference exists between `combineLatest` and a signal `computed`?",
       "options": [
-        "`combineLatest` can emit an intermediate combination with one source already updated and one stale, while `computed` recomputes once, never showing an inconsistent state",
+        "`combineLatest` can emit an intermediate combination (one source updated, one stale), while `computed` recomputes once",
         "`computed` emits an intermediate value first, while `combineLatest` is glitch-free by design",
         "Both are glitch-free, so there is no observable difference",
         "`combineLatest` recomputes lazily on read, while `computed` recomputes eagerly on every write"

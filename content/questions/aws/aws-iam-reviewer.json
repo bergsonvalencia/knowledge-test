@@ -54,7 +54,7 @@
       "type": "truefalse",
       "question": "The `Version` field of a modern IAM policy that uses `Condition` blocks and policy variables should be set to `\"2012-10-17\"`.",
       "answer": true,
-      "explanation": "`\"2012-10-17\"` is the current policy language version that enables conditions and variables; it is the value the reviewer prescribes for modern policies."
+      "explanation": "`\"2012-10-17\"` is the current policy language version that enables conditions and variables, and it is the value required for modern policies. The older `\"2008-10-17\"` version does not support policy variables."
     },
     {
       "subtopic": "Groups are not principals",
@@ -119,7 +119,7 @@
       "type": "mcq",
       "question": "What distinguishes a set of temporary STS credentials from long-lived IAM user access keys?",
       "options": [
-        "Temporary credentials include a session token and expire; access keys have no session token and do not expire",
+        "Temporary credentials include a session token and expire; access keys have neither",
         "Temporary credentials never include a secret access key, only a session token",
         "Temporary credentials are region-scoped while access keys are global",
         "Temporary credentials must be manually rotated, unlike access keys"

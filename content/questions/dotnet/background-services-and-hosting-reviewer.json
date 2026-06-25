@@ -45,7 +45,7 @@
         "Infinite — the host waits forever for workers to drain"
       ],
       "answer": 0,
-      "explanation": "`HostOptions.ShutdownTimeout` defaults to 30 seconds; past that, the host stops waiting and proceeds with disposal, potentially cutting off in-flight work. The 15-second value in the sample code is an explicit override, not the default."
+      "explanation": "`HostOptions.ShutdownTimeout` defaults to 30 seconds; past that, the host stops waiting and proceeds with disposal, potentially cutting off in-flight work. A 15-second value is an example of an explicit override, not the default."
     },
     {
       "subtopic": "Exception default since .NET 6",
@@ -93,9 +93,9 @@
       "type": "mcq",
       "question": "A singleton worker injects `IServiceScopeFactory` but creates one scope at the top of `ExecuteAsync` and reuses it for every loop iteration. What is wrong with this?",
       "options": [
-        "A scope held for the worker's lifetime is the captive bug again — the resolved `DbContext` is reused for the app's lifetime and its change tracker grows unbounded",
+        "A scope held for the worker's lifetime is the captive bug again — the resolved `DbContext` lives for the whole process and its change tracker grows unbounded",
         "`IServiceScopeFactory` can only create one scope per process, so the second iteration throws",
-        "Scopes created outside a request cannot resolve scoped services at all, so `GetRequiredService<AppDbContext>()` returns null",
+        "Scopes created outside a request cannot resolve scoped services, so `GetRequiredService<AppDbContext>()` returns null",
         "Nothing is wrong — a single long-lived scope is the recommended pattern for workers"
       ],
       "answer": 0,
@@ -272,7 +272,7 @@
         "The exception will be suppressed entirely and only emitted as an OpenTelemetry metric"
       ],
       "answer": 0,
-      "explanation": "The reviewer notes that in .NET 11, `IHost.RunAsync`/`StopAsync` and `WaitForShutdownAsync` will rethrow the captured `BackgroundService` exception rather than completing silently, so the failure is observable to the host-running code, not just the logs. It does not revert to swallowing, auto-retry `ExecuteAsync`, or downgrade the failure to a metric."
+      "explanation": "In .NET 11, `IHost.RunAsync`/`StopAsync` and `WaitForShutdownAsync` will rethrow the captured `BackgroundService` exception rather than completing silently, so the failure is observable to the host-running code, not just the logs. It does not revert to swallowing, auto-retry `ExecuteAsync`, or downgrade the failure to a metric."
     }
   ]
 }

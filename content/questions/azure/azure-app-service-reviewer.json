@@ -10,9 +10,9 @@
       "question": "What is the relationship between an **App Service plan** and an **App Service** (web app)?",
       "options": [
         "The plan is the compute (VM fleet, OS, region, SKU) you pay for; the app is the workload that runs on it, and many apps can share one plan",
-        "The plan is the application code and the app is the deployment pipeline that ships it",
-        "Each app must have its own dedicated plan; plans cannot be shared between apps",
-        "The app is the compute tier and the plan is a logical grouping of unrelated resources for billing only"
+        "The plan is the application code, and the app is the deployment pipeline that builds and ships that code to Azure",
+        "Each app must have its own dedicated plan, because plans cannot be shared between two or more apps",
+        "The app is the compute tier you pay for, and the plan is just a logical grouping of unrelated resources for billing"
       ],
       "answer": 0,
       "explanation": "The plan is the compute you pay for (VM fleet, OS, region, SKU/tier); the app is the workload running on it. Many apps and slots can share one plan and therefore share its CPU/RAM."
@@ -109,10 +109,10 @@
       "type": "mcq",
       "question": "Why does a slot swap achieve zero downtime instead of a cold start hitting live traffic?",
       "options": [
-        "The platform rebuilds the app from source on the production instances before routing traffic",
-        "The platform warms up the target slot until it returns healthy, then flips the routing (a routing change, not a redeploy)",
-        "It drains all in-flight requests and pauses the app for a few seconds during the cutover",
-        "It scales the plan out to double the instances so half can restart at a time"
+        "The platform rebuilds the app from source on the production instances before it routes any live traffic to them",
+        "The platform warms the target slot until it is healthy, then flips the routing — a routing change, not a redeploy",
+        "It drains all in-flight requests and then pauses the app entirely for a few seconds during the cutover window",
+        "It scales the plan out to double the instance count so that half of them can restart at a time"
       ],
       "answer": 1,
       "explanation": "A swap is a routing change, not a redeploy: the platform warms the target slot (restart + warm-up pings) until healthy, then flips the virtual IP routing. The previously-warm staging instances become production."
@@ -124,10 +124,10 @@
       "type": "mcq",
       "question": "An app on S1 stores user session **in memory**. After enabling autoscale (2–6 instances), users report random logouts and lost cart data. What is the fix?",
       "options": [
-        "Scale up to a bigger SKU so a single instance can hold all sessions",
+        "Scale up to a bigger SKU so a single, larger instance can hold every user's session entirely in memory",
         "Externalize session/cache to Redis, share the Data Protection keyring, and disable ARR affinity",
-        "Enable ARR Affinity permanently so every user is pinned to one instance forever",
-        "Turn off autoscale and rely on a single instance to keep state consistent"
+        "Enable ARR Affinity permanently so every user is pinned to one specific instance forever, even on restart",
+        "Turn off autoscale and run on a single instance so that the in-memory state stays consistent for everyone"
       ],
       "answer": 1,
       "explanation": "Scale-out spreads requests across instances; in-memory session is not shared. The correct fix is to externalize state (Redis), share the Data Protection keys across instances, and disable ARR affinity for even distribution. ARR affinity is a crutch, not the proper fix."
@@ -180,10 +180,10 @@
       "code": "{\n  \"ConnectionStrings\": { \"Db\": \"Server=local;Database=dev;...\" },\n  \"Feature\": { \"NewCheckout\": false }\n}",
       "lang": "json",
       "options": [
-        "`false` — the JSON file is loaded last and wins",
+        "`false` — the JSON file is loaded last, so it wins over the app setting",
         "`true` — the app setting (env var) is layered after the JSON files and overrides it",
-        "It throws because two providers define the same key",
-        "`null` — `__` does not map to the `:` separator"
+        "It throws an exception because two providers define the same configuration key",
+        "`null` — `__` does not map to the `:` separator, so the key is never matched"
       ],
       "answer": 1,
       "explanation": "The environment-variable provider (which App Service app settings populate) is layered after the JSON files in the default builder, so the later provider wins and the value is `true`. `__` maps to the `:` hierarchy separator."
@@ -195,10 +195,10 @@
       "type": "mcq",
       "question": "What does the App Service **health check** path do when an instance repeatedly fails it?",
       "options": [
-        "It restarts the entire plan, taking all apps offline until the instance recovers",
+        "It restarts the entire plan, taking every app offline until the failing instance recovers on its own",
         "It removes the instance from the load-balancer rotation and, if it stays unhealthy, replaces it",
-        "It triggers an automatic slot swap to roll back the last deploy",
-        "It scales the plan up to a larger SKU to give the failing instance more resources"
+        "It triggers an automatic slot swap to roll back the most recent deploy and restore the prior build",
+        "It scales the plan up to a larger SKU to give the single failing instance more CPU and memory"
       ],
       "answer": 1,
       "explanation": "An instance failing the health check is removed from the load-balancer rotation, and if it stays unhealthy it gets replaced — giving self-healing across the instance pool. It does not swap slots or change the SKU."
@@ -226,10 +226,10 @@
       "type": "mcq",
       "question": "An autoscale rule scales out when CPU > 65% and scales in when CPU < 60%, with no cool-down. The instance count oscillates rapidly. What is the best fix?",
       "options": [
-        "Lower both thresholds so the rules trigger less often",
+        "Lower both thresholds together so that the scale-out and scale-in rules trigger far less often overall",
         "Widen the gap between the scale-out and scale-in thresholds (hysteresis) and add a cool-down period",
-        "Switch the trigger from CPU to memory, which never flaps",
-        "Remove the maximum instance bound so it can settle at a stable count"
+        "Switch the trigger metric from CPU over to memory usage, which is guaranteed never to oscillate",
+        "Remove the maximum instance bound entirely so the plan can grow and settle at a stable instance count"
       ],
       "answer": 1,
       "explanation": "Flapping (rapid out/in oscillation) is prevented with hysteresis — a wide gap between scale-out and scale-in thresholds (e.g. out >70%, in <30%) — plus a cool-down between actions. Narrow, close thresholds with no cool-down cause the oscillation."
@@ -241,10 +241,10 @@
       "type": "mcq",
       "question": "A plain **zip deploy** to production intermittently fails with 'file in use / locked DLL' errors. Why does **Run From Package** sidestep this entirely?",
       "options": [
-        "It deploys each file individually so the runtime never holds more than one open at a time",
-        "It runs the app read-only directly from the mounted package, so `wwwroot` is never overwritten file-by-file while the runtime holds files open",
-        "It disables IIS and runs the app on a separate background worker that ignores file locks",
-        "It compresses the DLLs so they are too small to be locked by the runtime"
+        "It deploys each file individually, so the runtime never holds more than a single file open at any one time",
+        "It runs the app read-only from the mounted package, so `wwwroot` is never overwritten file-by-file in place",
+        "It disables IIS and runs the app on a separate background worker process that simply ignores all file locks",
+        "It compresses the DLLs down small enough that they can no longer be held or locked by the running runtime"
       ],
       "answer": 1,
       "explanation": "Locked-DLL failures occur because the runtime/IIS holds files open while a zip deploy tries to overwrite them in place. Run From Package mounts the package read-only and the app runs from it, so there is no in-place file overwrite to collide with open handles."
@@ -257,9 +257,9 @@
       "question": "Slot swaps are slow and occasionally serve errors during the cutover. Which combination most directly produces a warm, gated cutover?",
       "options": [
         "`WEBSITE_WARMUP_PATH` alone, because it is pinged on every restart including the swap",
-        "Always On plus `WEBSITE_SWAP_WARMUP_PING_PATH` (with `WEBSITE_SWAP_WARMUP_PING_STATUSES`) pointing at a real readiness endpoint",
-        "ARR Affinity plus a larger SKU so the cutover has spare capacity",
-        "Run From Package plus disabling the health check so the swap is not blocked"
+        "Always On plus `WEBSITE_SWAP_WARMUP_PING_PATH` (with `WEBSITE_SWAP_WARMUP_PING_STATUSES`) on a readiness endpoint",
+        "ARR Affinity plus a larger SKU so the cutover has spare capacity to absorb the restart",
+        "Run From Package plus disabling the health check so the swap is not blocked by readiness"
       ],
       "answer": 1,
       "explanation": "Always On keeps the target loaded/warm, and `WEBSITE_SWAP_WARMUP_PING_PATH` (with expected statuses) makes the platform only flip routing once the target slot returns healthy. `WEBSITE_WARMUP_PATH` fires on every restart but does not gate the swap itself."

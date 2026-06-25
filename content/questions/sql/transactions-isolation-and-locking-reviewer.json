@@ -204,10 +204,10 @@
       "code": "BEGIN TRAN;            -- @@TRANCOUNT = 1\n  UPDATE A SET x = 1;\n  BEGIN TRAN;          -- @@TRANCOUNT = 2\n    UPDATE B SET y = 2;\n  COMMIT TRAN;         -- @@TRANCOUNT = 1\n  -- ... an error then forces ROLLBACK here",
       "lang": "sql",
       "options": [
-        "Nothing is durable yet; the inner COMMIT only decremented @@TRANCOUNT, and the later ROLLBACK undoes both updates",
-        "The UPDATE on B is durable because its inner transaction committed",
+        "Nothing is durable yet; the inner COMMIT only decremented @@TRANCOUNT, so the later ROLLBACK undoes both updates",
+        "The UPDATE on B is durable because its inner transaction already committed",
         "Both updates are durable because @@TRANCOUNT reached a committed state",
-        "The UPDATE on A is durable but the UPDATE on B is rolled back"
+        "The UPDATE on A is durable but the UPDATE on B is rolled back by the error"
       ],
       "answer": 0,
       "explanation": "Nested transactions are mostly a fiction: an inner COMMIT merely decrements @@TRANCOUNT and makes nothing durable. Work becomes durable only at the outermost COMMIT. A subsequent ROLLBACK rolls back the entire stack, undoing both updates."
@@ -264,10 +264,10 @@
       "type": "mcq",
       "question": "A web \"edit product\" flow must fail loudly if another user saved first, but cannot hold a database lock during the user's think time. EF Core's recommended approach relies on what mechanism?",
       "options": [
-        "A rowversion concurrency token added to the UPDATE's WHERE clause; 0 rows affected raises DbUpdateConcurrencyException",
-        "A SELECT WITH (UPDLOCK, HOLDLOCK) held open across the HTTP request",
-        "Setting the transaction isolation level to Serializable for the whole web request",
-        "Enabling RCSI so the second writer is blocked until the first commits"
+        "A rowversion token re-checked in the UPDATE's WHERE clause; 0 rows affected raises DbUpdateConcurrencyException",
+        "A SELECT WITH (UPDLOCK, HOLDLOCK) held open across the entire HTTP request and the user's edit",
+        "Setting the transaction isolation level to Serializable for the duration of the whole web request",
+        "Enabling RCSI so the second writer is blocked at save time until the first transaction commits"
       ],
       "answer": 0,
       "explanation": "App-level optimistic concurrency reads a rowversion token, sends it to the client, and re-checks it in the UPDATE WHERE clause; 0 rows affected means someone wrote first, throwing DbUpdateConcurrencyException — no DB lock held across the round-trip. UPDLOCK/HOLDLOCK is pessimistic and cannot be held across a stateless request."

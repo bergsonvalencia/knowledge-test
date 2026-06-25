@@ -64,7 +64,7 @@
       "question": "A container uses `/country` as its partition key and 80% of traffic is `US`. RU/s is provisioned generously, yet requests return HTTP 429. What is the root cause?",
       "options": [
         "The account-level RU/s limit has been exceeded",
-        "A low-cardinality, skewed partition key concentrates traffic on one logical partition, capping you at one physical partition's RU/s share",
+        "A low-cardinality, skewed key concentrates traffic on one logical partition, capping you at that partition's RU/s share",
         "The items exceed the 2 MB size limit and are being throttled",
         "Strong consistency is doubling the RU cost of every read"
       ],
@@ -78,9 +78,9 @@
       "type": "mcq",
       "question": "Which statement correctly distinguishes a **logical** partition from a **physical** partition?",
       "options": [
-        "A logical partition is the ~50 GB storage node; a physical partition is the transaction boundary capped at 20 GB",
-        "A logical partition is all items sharing one partition-key value (the 20 GB transaction boundary); a physical partition is the storage/compute node (~50 GB, ~10k RU/s) hosting many logical partitions",
-        "A logical partition and a physical partition are the same thing, just named differently per API",
+        "A logical partition is the ~50 GB storage node; a physical partition is the 20 GB transaction boundary",
+        "A logical partition is all items sharing one partition-key value (the 20 GB transaction boundary); a physical partition is the storage/compute node (~50 GB, ~10k RU/s)",
+        "A logical partition and a physical partition are the same thing, named differently per API",
         "A physical partition is capped at 20 GB and you split it manually as data grows"
       ],
       "answer": 1,
@@ -95,7 +95,7 @@
       "options": [
         "To allow changing the partition key in place later without migrating data",
         "To enable cross-partition transactions spanning multiple tenants",
-        "To spread a single large tenant across many sub-partitions (beating the 20 GB cap) while keeping prefix queries on `/tenantId` efficient",
+        "To spread a single large tenant across sub-partitions (beating the 20 GB cap) while keeping prefix queries efficient",
         "To remove the need for an indexing policy entirely"
       ],
       "answer": 2,
@@ -134,7 +134,7 @@
       "options": [
         "The change feed surfaces only deletes, not creates or updates",
         "The change feed is unordered, so events can arrive in any sequence within a partition",
-        "The default change feed does not surface deletes, so removed items won't be reflected unless you use a soft-delete flag or the all-versions-and-deletes mode",
+        "The default change feed does not surface deletes, so removals need a soft-delete flag or all-versions-and-deletes mode",
         "The change feed requires you to write your own polling loop with no checkpointing"
       ],
       "answer": 2,
@@ -213,8 +213,8 @@
       "question": "Which statement most accurately describes the guarantee of **Bounded Staleness** consistency?",
       "options": [
         "Reads always return the latest committed write, exactly like Strong but cheaper",
-        "Reads lag the latest write by at most K versions or T time, whichever comes first; it is a good fit for multi-region writes",
-        "Reads lag the latest write by at most K versions or T time, whichever comes first; it is near-strong for single-write-region accounts and an anti-pattern with multi-region writes",
+        "Reads lag by at most K versions or T time, whichever comes first; it is a good fit for multi-region writes",
+        "Reads lag by at most K versions or T time; near-strong for single-write-region accounts, an anti-pattern with multi-region writes",
         "Reads may appear out of order but are never more than T seconds stale"
       ],
       "answer": 2,

@@ -68,8 +68,8 @@
       "type": "mcq",
       "question": "Which situation most favors `useReducer` over `useState`?",
       "options": [
-        "Many interrelated state updates spread across several event handlers that you want centralized and unit-testable",
-        "A single boolean toggle local to one component",
+        "Many interrelated updates spread across several handlers you want centralized and testable",
+        "A single boolean toggle that is local to just one component",
         "Two independent numeric values updated with simple setters",
         "State that never changes after the initial render"
       ],
@@ -99,9 +99,9 @@
       "question": "When is the default value passed to `createContext(default)` actually used?",
       "options": [
         "Only when a consumer has no matching provider above it in the tree",
-        "Every time the provider's value is `undefined`",
-        "On the first render, before any provider mounts",
-        "Whenever `React.memo` blocks a re-render of an intermediate component"
+        "Every time the provider's value happens to be `undefined`",
+        "On the first render, before any provider has mounted",
+        "Whenever `React.memo` blocks an intermediate component's re-render"
       ],
       "answer": 0,
       "explanation": "The default is used only when a consumer renders with no matching provider above it. If a provider exists, the consumer reads the provider's value even if that value is `undefined`."
@@ -122,10 +122,10 @@
       "type": "mcq",
       "question": "A provider is written as `<ThemeContext value={{ user, theme }}>`. Why might this re-render all consumers on every render of the provider's component?",
       "options": [
-        "A fresh inline object is created each render, so the value fails the `Object.is` comparison every time",
-        "Context always re-renders consumers on every render regardless of the value",
-        "Inline objects bypass React's reconciliation and force a full tree remount",
-        "`useContext` cannot read object values, only primitives"
+        "A fresh inline object is created each render, so it fails the `Object.is` check every time",
+        "Context always re-renders every consumer on each render, regardless of the value",
+        "Inline objects bypass reconciliation and force a full remount of the tree",
+        "`useContext` can only read primitive values, never object values"
       ],
       "answer": 0,
       "explanation": "Passing a fresh inline object/array each render produces a new reference that fails `Object.is`, so React treats the value as changed and re-renders all consumers. Memoizing the value (e.g. `useMemo`) fixes it."
@@ -135,7 +135,7 @@
       "source": "react/07-reducers-and-context.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Which use case is context best suited for, per the reviewer?",
+      "question": "Which use case is context best suited for?",
       "options": [
         "Global-ish low-frequency data like theme, current user/auth, or locale",
         "High-frequency state such as text being typed into an input",
@@ -153,9 +153,9 @@
       "question": "Why does the reducer+context scaling pattern split into a separate `StateContext` and `DispatchContext` instead of one `{ state, dispatch }` context?",
       "options": [
         "So dispatch-only components subscribe to the stable `dispatch` and never re-render on state changes",
-        "Because a single context cannot hold both a value and a function",
-        "Because `dispatch` must be provided above `state` to be readable",
-        "To allow two providers to override each other's defaults"
+        "Because a single context cannot hold both a value and a function at once",
+        "Because `dispatch` must be provided above `state` to be readable below",
+        "To let the two providers override each other's default values"
       ],
       "answer": 0,
       "explanation": "Combining `{ state, dispatch }` creates a new value identity each render and re-renders every consumer on any state change, including dispatch-only ones. Splitting lets dispatch-only components read the stable `dispatch` and stay inert."
@@ -199,10 +199,10 @@
       "type": "mcq",
       "question": "What is the key re-render advantage a store library (Redux Toolkit / Zustand) has over a single reducer+context value?",
       "options": [
-        "A component subscribes to a slice via a selector and re-renders only when that slice changes, not on every state change",
-        "Stores never re-render components; they update the DOM directly",
-        "Stores avoid React's reconciliation entirely by using the virtual DOM differently",
-        "Stores guarantee components re-render synchronously before paint"
+        "A component subscribes to a slice via a selector and re-renders only when that slice changes",
+        "Stores never re-render any components; they just update the DOM directly",
+        "Stores avoid React's reconciliation entirely by diffing the virtual DOM themselves",
+        "Stores guarantee that components re-render synchronously before the next paint"
       ],
       "answer": 0,
       "explanation": "A context provider re-renders all consumers when its value changes. A store lets each component subscribe to a slice via a selector and re-render only when that slice changes. Both also subscribe via `useSyncExternalStore` for consistency under concurrent rendering."
@@ -254,10 +254,10 @@
       "type": "mcq",
       "question": "A Zustand selector returns a fresh object each call: `useStore(s => ({ a: s.a, b: s.b }))`. What problem can this cause and how is it fixed?",
       "options": [
-        "It can trigger re-render loops because a new object fails equality each time; wrap it with `useShallow` (or use `createWithEqualityFn`)",
-        "It silently returns stale values; fix it by calling the hook twice",
-        "It throws at runtime because selectors may only return primitives",
-        "It disables the store's subscription; fix it by adding a `<Provider>`"
+        "It can trigger re-render loops because a new object fails equality each time; wrap it with `useShallow`",
+        "It silently returns stale values; fix it by calling the store hook twice in a row",
+        "It throws at runtime because Zustand selectors may only ever return primitives",
+        "It disables the store's subscription; fix it by adding a `<Provider>` at the root"
       ],
       "answer": 0,
       "explanation": "Returning a new object/array from a selector each call produces a new reference that fails the default equality check, causing re-render loops. `useShallow` (or `createWithEqualityFn` for custom equality) compares the contents to prevent it."
@@ -269,13 +269,13 @@
       "type": "mcq",
       "question": "For state that is purely local to one component, which option is recommended?",
       "options": [
-        "None of context, Zustand, or Redux Toolkit — keep it local (e.g. `useState`/`useReducer`)",
-        "Context, to make it available if a child ever needs it",
-        "Redux Toolkit, for devtools and structure",
-        "Zustand, because it has the least boilerplate"
+        "None of context, Zustand, or Redux Toolkit — keep it local with `useState`/`useReducer`",
+        "Context, so the value is ready if a child ever happens to need it",
+        "Redux Toolkit, for the devtools, middleware, and added structure",
+        "Zustand, because it carries the least boilerplate of the three"
       ],
       "answer": 0,
-      "explanation": "The reviewer says to reach for none of context/Zustand/RTK for state that is purely local to one component. Context suits global-ish values, Zustand a small fast store, and RTK large structured apps — but local state stays local."
+      "explanation": "For state that is purely local to one component, reach for none of context/Zustand/RTK and keep it local. Context suits global-ish values, Zustand a small fast store, and RTK large structured apps — but local state stays local."
     }
   ]
 }

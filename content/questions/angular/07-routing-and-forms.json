@@ -11,8 +11,8 @@
       "options": [
         "Add `provideRouter(routes, ...features)` to the application config's `providers`",
         "Import `RouterModule.forRoot(routes)` into the root `AppRoutingModule`",
-        "Call `RouterModule.forChild(routes)` in `main.ts`",
-        "Pass `routes` directly as the second argument to `bootstrapApplication`"
+        "Call `RouterModule.forChild(routes)` directly inside `main.ts`",
+        "Pass `routes` as the second positional argument to `bootstrapApplication`"
       ],
       "answer": 0,
       "explanation": "Standalone apps wire the router functionally with `provideRouter(routes, ...features)` in the providers array. `RouterModule.forRoot`/`forChild` are the legacy NgModule APIs, and `bootstrapApplication` takes an app config object, not a routes array."
@@ -24,10 +24,10 @@
       "type": "mcq",
       "question": "The Angular router matches a `Routes` array top-down, first-match-wins. What is the consequence for the wildcard `**` route?",
       "options": [
-        "It must be placed last, or it will swallow navigations meant for routes declared after it",
-        "It must be placed first so the router has a guaranteed fallback before matching",
-        "Its position is irrelevant because `**` is always evaluated after all other routes",
-        "It can only appear inside a `children` array, never at the top level"
+        "It must be placed last, or it swallows navigations meant for routes declared after it",
+        "It must be placed first so the router has a guaranteed fallback before any match",
+        "Its position is irrelevant because `**` is always evaluated after every other route",
+        "It can only appear inside a `children` array, and never at the top level"
       ],
       "answer": 0,
       "explanation": "Because matching is top-down and first-match-wins, `**` matches any URL, so any route declared after it is unreachable. It must go last. Position is not automatically reordered, and `**` is valid at the top level."
@@ -41,8 +41,8 @@
       "options": [
         "The displayed id stays `1` after navigating to `/users/2`, because `snapshot` is a one-shot read taken at construction",
         "The displayed id updates to `2`, because `snapshot` is a live proxy that re-emits on every navigation",
-        "Angular throws a runtime error because `snapshot` cannot be read in a constructor",
-        "The component is forcibly recreated, so the constructor runs again and shows `2`"
+        "Angular throws a runtime error because `snapshot` cannot be read inside a constructor",
+        "The component is forcibly recreated, so the constructor reruns and shows `2`"
       ],
       "answer": 0,
       "explanation": "`snapshot.*` is a one-shot read, fine only when the component is recreated per navigation. With in-place reuse, the constructor doesn't run again, so the stale `1` remains. The observable `paramMap` (or `params`) is the safe default since it emits on change."
@@ -54,10 +54,10 @@
       "type": "mcq",
       "question": "With `withComponentInputBinding()` enabled, a route has a path param `id`, a query param `id`, static `data: { id: ... }`, and a resolver producing `id`. Which source wins when binding to the component's `id` input?",
       "options": [
-        "The resolved data, because priority is query params < path/matrix params < static data < resolved data",
-        "The query param, because query params are applied last and override everything",
-        "The path param, because URL segment params always take precedence over data",
-        "It is non-deterministic; Angular logs a warning and binds `undefined`"
+        "Resolved data, because the priority order is query < path/matrix < static data < resolved",
+        "The query param, because query params are applied last and override every other source",
+        "The path param, because URL segment params always take precedence over any data",
+        "It is non-deterministic; Angular logs a warning and binds `undefined` to the input"
       ],
       "answer": 0,
       "explanation": "On a key collision the priority (lowest to highest) is query params < path/matrix params < static `data` < resolved data, so resolved data wins. Query params have the lowest priority, not the highest."
@@ -69,10 +69,10 @@
       "type": "mcq",
       "question": "Why does an empty-path default redirect `{ path: '', redirectTo: 'home', pathMatch: 'full' }` require `pathMatch: 'full'` rather than the default `'prefix'`?",
       "options": [
-        "With `'full'` the empty path matches only when the entire URL is empty; `'prefix'` would match the leading segment of every URL and redirect everything",
-        "`'full'` is required for all redirects regardless of path; `'prefix'` is never valid with `redirectTo`",
-        "`'full'` makes the redirect run after guards, while `'prefix'` runs it before, which is unsafe for `''`",
-        "`'prefix'` only works with the wildcard `**`, so an empty-path route must use `'full'`"
+        "With `'full'` the empty path matches only when the whole URL is empty; `'prefix'` matches every URL",
+        "`'full'` is mandatory for all redirects regardless of path; `'prefix'` is never valid with `redirectTo`",
+        "`'full'` makes the redirect run after guards while `'prefix'` runs before, which is unsafe for `''`",
+        "`'prefix'` only works with the wildcard `**`, so any empty-path route is forced to use `'full'`"
       ],
       "answer": 0,
       "explanation": "An empty path with the default `'prefix'` matches the leading segment of any URL, so it would redirect every navigation. `'full'` requires the whole URL to be empty, so `''` redirects only the root. `'prefix'` is perfectly valid for non-empty redirect paths."
@@ -100,10 +100,10 @@
       "type": "mcq",
       "question": "A `CanMatchFn` returns `false` for a lazy route. How does this differ from a `CanActivateFn` returning `false` for the same route?",
       "options": [
-        "`CanMatch` false makes the router skip this route and try the next match, and the lazy chunk is never fetched; `CanActivate` false cancels the navigation after matching",
-        "Both cancel the whole navigation identically; the only difference is when they run",
-        "`CanMatch` false fetches the chunk but blocks activation; `CanActivate` false prevents the fetch",
-        "`CanMatch` false redirects to the wildcard route, while `CanActivate` false redirects to `/`"
+        "`CanMatch` false skips the route to try the next match and never fetches the chunk; `CanActivate` false cancels after matching",
+        "Both cancel the entire navigation identically; the only real difference is the phase in which they run",
+        "`CanMatch` false fetches the chunk but blocks activation, whereas `CanActivate` false prevents the fetch",
+        "`CanMatch` false redirects to the wildcard route, while `CanActivate` false instead redirects to `/`"
       ],
       "answer": 0,
       "explanation": "`CanMatch` runs during matching: returning `false` skips the route and lets the router try the next match, and crucially the lazy bundle is never fetched. `CanActivate` false cancels the in-flight navigation after the route has already matched."
@@ -116,9 +116,9 @@
       "question": "For a single in-flight navigation, in what order does the router run these phases?",
       "options": [
         "`CanMatch` (match time) → `CanDeactivate` (outgoing) → `CanActivateChild` → `CanActivate` → resolvers",
-        "Resolvers → `CanActivate` → `CanActivateChild` → `CanDeactivate` → `CanMatch`",
-        "`CanActivate` → `CanActivateChild` → `CanMatch` → resolvers → `CanDeactivate`",
-        "`CanDeactivate` → `CanMatch` → resolvers → `CanActivate` → `CanActivateChild`"
+        "Resolvers → `CanActivate` → `CanActivateChild` → `CanDeactivate` → `CanMatch` (match time)",
+        "`CanActivate` → `CanActivateChild` → `CanMatch` (match time) → resolvers → `CanDeactivate`",
+        "`CanDeactivate` → `CanMatch` (match time) → resolvers → `CanActivate` → `CanActivateChild`"
       ],
       "answer": 0,
       "explanation": "`CanMatch` runs first at match time; then for the in-flight navigation `CanDeactivate` on the outgoing route, `CanActivateChild`, then `CanActivate`; resolvers run only after all guards pass."
@@ -132,10 +132,10 @@
       "code": "export const authGuard: CanActivateFn = (route, state) => {\n  const auth = inject(AuthService);\n  const router = inject(Router);\n  if (auth.isLoggedIn()) return true;\n  return /* ??? */;\n};",
       "lang": "typescript",
       "options": [
-        "A `UrlTree` built with `router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })`",
-        "`false`, then call `router.navigate(['/login'])` on the next line",
-        "The string `'/login'`, which the router interprets as a redirect target",
-        "`new RedirectCommand()` with no arguments, which defaults to `/login`"
+        "A `UrlTree` from `router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })`",
+        "`false`, and then call `router.navigate(['/login'])` on the very next line",
+        "The string `'/login'`, which the router interprets as a redirect target URL",
+        "`new RedirectCommand()` with no arguments, which simply defaults to `/login`"
       ],
       "answer": 0,
       "explanation": "Returning a `UrlTree` both cancels the navigation and redirects in one step. Returning `false` only cancels (the line after a `return` never runs anyway), a bare string is not a valid `GuardResult`, and `RedirectCommand` requires an explicit target/options."
@@ -156,10 +156,10 @@
       "type": "mcq",
       "question": "What is the difference between `loadComponent` and `loadChildren` on a route?",
       "options": [
-        "`loadComponent` lazily loads a single standalone component for one route; `loadChildren` lazily loads a child `Routes` array for a whole feature area",
-        "`loadComponent` loads eagerly at boot; `loadChildren` loads lazily on navigation",
-        "`loadComponent` works only with NgModules; `loadChildren` works only with standalone components",
-        "They are interchangeable aliases that both load a single component"
+        "`loadComponent` lazily loads a single standalone component; `loadChildren` lazily loads a child `Routes` array",
+        "`loadComponent` loads eagerly at app boot, whereas `loadChildren` only loads lazily on navigation",
+        "`loadComponent` works only with NgModules, whereas `loadChildren` works only with standalone components",
+        "They are interchangeable aliases that both lazily load exactly one standalone component"
       ],
       "answer": 0,
       "explanation": "`loadComponent` is the cleanest lazy unit for a single standalone component; `loadChildren` loads an entire child `Routes` array (a feature with nested pages). Both load lazily on navigation, and `loadComponent` is for standalone components specifically."
@@ -173,10 +173,10 @@
       "code": "preload(route: Route, load: () => Observable<unknown>): Observable<unknown> {\n  return route.data?.['preload'] ? load() : of(null);\n}",
       "lang": "typescript",
       "options": [
-        "Calling `load()` triggers the actual fetch of the route's lazy chunk; returning `of(null)` skips preloading it",
-        "`load()` returns the already-downloaded chunk synchronously; the return value only logs analytics",
-        "`load()` registers the route for eager loading at the next app bootstrap, not now",
-        "`load()` must always be called or the route becomes permanently unreachable"
+        "Calling `load()` triggers the actual fetch of the route's lazy chunk; `of(null)` skips preloading",
+        "`load()` returns the already-downloaded chunk synchronously, and the return value only logs analytics",
+        "`load()` registers the route for eager loading at the next app bootstrap, rather than right now",
+        "`load()` must always be called, otherwise the route becomes permanently unreachable to users"
       ],
       "answer": 0,
       "explanation": "`load()` triggers the background fetch of the lazy chunk; returning `of(null)` (without calling it) skips preloading that route. The route is still loaded normally on navigation if never preloaded, so it never becomes unreachable."
@@ -188,10 +188,10 @@
       "type": "mcq",
       "question": "When should you reach for `@defer` instead of route-level lazy loading (`loadComponent`/`loadChildren`)?",
       "options": [
-        "When you want to lazily load a part of one page (e.g. a heavy widget on viewport/interaction/idle), since `@defer` splits within a template",
-        "When you want to split an entire page by URL, since `@defer` is the only URL-based splitter",
-        "When you need server-side rendering, which route lazy loading cannot support",
-        "Always — `@defer` fully replaces route lazy loading in modern Angular"
+        "When lazily loading part of one page (e.g. a heavy widget on viewport/interaction/idle), since `@defer` splits within a template",
+        "When splitting an entire page by URL, since `@defer` is the only URL-based code splitter Angular offers",
+        "When you need server-side rendering, which route-level lazy loading is unable to support at all",
+        "Always — `@defer` fully replaces route lazy loading in every modern Angular application"
       ],
       "answer": 0,
       "explanation": "Route lazy loading splits by URL (whole pages); `@defer` splits within a template, ideal for a heavy widget loaded on viewport/interaction/idle. They are complementary, not replacements, and `@defer` is not URL-based."
@@ -246,7 +246,7 @@
       "options": [
         "Only when the field loses focus (on blur), not on every keystroke",
         "On every keystroke, because validators always run on change regardless of `updateOn`",
-        "Only when the surrounding form is submitted via `(ngSubmit)`",
+        "Only when the surrounding form is submitted via `(ngSubmit)` from a button",
         "Never automatically; you must call `updateValueAndValidity()` manually each time"
       ],
       "answer": 0,
@@ -259,10 +259,10 @@
       "type": "mcq",
       "question": "A `passwordsMatch` validator compares two sibling controls (`password` and `confirm`). Where must it be attached, and what is the control's status while an `AsyncValidatorFn` is running?",
       "options": [
-        "On the parent `FormGroup`; the control's status is `PENDING` while an async validator runs",
+        "On the parent `FormGroup`; the status is `PENDING` while an async validator runs",
         "On the `password` control directly; the status is `INVALID` until the async validator resolves",
-        "On each child control separately; the status is `DISABLED` during async validation",
-        "On the parent `FormGroup`; the status is `VALID` until the async validator explicitly fails"
+        "On each child control separately; the status is `DISABLED` for the async validation",
+        "On the parent `FormGroup`; the status stays `VALID` until the async validator fails"
       ],
       "answer": 0,
       "explanation": "Cross-field validators must go on the parent `FormGroup` so they can read both siblings via `group.get(...)`. While an `AsyncValidatorFn` is in flight, the control's status is `PENDING`, resolving to `VALID`/`INVALID` afterward."

@@ -133,23 +133,23 @@
       "question": "You want a component to reset all of its internal state when a particular prop (e.g. `userId`) changes. What is the recommended approach?",
       "options": [
         "Add an Effect on `[userId]` that calls each state setter back to its initial value",
-        "Pass a different `key` to the component so React remounts it and resets state",
+        "Pass a different `key` so React remounts it and resets state",
         "Store `userId` in a ref and compare it during render to decide whether to reset",
         "Lift all the state to the parent and clear it from a `userId` Effect there"
       ],
       "answer": 1,
-      "explanation": "Passing a different `key` makes React treat it as a new component instance and reset all state automatically. The Effect-and-reset approach causes an extra render cascade and is the anti-pattern the reviewer warns against."
+      "explanation": "Passing a different `key` makes React treat it as a new component instance and reset all state automatically. The Effect-and-reset approach causes an extra render cascade and is the anti-pattern to avoid."
     },
     {
       "subtopic": "Effects vs event handlers",
       "source": "react/08-effects.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Why does the reviewer say logic for 'user clicked Buy' belongs in the event handler rather than in an Effect?",
+      "question": "Why does logic for 'user clicked Buy' belong in the event handler rather than in an Effect?",
       "options": [
         "Event handlers run after paint, so the purchase feels faster to the user",
-        "Effects cannot call state setters, so a purchase mutation must live in the handler",
-        "The event handler knows *why* it ran (the specific interaction); an Effect only sees that a value changed, not which interaction caused it",
+        "Effects cannot call state setters, so the mutation must live in the handler",
+        "The handler knows *why* it ran; an Effect only sees that a value changed, not the cause",
         "Effects are not allowed to perform network requests, only handlers are"
       ],
       "answer": 2,

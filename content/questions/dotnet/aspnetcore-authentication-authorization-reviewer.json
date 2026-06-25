@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "You want every endpoint in the app to require an authenticated user *without* decorating each one, while still allowing `[AllowAnonymous]` exceptions. Which authorization option do you configure?",
       "options": [
-        "`FallbackPolicy`, which applies to endpoints that have **no** authorization metadata at all",
-        "`DefaultPolicy`, which is what a bare `[Authorize]` evaluates",
+        "`FallbackPolicy`, applied to endpoints that carry no authorization metadata",
+        "`DefaultPolicy`, applied to a bare `[Authorize]` with no policy named",
         "`InvokeHandlersAfterFailure`, which forces evaluation of every handler",
-        "`RequireHttpsMetadata`, which forces auth on all endpoints"
+        "`RequireHttpsMetadata`, which forces auth on every endpoint"
       ],
       "answer": 0,
       "explanation": "`FallbackPolicy` runs on endpoints with no authorization metadata, making the app secure-by-default while `[AllowAnonymous]` still opts out. `DefaultPolicy` is only what a bare `[Authorize]` evaluates and would not cover undecorated endpoints."
@@ -145,10 +145,10 @@
       "type": "mcq",
       "question": "Why can a declarative `[Authorize(Roles = \"Reader\")]` attribute on `GET /invoices/{id}` not prevent user A from reading user B's invoice?",
       "options": [
-        "It runs before the action and cannot see the loaded resource, so it only proves the caller is a Reader — not that they own that invoice (BOLA/IDOR)",
-        "Role checks are evaluated after the action runs, so the data has already leaked",
-        "The `Roles` attribute is ignored on GET requests by ASP.NET Core",
-        "It would work if `ClockSkew` were set to zero"
+        "It runs before the action and cannot see the resource, so it proves only Reader membership — not ownership of that invoice (BOLA/IDOR)",
+        "Role checks are evaluated after the action runs, so the data has already leaked to the caller",
+        "The `Roles` attribute is silently ignored on GET requests by ASP.NET Core",
+        "It would correctly block the read if `ClockSkew` were set to zero"
       ],
       "answer": 0,
       "explanation": "Declarative `[Authorize]` runs before the action and has no access to the resource, so it cannot answer 'does THIS user own THIS invoice?' — that gap is Broken Object Level Authorization. The fix is imperative resource-based authorization via `IAuthorizationService`."
@@ -218,10 +218,10 @@
       "type": "mcq",
       "question": "An ASP.NET Core service is a protected resource API that only receives bearer tokens and never performs interactive sign-in. A developer wires it up with `AddMicrosoftIdentityWebApp` and the service starts issuing login redirects. What is the correct fix?",
       "options": [
-        "Use `AddMicrosoftIdentityWebApi`, which validates bearer tokens (aud/iss/exp/signature) and maps `scp`/`roles` without redirecting",
-        "Keep `AddMicrosoftIdentityWebApp` but set `RequireHttpsMetadata = false` to stop the redirects",
-        "Switch to `AddCookie` so the API stores the session locally instead of redirecting",
-        "Add `[AllowAnonymous]` globally so no redirect is ever triggered"
+        "Use `AddMicrosoftIdentityWebApi`, which validates bearer tokens and maps `scp`/`roles` without redirecting",
+        "Keep `AddMicrosoftIdentityWebApp` but set `RequireHttpsMetadata = false` to suppress the login redirects",
+        "Switch to `AddCookie` so the API holds the session locally instead of redirecting to the IdP",
+        "Add `[AllowAnonymous]` on every endpoint so no redirect is ever triggered"
       ],
       "answer": 0,
       "explanation": "`AddMicrosoftIdentityWebApi` is for APIs that validate bearer tokens; `AddMicrosoftIdentityWebApp` is for interactive web sign-in and therefore redirects to login. An API never issues a login redirect, so the right method is `WebApi`. The other options mask the symptom or break security."
@@ -233,10 +233,10 @@
       "type": "mcq",
       "question": "API A receives a user's bearer token (with `aud` = A) and must call downstream API B *as that user*. Why can't A simply forward the inbound token to B, and what is the correct mechanism?",
       "options": [
-        "B would reject the token because its `aud` is A; A must perform the On-Behalf-Of exchange (`ITokenAcquisition.GetAccessTokenForUserAsync`) as a confidential client",
-        "A can forward the token directly; OBO is only an optimization for caching",
-        "A should switch to client-credentials so B sees an app token, preserving the user's permissions",
-        "A must disable `ValidateAudience` on B so the forwarded token is accepted"
+        "B rejects the token because its `aud` is A; A must run the On-Behalf-Of exchange (`ITokenAcquisition.GetAccessTokenForUserAsync`) as a confidential client",
+        "A can forward the inbound token directly to B; OBO is only an optimization for token caching",
+        "A should switch to client-credentials so B sees an app token while preserving the user's permissions",
+        "A must disable `ValidateAudience` on B so the forwarded user token is accepted"
       ],
       "answer": 0,
       "explanation": "The inbound token's audience is A, so B rejects it. OBO exchanges it for a new token scoped to B while honoring the user's permissions and Conditional Access. Downgrading to client-credentials would act as the app with no user constraints, and disabling `ValidateAudience` is a vulnerability."
@@ -248,10 +248,10 @@
       "type": "mcq",
       "question": "In the security-stamp revocation pattern wired through `OnTokenValidated`, what is the consequence of calling `ctx.Fail(...)` when the stored stamp no longer matches the one embedded in the token?",
       "options": [
-        "It vetoes the authentication result so the request is treated as having no valid identity, effectively revoking the still-unexpired JWT",
-        "It only logs a warning; the request proceeds because the JWT signature is still valid",
-        "It returns a 403 because the user is authenticated but the stamp changed",
-        "It refreshes the token automatically using the embedded refresh token"
+        "It vetoes the authentication result, so the request is treated as having no valid identity — revoking the still-unexpired JWT",
+        "It only logs a warning and lets the request proceed, since the JWT signature is still cryptographically valid",
+        "It returns a 403 because the user is authenticated but the security stamp changed",
+        "It refreshes the access token automatically using the refresh token embedded in the JWT"
       ],
       "answer": 0,
       "explanation": "A stateless JWT is otherwise valid until `exp`; calling `ctx.Fail` during validation rejects the principal, which is how you invalidate a token early (e.g. on password change). The cost is a per-request lookup — pay it only where instant revocation matters."

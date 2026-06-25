@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "In Amazon ECS, what is the role of a **service** (as opposed to a task or task definition)?",
       "options": [
-        "It is the immutable, versioned blueprint specifying image, CPU/memory, env vars, and roles",
-        "It keeps a desired number of tasks running, replaces failures, registers them with a load balancer, and drives deployments and auto scaling",
-        "It is a single running instance of a task definition, sharing one ENI in awsvpc mode",
-        "It is a logical grouping/namespace where tasks and container instances register"
+        "The immutable, versioned blueprint specifying image, CPU/memory, env vars, secrets, and IAM roles",
+        "The controller that holds a desired count, replaces failed tasks, registers them behind a load balancer, and drives deployments and scaling",
+        "A single running instance of a task definition, sharing one ENI in awsvpc network mode",
+        "A logical grouping or namespace where tasks and EC2 container instances register"
       ],
       "answer": 1,
       "explanation": "A service is the controller that holds a desired count, replaces failed tasks, wires them to a load balancer, and drives deployments/scaling. The blueprint is the task definition, a single running copy is a task, and the namespace is the cluster."
@@ -252,10 +252,10 @@
       "type": "mcq",
       "question": "A team wants to run a short, spiky, event-driven job that must scale to zero when idle and never exceeds a few seconds per invocation. Why is plain ECS/Fargate a poor fit compared with Lambda?",
       "options": [
-        "Fargate cannot run containers, only EC2-based workloads can",
-        "An ECS service holds its desired count and does not scale to zero by default, so you pay for idle tasks; Lambda scales to zero and bills per invocation",
+        "Fargate cannot run containers at all; only EC2-based workloads can run them",
+        "An ECS service holds its desired count and does not scale to zero, so you pay for idle tasks; Lambda scales to zero and bills per invocation",
         "Fargate caps execution at 15 minutes, which is shorter than Lambda's limit",
-        "Lambda alone supports the awsvpc network mode required for event-driven work"
+        "Only Lambda supports the awsvpc network mode that event-driven work requires"
       ],
       "answer": 1,
       "explanation": "An ECS service holds a desired count and has no native scale-to-zero, so idle tasks still cost money, whereas Lambda scales to zero and bills per invocation/ms, fitting short spiky work. The 15-minute cap is Lambda's limit (a reason to choose Fargate for long-running work), not Fargate's."

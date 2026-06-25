@@ -31,7 +31,7 @@
       "source": "react/09-refs-custom-hooks-and-rules.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Per the comparison of `useState` and `useRef`, which statements are TRUE?",
+      "question": "Comparing `useState` and `useRef`, which statements are TRUE?",
       "options": [
         "A `useState` change is async/batched, while writing `ref.current` is synchronous",
         "Both `useState` and `useRef` persist their value across renders",
@@ -51,15 +51,15 @@
       "source": "react/09-refs-custom-hooks-and-rules.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer says not to read or write `.current` during render. Which use is the explicitly noted exception?",
+      "question": "Reading or writing `.current` during render is discouraged. Which use is the explicitly noted exception?",
       "options": [
-        "Lazy one-time initialization, e.g. `if (ref.current === null) ref.current = expensiveCreate()`",
+        "Lazy one-time init, e.g. `if (ref.current === null) ref.current = create()`",
         "Reading the DOM node to measure its size before the first paint",
-        "Comparing the previous render's value to the current props to decide markup",
+        "Comparing the previous render's value to current props to pick markup",
         "Writing the result of a network fetch so the JSX can display it"
       ],
       "answer": 0,
-      "explanation": "Lazy one-time init is the sanctioned during-render use because it sets the value exactly once. The others read/write the ref as part of the render data flow, which the reviewer warns against; refs should be touched in effects or handlers."
+      "explanation": "Lazy one-time init is the sanctioned during-render use because it sets the value exactly once. The others read or write the ref as part of the render data flow, which should be avoided; refs should be touched in effects or handlers."
     },
     {
       "subtopic": "DOM ref timing",
@@ -87,7 +87,7 @@
         "`forwardRef` is no longer required, though it still works",
         "`forwardRef` is slated for deprecation in a future version",
         "Refs can no longer be attached to host elements like `<input>`",
-        "Passing `ref` as a prop forces the component to re-render whenever the node attaches"
+        "Passing `ref` as a prop forces a re-render whenever the node attaches"
       ],
       "answer": [
         0,
@@ -201,7 +201,7 @@
       "source": "react/09-refs-custom-hooks-and-rules.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Composing several HOCs like `withRouter(withAuth(withTheme(C)))` is specifically called out as causing which problems?",
+      "question": "Composing several HOCs like `withRouter(withAuth(withTheme(C)))` specifically causes which problems?",
       "options": [
         "Deep wrapper hell in the tree and prop-name collisions between HOCs",
         "A pyramid of doom in JSX from nested function children",
@@ -219,9 +219,9 @@
       "question": "Why does React require hooks to be called in the same order on every render?",
       "options": [
         "React tracks hooks by the variable name they are assigned to, which must stay constant",
-        "React tracks hooks by call order/slot index; a skipped or conditional call shifts later hooks into the wrong slots",
+        "React tracks hooks by call order (slot index); a conditional call shifts later hooks into wrong slots",
         "React re-runs all effects whenever the number of hooks changes, which is expensive",
-        "Hooks are stored in a hash map keyed by the source line number of each call"
+        "Hooks live in a hash map keyed by the source line number of each call"
       ],
       "answer": 1,
       "explanation": "React matches each hook to its state by call order (slot index), not by name. Skipping a conditional hook shifts every later hook by one slot, so React returns the wrong state or crashes. Names and line numbers are not used to identify hooks."
@@ -236,7 +236,7 @@
       "question": "Why does this component violate the Rules of Hooks?",
       "options": [
         "`useState` is initialized with a string instead of a lazy initializer function",
-        "The `useState` call sits after an early `return`, so it is skipped when `user` is falsy, changing call order between renders",
+        "The `useState` sits after an early `return`, so it is skipped when `user` is falsy, changing call order",
         "It returns different JSX depending on `user`, which hooks forbid",
         "`setTab` is passed to a child component, leaking state out of the hook"
       ],
@@ -248,10 +248,10 @@
       "source": "react/09-refs-custom-hooks-and-rules.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "You need an effect to run only when `cond` is true. What does the reviewer prescribe?",
+      "question": "You need an effect to run only when `cond` is true. What is the correct approach?",
       "options": [
         "Wrap the `useEffect` call in `if (cond) { ... }` so the hook only runs when needed",
-        "Call `useEffect` unconditionally and put the condition inside it: `useEffect(() => { if (cond) {...} }, [cond])`",
+        "Call `useEffect` unconditionally and put the condition inside: `useEffect(() => { if (cond) {...} }, [cond])`",
         "Move the effect into a `.map()` over the conditions so it only fires for matches",
         "Return early before the `useEffect` when `cond` is false"
       ],

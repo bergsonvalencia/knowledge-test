@@ -95,10 +95,10 @@
       "type": "mcq",
       "question": "Why is wrapping every component in `React.memo` not recommended?",
       "options": [
-        "`memo` adds a prop-comparison cost on every render, so it only pays off for components that render often with the same props or are expensive to render",
+        "`memo` adds a prop-comparison cost on every render, paying off only for components that render often with the same props",
         "`memo` permanently freezes a component so it can never receive new props again",
-        "`memo` disables React's reconciliation and breaks the virtual DOM diff",
-        "`memo` forces all child components to also be wrapped in `memo` or they error"
+        "`memo` disables React's reconciliation and breaks the virtual DOM diff entirely",
+        "`memo` forces every child component to also be wrapped in `memo` or they error"
       ],
       "answer": 0,
       "explanation": "Memoization is not free: the shallow comparison runs every render. For cheap components that rarely benefit, the comparison cost and added noise outweigh the savings — measure and target the hot path."
@@ -113,7 +113,7 @@
         "The cached function/value can read stale values via an out-of-date closure",
         "React throws a runtime error and unmounts the component",
         "The cache is recomputed on every single render, defeating memoization",
-        "The dependency is automatically inferred at build time, so nothing happens"
+        "The dependency is inferred at build time, so nothing happens"
       ],
       "answer": 0,
       "explanation": "A missing dep means the memoized closure keeps a stale view of that value. (An over-eager/extra dep is the opposite problem — it changes too often and defeats the cache.) The `react-hooks/exhaustive-deps` lint rule enforces honest deps."
@@ -164,10 +164,10 @@
       "type": "multi",
       "question": "Which statements about the React Compiler are correct? (Select all that apply.)",
       "options": [
-        "It reached a stable 1.0 release in 2025 and is opt-in (e.g. via `babel-plugin-react-compiler` or a build-tool integration)",
+        "It reached a stable 1.0 release in 2025 and is opt-in (e.g. via `babel-plugin-react-compiler`)",
         "It is additive — existing `useMemo`/`useCallback`/`memo` keep working alongside it",
-        "`eslint-plugin-react-hooks` ships compiler rules (in `recommended-latest`) that flag code the compiler can't optimize",
-        "Once enabled it guarantees every component in the app is fully optimized with no measurement needed",
+        "`eslint-plugin-react-hooks` ships compiler rules that flag code the compiler can't optimize",
+        "Once enabled it guarantees every component is fully optimized, with no measurement needed",
         "It only works on class components and ignores function components"
       ],
       "answer": [0, 1, 2],
@@ -182,7 +182,7 @@
       "code": "function onChange(e) {\n  const next = e.target.value;\n  setQuery(next);                                   // ?\n  startTransition(() => setResults(filter(next)));  // ?\n}",
       "lang": "tsx",
       "options": [
-        "The input value is an urgent update that must stay responsive; the heavy list update is marked non-urgent so it renders at low priority without blocking typing",
+        "The input value is an urgent update that must stay responsive; the heavy list update is marked non-urgent so it renders at low priority",
         "`startTransition` is required for any function that calls another function",
         "`setQuery` cannot be wrapped in `startTransition` because it updates a string",
         "Wrapping `setQuery` would make the input read-only until the list finishes"
@@ -229,8 +229,8 @@
       "code": "const deferredQuery = useDeferredValue(query);\nconst isStale = query !== deferredQuery;",
       "lang": "tsx",
       "options": [
-        "It returns the PREVIOUS value and schedules a low-priority re-render to catch up; `query !== deferredQuery` means results are stale, so show a dimmed/pending state",
-        "It returns the NEW value immediately; `query !== deferredQuery` can never be true",
+        "It returns the PREVIOUS value and schedules a catch-up re-render; the comparison flags stale results, so you show a dimmed state",
+        "It returns the NEW value immediately, so `query !== deferredQuery` can never be true",
         "It returns `undefined` until the deferred render finishes; the comparison guards against that",
         "It returns a debounced value after a fixed delay; the comparison checks if the timer is still running"
       ],
@@ -244,7 +244,7 @@
       "type": "mcq",
       "question": "In the `useDeferredValue` example, the heavy `expensiveFilter(deferredQuery)` is wrapped in `useMemo([deferredQuery])`. Why is this memoization essential rather than optional?",
       "options": [
-        "Deferring only helps if the heavy subtree can skip re-rendering until `deferredQuery` catches up; without memoization the expensive work runs on every render and the deferral buys nothing",
+        "Without it the expensive work runs on every render, so deferral buys nothing; memoization lets the subtree skip work until `deferredQuery` catches up",
         "`useDeferredValue` throws unless its consumer is wrapped in `useMemo`",
         "`useMemo` is what makes `deferredQuery` actually lag behind `query`",
         "Without `useMemo`, `deferredQuery` would equal `query` and the dimming would never trigger"
@@ -259,7 +259,7 @@
       "type": "multi",
       "question": "Which statements about `useTransition`/`useDeferredValue` and concurrent rendering are correct? (Select all that apply.)",
       "options": [
-        "A low-priority render can be paused, aborted, and restarted if a more urgent update arrives, throwing away stale in-progress work",
+        "A low-priority render can be paused, aborted, and restarted if a more urgent update arrives",
         "They reschedule expensive work by priority but do not make the work itself faster",
         "Pairing them with `memo`/`useMemo` (or the Compiler) helps avoid redoing work in the deferred subtree",
         "They run the expensive render on a separate OS thread so the main thread is never touched",

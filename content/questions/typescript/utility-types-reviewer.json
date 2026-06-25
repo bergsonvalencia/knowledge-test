@@ -46,12 +46,12 @@
       "source": "typescript/utility-types-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "`Omit<T, K>` is defined in terms of other utilities. Which definition is correct?",
+      "question": "`Omit<T, K>` is defined in terms of other utilities. Which definition is the one used in `lib.es5.d.ts`?",
       "options": [
         "`Pick<T, Exclude<keyof T, K>>`",
         "`Pick<T, Extract<keyof T, K>>`",
         "`Exclude<Pick<T, K>, keyof T>`",
-        "`{ [P in keyof T as P extends K ? never : P]: T[P] }` is the only possible definition"
+        "`Record<Exclude<keyof T, K>, T[K]>`"
       ],
       "answer": 0,
       "explanation": "`Omit<T, K> = Pick<T, Exclude<keyof T, K>>` — compute the surviving keys with `Exclude` (everything in `keyof T` not in `K`), then `Pick` those. Using `Extract` would keep only `K` rather than drop it, inverting the meaning."
@@ -251,7 +251,7 @@
       "source": "typescript/utility-types-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Select all correct statements about writing your own utility types as described in the reviewer.",
+      "question": "Select all correct statements about writing your own utility types.",
       "options": [
         "`Mutable<T>` strips readonly using the `-readonly` mapping modifier",
         "`DeepPartial<T>` is a recursive conditional type that re-applies itself to each property's type",

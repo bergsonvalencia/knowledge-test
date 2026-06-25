@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "A developer calls `useFormStatus()` in the same component that renders the `<form>` and finds `pending` is always `false`. Why?",
       "options": [
-        "`useFormStatus` reads the nearest **parent** `<form>`, so the calling component must be rendered **inside** that form, not the one that renders it",
+        "It reads the nearest parent `<form>`, so the calling component must be rendered inside that form",
         "`useFormStatus` only works inside Server Components",
         "`pending` is only `true` for forms that use `useOptimistic`",
-        "`useFormStatus` must be passed the form's ref as an argument to track it"
+        "The form's ref must be passed to `useFormStatus` as an argument"
       ],
       "answer": 0,
       "explanation": "`useFormStatus` reads the status of the nearest parent `<form>`. The component that renders the `<form>` is not inside it, so it always sees `pending: false`; the hook must live in a child like a `SubmitButton`."
@@ -93,8 +93,8 @@
       "type": "mcq",
       "question": "When an Action using `useOptimistic` fails (the async mutation throws), what happens to the UI?",
       "options": [
-        "The optimistic value is dropped and the UI re-derives from the unchanged real state, returning to its prior value",
-        "React runs a dedicated rollback handler you registered with `useOptimistic`",
+        "The optimistic value is dropped and the UI re-derives from the unchanged real state",
+        "React runs a dedicated rollback handler registered with `useOptimistic`",
         "The optimistic value persists until you manually call a `revert` function",
         "React replays the optimistic update against the server until it succeeds"
       ],
@@ -132,9 +132,9 @@
       "type": "mcq",
       "question": "What does `use(promise)` do during render?",
       "options": [
-        "Suspends the component until the Promise resolves, integrating with the nearest `<Suspense>` boundary (and error boundaries on rejection)",
-        "Returns immediately with `undefined`, then re-renders when the Promise settles",
-        "Throws synchronously unless wrapped in a `try/catch`",
+        "Suspends the component until the Promise resolves, integrating with `<Suspense>`",
+        "Returns `undefined` immediately, then re-renders once the Promise settles",
+        "Throws synchronously unless it is wrapped in a `try/catch` block",
         "Blocks the JavaScript main thread until the Promise resolves"
       ],
       "answer": 0,
@@ -196,10 +196,10 @@
       "lang": "tsx",
       "question": "In React 19, this ref callback returns a cleanup function. What is the consequence of returning a cleanup?",
       "options": [
-        "The cleanup runs on unmount, and React **no longer** calls the ref callback again with `null`",
-        "React calls the cleanup, then still calls the callback with `null` on unmount as before",
-        "Returning a function from a ref callback is ignored; only `useEffect` supports cleanup",
-        "The cleanup runs on every re-render, not on unmount"
+        "The cleanup runs on unmount, and React no longer calls the callback with `null`",
+        "React calls the cleanup, then still calls the callback with `null` on unmount",
+        "Returning a function from a ref callback is ignored by React",
+        "The cleanup runs on every re-render rather than on unmount"
       ],
       "answer": 0,
       "explanation": "When a ref callback returns a cleanup function, it runs on unmount (mirroring effect cleanup) and React suppresses the legacy null-call. The old behavior of calling the callback with `null` applies only when you do NOT return a cleanup."
@@ -220,13 +220,13 @@
       "type": "mcq",
       "question": "Why do Server Components and Server Actions rarely appear in a plain client-side React 19 app?",
       "options": [
-        "They require a bundler/server integration that implements the RSC protocol (framework territory like the Next.js App Router)",
-        "They were removed from React 19 before stable release",
+        "They need a bundler/server integration that implements the RSC protocol",
+        "They were removed from React 19 before its stable release",
         "They only work when `forwardRef` is also used",
         "They depend on `useOptimistic`, which is server-only"
       ],
       "answer": 0,
-      "explanation": "Adopting Server Components/Actions is framework territory: you need a bundler and server integration that implements the RSC protocol, so they rarely show up in a plain client-side app."
+      "explanation": "Adopting Server Components/Actions is framework territory (e.g. the Next.js App Router): you need a bundler and server integration that implements the RSC protocol, so they rarely show up in a plain client-side app."
     },
     {
       "subtopic": "useActionState error reporting",
@@ -237,9 +237,9 @@
       "lang": "tsx",
       "question": "In this pattern, how is a failure surfaced to the component as `error`?",
       "options": [
-        "By returning an error value from the action (or throwing); the returned value becomes the next `state`",
+        "By returning an error value from the action (or throwing); it becomes the next `state`",
         "By calling a separate `setError` updater React injects into the action",
-        "By rejecting a Promise that React stores in a hidden second slot of the tuple",
+        "By rejecting a Promise React stores in a hidden second tuple slot",
         "By writing to `isPending`, which doubles as the error channel"
       ],
       "answer": 0,
@@ -252,9 +252,9 @@
       "type": "multi",
       "question": "Regarding React 19 metadata and resource features, which statements are correct? (Select all that apply.)",
       "options": [
-        "Rendering `<title>`/`<meta>`/`<link>` anywhere hoists them to `<head>`, so `react-helmet` is no longer needed",
+        "Rendering `<title>`/`<meta>`/`<link>` anywhere hoists them to `<head>`, replacing `react-helmet`",
         "`preload`, `preinit`, `prefetchDNS`, and `preconnect` are imported from `react-dom`",
-        "`preinit` can load and apply a stylesheet early as a side effect during render",
+        "`preinit` can load and apply a stylesheet early as a render side effect",
         "Metadata hoisting requires wrapping tags in a special `<Head>` component from `react`"
       ],
       "answer": [0, 1, 2],

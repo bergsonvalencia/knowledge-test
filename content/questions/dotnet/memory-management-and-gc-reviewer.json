@@ -111,10 +111,10 @@
       "type": "mcq",
       "question": "A hot loop repeatedly allocates `new byte[90_000]` and lets each array become garbage. Why might this eventually throw `OutOfMemoryException` even though total free memory looks adequate?",
       "options": [
-        "90 KB arrays are pinned automatically, so the GC can never reclaim them",
+        "The 90 KB arrays are pinned automatically by the runtime, so the GC can never reclaim or move them at all",
         "Each array lands on the LOH, which is collected only on full GCs and not compacted by default, so it fragments into gaps too small for a new 90 KB block",
-        "Arrays this size are boxed, and the box headers exhaust the Gen 0 budget",
-        "The arrays go to Gen 0, which has a hard 64 KB-per-object ceiling"
+        "Arrays of this size are silently boxed, and the resulting box headers exhaust the entire Gen 0 allocation budget",
+        "The arrays are placed in Gen 0, which enforces a hard 64 KB-per-object ceiling and rejects anything larger"
       ],
       "answer": 1,
       "explanation": "90,000-byte arrays go on the LOH, which is collected only on full GCs and is not compacted by default. Rapid churn fragments it so free gaps can't satisfy a new large allocation. Pooling via `ArrayPool<T>` is the fix."
@@ -126,10 +126,10 @@
       "type": "mcq",
       "question": "How does Server GC differ structurally from Workstation GC?",
       "options": [
-        "Server GC disables Gen 2 collections entirely to maximize throughput",
+        "Server GC disables Gen 2 collections entirely so that long-lived objects are never reclaimed",
         "Server GC creates one managed heap and one GC thread per logical CPU, collecting in parallel for higher throughput",
-        "Server GC runs every collection on a single dedicated background thread to minimize footprint",
-        "Server GC eliminates the LOH by compacting all large objects on every collection"
+        "Server GC runs every single collection on one shared dedicated background thread to minimize footprint",
+        "Server GC eliminates the LOH altogether by compacting every large object on each and every collection"
       ],
       "answer": 1,
       "explanation": "Server GC allocates one managed heap and one GC thread per logical CPU and collects in parallel, trading higher memory footprint for throughput. Workstation GC uses a single heap optimized for latency and low footprint."
@@ -150,10 +150,10 @@
       "type": "mcq",
       "question": "Why does the canonical `Dispose()` call `GC.SuppressFinalize(this)`?",
       "options": [
-        "To force an immediate Gen 2 collection so the object is reclaimed sooner",
-        "To remove the object from the finalization queue so it doesn't pay the extra-GC-survival cost of running a finalizer it no longer needs",
-        "To register the object for finalization in case Dispose threw partway through",
-        "To pin the object so the GC cannot move it during compaction"
+        "To force an immediate Gen 2 collection so that the disposed object gets reclaimed sooner",
+        "To remove the object from the finalization queue so it doesn't pay the extra-GC-survival cost of running a now-redundant finalizer",
+        "To register the object for finalization in case the Dispose call threw partway through its work",
+        "To pin the object in place so that the GC cannot relocate it during a compacting collection"
       ],
       "answer": 1,
       "explanation": "After deterministic cleanup, the finalizer is redundant. Suppressing finalization removes the object from the finalize queue so it isn't promoted and reclaimed across an extra GC. It does not trigger or force any collection."
@@ -166,9 +166,9 @@
       "question": "In the standard `protected virtual void Dispose(bool disposing)`, why is the `disposing` flag needed?",
       "options": [
         "When `disposing` is `false` (called from the finalizer), other managed objects may already be finalized, so only unmanaged state may be released",
-        "When `disposing` is `true`, the method must skip releasing unmanaged resources to avoid double-free",
-        "It tells the GC whether to run the finalizer immediately or defer it",
-        "It controls whether `Dispose()` is idempotent on repeated calls"
+        "When `disposing` is `true`, the method must skip releasing all unmanaged resources to avoid a double-free",
+        "It tells the GC whether it should run the object's finalizer immediately or defer it to a later GC",
+        "It controls whether repeated calls to `Dispose()` are idempotent or instead throw an exception"
       ],
       "answer": 0,
       "explanation": "When reached from the finalizer (`disposing == false`), referenced managed objects may already have been finalized, so you must not touch them—only release unmanaged state. The unmanaged release path runs in both cases."
@@ -226,10 +226,10 @@
       "type": "mcq",
       "question": "What is the GC-cost consequence of giving a class a finalizer (and never suppressing it)?",
       "options": [
-        "The object is collected one GC earlier because finalizers run eagerly",
+        "The object is collected one whole GC earlier than usual because finalizers are run eagerly",
         "The object survives at least one extra GC—placed on the finalization queue, promoted, finalized later, then collected on a subsequent GC",
-        "The object is allocated directly on the LOH regardless of size",
-        "The object is pinned so the GC never moves or compacts around it"
+        "The object is allocated directly on the LOH regardless of how small its actual size is",
+        "The object is permanently pinned, so the GC never moves it or compacts the heap around it"
       ],
       "answer": 1,
       "explanation": "A finalizable object is placed on the finalization queue and survives at least one extra collection: it gets promoted, its finalizer runs later on the finalizer thread, and it is reclaimed on a subsequent GC—so it lives longer and reaches Gen 2."
@@ -243,10 +243,10 @@
       "code": "public sealed class CacheReader : IDisposable\n{\n    private readonly FileStream _stream;\n    public CacheReader(string path) => _stream = File.OpenRead(path);\n    public void Dispose() => _stream.Dispose();\n}",
       "lang": "csharp",
       "options": [
-        "Yes — any type implementing `IDisposable` must also declare a finalizer for safety",
-        "No — it holds no raw unmanaged handle directly; `FileStream` wraps a `SafeFileHandle` with its own critical finalizer, so disposing the stream is enough",
-        "Yes — because `FileStream` holds an OS handle that only a finalizer on `CacheReader` can release",
-        "No — but it must still call `GC.SuppressFinalize(this)` in `Dispose` to be correct"
+        "Yes — every type that implements `IDisposable` must also declare a finalizer for safety reasons",
+        "No — it holds no raw unmanaged handle directly; `FileStream` already wraps a `SafeFileHandle`, so disposing the stream is enough",
+        "Yes — because the `FileStream` holds an OS handle that only a finalizer on `CacheReader` itself can release",
+        "No — but it must still call `GC.SuppressFinalize(this)` inside `Dispose` for the cleanup to be correct"
       ],
       "answer": 1,
       "explanation": "`CacheReader` owns only a managed `FileStream`, which already wraps a `SafeFileHandle` (its own critical finalizer). Implementing `IDisposable` and disposing the stream suffices; a finalizer would only add GC cost, and `SuppressFinalize` is pointless with no finalizer."

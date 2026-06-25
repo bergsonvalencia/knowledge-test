@@ -12,7 +12,7 @@
         "HTTP API, because it is cheaper and lower latency",
         "REST API, because it is the full-featured original",
         "WebSocket API, because it supports bidirectional push",
-        "A REST API with edge-optimized endpoint for global reach"
+        "REST API with an edge-optimized endpoint for global reach"
       ],
       "answer": 0,
       "explanation": "HTTP API is the default for new Lambda- or HTTP-backed REST-style APIs because it is materially cheaper per million requests and lower latency. REST API is only chosen when you need its premium features (usage plans, VTL, caching, WAF, private/edge endpoints, canary)."
@@ -76,11 +76,11 @@
       "source": "aws/aws-api-gateway-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "With Lambda **proxy** integration (`AWS_PROXY`), who owns the HTTP request/response contract, and what does the function must return?",
+      "question": "With Lambda **proxy** integration (`AWS_PROXY`), who owns the HTTP request/response contract, and what must the function return?",
       "options": [
-        "The function owns the contract and must return a `{statusCode, headers, body}` JSON shape; no VTL is used",
+        "The function owns the contract and returns a `{statusCode, headers, body}` JSON shape; no VTL is used",
         "The gateway owns the contract via VTL mapping templates; the function returns a raw object",
-        "The function owns the contract but must return only a plain string body; the gateway adds the status",
+        "The function owns the contract but returns only a plain string body; the gateway adds the status",
         "Neither owns it; API Gateway derives the response automatically from the model"
       ],
       "answer": 0,
@@ -96,7 +96,7 @@
         "The authorizer result is cached by identity source for the TTL; set the cache TTL to 0 to evaluate every request",
         "The token bucket is replenishing slowly; raise the stage burst limit",
         "CloudFront edge caching is serving stale 200s; invalidate the distribution",
-        "The Cognito user pool propagation lag; switch to a JWT authorizer"
+        "Cognito user pool propagation lag is to blame; switch to a JWT authorizer"
       ],
       "answer": 0,
       "explanation": "Authorizer decisions (the returned IAM policy) are cached by identity source for the configured TTL, so an `Allow` keeps being reused until the cache expires. Setting TTL to 0 forces evaluation on every request at the cost of more authorizer invocations. The other options describe unrelated mechanisms."
@@ -123,13 +123,13 @@
       "type": "mcq",
       "question": "A POST endpoint must simply enqueue its payload to SQS with no business logic. What avoids running a Lambda entirely?",
       "options": [
-        "An AWS service integration that calls SQS `SendMessage` directly, using a VTL request template and an IAM role granting `sqs:SendMessage`",
+        "An AWS service integration that calls SQS `SendMessage` directly with a VTL template and an IAM role",
         "A Lambda proxy integration whose function only calls SQS, so cold starts are negligible",
         "An HTTP-proxy integration pointed at the public SQS endpoint with the queue URL",
         "A mock integration that returns a 202 and asynchronously copies the body to SQS"
       ],
       "answer": 0,
-      "explanation": "An AWS service integration lets the gateway call the SQS `SendMessage` action directly with a VTL request mapping and an IAM role, skipping Lambda (no cold start, one fewer thing to operate). HTTP-proxy would not sign the SQS API call, a mock integration has no backend, and the Lambda option still runs a function."
+      "explanation": "An AWS service integration lets the gateway call the SQS `SendMessage` action directly with a VTL request mapping and an IAM role granting `sqs:SendMessage`, skipping Lambda (no cold start, one fewer thing to operate). HTTP-proxy would not sign the SQS API call, a mock integration has no backend, and the Lambda option still runs a function."
     },
     {
       "subtopic": "Throttling layers",
@@ -170,7 +170,7 @@
       "type": "mcq",
       "question": "You must ship a risky change to the prod stage of a REST API and be able to roll back fast, without spinning up a second stage. What do you use?",
       "options": [
-        "A canary release that routes a small percentage of stage traffic to the new deployment, then promote or delete the canary",
+        "A canary release that routes a small percentage of stage traffic to the new deployment",
         "Edge-optimized endpoints so the change rolls out region by region",
         "A blue stage and a green stage with a weighted Route 53 record",
         "An HTTP API with auto-deploy so changes go live immediately and revert on error"
@@ -220,7 +220,7 @@
       "type": "mcq",
       "question": "You need an internal-only API reachable exclusively from inside a VPC, never the public internet. Which configuration achieves this?",
       "options": [
-        "A REST private endpoint reached via an interface VPC endpoint (PrivateLink), gated by a resource policy allowing the specific VPC/endpoint",
+        "A REST private endpoint via an interface VPC endpoint (PrivateLink), gated by a resource policy",
         "An HTTP API restricted with a Lambda authorizer that rejects public source IPs",
         "An edge-optimized REST API with a resource policy denying `0.0.0.0/0`",
         "A WebSocket API whose `$connect` route only accepts in-VPC connectionIds"
@@ -237,7 +237,7 @@
       "code": "PolicyDocument = new APIGatewayCustomAuthorizerPolicy {\n  Version = \"2012-10-17\",\n  Statement = {\n    new APIGatewayCustomAuthorizerPolicy.IAMPolicyStatement {\n      Action = new HashSet<string> { \"execute-api:Invoke\" },\n      Effect = \"Allow\",\n      Resource = new HashSet<string> { \"arn:aws:execute-api:*:*:*/*/*/*\" }\n    }\n  }\n},\nContext = new Dictionary<string, object> { [\"tenantId\"] = \"acme\" }",
       "question": "A Lambda authorizer returns the policy above plus the `Context` map. What is the practical effect of the wildcard `Resource` together with authorizer caching?",
       "options": [
-        "One cached Allow decision can cover many methods on the API/stage, and `tenantId` is surfaced downstream as `$context.authorizer.tenantId`",
+        "One cached Allow can cover many methods on the API/stage, and `tenantId` surfaces as `$context.authorizer.tenantId`",
         "The wildcard forces the gateway to re-invoke the authorizer per method, but `tenantId` is cached separately",
         "The wildcard is rejected by IAM, so the gateway falls back to denying all methods",
         "The `Context` map overrides the policy effect, allowing access even on a Deny"

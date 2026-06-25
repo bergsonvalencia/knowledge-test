@@ -25,9 +25,9 @@
       "question": "An environment variable needs to set the config key `ConnectionStrings:Default`. How must it be named?",
       "options": [
         "`ConnectionStrings__Default` (double underscore maps to colon)",
-        "`ConnectionStrings:Default` (colons are allowed in env vars everywhere)",
+        "`ConnectionStrings:Default` (colons are always valid in env var names)",
         "`ConnectionStrings--Default` (double dash maps to colon)",
-        "`ConnectionStrings.Default` (dot maps to colon)"
+        "`ConnectionStrings.Default` (a dot maps to colon)"
       ],
       "answer": 0,
       "explanation": "Because colons aren't valid in environment variable names on some shells, the env var provider translates a double underscore `__` to the colon separator. The `--`→`:` mapping is specific to Azure Key Vault secret names, not env vars."
@@ -74,7 +74,7 @@
       "code": "builder.Services.AddSingleton<Worker>();\npublic Worker(IOptionsSnapshot<MyOptions> opts) { }",
       "lang": "csharp",
       "options": [
-        "It throws an exception about consuming a scoped service from a singleton (captive dependency)",
+        "It throws a captive-dependency exception about consuming a scoped service from a singleton",
         "It works fine and the snapshot reloads on every request as usual",
         "It silently injects the default (unnamed) options and never reloads",
         "It throws only if `ValidateOnStart()` was called on the options"
@@ -89,9 +89,9 @@
       "type": "mcq",
       "question": "A value is supplied via an **environment variable** and consumed through `IOptionsMonitor<T>`. The env var's value is changed in the OS while the app is running. What does `CurrentValue` reflect?",
       "options": [
-        "The original startup value — env vars are read once at startup and don't provide change tokens",
-        "The new value immediately — `IOptionsMonitor<T>` always reflects live changes from any provider",
-        "The new value on the next request only, like a snapshot",
+        "The original startup value — env vars are read once and don't emit change tokens",
+        "The new value immediately — `IOptionsMonitor<T>` reflects live changes from any provider",
+        "The new value on the next request only, exactly like a snapshot",
         "An exception, because monitors require `reloadOnChange` on every provider"
       ],
       "answer": 0,
@@ -105,12 +105,12 @@
       "question": "You registered `Configure<SmtpOptions>(\"Backup\", ...)`. Which is the correct way to retrieve the \"Backup\" configuration?",
       "options": [
         "Inject `IOptionsSnapshot<SmtpOptions>` (or `IOptionsMonitor<SmtpOptions>`) and call `.Get(\"Backup\")`",
-        "Inject `IOptions<SmtpOptions>` and call `.Get(\"Backup\")`",
-        "Inject `IOptions<SmtpOptions>`; `.Value` returns the \"Backup\" options because it was registered last",
+        "Inject `IOptions<SmtpOptions>` and call its `.Get(\"Backup\")` method",
+        "Inject `IOptions<SmtpOptions>`; `.Value` returns \"Backup\" because it registered last",
         "Inject `IConfiguration` and call `.GetNamedOptions(\"Backup\")`"
       ],
       "answer": 0,
-      "explanation": "Named options are retrieved via `IOptionsSnapshot<T>.Get(name)` or `IOptionsMonitor<T>.Get(name)`. `IOptions<T>` has no concept of names — it only ever returns the default (unnamed) options."
+      "explanation": "Named options are retrieved via `IOptionsSnapshot<T>.Get(name)` or `IOptionsMonitor<T>.Get(name)`. `IOptions<T>` has no concept of names — it only ever returns the default (unnamed) options, and has no `.Get` method."
     },
     {
       "subtopic": "Binding gotcha",
@@ -134,10 +134,10 @@
       "type": "mcq",
       "question": "Options are registered with `.ValidateDataAnnotations()` but **without** `.ValidateOnStart()`. When does validation actually run?",
       "options": [
-        "Lazily, the first time the options are resolved (`.Value`/`.Get()`), which may be deep in a request",
+        "Lazily, the first time the options are resolved (`.Value`/`.Get()`)",
         "Eagerly during `builder.Build()`, before any request is handled",
         "On every request, regardless of whether the options are accessed",
-        "Never — `ValidateDataAnnotations()` only registers attributes; you must call `Validate(...)` to run them"
+        "Never — `ValidateDataAnnotations()` registers attributes but doesn't run them"
       ],
       "answer": 0,
       "explanation": "Validation is lazy by default — it runs the first time the options instance is resolved, which can be long after startup. `.ValidateOnStart()` moves it to application startup so bad config fails fast instead of throwing later on first use."
@@ -191,9 +191,9 @@
       "code": "builder.Services\n    .Configure<SmtpOptions>(cfg.GetSection(\"Smtp\"))\n    .PostConfigure<SmtpOptions>(o =>\n    {\n        if (o.Port == 0) o.Port = o.UseSsl ? 465 : 25;\n    });",
       "lang": "csharp",
       "options": [
-        "465 — `Port` binds to its default 0, then `PostConfigure` runs after binding and applies 465",
-        "25 — `PostConfigure` runs before binding, so `UseSsl` is still false when the default is computed",
-        "0 — `PostConfigure` cannot mutate options that were already bound from configuration",
+        "465 — `Port` binds to its default 0, then `PostConfigure` applies 465",
+        "25 — `PostConfigure` runs before binding, so `UseSsl` is still false",
+        "0 — `PostConfigure` cannot mutate options already bound from config",
         "A validation exception, because `Port` is outside the valid range"
       ],
       "answer": 0,
@@ -206,13 +206,13 @@
       "type": "mcq",
       "question": "A long-lived singleton subscribes with `IOptionsMonitor<T>.OnChange(...)` in its constructor but never stores or disposes the returned value. What is the senior-level concern?",
       "options": [
-        "A resource/callback leak — the returned `IDisposable` registration is never released, so the subscription lingers",
-        "Nothing — `OnChange` registrations are garbage-collected automatically when the callback returns",
-        "The monitor stops emitting changes after the first callback because the token wasn't renewed",
-        "It throws at startup because `OnChange` may only be called from a hosted service"
+        "A resource/callback leak — the returned `IDisposable` registration is never released",
+        "Nothing — `OnChange` registrations are garbage-collected when the callback returns",
+        "The monitor stops emitting changes after the first callback, since the token wasn't renewed",
+        "It throws at startup, because `OnChange` may only be called from a hosted service"
       ],
       "answer": 0,
-      "explanation": "`OnChange` returns an `IDisposable` representing the subscription; failing to dispose it leaks the registration. The reviewer explicitly notes you should keep the `IDisposable` and dispose it (e.g. in `Dispose`) to avoid leaks."
+      "explanation": "`OnChange` returns an `IDisposable` representing the subscription; failing to dispose it leaks the registration. Keep the `IDisposable` and dispose it (e.g. in `Dispose`) to release the callback when the consumer is torn down."
     },
     {
       "subtopic": "Key Vault provider mapping",
@@ -223,9 +223,9 @@
       "options": [
         "Key Vault is not one of the default providers; you add it explicitly with `AddAzureKeyVault`",
         "A Key Vault secret named `Smtp--Host` surfaces as the config key `Smtp:Host`",
-        "Using `DefaultAzureCredential` (Managed Identity) means no secret is needed to authenticate and read the secrets",
-        "Where you add Key Vault in the provider chain has no effect on precedence since vault always wins",
-        "Key Vault secret names use `__` (double underscore) to express hierarchy, just like environment variables"
+        "Using `DefaultAzureCredential` (Managed Identity) means no secret is needed to read the secrets",
+        "Where you add Key Vault in the provider chain has no effect on precedence; vault always wins",
+        "Key Vault secret names use `__` (double underscore) to express hierarchy, like env vars"
       ],
       "answer": [0, 1, 2],
       "explanation": "Key Vault must be added explicitly and its chain position determines precedence (so the 'always wins' claim is wrong). Secret names map `--`→`:` (not `__`, which is the env-var convention). Managed Identity via `DefaultAzureCredential` solves the chicken-and-egg problem with no stored secret."
@@ -237,10 +237,10 @@
       "type": "mcq",
       "question": "`appsettings.json` defines `Feature:Limit=10` and `Feature:Name=A`. A command-line arg passes `--Feature:Limit=99` but nothing for `Feature:Name`. What are the effective values?",
       "options": [
-        "`Limit=99`, `Name=A` — precedence is last-wins **per key**, not whole-file replacement",
-        "`Limit=99`, `Name` unset — the CLI provider replaces the entire `Feature` section",
+        "`Limit=99`, `Name=A` — precedence is last-wins **per key**, not whole-file",
+        "`Limit=99`, `Name` unset — the CLI provider replaces the whole `Feature` section",
         "`Limit=10`, `Name=A` — JSON files always win over command-line args",
-        "A binding error, because the CLI provided a partial section"
+        "A binding error, because the CLI provided only a partial section"
       ],
       "answer": 0,
       "explanation": "Precedence is evaluated key-by-key (last-wins per key), so the CLI overrides only `Feature:Limit` while JSON still supplies `Feature:Name`. It is not whole-section replacement."
@@ -252,10 +252,10 @@
       "type": "mcq",
       "question": "`appsettings.json` defines an array `Servers` with three elements (indices 0–2). You set the environment variable `Servers__0=override`. What is the result?",
       "options": [
-        "Only index 0 is overridden; indices 1 and 2 keep their JSON values — you can't 'clear' the array via env vars",
+        "Only index 0 is overridden; indices 1 and 2 keep their JSON values",
         "The entire `Servers` array is replaced by a single-element array `[\"override\"]`",
-        "The env var is ignored because arrays can only be set in JSON",
-        "A binding exception, because the array length now mismatches the JSON definition"
+        "The env var is ignored, because arrays can only be set in JSON",
+        "A binding exception, because the array length mismatches the JSON definition"
       ],
       "answer": 0,
       "explanation": "Arrays are keyed by integer index (`Servers:0`, `Servers:1`, …), so `Servers__0` overrides only index 0. Env vars can override or extend by index but cannot clear or shrink a JSON-defined array."

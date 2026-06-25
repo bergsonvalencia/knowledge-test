@@ -11,8 +11,8 @@
       "options": [
         "As read-only — never assign to `props.x`; mutating it is a bug",
         "As mutable local state you can freely reassign to update the UI",
-        "As a copy that, when mutated, automatically re-renders the parent",
-        "As a two-way binding that pushes changes back to the parent on assignment"
+        "As a copy that re-renders the parent whenever you mutate it",
+        "As a two-way binding that pushes assignments back to the parent"
       ],
       "answer": 0,
       "explanation": "Props are read-only inputs; the child renders from them but must never mutate them. Mutating props breaks React's rendering assumptions and is a bug — assignment does not trigger re-renders or propagate to the parent."
@@ -25,9 +25,9 @@
       "question": "A child needs to change a value that the parent owns. What is the idiomatic React mechanism?",
       "options": [
         "The child invokes a function prop (callback) passed by the parent, which updates the parent's state",
-        "The child directly reassigns the parent's variable through a ref",
+        "The child directly reassigns the parent's variable through a ref to the parent",
         "The child mutates the prop in place so the parent observes the change",
-        "The child calls `setState` on the parent component instance"
+        "The child calls `setState` directly on the parent component instance"
       ],
       "answer": 0,
       "explanation": "The pattern is \"data down, events up\": the child calls a function prop (e.g. `onChange`); the parent updates *its* state and the new value flows back down. A child cannot reach up and change a parent's variable directly."
@@ -63,7 +63,7 @@
       "type": "truefalse",
       "question": "As of React 19, `defaultProps` on function components has been removed, so you should use destructuring parameter defaults instead.",
       "answer": true,
-      "explanation": "React 19 removed `defaultProps` for function components; parameter (destructuring) defaults are the supported replacement. (It still applies to class components, which the reviewer does not cover here.)"
+      "explanation": "React 19 removed `defaultProps` for function components; parameter (destructuring) defaults are the supported replacement. (`defaultProps` still applies to class components.)"
     },
     {
       "subtopic": "Spread override order",
@@ -74,8 +74,8 @@
       "options": [
         "`handleClick`, because the explicit attribute appears after the spread and overrides it",
         "The `onClick` from `rest`, because spread entries always win over explicit attributes",
-        "Neither — React throws on the duplicate `onClick`",
-        "Both fire in source order, since React merges duplicate handlers"
+        "Neither — React throws an error on the duplicate `onClick` prop",
+        "Both fire in source order, because React merges duplicate handlers"
       ],
       "answer": 0,
       "explanation": "Order matters: later JSX attributes override earlier spread entries. Since `onClick={handleClick}` appears after `{...rest}`, it wins. React does not throw on or merge duplicates — last write wins."
@@ -89,8 +89,8 @@
       "options": [
         "Component-specific props can leak onto the DOM node, and React warns about unknown DOM attributes",
         "Spreading onto a DOM element silently mutates the original props object",
-        "React refuses to render any element that receives a spread of more than one prop",
-        "The DOM element will re-render its parent every time any spread prop changes"
+        "React refuses to render any element that receives more than one spread prop",
+        "The DOM element re-renders its parent whenever any spread prop changes"
       ],
       "answer": 0,
       "explanation": "Spreading everything can leak your component-specific (non-HTML) props onto the DOM node, and React warns about unknown DOM attributes. The fix is to pull off your own props first (`const { title, ...rest } = props`) and spread only `rest`."
@@ -128,10 +128,10 @@
       "code": "type CardProps = {\n  title?: string;\n  children: React.ReactNode;\n} & React.HTMLAttributes<HTMLDivElement>;\n\nfunction Card({ title = \"Untitled\", children, ...rest }: CardProps) {\n  return (\n    <div className=\"card\" {...rest}>\n      <h2>{title}</h2>\n      {children}\n    </div>\n  );\n}\n\n<Card title=\"Hello\" className=\"featured\"><p>Hi</p></Card>;",
       "lang": "typescript",
       "options": [
-        "`rest` holds `className=\"featured\"` (and other HTML attrs), which is spread onto the `div`; the spread's `className` overrides the literal `\"card\"`",
-        "`rest` holds `title` and `children`, which are forwarded to the `div`",
-        "`rest` is empty because `title` and `children` consume every prop",
-        "`rest` holds `className=\"featured\"`, but the literal `className=\"card\"` overrides it because it is written first"
+        "`rest` holds `className=\"featured\"` (and other HTML attrs), spread onto the `div`; the spread's `className` overrides the literal `\"card\"`",
+        "`rest` holds `title` and `children`, which are forwarded onto the `div`",
+        "`rest` is empty, because `title` and `children` consume every prop",
+        "`rest` holds `className=\"featured\"`, but literal `className=\"card\"` wins because it is written first"
       ],
       "answer": 0,
       "explanation": "`title` and `children` are destructured out, so `rest` carries the remaining HTML attributes like `className=\"featured\"`. Because `{...rest}` appears after `className=\"card\"`, the spread's `className` overrides the literal one, so the rendered class is `\"featured\"`."
@@ -141,12 +141,12 @@
       "source": "react/03-props-and-data-flow.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer warns against copying a prop into state. When is doing so actually acceptable?",
+      "question": "Copying a prop into state is generally discouraged. When is doing so actually acceptable?",
       "options": [
         "When you deliberately want a one-time snapshot, while remaining aware of staleness",
         "Whenever you want the child to render faster than reading the prop directly",
         "Always — copying props into state is the recommended default for performance",
-        "Never under any circumstances; it is forbidden by React"
+        "Never under any circumstances; React forbids it outright"
       ],
       "answer": 0,
       "explanation": "Keep each piece of state in its lowest common owner and pass it down. Copying a prop into state is acceptable only when you deliberately want a snapshot — and even then you must beware of staleness when the prop later changes."
@@ -190,8 +190,8 @@
       "options": [
         "They are removed from React core and silently ignored at runtime; use TypeScript, plus a schema library like Zod for runtime validation of external data",
         "They now throw at runtime on the first mismatch; replace them with `defaultProps`",
-        "They are upgraded to compile-time checks; no replacement is needed",
-        "They still run but only in production builds; replace them with `React.ReactNode`"
+        "They are upgraded to compile-time checks, so no replacement is needed at all",
+        "They still run, but only in production builds; replace them with `React.ReactNode`"
       ],
       "answer": 0,
       "explanation": "`propTypes` were removed from React core in React 19 and are silently ignored at runtime. Use TypeScript for compile-time checking and a schema library (Zod/Valibot) at the boundary for runtime validation of untrusted external data."
@@ -218,13 +218,13 @@
       "type": "mcq",
       "question": "A child stores `count` in `useState(props.count)` instead of reading `props.count` directly. The parent later updates and passes a new `props.count`. What does the child render by default?",
       "options": [
-        "The stale initial value, because the `useState` initializer only runs on the first render and ignores later prop changes",
+        "The stale initial value, because the `useState` initializer runs only on the first render and ignores later prop changes",
         "The new prop value, because `useState` re-syncs to its initializer argument on every render",
-        "It throws, because seeding state from a prop is disallowed",
+        "It throws an error, because seeding state from a prop is disallowed",
         "Alternating values, because the parent re-render forces the child's state to reset"
       ],
       "answer": 0,
-      "explanation": "This is the staleness trap the reviewer warns about. `useState`'s initializer argument is used only on the first render; subsequent changes to `props.count` do not update the copied state, so the child shows the stale snapshot unless you read the prop directly or explicitly sync."
+      "explanation": "This is the staleness trap. `useState`'s initializer argument is used only on the first render; subsequent changes to `props.count` do not update the copied state, so the child shows the stale snapshot unless you read the prop directly or explicitly sync."
     },
     {
       "subtopic": "Render-prop typing",
@@ -246,7 +246,7 @@
       "source": "react/03-props-and-data-flow.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "What is the result of rendering `<div>{ { name: \"Ada\" } }</div>` (a plain object placed directly as a child)?",
+      "question": "What is the result of rendering a plain object placed directly as a child, as in the `App` component below?",
       "code": "function App() {\n  const user = { name: \"Ada\" };\n  return <div>{user}</div>;\n}",
       "lang": "typescript",
       "options": [

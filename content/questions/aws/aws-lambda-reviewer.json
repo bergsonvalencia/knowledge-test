@@ -11,8 +11,8 @@
       "options": [
         "The execution role the function assumes at runtime",
         "The resource-based policy attached to the function",
-        "A static IAM access key embedded in the deployment package",
-        "The caller's IAM identity, passed through to the handler"
+        "A static IAM access key in the deployment package",
+        "The caller's IAM identity, passed to the handler"
       ],
       "answer": 0,
       "explanation": "The execution role is the IAM role Lambda assumes to get temporary credentials for the function's AWS calls. The resource-based policy is the opposite angle — it controls who/what may *invoke* the function, not what the code may do."
@@ -26,8 +26,8 @@
       "options": [
         "Asynchronous; the uploader gets a 202 immediately and never sees the handler's result or failure",
         "Synchronous; the uploader blocks and receives any handler error as a 5xx",
-        "Poll-based; the uploader's request stays in a queue until the handler acks it",
-        "Synchronous; S3 retries the handler twice before returning to the uploader"
+        "Poll-based; the uploader's request waits in a queue until the handler acks it",
+        "Synchronous; S3 retries the handler twice before responding to the uploader"
       ],
       "answer": 0,
       "explanation": "S3 invokes Lambda asynchronously: the event is handed to a Lambda-internal queue and S3 immediately gets a 202. The uploader never learns of a downstream failure, which is exactly why an on-failure destination or DLQ is needed to avoid silent data loss."
@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "Which statement correctly distinguishes **reserved** from **provisioned** concurrency?",
       "options": [
-        "Reserved is a free cap-and-guarantee on a function's slice of the account pool; provisioned is paid pre-warming of environments to skip cold start",
+        "Reserved is a free cap-and-guarantee on a function's slice of the account pool; provisioned is paid pre-warming to skip cold start",
         "Reserved is paid pre-warming for latency; provisioned is a free cap on the account pool",
         "Both are paid; reserved raises the account ceiling while provisioned lowers it",
-        "Reserved pre-warms environments while provisioned only caps the function's maximum concurrency"
+        "Reserved pre-warms environments while provisioned only caps a function's maximum concurrency"
       ],
       "answer": 0,
       "explanation": "Reserved concurrency (free) both caps a function at N and guarantees it can reach N by carving N from the shared pool. Provisioned concurrency (paid) pre-initializes environments so requests skip cold start — it is about latency, not raising the ceiling. The two are orthogonal."
@@ -125,8 +125,8 @@
       "options": [
         "Static initialization runs once during Init and is reused across all warm invocations on that environment",
         "Static fields force Lambda to keep the environment alive indefinitely",
-        "Static fields are persisted to /tmp and survive even after the environment is torn down",
-        "Static fields cause Lambda to pre-warm additional concurrent environments automatically"
+        "Static fields are persisted to /tmp and survive environment teardown",
+        "Static fields make Lambda pre-warm extra concurrent environments"
       ],
       "answer": 0,
       "explanation": "Anything outside the handler runs once per environment during Init and is then reused by every warm invocation. A static client avoids re-creating the connection on each call. It does not keep the environment alive, persist beyond teardown, or trigger pre-warming."
@@ -169,7 +169,7 @@
       "code": "return new SQSBatchResponse { BatchItemFailures = failures };\n// failures contains the 2 failed MessageIds",
       "lang": "csharp",
       "options": [
-        "The 8 successful messages are deleted from the queue; only the 2 reported failures become visible again for retry",
+        "The 8 successful messages are deleted; only the 2 reported failures become visible again for retry",
         "All 10 messages are returned to the queue and the whole batch is reprocessed",
         "All 10 messages are deleted; the 2 failures are silently dropped",
         "The 2 failures are deleted and the 8 successes are retried"
@@ -266,7 +266,7 @@
       "type": "truefalse",
       "question": "For a CPU-bound function, raising the memory allocation can reduce *both* latency and total cost, because billing is GB-seconds and the shorter duration can offset the higher per-ms memory rate.",
       "answer": true,
-      "explanation": "Because vCPU scales with memory and price = GB-seconds, a CPU-bound function often finishes faster at higher memory and the reduced duration offsets the higher memory rate — sometimes costing the same or less. The reviewer recommends tuning empirically with Lambda Power Tuning."
+      "explanation": "Because vCPU scales with memory and price = GB-seconds, a CPU-bound function often finishes faster at higher memory and the reduced duration offsets the higher memory rate — sometimes costing the same or less. Tune empirically with Lambda Power Tuning."
     }
   ]
 }

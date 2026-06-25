@@ -198,7 +198,7 @@
       "source": "web/web-api-concepts-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "REST's **client-server** principle separates UI concerns from data-storage concerns. What two benefits does the reviewer attribute to this separation?",
+      "question": "REST's **client-server** principle separates UI concerns from data-storage concerns. What two benefits does this separation provide?",
       "options": [
         "Improved portability of the UI across platforms and improved scalability by simplifying the server components",
         "Guaranteed strong consistency and automatic horizontal sharding of the database",
@@ -264,9 +264,9 @@
       "source": "web/web-api-concepts-reviewer.md",
       "difficulty": "hard",
       "type": "truefalse",
-      "question": "**PUT** is described as idempotent while it is **PATCH** that is characterized only as a partial update (without the idempotency label).",
+      "question": "**PUT** is characterized as idempotent (a full replace), while **PATCH** is characterized only as a partial update without the idempotency label.",
       "answer": true,
-      "explanation": "The reviewer explicitly calls PUT a full replace that is idempotent, and describes PATCH as a partial update; it does not attach the idempotency label to PATCH. So distinguishing PUT (replace, idempotent) from PATCH (partial) matches the source."
+      "explanation": "PUT is described as a full replace that is idempotent, and PATCH as a partial update with no idempotency label attached. So distinguishing PUT (replace, idempotent) from PATCH (partial) is accurate."
     }
   ]
 }

@@ -25,8 +25,8 @@
       "question": "Which is a genuine drawback of **vertical** scaling (scale up) that **horizontal** scaling avoids?",
       "options": [
         "The node remains a single point of failure with a hard hardware ceiling",
-        "It forces you to make every service stateless",
-        "It introduces replication lag between nodes",
+        "It forces every service to be rewritten as stateless",
+        "It introduces replication lag between the nodes",
         "It requires a load balancer in front of the node"
       ],
       "answer": 0,
@@ -61,7 +61,7 @@
       "source": "system-design/scalability-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Why does the reviewer insist on reporting **p95/p99** latency rather than the average?",
+      "question": "Why should you report **p95/p99** latency rather than the average?",
       "options": [
         "Averages hide the slow tail — a few very slow requests barely move the mean but are what users notice",
         "Averages are mathematically impossible to compute on streaming data",
@@ -76,7 +76,7 @@
       "source": "system-design/scalability-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "**Elasticity** (autoscaling) is described as requiring statelessness. Why can't you safely autoscale nodes that hold in-memory user sessions?",
+      "question": "**Elasticity** (autoscaling) requires statelessness. Why can't you safely autoscale nodes that hold in-memory user sessions?",
       "options": [
         "Removing a node on scale-down would destroy the only copy of those users' session state",
         "Stateful nodes cannot be placed behind a load balancer at all",
@@ -114,9 +114,9 @@
       "question": "A service receives **800 RPS** with an average response time of **250 ms**. Using Little's Law, roughly how many requests are in flight on average, and how many nodes are needed at minimum if one node handles ~50 concurrent?",
       "options": [
         "~200 concurrent → at least 4 nodes (plus headroom)",
-        "~50 concurrent → at least 1 node",
-        "~3,200 concurrent → at least 64 nodes",
-        "~16 concurrent → at least 1 node"
+        "~50 concurrent → at least 1 node (plus headroom)",
+        "~3,200 concurrent → at least 64 nodes (plus headroom)",
+        "~16 concurrent → at least 1 node (plus headroom)"
       ],
       "answer": 0,
       "explanation": "L = λ × W = 800 × 0.25 = 200 concurrent. 200 / 50 = 4 nodes at the limit, so you run 4 plus headroom and never at 100% utilization."
@@ -128,7 +128,7 @@
       "type": "truefalse",
       "question": "Running a server at ~100% CPU utilization is the most efficient operating point because no capacity is wasted.",
       "answer": false,
-      "explanation": "As utilization ρ approaches 1, queue length and wait time grow roughly proportional to 1/(1−ρ), so latency blows up. The reviewer targets ~70–80% to leave headroom for bursts — 100% is a latency disaster, not efficiency."
+      "explanation": "As utilization ρ approaches 1, queue length and wait time grow roughly proportional to 1/(1−ρ), so latency blows up. Target ~70–80% to leave headroom for bursts — 100% is a latency disaster, not efficiency."
     },
     {
       "subtopic": "Database bottleneck",
@@ -212,7 +212,7 @@
       "source": "system-design/scalability-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer warns that \"a queue without back-pressure is a **delayed crash**, not a fix.\" What is the underlying reason?",
+      "question": "Why is \"a queue without back-pressure a **delayed crash**, not a fix\"?",
       "options": [
         "An unbounded queue merely buffers in front of the bottleneck; the buffer keeps growing until memory runs out",
         "Queues add network hops that always increase end-to-end latency beyond acceptable limits",
@@ -227,7 +227,7 @@
       "source": "system-design/scalability-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "You move slow PDF generation behind a queue with workers. Why does the reviewer insist the worker be **idempotent**?",
+      "question": "You move slow PDF generation behind a queue with workers. Why must the worker be **idempotent**?",
       "options": [
         "At-least-once delivery means a message may be processed more than once, so duplicate processing must be safe",
         "Idempotency is what makes the API return `202 Accepted` instead of `200 OK`",
@@ -262,7 +262,7 @@
       "source": "system-design/scalability-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "When configuring CDN caching, the reviewer flags a subtle correctness hazard around **personalized** responses. What goes wrong if it is mishandled?",
+      "question": "When configuring CDN caching, there is a subtle correctness hazard around **personalized** responses. What goes wrong if it is mishandled?",
       "options": [
         "A bad `Vary` / cache key can serve one user's personalized response to a different user",
         "Fingerprinted filenames like `app.9f3c.js` cause the browser to re-download on every request",

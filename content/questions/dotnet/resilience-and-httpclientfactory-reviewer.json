@@ -10,9 +10,9 @@
       "question": "A service does `using var http = new HttpClient();` on every request and is called thousands of times per minute. What failure mode does this most directly cause?",
       "options": [
         "Socket exhaustion — disposed sockets sit in `TIME_WAIT` until ephemeral ports run out and `SocketException` is thrown",
-        "An immediate `OutOfMemoryException` from allocating too many client objects",
-        "Stale DNS — the client keeps hitting a dead IP after a failover",
-        "Thread-pool starvation from blocking the request threads"
+        "An immediate `OutOfMemoryException` thrown from allocating far too many client objects on the managed heap",
+        "Stale DNS — the pinned connection keeps hitting a dead IP after a failover, scale, or blue-green event",
+        "Thread-pool starvation as each new client blocks an ASP.NET request thread until its response returns"
       ],
       "answer": 0,
       "explanation": "Each `new HttpClient()` opens its own connection pool; disposing it strands the underlying TCP socket in `TIME_WAIT` for ~4 minutes, so under load you exhaust ephemeral ports and get `SocketException`. Stale DNS is the symptom of the *opposite* mistake — one static client forever."
@@ -25,9 +25,9 @@
       "question": "Why is keeping one static `HttpClient` alive for the lifetime of the process *also* wrong, even though it fixes socket exhaustion?",
       "options": [
         "It pins the connection so it never re-resolves DNS, and keeps hitting a dead IP after a failover or scale event",
-        "It is not thread-safe, so concurrent requests corrupt each other's headers",
-        "Static fields are garbage-collected unpredictably, so the client may vanish mid-request",
-        "It disables HTTP keep-alive, forcing a new TCP handshake on every call"
+        "It is not thread-safe for concurrent requests, so parallel calls corrupt each other's headers and bodies",
+        "Static fields are garbage-collected unpredictably, so the client may be reclaimed mid-request and throw",
+        "It disables HTTP keep-alive entirely, forcing an expensive new TCP and TLS handshake on every single call"
       ],
       "answer": 0,
       "explanation": "A single long-lived client reuses sockets but pins the connection, so it never picks up DNS changes (failover, blue-green, scaling) and keeps hitting the dead IP. `HttpClient` *is* thread-safe for concurrent requests, so that distractor is false."
@@ -39,10 +39,10 @@
       "type": "mcq",
       "question": "How does `IHttpClientFactory` give you both socket reuse and DNS freshness at the same time?",
       "options": [
-        "It reuses the pooled `HttpMessageHandler` (sharing sockets) but rotates it on a schedule (default 2 minutes) so a fresh handler periodically re-resolves DNS",
-        "It opens a brand-new socket per request but caches the DNS lookup for 2 minutes",
-        "It keeps one handler forever and runs a background DNS-refresh thread",
-        "It disposes and recreates the `HttpClient` on every call while keeping the socket open"
+        "It reuses the pooled `HttpMessageHandler` to share sockets, but rotates it on a schedule so a fresh handler re-resolves DNS",
+        "It opens a brand-new socket for every request but caches the DNS lookup result for two minutes between calls",
+        "It keeps a single handler alive forever and runs a dedicated background thread that refreshes DNS periodically",
+        "It disposes and recreates the `HttpClient` on every call while quietly keeping the underlying socket open"
       ],
       "answer": 0,
       "explanation": "The factory pools and reuses the underlying handler for socket efficiency, but rotates that handler (default 2 minutes via `SetHandlerLifetime`) so a fresh handler eventually re-resolves DNS. It does not open a socket per request."
@@ -64,9 +64,9 @@
       "question": "Which package is the successor to the deprecated `Microsoft.Extensions.Http.Polly`, and what does it wrap?",
       "options": [
         "`Microsoft.Extensions.Http.Resilience`, which wraps Polly v8",
-        "`Polly.Extensions.Http`, which wraps Polly v7",
-        "`Microsoft.AspNetCore.Resilience`, which wraps the BCL retry handler",
-        "`System.Net.Http.Resilience`, which wraps a custom retry engine"
+        "`Polly.Extensions.Http`, which still wraps Polly v7",
+        "`Microsoft.AspNetCore.Resilience`, wrapping a BCL handler",
+        "`System.Net.Http.Resilience`, with a custom retry engine"
       ],
       "answer": 0,
       "explanation": "`Microsoft.Extensions.Http.Resilience` replaces the deprecated `Microsoft.Extensions.Http.Polly`; it wraps Polly v8 and plugs a resilience pipeline into the handler chain as a delegating handler via `AddStandardResilienceHandler()`."
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "Using `AddStandardResilienceHandler()` defaults — per-attempt timeout 10s, retry 3×, total timeout 30s — a dependency takes 12s on every call. What does the caller ultimately observe?",
       "options": [
-        "Each attempt hits the 10s per-attempt timeout and is retried, but the 30s total timeout caps the operation, so after a few attempts the whole call fails with a timeout",
-        "The first call succeeds at 12s because the per-attempt timeout only applies to retries",
-        "The call fails immediately with `BrokenCircuitException` since 12s exceeds 10s",
-        "The call retries forever because the per-attempt timeout resets the total budget each time"
+        "Each attempt trips the 10s per-attempt timeout and retries, but the 30s total timeout caps the call, which fails with a timeout",
+        "The very first call succeeds at 12s, because the per-attempt timeout only ever applies to the retry attempts that follow it",
+        "The call fails instantly with `BrokenCircuitException`, since the 12s response time already exceeds the 10s attempt limit",
+        "The call retries forever, because each per-attempt timeout resets the 30s total budget back to full every single time"
       ],
       "answer": 0,
       "explanation": "Each 12s attempt trips the 10s per-attempt timeout and is retried, but the 30s total timeout — sitting outside the retry — caps the whole operation, so after roughly the first few attempts the budget is exhausted and the call fails with a timeout. The total timeout is what stops infinite waiting."
@@ -110,10 +110,10 @@
       "code": "builder.Services.AddHttpClient<PaymentClient>()\n    .AddStandardResilienceHandler();\n// PaymentClient POSTs a charge to the payment gateway",
       "lang": "csharp",
       "options": [
-        "The handler retries all HTTP methods by default, so a transient failure can double-charge — fix with `o.Retry.DisableForUnsafeHttpMethods()` and/or an idempotency key",
-        "POST is never retried by default, so there is no risk and no change is needed",
-        "The risk is socket exhaustion from POST bodies — fix by raising the handler lifetime",
-        "The circuit breaker will refuse all POSTs — fix by lowering `FailureRatio`"
+        "The handler retries all HTTP methods by default, so a transient failure can double-charge — fix with `DisableForUnsafeHttpMethods()` and/or an idempotency key",
+        "POST is never retried by the standard handler under any default configuration, so there is genuinely no risk here and no change is needed",
+        "The real risk is socket exhaustion caused by retried POST bodies — fix it by raising the handler lifetime well above its two-minute default",
+        "The circuit breaker will start refusing every POST after the first failure — fix it by lowering the breaker's `FailureRatio` toward zero"
       ],
       "answer": 0,
       "explanation": "The standard handler retries *all* methods by default, so a transient failure on a POST can duplicate the write (double-charge). Disable retries for unsafe methods with `DisableForUnsafeHttpMethods()` and/or send an idempotency key so the gateway de-dupes."
@@ -125,10 +125,10 @@
       "type": "mcq",
       "question": "A teammate writes `Policy.Handle<HttpRequestException>().WaitAndRetryAsync(...)` and it won't compile against the current package. Why, and what is the v8 equivalent?",
       "options": [
-        "That fluent API is Polly v7, removed in v8 — use `new ResiliencePipelineBuilder().AddRetry(new RetryStrategyOptions { ... }).Build()` and `ExecuteAsync`",
-        "The method is async-only now — add `.ConfigureAwait(false)` to make it compile",
-        "`Policy` moved namespaces — add `using Polly.Legacy;` and it compiles unchanged",
-        "v8 renamed it to `Policy.Handle<>().Retry(...)` with no wait variant"
+        "That fluent API is Polly v7, removed in v8 — use `new ResiliencePipelineBuilder().AddRetry(...).Build()` and `ExecuteAsync`",
+        "The method became async-only in the latest release, so adding `.ConfigureAwait(false)` to the chain is all it takes to make it compile",
+        "The `Policy` type simply moved namespaces in v8, so adding `using Polly.Legacy;` lets the old fluent chain compile and run unchanged",
+        "v8 renamed the method to `Policy.Handle<>().Retry(...)`, dropping the wait variant entirely, so you just remove the delay configuration"
       ],
       "answer": 0,
       "explanation": "Polly v8 removed v7's fluent `Policy.Handle<>().WaitAndRetry(...)` API. The current model builds a reusable, thread-safe `ResiliencePipeline` via `ResiliencePipelineBuilder` + strategy options + `Build()`, executed with `ExecuteAsync`."
@@ -143,9 +143,9 @@
       "lang": "csharp",
       "options": [
         "Fallback — the first strategy added is outermost and wraps the rest, so it catches whatever escapes the inner strategies",
-        "Timeout — the last strategy added runs first as the outermost guard",
-        "Circuit breaker — breakers always run before any other strategy regardless of order",
-        "Retry — retries are always promoted to the outermost position by the builder"
+        "Timeout — the last strategy added always runs first, becoming the outermost guard around all the others in the chain",
+        "Circuit breaker — breakers are special and are always promoted to run before any other strategy, regardless of add order",
+        "Retry — the builder always lifts the retry strategy to the outermost position so it can re-issue the whole pipeline"
       ],
       "answer": 0,
       "explanation": "The first strategy added is outermost; strategies nest like middleware. Here fallback wraps retry, which wraps the circuit breaker, which wraps the timeout — so the per-attempt timeout is what retry re-issues and fallback catches whatever escapes."
@@ -158,9 +158,9 @@
       "question": "When a Polly v8 timeout strategy fires, which exception is thrown — and which `ShouldHandle` predicate must catch it?",
       "options": [
         "`TimeoutRejectedException` — not the BCL `TimeoutException`, so predicates must handle that specific type",
-        "`TimeoutException` from the BCL, so catching `System.TimeoutException` is correct",
-        "`OperationCanceledException`, because timeouts cancel the underlying token",
-        "`BrokenCircuitException`, since a timeout is treated as a breaker trip"
+        "`TimeoutException` from the BCL, so handling `System.TimeoutException` in the predicate is the correct choice",
+        "`OperationCanceledException`, because the timeout strategy simply cancels the underlying cancellation token",
+        "`BrokenCircuitException`, since Polly internally treats an elapsed timeout as a circuit-breaker trip event"
       ],
       "answer": 0,
       "explanation": "Polly's timeout strategy throws `TimeoutRejectedException`, not the BCL `TimeoutException`. A `ShouldHandle` predicate that expects `System.TimeoutException` will silently miss it."
@@ -197,10 +197,10 @@
       "type": "mcq",
       "question": "Where in a resilience pipeline should the fallback strategy sit, and why?",
       "options": [
-        "Outermost, so it catches everything the inner strategies (retry, breaker, timeout) ultimately surface and can substitute a safe default",
-        "Innermost, so it runs before the network call and short-circuits early",
-        "Immediately after retry but before the circuit breaker, so it only catches retry exhaustion",
-        "It must not be combined with a circuit breaker, since both handle failures"
+        "Outermost, so it catches everything the inner strategies surface and can substitute a safe default value",
+        "Innermost, so it runs right before the network call and can short-circuit the request as early as possible",
+        "Right after retry but before the circuit breaker, so it only ever catches the case of retry attempts being exhausted",
+        "Nowhere alongside a circuit breaker — the two strategies both handle failures and must never be combined in one pipeline"
       ],
       "answer": 0,
       "explanation": "Fallback belongs outermost so it catches everything the inner strategies surface (including `BrokenCircuitException`) and supplies a substitute outcome — cached data, a default object — letting the caller degrade gracefully. It composes fine with a breaker."
@@ -212,10 +212,10 @@
       "type": "mcq",
       "question": "Your team wants to add custom retry behavior on top of `AddStandardResilienceHandler()` for one client. What is the correct guidance?",
       "options": [
-        "Add exactly one resilience handler per client; for a non-standard composition use `AddResilienceHandler(\"name\", builder => ...)` and build the pipeline yourself rather than stacking handlers",
-        "Call `AddStandardResilienceHandler()` twice — the second call merges its options into the first",
-        "Stack a second `AddStandardResilienceHandler()` and lower its retry count so the two cooperate",
-        "Wrap the client in another typed client that also adds a standard handler, to layer the pipelines"
+        "Add exactly one resilience handler per client; for a custom composition use `AddResilienceHandler(\"name\", ...)` and build the pipeline yourself",
+        "Call `AddStandardResilienceHandler()` a second time on the same client — the later call simply merges its options into the first one",
+        "Stack a second `AddStandardResilienceHandler()` and lower that one's retry count so the two standard pipelines cooperate cleanly",
+        "Wrap the client inside another typed client that also adds a standard handler, deliberately layering the two pipelines together"
       ],
       "answer": 0,
       "explanation": "The rule is exactly one resilience handler per client — stacking handlers multiplies retries and timeouts unpredictably. For a custom composition, drop the standard handler and use `AddResilienceHandler(\"name\", builder => ...)` to build the pipeline yourself."
@@ -252,10 +252,10 @@
       "type": "mcq",
       "question": "Your microservice's typed client retries 3×, and the service mesh (Envoy/Istio) in front of the dependency *also* retries. What is the senior concern and the correct response?",
       "options": [
-        "Retries multiply across layers (client × mesh), amplifying load on a struggling dependency — pick one layer to own retries, not both",
-        "The two retry layers automatically deduplicate, so the effective retry count stays 3 and no action is needed",
-        "The mesh retry overrides the client retry, so the client config is silently ignored and can be left as-is",
-        "Client retries are always preferred over mesh retries, so disable mesh retries and quadruple the client count"
+        "Retries multiply across layers (client × mesh), amplifying load on a struggling dependency — pick one layer to own retries",
+        "The two retry layers automatically deduplicate their attempts, so the effective count stays 3 and no configuration change is needed",
+        "The mesh retry silently overrides the client retry, so the client's own retry config is ignored entirely and can be left exactly as-is",
+        "Client retries always take precedence over mesh retries, so the right move is to disable the mesh and quadruple the client retry count"
       ],
       "answer": 0,
       "explanation": "If both the client and the mesh/gateway retry, attempts multiply (e.g. 3×3), turning one slow service into a system-wide brownout. The fix is to pick a single layer to own retries rather than stacking them — there is no automatic dedup or override."

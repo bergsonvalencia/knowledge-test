@@ -37,10 +37,10 @@
       "source": "angular/06-change-detection-and-di.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Per this reviewer, what changed about change-detection strategies in Angular v22?",
+      "question": "What changed about change-detection strategies in Angular v22?",
       "options": [
         "`OnPush` became the default, and the old always-check `Default` was renamed `ChangeDetectionStrategy.Eager`",
-        "`Default` became mandatory and `OnPush` was removed",
+        "`Default` became mandatory and `OnPush` was removed entirely",
         "`Eager` became the new default while `OnPush` was deprecated",
         "All strategies were removed in favor of signals-only detection"
       ],
@@ -72,7 +72,7 @@
       "options": [
         "`markForCheck()` runs a synchronous pass now; `detectChanges()` defers to the next pass",
         "Both run a synchronous pass immediately, but on different views",
-        "`markForCheck()` flags the view (and ancestors) dirty for the *next* pass; `detectChanges()` runs a synchronous pass *now* on that view",
+        "`markForCheck()` flags the view (and ancestors) dirty for the *next* pass; `detectChanges()` runs a synchronous pass *now*",
         "`markForCheck()` detaches the view; `detectChanges()` reattaches it"
       ],
       "answer": 2,
@@ -86,7 +86,7 @@
       "question": "A developer sees `ExpressionChangedAfterItHasBeenCheckedError` (NG0100) only in development, never in production. What does this indicate?",
       "options": [
         "A production build accidentally removed the binding entirely",
-        "Dev mode runs a second verification pass and a binding's value changed between the two checks; production skips that pass so the bug is silently hidden",
+        "Dev mode runs a second verification pass and a binding changed between the two checks; production skips that pass so the bug is hidden",
         "The error is purely cosmetic and the values are actually identical",
         "Production uses a different change-detection strategy that re-evaluates bindings twice"
       ],
@@ -123,7 +123,7 @@
       "source": "angular/06-change-detection-and-di.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "According to this reviewer, what is the correct way to state zoneless change detection's status?",
+      "question": "What is the correct way to state zoneless change detection's status?",
       "options": [
         "Experimental since v18 and still experimental today",
         "Stable since v20.2 and the default for new apps in v21+",
@@ -131,7 +131,7 @@
         "Default since v18 for all existing applications"
       ],
       "answer": 1,
-      "explanation": "Zoneless was experimental in v18, developer preview in v20, became stable in v20.2, and is the default for new apps in v21+. The reviewer stresses stating it as a range (stable v20.2; default v21+), not a single version."
+      "explanation": "Zoneless was experimental in v18, developer preview in v20, became stable in v20.2, and is the default for new apps in v21+. State it as a range (stable v20.2; default v21+), not a single version."
     },
     {
       "subtopic": "Zoneless breakage",
@@ -174,7 +174,7 @@
       "options": [
         "EnvironmentInjector chain first (root -> platform), then the ElementInjector chain",
         "Only the root injector; component `providers` are ignored",
-        "ElementInjector chain bottom-up (element through ancestor components), then cross into the EnvironmentInjector chain (route -> root -> platform)",
+        "ElementInjector chain bottom-up (element through ancestors), then the EnvironmentInjector chain (route -> root -> platform)",
         "Platform injector first, descending toward the requesting element"
       ],
       "answer": 2,
@@ -205,7 +205,7 @@
       "lang": "typescript",
       "options": [
         "Nothing — `@Injectable()` alone makes it an app-wide root singleton",
-        "It must be listed in a `providers` array (e.g. a component or route) to exist; otherwise injecting it throws NG0201",
+        "It must be listed in a `providers` array (e.g. a component or route); otherwise injecting it throws NG0201",
         "It must be re-decorated with `@Service()` or it cannot compile",
         "It is automatically tree-shaken into the root injector on first injection"
       ],
@@ -217,12 +217,12 @@
       "source": "angular/06-change-detection-and-di.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Per this reviewer, which statement about the Angular v22 `@Service()` decorator is correct?",
+      "question": "Which statement about the Angular v22 `@Service()` decorator is correct?",
       "options": [
         "It is a lazily-created tree-shakable root singleton, and classes using it must use `inject()` — constructor parameters are a compile error",
-        "It always creates a new instance per component and cannot be a singleton",
-        "It requires an explicit `providedIn: 'root'` to be tree-shakable",
-        "It only supports constructor injection, not `inject()`"
+        "It always creates a new instance per component and can never be a singleton",
+        "It requires an explicit `providedIn: 'root'` in order to be tree-shakable",
+        "It only supports constructor injection and rejects the `inject()` function"
       ],
       "answer": 0,
       "explanation": "`@Service()` is the modern shorthand for a lazily-created, tree-shakable root singleton with no `providedIn`. Its classes must use `inject()`; constructor parameters are a compile error. (`autoProvided: false` opts out of root provisioning.)"
@@ -235,7 +235,7 @@
       "question": "A developer moves an `inject(HttpClient)` call from a field initializer into `ngOnInit` and now gets `NG0203`. Why, and what is the correct fix?",
       "options": [
         "`ngOnInit` runs before construction; move the call into the constructor's `super()`",
-        "`ngOnInit` is outside the injection context; inject in a field initializer (or constructor) and capture the reference, or re-enter via `runInInjectionContext`",
+        "`ngOnInit` is outside the injection context; inject in a field initializer and capture the reference, or re-enter via `runInInjectionContext`",
         "`HttpClient` is not provided in root; add it to the component's `providers`",
         "NG0203 means the token is optional; add `{ optional: true }` to silence it"
       ],
@@ -259,9 +259,9 @@
       "question": "What is the key behavioral difference between `{ provide: OldApi, useExisting: NewApi }` and `{ provide: OldApi, useClass: NewApi }`?",
       "options": [
         "`useExisting` creates a brand-new instance; `useClass` aliases to an existing one",
-        "`useExisting` aliases `OldApi` to the *same already-registered* `NewApi` instance; `useClass` instantiates a *separate* `NewApi` for `OldApi`",
+        "`useExisting` aliases `OldApi` to the *same already-registered* `NewApi` instance; `useClass` instantiates a *separate* `NewApi`",
         "Both create a single shared instance; only the token name differs",
-        "`useExisting` requires `deps`; `useClass` does not"
+        "`useExisting` requires a `deps` array; `useClass` does not"
       ],
       "answer": 1,
       "explanation": "`useExisting` is an alias: resolving `OldApi` returns the same already-registered `NewApi` singleton, no new object. `useClass` constructs a separate instance for `OldApi`, so the two tokens would point at distinct objects."

@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "What does non-destructive hydration (the default since v16) do with the server-rendered DOM?",
       "options": [
-        "Reuses the existing server DOM, attaching listeners and wiring state in place",
-        "Throws away the server markup and re-renders the whole app from scratch in the browser",
-        "Renders a second copy of the app into a hidden node and swaps it in",
-        "Keeps the server DOM but disables all event handling until a full reload"
+        "Reuses the server DOM, attaching listeners and wiring state in place",
+        "Throws the server markup away and re-renders the whole app from scratch",
+        "Renders a second copy into a hidden node and swaps it in",
+        "Keeps the server DOM but disables all event handling until a reload"
       ],
       "answer": 0,
       "explanation": "Non-destructive hydration reuses the server-rendered DOM and attaches listeners in place. The destructive re-render that discarded the markup was the pre-v16 behavior."
@@ -67,7 +67,7 @@
       "source": "angular/09-ssr-state-and-performance.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "According to the escalation ladder, what is the recommended starting point for state in a component before promoting it anywhere else?",
+      "question": "On the state escalation ladder, what is the recommended starting point before promoting state anywhere else?",
       "options": [
         "A `signal` owned locally by the component",
         "An `@Injectable({ providedIn: 'root' })` signal service",
@@ -160,7 +160,7 @@
       "code": "@Injectable({ providedIn: 'root' })\nexport class CartStore {\n  private readonly items = signal<CartItem[]>([]);\n  readonly lines = this.items.asReadonly();\n  readonly count = computed(() => this.items().reduce((n, i) => n + i.qty, 0));\n  add(item: CartItem) {\n    this.items.update((list) => [...list, item]);\n  }\n}",
       "lang": "typescript",
       "options": [
-        "So consumers can read state and derived values but cannot mutate the source — mutations only happen through the service's methods",
+        "So consumers can read state and derived values but only the service's methods may mutate the source",
         "Because `computed` signals cannot be created from a public writable signal",
         "Because `providedIn: 'root'` services forbid public writable fields",
         "So that change detection skips the component reading `count`"
@@ -188,7 +188,7 @@
       "source": "angular/09-ssr-state-and-performance.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "What is the consequence of omitting a stable `track` on a `@for` loop that reorders its items?",
+      "question": "What is the consequence of supplying an unstable `track` key on a `@for` loop that reorders its items?",
       "options": [
         "Angular re-creates the DOM and component state for the rows instead of reusing the existing nodes",
         "Angular throws a compile-time error and the template fails to build",
@@ -196,7 +196,7 @@
         "Angular keeps the old DOM and refuses to apply the new ordering"
       ],
       "answer": 0,
-      "explanation": "Without a stable identity, Angular re-creates DOM and state on reorder; with `track x.id` it reuses nodes. `track` is required syntactically for `@for`, but supplying an unstable key (rather than omitting it) is what produces the re-create cost — the reviewer frames the harm as needless DOM/state recreation."
+      "explanation": "Without a stable identity, Angular re-creates DOM and state on reorder; a stable key like `track x.id` lets it reuse nodes. `track` is syntactically required for `@for`, so the real performance harm comes from giving it an unstable key rather than omitting it."
     },
     {
       "subtopic": "NgOptimizedImage",
@@ -240,7 +240,7 @@
       "type": "truefalse",
       "question": "A binding like `{{ formatTotal() }}` that calls a component method runs on every change-detection cycle, whereas a pure pipe with the same logic recomputes only when its input changes.",
       "answer": true,
-      "explanation": "Template method calls re-run every CD cycle; pure pipes are memoized and recompute only when their input changes — which is why the reviewer recommends moving formatting/filtering into pure pipes (or `computed`)."
+      "explanation": "Template method calls re-run every CD cycle; pure pipes are memoized and recompute only when their input changes — which is why formatting/filtering should move into pure pipes (or `computed`)."
     },
     {
       "subtopic": "OnPush reference checks",
@@ -262,7 +262,7 @@
       "source": "angular/09-ssr-state-and-performance.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Which statement accurately describes zoneless change detection as presented in the reviewer?",
+      "question": "Which statement accurately describes zoneless change detection?",
       "options": [
         "It drops Zone.js so CD is driven by signals/events directly; stable since v20.2 and the default in v21+",
         "It keeps Zone.js but throttles change-detection cycles to once per frame",

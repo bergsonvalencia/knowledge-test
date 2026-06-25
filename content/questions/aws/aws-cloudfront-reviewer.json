@@ -10,9 +10,9 @@
       "question": "A distribution has cache behaviors for `*.jpg`, `/api/*`, and the default `*`. How does CloudFront decide which behavior handles an incoming request?",
       "options": [
         "Behaviors are evaluated in order and the first matching path pattern wins; `*` is the fallback",
-        "The most specific (longest) pattern always wins regardless of order",
-        "All matching behaviors are merged, with later ones overriding earlier ones",
-        "The default `*` behavior is always evaluated first, then more specific ones"
+        "The most specific (longest) pattern always wins, regardless of the configured order",
+        "All matching behaviors are merged together, with later ones overriding earlier ones",
+        "The default `*` behavior is always evaluated first, then the more specific patterns"
       ],
       "answer": 0,
       "explanation": "Behaviors are evaluated in order and the first matching pattern wins, with `*` as the fallback default — which is why you place the most specific patterns first. CloudFront does not compute specificity or merge behaviors."
@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "Your origin must see the `Authorization` header to authorize requests, but you want all authorized viewers to share **one** cached response. What is the correct configuration?",
       "options": [
-        "Add `Authorization` to the cache policy so it is part of the cache key",
+        "Add `Authorization` to the cache policy so it becomes part of the cache key",
         "Add `Authorization` to the origin request policy but NOT to the cache policy",
-        "Add `Authorization` to the response headers policy",
-        "Disable caching entirely for the path"
+        "Add `Authorization` to the response headers policy on the behavior",
+        "Disable caching entirely for the path and forward everything"
       ],
       "answer": 1,
       "explanation": "Forwarding `Authorization` via the origin request policy lets the origin see and authorize it without joining the cache key, so all authorized viewers collapse to one cached object. Putting it in the cache policy would fragment the cache per token."
@@ -127,7 +127,7 @@
         "CloudFront Functions, because they run on all four trigger events",
         "CloudFront Functions reading KeyValueStore, since no origin call is needed",
         "Lambda@Edge, because it runs on origin events and can make network calls",
-        "Geo-restriction with a custom error response"
+        "Geo-restriction with a custom error response page"
       ],
       "answer": 2,
       "explanation": "Lambda@Edge runs at all four events (including origin response), can make network calls to DynamoDB, and can access bodies. CloudFront Functions run only at viewer request/response, have no network access (only KeyValueStore reads), and no body access."
@@ -139,10 +139,10 @@
       "type": "mcq",
       "question": "A team fronts a workload with an internet-facing **NLB** and wants AWS WAF SQLi and rate-limiting rules applied. What is the correct guidance?",
       "options": [
-        "Attach the web ACL directly to the NLB with REGIONAL scope",
-        "WAF cannot attach to an NLB; front the workload with CloudFront (or an ALB) that hosts the web ACL",
-        "Enable WAF inside the NLB target group health checks",
-        "Move the web ACL to us-west-2 so it can bind to the NLB"
+        "Attach the WAF web ACL directly to the NLB using REGIONAL scope",
+        "WAF cannot attach to an NLB; front the workload with CloudFront or an ALB that hosts the web ACL",
+        "Enable WAF inspection inside the NLB target group's health checks",
+        "Recreate the web ACL in us-west-2 so it can bind to the NLB"
       ],
       "answer": 1,
       "explanation": "WAF cannot attach to an NLB (L4). It attaches to CloudFront, ALB, API Gateway, App Runner, AppSync, and Cognito. To get edge WAF + DDoS, front the workload with CloudFront (web ACL in us-east-1, CLOUDFRONT scope) or terminate at an ALB."
@@ -213,7 +213,7 @@
       "options": [
         "Add a CloudFront Function to strip `utm_*` before the request reaches the origin",
         "Put only `id` in the cache policy key, and forward `utm_*` to the origin via an origin request policy",
-        "Set `MinTTL` higher so the entries live longer despite being separate",
+        "Raise `MinTTL` so the separate entries simply live longer at the edge",
         "Create an invalidation for `/p*` after each marketing campaign"
       ],
       "answer": 1,
@@ -224,7 +224,7 @@
       "source": "aws/aws-cloudfront-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "An origin returns both `Cache-Control: max-age=600, s-maxage=86400` on a cacheable object, within a policy whose `MaxTTL` is 31536000. How long does CloudFront retain the object at the edge?",
+      "question": "An origin returns `Cache-Control: max-age=600, s-maxage=86400` on a cacheable object, within a policy whose `MaxTTL` is 31536000. How long does CloudFront retain the object at the edge?",
       "options": [
         "600 seconds, because `max-age` always governs",
         "86400 seconds, because `s-maxage` wins for the shared/CDN cache",
@@ -241,10 +241,10 @@
       "type": "mcq",
       "question": "What does CloudFront **field-level encryption** accomplish for a sensitive form field such as a credit-card number?",
       "options": [
-        "It encrypts the entire request body with the viewer's TLS session key",
-        "It encrypts specific fields with your public key at the edge so only the private-key holder deep in your stack can decrypt them",
-        "It tokenizes the field and stores the plaintext in CloudFront KeyValueStore",
-        "It blocks the field from being forwarded to the origin at all"
+        "It re-encrypts the entire request body using the viewer's TLS session key",
+        "It encrypts specific fields with your public key at the edge so only the private-key holder can decrypt them",
+        "It tokenizes the field and stores the plaintext value in CloudFront KeyValueStore",
+        "It silently blocks the field from being forwarded to the origin at all"
       ],
       "answer": 1,
       "explanation": "Field-level encryption encrypts designated fields with your public key at the edge, so the origin and intermediate services never see plaintext — only the component holding the private key can decrypt. It targets specific fields, not the whole body, and does not store plaintext anywhere."

@@ -39,9 +39,9 @@
       "type": "mcq",
       "question": "Which statement correctly contrasts `TRUNCATE TABLE` with `DELETE` (no `WHERE`)?",
       "options": [
-        "`TRUNCATE` deallocates pages (minimally logged) and resets the IDENTITY seed; `DELETE` is fully logged per row and leaves IDENTITY unchanged",
-        "`TRUNCATE` fires DELETE triggers for each affected row, while `DELETE` does not",
-        "`DELETE` cannot be rolled back, but `TRUNCATE` can",
+        "`TRUNCATE` deallocates pages (minimally logged) and resets the IDENTITY seed; `DELETE` is fully logged and leaves IDENTITY unchanged",
+        "`TRUNCATE` fires DELETE triggers for each affected row, while `DELETE` fires none",
+        "`DELETE` cannot be rolled back inside a transaction, but `TRUNCATE` can",
         "`TRUNCATE` accepts a `WHERE` clause to delete a filtered subset of rows"
       ],
       "answer": 0,
@@ -177,7 +177,7 @@
       "source": "sql/data-modification-and-merge-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which of the following are valid implementations of an upsert (insert-if-absent, update-if-present) as presented in the reviewer? Select all that apply.",
+      "question": "Which of the following are valid implementations of an upsert (insert-if-absent, update-if-present)? Select all that apply.",
       "options": [
         "A `MERGE` with `WHEN MATCHED THEN UPDATE` and `WHEN NOT MATCHED THEN INSERT`",
         "An `UPDATE` first, then `INSERT` only when `@@ROWCOUNT = 0`",
@@ -186,7 +186,7 @@
         "A `SELECT ... INTO` that recreates the table on each call"
       ],
       "answer": [0, 1, 2],
-      "explanation": "The three implementations covered are MERGE upsert, UPDATE-then-conditional-INSERT, and INSERT WHERE NOT EXISTS. TRUNCATE+INSERT empties the whole table rather than upserting a key, and SELECT INTO creates a new table (and fails if it already exists)."
+      "explanation": "The three standard implementations are a MERGE upsert, an UPDATE-then-conditional-INSERT, and INSERT WHERE NOT EXISTS. TRUNCATE+INSERT empties the whole table rather than upserting a key, and SELECT INTO creates a new table (and fails if it already exists)."
     },
     {
       "subtopic": "Upsert race condition",
@@ -225,7 +225,7 @@
       "type": "truefalse",
       "question": "In SQL Server, an outer `INSERT ... SELECT` can consume the `OUTPUT` of an inner DML statement (e.g. an inner `UPDATE`), but only an outer `INSERT` may wrap another DML statement's OUTPUT this way.",
       "answer": true,
-      "explanation": "Composable DML lets an outer INSERT feed from an inner DML's OUTPUT (e.g. capturing an UPDATE's changes and filtering them before logging). The reviewer notes only INSERT may serve as the outer statement in this construction."
+      "explanation": "Composable DML lets an outer INSERT feed from an inner DML's OUTPUT (e.g. capturing an UPDATE's changes and filtering them before logging). Only INSERT may serve as the outer statement in this construction."
     },
     {
       "subtopic": "TRUNCATE rollback and identity",

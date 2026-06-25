@@ -39,8 +39,8 @@
       "type": "mcq",
       "question": "The word **topic** means different things across brokers. Which statement is correct?",
       "options": [
-        "In RabbitMQ a topic exchange is a routing strategy (wildcard match on a routing key) and is still queue-based, not inherent pub/sub",
-        "In Kafka a topic alone provides fan-out, so no consumer groups are needed",
+        "In RabbitMQ a topic exchange is a wildcard-routing strategy and is still queue-based, not inherent pub/sub",
+        "In Kafka a topic alone provides fan-out, so no consumer groups are needed at all",
         "In Service Bus a topic is just a named log that consumers position into via offsets",
         "In RabbitMQ a topic is the pub/sub primitive where one topic maps to many subscriptions"
       ],
@@ -141,7 +141,7 @@
       "type": "mcq",
       "question": "On Azure Service Bus, why is **Peek-Lock** the at-least-once mode while **Receive-and-Delete** is at-most-once?",
       "options": [
-        "Peek-Lock locks the message until you Complete; a crash before Complete lets the lock expire and the message is redelivered, whereas Receive-and-Delete removes on receive so a crash loses it",
+        "Peek-Lock redelivers if a crash occurs before Complete; Receive-and-Delete removes on receive, so a crash loses it",
         "Peek-Lock writes the message to three replicas before delivery; Receive-and-Delete writes to only one",
         "Peek-Lock deduplicates on MessageId automatically; Receive-and-Delete disables duplicate detection",
         "Peek-Lock commits offsets after processing; Receive-and-Delete commits offsets before processing"
@@ -156,7 +156,7 @@
       "type": "mcq",
       "question": "You need strict FIFO ordering per customer on Azure Service Bus while still processing thousands of customers concurrently. Which feature achieves this?",
       "options": [
-        "Sessions: all messages sharing a SessionId go in order to one consumer, while different sessions process in parallel",
+        "Sessions: messages sharing a SessionId go in order to one consumer, while different sessions run in parallel",
         "Duplicate detection: the broker drops repeated MessageIds within a window, enforcing order",
         "Receive-and-Delete mode: removing on receive guarantees ordered processing",
         "A single fanout exchange that copies messages to every subscription in order"
@@ -210,9 +210,9 @@
       "type": "mcq",
       "question": "Why can Kafka replay already-consumed history while RabbitMQ and Service Bus cannot?",
       "options": [
-        "Kafka retains records for a time/size window regardless of consumption and consumers track offsets, so a group can seek backward; the queues delete a message once acked/completed",
+        "Kafka retains records regardless of consumption and consumers track offsets, so a group can seek backward",
         "Kafka writes every message to a backup DLQ that the others lack, enabling re-reads",
-        "Kafka consumers acknowledge messages so the broker keeps a per-consumer copy until all groups ack",
+        "Kafka keeps a per-consumer copy until all consumer groups have acked the record",
         "RabbitMQ and Service Bus retain messages forever but lack a seek API to reach them"
       ],
       "answer": 0,
@@ -225,10 +225,10 @@
       "type": "mcq",
       "question": "A teammate says their pipeline is 'exactly-once' because they enabled Kafka idempotent producers and transactions — but it also writes rows to SQL Server. Is the end-to-end claim valid, and why?",
       "options": [
-        "No — Kafka EOS is exactly-once only within Kafka; the external SQL write is outside the Kafka transaction, so end-to-end it is at-least-once and the SQL write must be made idempotent",
+        "No — Kafka EOS is exactly-once only within Kafka; the external SQL write must itself be made idempotent",
         "Yes — idempotent producers extend exactly-once to any sink the producer writes to, including SQL Server",
         "Yes — `isolation.level=read_committed` on the consumer guarantees the SQL write commits exactly once",
-        "No — but the fix is to disable idempotent producers, which restores exactly-once across the database boundary"
+        "No — but the fix is to disable idempotent producers, restoring exactly-once across the database boundary"
       ],
       "answer": 0,
       "explanation": "Kafka EOS (idempotence + transactions + read_committed) is exactly-once within Kafka only. An external SQL write is outside that transaction, so end-to-end you have at-least-once and must make the SQL write idempotent (e.g. dedup/upsert by message id). Disabling idempotence would make things worse, not better."

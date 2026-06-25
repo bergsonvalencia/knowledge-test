@@ -25,9 +25,9 @@
       "question": "Which statement correctly describes how each service handles an event once it is consumed?",
       "options": [
         "Service Bus consumes-and-removes; Event Hubs reads-by-offset without removal; Event Grid pushes-and-forgets",
-        "All three delete the event immediately after the first successful delivery",
+        "All three delete the event immediately after the first successful delivery to any consumer",
         "Event Hubs consumes-and-removes; Service Bus reads-by-offset without removal; Event Grid stores events indefinitely",
-        "Event Grid consumes-and-removes; Event Hubs pushes-and-forgets; Service Bus reads-by-offset"
+        "Event Grid consumes-and-removes; Event Hubs pushes-and-forgets; Service Bus reads-by-offset without removal"
       ],
       "answer": 0,
       "explanation": "Service Bus is a broker (consume-and-remove), Event Hubs is a log where every consumer group has its own cursor and nothing is removed on read, and Event Grid pushes over HTTP and retries but stores nothing replayable long-term."
@@ -39,10 +39,10 @@
       "type": "mcq",
       "question": "A team wants to react to Blob Storage `BlobCreated` events in Event Grid. What kind of topic carries these, and what can the team do with it?",
       "options": [
-        "A system topic — Azure publishes to it and you can only subscribe; you do not get keys to publish",
-        "A custom topic — you get an endpoint and access key and publish the `BlobCreated` events yourself",
-        "A partner topic — a third-party SaaS publisher must forward the events",
-        "An event domain — you must create one topic per blob container before subscribing"
+        "A system topic — Azure publishes to it and you can only subscribe, with no keys to publish",
+        "A custom topic — you publish the `BlobCreated` events yourself using an endpoint and key",
+        "A partner topic — a third-party SaaS publisher must forward the events to you",
+        "An event domain — you create one topic per blob container before subscribing"
       ],
       "answer": 0,
       "explanation": "`BlobCreated` is emitted by an Azure service, so it flows through a system topic. Only Azure publishes to system topics; you just subscribe. Custom topics are for your own app's events, and partner topics are for third-party SaaS publishers."
@@ -79,9 +79,9 @@
       "question": "An Event Grid subscription's handler returns HTTP `400 Bad Request`. What does Event Grid do?",
       "options": [
         "Skips retries and schedules the event straight for dead-lettering, because retrying will not help",
-        "Retries with exponential backoff for up to 24 hours before dead-lettering",
+        "Retries with exponential backoff for up to 24 hours before finally dead-lettering it",
         "Retries immediately up to 30 times with no backoff, then drops the event silently",
-        "Returns the event to the publisher so it can be re-sent"
+        "Returns the event to the original publisher so that it can be re-sent later"
       ],
       "answer": 0,
       "explanation": "A 400 (Bad Request) or 413 (Payload Too Large) is treated as a hard, non-retryable failure and goes straight to dead-lettering. Exponential backoff up to ~24h/30 attempts applies only to retryable failures."
@@ -94,9 +94,9 @@
       "question": "An Event Hub has 4 partitions. A team deploys 8 processor instances in one consumer group expecting 8x throughput. What actually happens?",
       "options": [
         "Only 4 instances actively read (one owner per partition); the other 4 sit idle as standbys",
-        "All 8 instances read in parallel and throughput roughly doubles",
-        "The hub automatically splits each partition so all 8 instances get work",
-        "The processor throws because instances cannot exceed partition count"
+        "All 8 instances read in parallel and the overall throughput roughly doubles",
+        "The hub automatically splits each partition so that all 8 instances get work",
+        "The processor throws an error because instances cannot exceed the partition count"
       ],
       "answer": 0,
       "explanation": "The number of partitions is the maximum number of concurrent active readers per consumer group, so only 4 instances own a partition each; the rest are idle standbys for failover. To scale parallelism you increase partitions, not instances."
@@ -108,10 +108,10 @@
       "type": "mcq",
       "question": "Whose responsibility is checkpointing in Event Hubs, and what does it accomplish?",
       "options": [
-        "The consumer's — it persists the last-processed offset per partition (typically to Blob Storage) so a new processor can resume after failover",
-        "The Event Hubs service's — it automatically tracks each consumer group's offsets internally",
-        "The producer's — it records which partition each event was written to",
-        "The namespace's — it deletes events that have been read by every consumer group"
+        "The consumer's — it persists the last-processed offset per partition so a new processor can resume after failover",
+        "The Event Hubs service's — it automatically tracks each consumer group's offsets for you internally",
+        "The producer's — it records which partition each event was written to when it was sent",
+        "The namespace's — it deletes events that have already been read by every consumer group"
       ],
       "answer": 0,
       "explanation": "Event Hubs gives you offsets but does not track them; persisting 'processed up to offset N in partition P' to a durable store like Blob Storage is the consumer's job, and on restart/failover a new processor resumes from the last checkpoint."
@@ -123,10 +123,10 @@
       "type": "mcq",
       "question": "How do you get ordered processing of a single device's telemetry in Event Hubs?",
       "options": [
-        "Send all of that device's events with the same partition key so they land on one partition, where ordering is guaranteed",
-        "Enable global FIFO mode on the event hub so all events stay ordered across partitions",
-        "Use a session ID on each event the way Service Bus does",
-        "Increase the partition count so each device gets its own ordered partition automatically"
+        "Send all of that device's events with the same partition key so they land on one ordered partition",
+        "Enable a global FIFO mode on the event hub so events stay ordered across all partitions",
+        "Attach a session ID to each event the same way that Service Bus sessions work",
+        "Increase the partition count so that each device automatically gets its own partition"
       ],
       "answer": 0,
       "explanation": "Ordering in Event Hubs holds only within a partition. A partition key routes a logical stream (e.g. one device) to one partition, preserving per-key order; there is no global FIFO and no session concept in Event Hubs."
@@ -153,10 +153,10 @@
       "type": "mcq",
       "question": "What does Event Hubs Capture do, and how does it affect live streaming consumers?",
       "options": [
-        "Automatically writes the incoming stream as Avro to Blob/Data Lake on a time-or-size window, without affecting streaming consumers' throughput",
-        "Replays the stream back into the hub so late consumers can re-read it after retention expires",
-        "Deletes events from the hub once they are archived, freeing throughput units",
-        "Requires a custom consumer that competes with live readers for partition ownership"
+        "Writes the stream as Avro to Blob/Data Lake on a time-or-size window, without affecting consumer throughput",
+        "Replays the stream back into the hub so that late consumers can re-read it after retention expires",
+        "Deletes events from the hub once they have been archived, thereby freeing up throughput units",
+        "Runs a custom consumer that competes with the live readers for ownership of each partition"
       ],
       "answer": 0,
       "explanation": "Capture is a code-free hot-path/cold-path split: it lands the same events as Apache Avro in Blob or Data Lake storage on a time or size window (whichever trips first) and does not affect live consumers' throughput."
@@ -179,10 +179,10 @@
       "code": "if (e.Type == \"Microsoft.EventGrid.SubscriptionValidationEvent\")\n{\n    var data = e.Data!.ToObjectFromJson<SubscriptionValidationEventData>();\n    return Results.Ok(new { validationResponse = data.ValidationCode });\n}",
       "lang": "csharp",
       "options": [
-        "Event Grid requires the endpoint to echo the validation code to prove it expects events, preventing abuse of arbitrary endpoints",
-        "It decrypts the event payload using the validation code as a symmetric key",
-        "It registers the webhook's TLS certificate with Event Grid for future deliveries",
-        "It acknowledges each real event so Event Grid does not retry it"
+        "Event Grid requires the endpoint to echo the validation code, proving it expects events and preventing abuse",
+        "It decrypts the incoming event payload using the validation code as a symmetric encryption key",
+        "It registers the webhook's TLS certificate with Event Grid for use in all future deliveries",
+        "It acknowledges each real event so that Event Grid does not attempt to retry delivering it"
       ],
       "answer": 0,
       "explanation": "Before delivering to a new non-Azure webhook, Event Grid sends a SubscriptionValidationEvent; the endpoint must echo the validationCode (or do the validation-URL GET) to prove it expects events. This prevents Event Grid from being used to flood arbitrary endpoints."
@@ -214,10 +214,10 @@
       "type": "mcq",
       "question": "An Event Grid webhook subscriber was down for an hour. After it recovers, events still trickle in slowly for a while even though the endpoint is now healthy. What is the most likely cause?",
       "options": [
-        "Adaptive delayed delivery — Event Grid backs off and delays all deliveries to a recently-failing endpoint to protect it",
-        "The 5-minute dead-letter batching delay is replaying blobs back into the subscription",
-        "The publisher is rate-limited because the subscriber's earlier 5xx responses throttled the topic",
-        "CloudEvents binary content mode buffers events until enough accumulate to fill a batch"
+        "Adaptive delayed delivery — Event Grid backs off and delays all deliveries to a recently-failing endpoint",
+        "The 5-minute dead-letter batching delay is replaying the stored blobs back into the subscription",
+        "The publisher is being rate-limited because the subscriber's earlier 5xx responses throttled the topic",
+        "CloudEvents binary content mode buffers the events until enough of them accumulate to fill a batch"
       ],
       "answer": 0,
       "explanation": "Event Grid applies adaptive delayed delivery (output flow control): when an endpoint has been failing it backs off and delays all deliveries to it (up to hours) to protect the recovering endpoint. The dead-letter delay writes to blob, it does not replay into the subscription."
@@ -230,9 +230,9 @@
       "question": "A single event in an Event Hubs partition cannot be processed (poison message). What is the correct way to handle it so the partition keeps flowing?",
       "options": [
         "Catch it, log/side-line it, and checkpoint past it in the consumer, because Event Hubs has no DLQ",
-        "Let it dead-letter to the hub's built-in DLQ sub-queue and continue",
-        "Abandon it so Event Hubs redelivers it to a different consumer group",
-        "Rely on Event Hubs to move it to a Blob dead-letter container after retries exhaust"
+        "Let it dead-letter to the hub's built-in DLQ sub-queue and then simply continue reading",
+        "Abandon it so that Event Hubs redelivers the event to a different consumer group instead",
+        "Rely on Event Hubs to move it to a Blob dead-letter container after the retries are exhausted"
       ],
       "answer": 0,
       "explanation": "Event Hubs is a log with no DLQ concept — nothing is 'rejected'. Poison handling is the consumer's job: catch, log, side-line the bad event, and checkpoint past it so it doesn't block the partition. The Blob dead-letter behavior belongs to Event Grid, and the native DLQ sub-queue belongs to Service Bus."
@@ -264,10 +264,10 @@
       "type": "mcq",
       "question": "A `BlobCreated` event must trigger a financial charge that runs reliably, exactly-once-ish, with retry and a dead-letter path. Which composition best satisfies this?",
       "options": [
-        "Event Grid system topic → Azure Function that emits a command → Service Bus queue → worker under PeekLock with idempotency and native DLQ",
-        "Event Grid custom topic → Event Hubs → Stream Analytics → Blob Storage, relying on Capture for the dead-letter path",
+        "Event Grid system topic → Function emits a command → Service Bus queue → worker under PeekLock with a DLQ",
+        "Event Grid custom topic → Event Hubs → Stream Analytics → Blob Storage, relying on Capture for dead-lettering",
         "Event Hubs → Function → Event Grid, using the partition key to guarantee the charge runs exactly once",
-        "Service Bus topic → Event Grid → webhook, using adaptive delayed delivery to retry the charge"
+        "Service Bus topic → Event Grid → webhook, using adaptive delayed delivery to retry the failed charge"
       ],
       "answer": 0,
       "explanation": "Event Grid reacts to the discrete `BlobCreated` event, a Function validates and emits a command, and Service Bus provides the reliable single-handler processing with PeekLock, idempotency, and a native DLQ for poison messages. Event Hubs and Event Grid lack the broker semantics needed for a reliable command."

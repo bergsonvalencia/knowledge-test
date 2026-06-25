@@ -84,9 +84,9 @@
       "type": "mcq",
       "question": "With a fixed-window limiter of 100 req/min, why can a client effectively push roughly 200 requests through in about one second?",
       "options": [
-        "It can send its full 100-request quota just before the window boundary and another full 100 just after, because the counter resets at the boundary",
-        "The counter is shared across windows, so two windows' quotas always overlap",
-        "Fixed-window limiters double the limit during traffic spikes by design",
+        "It sends its full 100-request quota just before the window boundary and another full 100 just after, because the counter resets at the boundary",
+        "The counter is shared across windows, so two windows' quotas always overlap by design",
+        "Fixed-window limiters intentionally double the limit during traffic spikes",
         "The limiter counts only every other request, so the effective limit is doubled"
       ],
       "answer": 0,
@@ -99,8 +99,8 @@
       "type": "mcq",
       "question": "A keyset paginator orders only by `created_at`, a non-unique column. What goes wrong and what is the fix?",
       "options": [
-        "Rows sharing the same `created_at` straddle the page boundary and get skipped or repeated; add a unique tie-breaker (e.g. the primary key) so the order is total",
-        "The query becomes O(offset) again; switch to offset pagination for those pages",
+        "Rows sharing a `created_at` straddle the page boundary and get skipped or repeated; add a unique tie-breaker (e.g. the primary key) for a total order",
+        "The query becomes O(offset) again; switch back to offset pagination for those pages",
         "The cursor token grows unbounded; compress it with base64 to bound its size",
         "The index is ignored, forcing a full scan; add `WITH (FORCESEEK)` to the query"
       ],
@@ -115,7 +115,7 @@
       "question": "Why must the idempotency key be inserted with a unique constraint in the **same transaction** as the write it guards?",
       "options": [
         "So two concurrent retries cannot both pass a separate \"does the key exist?\" check and both execute the write — the DB enforces exactly-once via the unique constraint",
-        "So the key can be reused across different endpoints without collision",
+        "So the same key can be reused across different endpoints without ever colliding",
         "So the stored response can be returned faster on replay by skipping a join",
         "So the key automatically expires when the transaction's TTL elapses"
       ],
@@ -145,9 +145,9 @@
       "question": "A token-bucket limiter implemented with a per-instance in-memory counter runs behind a load balancer across 4 nodes. What is the consequence and the standard fix?",
       "options": [
         "Each node sees only its share of traffic so the global limit is under-counted (allowing up to ~4× the intended rate); use a shared store such as Redis with an atomic script",
-        "Each node double-counts requests, rejecting legitimate traffic; disable replenishment to compensate",
-        "The limiter becomes exact only if every node uses the same seed; synchronize seeds at startup",
-        "The load balancer must be switched to round-robin so each node sees an identical count"
+        "Each node double-counts requests, rejecting legitimate traffic; disable replenishment to compensate for it",
+        "The limiter stays exact only if every node uses the same seed; synchronize the seeds at startup",
+        "The load balancer must be switched to round-robin so that each node sees an identical count"
       ],
       "answer": 0,
       "explanation": "A per-node in-memory counter only sees the fraction of traffic routed to that node, so the effective global limit is multiplied by the node count (under-counting). The fix is a shared store like Redis with an atomic `INCR`/Lua script so the limit is global, trading a small latency cost."
@@ -207,7 +207,7 @@
       "question": "A client's bucket is full (100 tokens) and it instantly fires 130 requests. With this ASP.NET Core configuration, what happens?",
       "options": [
         "100 requests are admitted immediately and the remaining 30 are rejected with `429` (no queuing), and the bucket refills 100 tokens after one minute",
-        "All 130 are admitted because `AutoReplenishment` tops the bucket up on demand",
+        "All 130 are admitted because `AutoReplenishment` tops the bucket up on demand for each request",
         "100 are admitted, 30 are queued and served as tokens replenish over the next minute",
         "The first request is admitted and the other 129 are queued until the next replenishment period"
       ],
@@ -251,7 +251,7 @@
       "type": "truefalse",
       "question": "Idempotency, deduplication, and locking are three distinct concerns: idempotency makes a *repeat* safe, deduplication drops duplicate *events*, and locking serializes *concurrent* access.",
       "answer": true,
-      "explanation": "The reviewer explicitly distinguishes the three: idempotency makes a repeat safe, deduplication drops duplicate events, and locking serializes concurrent access. They solve different problems and are not interchangeable."
+      "explanation": "The three are distinct: idempotency makes a repeat safe, deduplication drops duplicate events, and locking serializes concurrent access. They solve different problems and are not interchangeable."
     },
     {
       "subtopic": "no-cache semantics",
