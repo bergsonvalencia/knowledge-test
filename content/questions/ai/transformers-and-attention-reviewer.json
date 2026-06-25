@@ -139,9 +139,9 @@
       "question": "How is causal masking implemented in a decoder's self-attention?",
       "options": [
         "Add −∞ to the future (disallowed) entries of the score matrix before softmax, so those weights become exactly 0",
-        "Multiply the value vectors of future tokens by 0 after softmax",
+        "Multiply the value vectors of future tokens by 0 after the softmax has been applied",
         "Drop future tokens from the input sequence entirely before the layer runs",
-        "Set the future entries of the score matrix to 0 before softmax"
+        "Set the future entries of the score matrix to 0 before applying the softmax"
       ],
       "answer": 0,
       "explanation": "Adding −∞ before softmax forces e^(−∞)=0, so future weights become exactly 0; this is the lower-triangular mask. Setting scores to 0 before softmax would instead give those positions weight e^0=1 (nonzero), which is wrong, and zeroing values after softmax still lets the normalization mass leak."
@@ -192,7 +192,7 @@
         "[0.731, 0.269]"
       ],
       "answer": 0,
-      "explanation": "q·k1 = 2, q·k2 = 0; scaled by 1/1.414 gives 1.414 and 0. Softmax: e^1.414 ≈ 4.113, e^0 = 1, sum 5.113, so weights ≈ [0.804, 0.196]. [0.5, 0.5] would require equal scores."
+      "explanation": "q·k1 = 2, q·k2 = 0; scaled by 1/1.414 gives 1.414 and 0. Softmax: e^1.414 ≈ 4.113, e^0 = 1, sum 5.113, so weights ≈ [0.804, 0.196]. [0.5, 0.5] would require equal scores; [0.881, 0.119] omits the √d_k scaling."
     },
     {
       "subtopic": "Transformer block structure",
@@ -232,14 +232,14 @@
       "type": "truefalse",
       "question": "In the original sinusoidal scheme, lower dimension indices use higher-frequency sinusoids (changing quickly with position) while higher dimension indices use lower-frequency ones (changing slowly), and these encodings are added to the token embeddings.",
       "answer": true,
-      "explanation": "PE uses sin/cos of geometrically varying frequency: freq(0)=1 (fast, low dims) down to far smaller frequencies (slow, high dims), giving each position a unique fingerprint that is added to the embedding. The reviewer's trace shows dims 0,1 fast and dims 2,3 slow."
+      "explanation": "Sinusoidal PE uses sin/cos of geometrically varying frequency: freq(0)=1 (fast, low dims) down to far smaller frequencies (slow, high dims), giving each position a unique fingerprint that is added to the embedding. The low dims (0,1) change quickly while the high dims (2,3) change slowly."
     },
     {
       "subtopic": "Long-context mitigations",
       "source": "ai/transformers-and-attention-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which of the following are described as techniques to mitigate the O(n²) attention bottleneck for long contexts? (Select all that apply.)",
+      "question": "Which of the following are techniques to mitigate the O(n²) attention bottleneck for long contexts? (Select all that apply.)",
       "options": [
         "Sparse or local attention (each token attends to a window or a few global tokens)",
         "Memory-efficient exact attention such as FlashAttention, which avoids materializing the full n × n matrix",
@@ -248,14 +248,14 @@
         "Increasing d_model so the n² term becomes negligible"
       ],
       "answer": [0, 1, 2],
-      "explanation": "The reviewer lists sparse/local attention, linear approximations, FlashAttention, and retrieval as mitigations. Recurrent layers reintroduce O(n) sequential steps (and aren't O(1) memory), and raising d_model increases cost rather than removing the n² term."
+      "explanation": "Sparse/local attention, linear approximations, FlashAttention, and retrieval are standard mitigations. Recurrent layers reintroduce O(n) sequential steps (and aren't O(1) memory), and raising d_model increases cost rather than removing the n² term."
     },
     {
       "subtopic": "Pre-norm vs post-norm",
       "source": "ai/transformers-and-attention-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Regarding normalization placement in the transformer block, which statement matches the reviewer?",
+      "question": "Which statement about normalization placement in the transformer block is correct?",
       "options": [
         "The original paper used post-norm (normalize after the residual add); most modern large models use pre-norm because it trains more stably at depth",
         "The original paper used pre-norm; modern models switched to post-norm for better extrapolation",

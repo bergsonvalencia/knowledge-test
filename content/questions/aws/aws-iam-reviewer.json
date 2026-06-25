@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "On every request to an AWS API, IAM performs two phases in order. What are they?",
       "options": [
-        "Authentication of the principal, then authorization against all applicable policies",
-        "Authorization against policies, then authentication of the principal",
-        "Encryption of the payload, then authentication of the principal",
-        "Quota enforcement, then authorization against policies"
+        "Authentication of the principal, then authorization against applicable policies",
+        "Authorization against policies, then authentication of the calling principal",
+        "Encryption of the request payload, then authentication of the principal",
+        "Service quota enforcement, then authorization against applicable policies"
       ],
       "answer": 0,
       "explanation": "IAM first authenticates the principal (verifies who is making the signed call) and then authorizes by evaluating all applicable policies. Authorization cannot precede authentication, and encryption/quota are not the two IAM phases."
@@ -25,9 +25,9 @@
       "question": "In IAM policy evaluation, what is the result when one policy contains an explicit `Deny` and another contains an explicit `Allow` for the same action?",
       "options": [
         "Denied — an explicit Deny always overrides any Allow",
-        "Allowed — the most specific statement wins",
+        "Allowed — the more specific statement wins out",
         "Allowed — Allow takes precedence over Deny by default",
-        "Indeterminate — the account is locked until an admin resolves the conflict"
+        "Indeterminate — an admin must resolve the conflict first"
       ],
       "answer": 0,
       "explanation": "An explicit Deny anywhere in any applicable policy ends evaluation with a deny. There is no specificity ranking and Allow never overrides Deny."
@@ -39,10 +39,10 @@
       "type": "mcq",
       "question": "Which statement correctly distinguishes an identity-based policy from a resource-based policy?",
       "options": [
-        "An identity-based policy has no `Principal` element; a resource-based policy requires a `Principal`",
+        "An identity-based policy has no `Principal`; a resource-based policy requires one",
         "An identity-based policy requires a `Principal`; a resource-based policy omits it",
-        "Both require a `Principal` element to be valid",
-        "Neither may contain a `Principal` element"
+        "Both policy types require a `Principal` element to be valid",
+        "Neither policy type may ever contain a `Principal` element"
       ],
       "answer": 0,
       "explanation": "The identity an identity-based policy is attached to is the implicit principal, so the policy omits `Principal`. A resource-based policy must name the `Principal` it grants access to."
@@ -72,10 +72,10 @@
       "type": "mcq",
       "question": "A role in Account A must read an S3 bucket owned by Account B. Account A's identity policy already allows `s3:GetObject` on B's bucket, but calls are denied. What is the most likely fix?",
       "options": [
-        "Add a bucket policy in Account B that allows A's role as `Principal` to `s3:GetObject`",
-        "Remove the identity policy in A since resource policies override identity policies cross-account",
-        "Attach a permissions boundary in A that allows `s3:GetObject`",
-        "Enable an SCP in A's organization that allows `s3:GetObject`"
+        "Add a bucket policy in B allowing A's role to `s3:GetObject`",
+        "Remove A's identity policy, since resource policies override it cross-account",
+        "Attach a permissions boundary in A that allows the `s3:GetObject` action",
+        "Enable an SCP in A's organization that explicitly allows `s3:GetObject`"
       ],
       "answer": 0,
       "explanation": "Cross-account access requires BOTH sides: A's identity policy AND B's resource (bucket) policy must allow it. Boundaries and SCPs only cap; they never grant, so they cannot supply the missing resource-side Allow."
@@ -87,10 +87,10 @@
       "type": "mcq",
       "question": "An SCP attached to an account contains a statement that `Allow`s `s3:*`. A role in that account has no identity-based or resource-based policy granting any S3 action. Can the role call `s3:GetObject`?",
       "options": [
-        "No — guardrails only cap permissions; an identity- or resource-based Allow is still required",
-        "Yes — an SCP Allow grants the permission directly to all principals in the account",
-        "Yes — because the SCP allow merges with the implicit account permissions",
-        "Only if the role also has a permissions boundary that allows `s3:GetObject`"
+        "No — guardrails only cap; an identity- or resource-based Allow is still needed",
+        "Yes — an SCP Allow grants the permission directly to every principal in the account",
+        "Yes — the SCP allow merges with the account's implicit baseline permissions",
+        "Only if the role also carries a permissions boundary that allows `s3:GetObject`"
       ],
       "answer": 0,
       "explanation": "SCPs (and all guardrails) only set a ceiling; they never grant. Without an identity-based or resource-based Allow the request is an implicit deny regardless of what the SCP permits."
@@ -121,8 +121,8 @@
       "options": [
         "Temporary credentials include a session token and expire; access keys have neither",
         "Temporary credentials never include a secret access key, only a session token",
-        "Temporary credentials are region-scoped while access keys are global",
-        "Temporary credentials must be manually rotated, unlike access keys"
+        "Temporary credentials are region-scoped while access keys work globally",
+        "Temporary credentials must be rotated by hand, unlike long-lived access keys"
       ],
       "answer": 0,
       "explanation": "Temporary credentials consist of an access key id, secret access key, AND a session token, and they expire and auto-rotate. The session token plus expiry is the marker of temporary credentials; long-lived access keys have neither."
@@ -137,7 +137,7 @@
         "The task role",
         "The task execution role",
         "The instance profile of the underlying EC2 host",
-        "The service-linked role for ECS"
+        "The service-linked role for Amazon ECS"
       ],
       "answer": 0,
       "explanation": "The task role is the identity your application code uses to call AWS services. The task execution role is for the ECS agent to pull the image from ECR and ship logs to CloudWatch — a classic trap to keep distinct."
@@ -151,9 +151,9 @@
       "code": "var s3 = new AmazonS3Client();\nvar obj = await s3.GetObjectAsync(new GetObjectRequest {\n    BucketName = \"acme-reports\", Key = \"team-a/summary.csv\"\n});",
       "lang": "csharp",
       "options": [
-        "The SDK resolves temporary credentials from the instance role via the default credential provider chain",
+        "The SDK resolves temporary credentials from the instance role via the provider chain",
         "The call throws immediately because no access key id or secret was supplied",
-        "The SDK falls back to anonymous (unauthenticated) requests",
+        "The SDK silently falls back to anonymous, unauthenticated requests",
         "The SDK prompts for credentials interactively at runtime"
       ],
       "answer": 0,
@@ -167,9 +167,9 @@
       "question": "You grant a developer `iam:CreateRole` and `iam:AttachRolePolicy` so they can self-serve roles, but you must guarantee any role they create can never exceed read-only S3. Which mechanism enforces this?",
       "options": [
         "Require a permissions boundary on the roles they create, capping the effective permissions",
-        "Attach a session policy at each `AssumeRole` of the new roles",
+        "Attach a session policy at each `AssumeRole` of the new roles to limit them",
         "Add a resource-based policy on every S3 bucket allowing only the developer",
-        "Rely on an explicit Deny in the developer's own identity policy"
+        "Rely on an explicit Deny placed in the developer's own identity policy"
       ],
       "answer": 0,
       "explanation": "A permissions boundary caps the maximum permissions a created role can have regardless of the attached policies; you condition role creation on setting that boundary. A session policy only caps a single assume call, not roles the developer authors and others assume."
@@ -197,10 +197,10 @@
       "type": "mcq",
       "question": "A third-party SaaS assumes a role in many customers' accounts on behalf of those customers. Its trust policies check only the vendor's AWS account id. Why is `sts:ExternalId` needed, and what attack does it prevent?",
       "options": [
-        "It is a per-relationship secret that binds the assume to your tenancy, preventing one vendor customer from tricking the vendor into accessing another customer's role (confused deputy)",
+        "It is a per-relationship secret that prevents one customer from being impersonated by another (confused deputy)",
         "It encrypts the session token so the vendor cannot read the temporary credentials it receives",
-        "It extends the maximum session duration beyond 12 hours for trusted vendors",
-        "It replaces the need for the vendor's identity policy to allow `sts:AssumeRole`"
+        "It extends the maximum session duration well beyond 12 hours for trusted vendors",
+        "It removes the need for the vendor's own identity policy to allow `sts:AssumeRole`"
       ],
       "answer": 0,
       "explanation": "If trust checks only the vendor account, a malicious customer could trick the vendor (the deputy) into assuming a different customer's role. The `ExternalId` is a shared per-relationship secret the trust policy requires, so customers cannot impersonate one another. It does not encrypt tokens or change durations."
@@ -214,10 +214,10 @@
       "code": "\"Principal\": { \"Federated\": \"...:oidc-provider/token.actions.githubusercontent.com\" },\n\"Action\": \"sts:AssumeRoleWithWebIdentity\",\n\"Condition\": {\n  \"StringEquals\": { \"token.actions.githubusercontent.com:aud\": \"sts.amazonaws.com\" },\n  \"StringLike\": { \"token.actions.githubusercontent.com:sub\": \"repo:acme/web-app:ref:refs/heads/main\" }\n}",
       "lang": "json",
       "options": [
-        "Only workflow runs on the `main` branch of the `acme/web-app` repo, exchanging an OIDC token for temporary creds — no stored AWS key",
+        "Only workflow runs on the `main` branch of the `acme/web-app` repo — no stored AWS key",
         "Any workflow in any repo in the `acme` organization, using a stored `AWS_ACCESS_KEY_ID`",
-        "Any GitHub user who authenticates to github.com, regardless of repository",
-        "Only pull requests targeting `main`, but not pushes to `main`"
+        "Any GitHub user who authenticates to github.com, regardless of which repository",
+        "Only pull requests targeting `main`, but not direct pushes to the `main` branch"
       ],
       "answer": 0,
       "explanation": "The `sub` condition pins the trust to `repo:acme/web-app:ref:refs/heads/main`, so only main-branch runs of that one repo can assume the role via `AssumeRoleWithWebIdentity`. This is keyless CI — no long-lived AWS secret is stored."
@@ -245,13 +245,13 @@
       "type": "mcq",
       "question": "Your org wants to block all access to company S3 buckets from any principal outside the organization, across every account, without editing each bucket policy. Which Organizations guardrail is designed for this?",
       "options": [
-        "A Resource Control Policy (RCP) that denies access unless `aws:PrincipalOrgID` matches",
+        "A Resource Control Policy (RCP) keyed on `aws:PrincipalOrgID`",
         "A Service Control Policy (SCP) denying `s3:*` for all principals",
-        "A permissions boundary applied to every role in the org",
+        "A permissions boundary applied to every role across the org",
         "A session policy attached at each cross-account `AssumeRole`"
       ],
       "answer": 0,
-      "explanation": "RCPs (GA Nov 2024) cap the maximum permissions ON resources org-wide and apply to supported services like S3. An SCP caps principals (and would block legitimate in-org access too); boundaries and session policies are per-identity/per-session, not org-wide resource guardrails."
+      "explanation": "RCPs (GA Nov 2024) cap the maximum permissions ON resources org-wide and apply to supported services like S3; an RCP that denies access unless `aws:PrincipalOrgID` matches enforces this centrally. An SCP caps principals (and would block legitimate in-org access too); boundaries and session policies are per-identity/per-session, not org-wide resource guardrails."
     }
   ]
 }

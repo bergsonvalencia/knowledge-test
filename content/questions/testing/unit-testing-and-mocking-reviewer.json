@@ -30,14 +30,14 @@
         "Conditional logic prevents the framework from generating a separate case per row"
       ],
       "answer": 0,
-      "explanation": "The reviewer states branching in a test is a smell that you're testing more than one thing — it breaks the one-logical-assertion / one-reason-to-fail discipline. Runners compile such logic fine; it's a design smell, not a syntax limit."
+      "explanation": "Branching in a test is a smell that you're testing more than one thing — it breaks the one-logical-assertion / one-reason-to-fail discipline. Runners compile such logic fine; it's a design smell, not a syntax limit."
     },
     {
       "subtopic": "xUnit lifecycle",
       "source": "testing/unit-testing-and-mocking-reviewer.md",
       "difficulty": "easy",
       "type": "truefalse",
-      "question": "XUnit creates a new instance of the test class for every test method, which is why it has no `[SetUp]`/`[TearDown]` attributes and uses the constructor and `Dispose()` instead.",
+      "question": "xUnit creates a new instance of the test class for every test method, which is why it has no `[SetUp]`/`[TearDown]` attributes and uses the constructor and `Dispose()` instead.",
       "answer": true,
       "explanation": "xUnit's signature isolation guarantee is a fresh test-class instance per test method, so the constructor serves as setup and `IDisposable.Dispose()` as teardown — no `[SetUp]`/`[TearDown]` needed."
     },
@@ -70,7 +70,7 @@
       "source": "testing/unit-testing-and-mocking-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "An `OrderService.Place` method loads an order from a repository, then publishes an `OrderPlaced` event. You want to test that the event is published exactly once. Which choice best matches the guidance on stub vs mock?",
+      "question": "An `OrderService.Place` method loads an order from a repository, then publishes an `OrderPlaced` event. You want to test that the event is published exactly once. Which choice best matches stub-vs-mock guidance?",
       "options": [
         "Stub the repository (it's an input providing data) and mock the publisher (publishing is the behavior under test)",
         "Mock both the repository and the publisher, with a `Verify` on every call to each",
@@ -78,7 +78,7 @@
         "Mock the repository to assert `GetById` was called, and stub the publisher"
       ],
       "answer": 0,
-      "explanation": "The repository is an input that provides data, so a stub is right; publishing the event is the interaction that *is* the behavior under test, so a mock with `Verify(..., Times.Once)` is right. Verifying the query call (GetById) is the kind of interaction the reviewer says is almost always wrong."
+      "explanation": "The repository is an input that provides data, so a stub is right; publishing the event is the interaction that *is* the behavior under test, so a mock with `Verify(..., Times.Once)` is right. Verifying the query call (GetById) is the kind of interaction that is almost always wrong."
     },
     {
       "subtopic": "InlineData constraints",
@@ -89,7 +89,7 @@
       "options": [
         "`[InlineData]` arguments must be compile-time constants; supply the `Order` via `[MemberData]` with a static source method instead",
         "`[InlineData]` only accepts a single argument; split it into two separate `[InlineData]` attributes",
-        "`decimal` literals are not allowed in attributes; change `10m` to an `int`",
+        "`[InlineData]` cannot precede a `[Theory]`; move the attribute below the method signature",
         "`[Theory]` cannot take reference types; mark the method `[Fact]` and loop over the cases internally"
       ],
       "answer": 0,
@@ -100,7 +100,7 @@
       "source": "testing/unit-testing-and-mocking-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Why does the reviewer warn that writing a test method as `async void` is dangerous?",
+      "question": "Why is writing a test method as `async void` dangerous?",
       "options": [
         "The runner cannot await it, so unobserved exceptions and failed assertions are swallowed and the test falsely passes",
         "`async void` forces the test onto a background thread, causing it to deadlock with `MockBehavior.Strict`",
@@ -157,7 +157,7 @@
         "v8+ moved to a commercial license for business use, while v7 remains free under Apache 2.0",
         "All versions are free under the MIT license with no commercial restrictions",
         "v7 became commercial, so teams should upgrade to the free v8 release",
-        "It is dual-licensed GPL/commercial, so any use in closed-source code requires a paid license"
+        "It is dual-licensed GPL/commercial, so any closed-source use requires a paid license"
       ],
       "answer": 0,
       "explanation": "FluentAssertions v8+ moved to a commercial license for business use; v7 stays free under Apache 2.0. Many teams pin v7 or switch to Shouldly / AwesomeAssertions (a free fork)."
@@ -187,7 +187,7 @@
       "source": "testing/unit-testing-and-mocking-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "A repository test runs against the EF Core **InMemory** provider with no mocks. How should it be classified, per the reviewer?",
+      "question": "A repository test runs against the EF Core **InMemory** provider with no mocks. How should it be classified?",
       "options": [
         "An integration concern — InMemory doesn't enforce relational behavior, so it isn't a true unit test of the database",
         "A pure unit test, because the InMemory provider replaces the real database with an in-process double",
@@ -195,7 +195,7 @@
         "A unit test, since Microsoft recommends InMemory specifically for fast unit testing"
       ],
       "answer": 0,
-      "explanation": "The reviewer notes the EF Core InMemory provider does not make a repository test a unit test of the database; it doesn't enforce constraints, transactions, or raw SQL. Microsoft recommends testing against the real provider or SQLite — an integration concern."
+      "explanation": "The EF Core InMemory provider does not make a repository test a unit test of the database; it doesn't enforce constraints, transactions, or raw SQL. Microsoft recommends testing against the real provider or SQLite — an integration concern."
     },
     {
       "subtopic": "Mock only what you own",

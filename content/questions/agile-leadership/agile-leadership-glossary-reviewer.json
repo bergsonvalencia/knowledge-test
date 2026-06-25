@@ -25,9 +25,9 @@
       "question": "A story fully satisfies its acceptance criteria but is not yet deployed and has no automated tests, both of which the team's Definition of Done requires. What is the correct status of this story?",
       "options": [
         "Not Done; it is not part of the Increment until it also meets the Definition of Done",
-        "Done, because meeting acceptance criteria proves correct behavior",
+        "Done, because meeting acceptance criteria already proves correct behavior",
         "Done, because the Definition of Done only applies at release, not per story",
-        "Partially Done; it counts toward velocity at 50%"
+        "Partially Done; it counts toward velocity at fifty percent"
       ],
       "answer": 0,
       "explanation": "Acceptance criteria prove the story does the right thing, but the team-wide Definition of Done is the quality bar every item must meet to be part of the Increment. Both must pass; until the DoD is met the story is not Done."
@@ -49,9 +49,9 @@
       "question": "Which statement best reflects the 2020 Scrum Guide's view of the Daily Scrum?",
       "options": [
         "A 15-minute event for the Developers to inspect progress toward the Sprint Goal and replan; the three classic questions are no longer mandatory",
-        "A 15-minute status report from the Developers to the Scrum Master and manager",
-        "An event whose mandatory format is the three questions: what I did, what I'll do, blockers",
-        "A planning event timeboxed to one hour where the Sprint Backlog is created"
+        "A 15-minute status report from the Developers to the Scrum Master and the line manager",
+        "An event whose mandatory format is the three questions: what I did, what I'll do, and blockers",
+        "A planning event timeboxed to one hour in which the whole Sprint Backlog is created"
       ],
       "answer": 0,
       "explanation": "The Daily Scrum is a Developer-owned 15-minute planning event to inspect progress toward the Sprint Goal; the 2020 Guide dropped the three mandatory questions. It is not a status report to the Scrum Master or a manager."
@@ -91,11 +91,11 @@
       "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "On a Cumulative Flow Diagram, the 'In Test' band steadily widens over several weeks while the other bands stay thin. Per the bottleneck guidance (Theory of Constraints), what is the correct response?",
+      "question": "On a Cumulative Flow Diagram, the 'In Test' band steadily widens over several weeks while the other bands stay thin. Per Theory of Constraints, what is the correct response?",
       "options": [
-        "Attack the constraint at Test (e.g., add test capacity or swarm it), since work is arriving faster than it departs there",
+        "Attack the constraint at Test (for example, add test capacity or swarm it), since work arrives there faster than it departs",
         "Raise the WIP limit on the upstream Dev column so more work flows downstream",
-        "Increase overall throughput by starting more items in the Backlog",
+        "Increase overall throughput by starting more items from the Backlog",
         "Do nothing; a widening band is the normal sign of healthy flow"
       ],
       "answer": 0,
@@ -109,9 +109,9 @@
       "question": "In SAFe, WSJF = Cost of Delay / Job Size. Which job tends to be sequenced first, and why?",
       "options": [
         "A small job with high time-criticality, because dividing a high Cost of Delay by a small size yields a high WSJF",
-        "A large job with high business value, because larger jobs deliver more total value",
-        "Whichever job has the lowest Cost of Delay, to minimize economic risk",
-        "Whichever job has the largest job size, because it frees the most capacity"
+        "A large job with high business value, because larger jobs deliver more total value overall",
+        "Whichever job has the lowest Cost of Delay, in order to minimize economic risk",
+        "Whichever job has the largest job size, because finishing it frees the most capacity"
       ],
       "answer": 0,
       "explanation": "WSJF deliberately penalizes large jobs by dividing Cost of Delay by job size. A small, high-time-criticality job gets a high score and is sequenced first; favoring small, high-value, time-critical work is the point of WSJF."
@@ -141,12 +141,12 @@
       "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A director wants to rank three teams by their story-point velocity to allocate bonuses. What is the principled objection grounded in the reviewer?",
+      "question": "A director wants to rank three teams by their story-point velocity to allocate bonuses. What is the principled objection to this?",
       "options": [
-        "Velocity is a team-internal forecasting tool in each team's own relative points, so it is not comparable across teams, and making it a target invites Goodhart's Law gaming such as estimate inflation",
-        "Velocity is comparable across teams but should be averaged over more Sprints before ranking",
-        "Velocity measures items per unit time, so it should be converted to throughput before comparison",
-        "Velocity is fine as a bonus target as long as all teams use the same Fibonacci scale"
+        "Velocity uses each team's own relative points, so it is not comparable across teams, and making it a target invites Goodhart's Law gaming such as estimate inflation",
+        "Velocity is comparable across teams, but it should be averaged over many more Sprints before any ranking is done",
+        "Velocity measures items per unit time, so it must first be converted to throughput before any comparison",
+        "Velocity is fine as a bonus target, provided that all three teams agree to use the same Fibonacci scale"
       ],
       "answer": 0,
       "explanation": "Velocity is measured in each team's own relative points and is meant only as that team's planning aid, so cross-team comparison is meaningless. Turning it into a reward target triggers Goodhart's Law: teams inflate estimates and the number rises without more value delivered."
@@ -165,12 +165,12 @@
       "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "A developer has the capacity and domain knowledge to solve a problem but is stuck on clarity and direction. Which stance does the reviewer say best builds their self-sufficiency here?",
+      "question": "A developer has the capacity and domain knowledge to solve a problem but is stuck on clarity and direction. Which stance best builds their self-sufficiency here?",
       "options": [
         "Coaching: ask powerful questions so they reach their own answer",
         "Mentoring: tell them the route you took on a similar problem",
-        "Consulting: give them the expert answer directly",
-        "Directing (S1): give step-by-step instructions to follow"
+        "Consulting: hand them the expert answer to apply directly",
+        "Directing (S1): give step-by-step instructions for them to follow"
       ],
       "answer": 0,
       "explanation": "Coaching (asking, acting as a thinking partner) builds the most self-sufficiency and fits someone who has capacity but needs clarity. Mentoring and consulting both tell rather than ask, and the coach needs no expertise in the other's domain."
@@ -180,7 +180,7 @@
       "source": "agile-leadership/agile-leadership-glossary-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which statements about psychological safety, as presented in the reviewer, are correct? Select all that apply.",
+      "question": "Which statements about psychological safety are correct? Select all that apply.",
       "options": [
         "It was coined and researched by Amy Edmondson",
         "Google's Project Aristotle found it the top factor in effective teams",
@@ -203,9 +203,9 @@
       "question": "A team's pay was below market; after a raise that brings pay to market rate, engagement stops declining but does not actually rise. Which reading of Herzberg's two-factor theory best explains this?",
       "options": [
         "Pay is a hygiene factor on a separate scale from motivators; fixing it removes dissatisfaction but cannot by itself create satisfaction",
-        "Pay is a motivator, so the raise should have increased satisfaction; the team is simply ungrateful",
-        "Hygiene and motivators are opposite ends of one scale, so improving hygiene automatically increases motivation",
-        "Pay is a Delighter under the Kano Model, so its effect decays into a Basic over time"
+        "Pay is a motivator, so the raise should have increased satisfaction; the team is simply being ungrateful",
+        "Hygiene and motivators are opposite ends of one scale, so improving hygiene automatically raises motivation",
+        "Pay is a Delighter under the Kano Model, so its positive effect decays into a Basic over time"
       ],
       "answer": 0,
       "explanation": "Herzberg places hygiene factors (pay, conditions, policy) and motivators (achievement, recognition, growth) on separate scales. Removing a dissatisfier like low pay stops people quitting in anger but does not create satisfaction; only motivators do that. Kano's Delighter is a different model entirely."

@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "What fundamentally distinguishes unsupervised learning from supervised learning?",
       "options": [
-        "Unsupervised learning trains on inputs only, with no labels and no ground truth to score against",
-        "Unsupervised learning uses labels but withholds them during testing",
-        "Unsupervised learning always runs faster because it skips backpropagation",
-        "Unsupervised learning requires more labeled data than supervised learning"
+        "It trains on inputs only, with no labels and no ground truth to score predictions against",
+        "It uses labels during training but deliberately withholds them during testing only",
+        "It always runs faster than supervised learning because it skips the backpropagation step",
+        "It requires far more labeled training data than an equivalent supervised model would"
       ],
       "answer": 0,
       "explanation": "Unsupervised learning works on unlabeled data and discovers structure (clusters, low-dimensional representations, anomalies); there is no ground-truth column, so results are judged by internal measures and downstream usefulness, not accuracy. The other options describe labeled or unrelated properties."
@@ -24,10 +24,10 @@
       "type": "mcq",
       "question": "What quantity does k-means minimize?",
       "options": [
-        "The within-cluster sum of squares (WCSS / inertia), the total squared distance from each point to its cluster centroid",
-        "The number of clusters k, choosing the smallest k that fits",
-        "The pairwise distance between every pair of centroids",
-        "The silhouette score averaged over all points"
+        "The within-cluster sum of squares (inertia): total squared distance from each point to its centroid",
+        "The number of clusters k, by automatically choosing the smallest k that still fits the data",
+        "The pairwise distance between every pair of centroids, pushing the centroids as far apart as possible",
+        "The silhouette score averaged over all points, maximizing separation between the clusters"
       ],
       "answer": 0,
       "explanation": "k-means minimizes WCSS (inertia), the summed squared Euclidean distance of points to their assigned centroid. k is an input, not something k-means optimizes, and silhouette is a separate diagnostic used to choose k."
@@ -48,10 +48,10 @@
       "type": "mcq",
       "question": "What are the two parameters of DBSCAN?",
       "options": [
-        "eps (the neighborhood radius) and minPts (the minimum neighbors within eps for a point to be a core point)",
-        "k (number of clusters) and the linkage rule",
-        "perplexity and the learning rate",
-        "The number of components m and the explained-variance threshold"
+        "eps, the neighborhood radius, and minPts, the minimum neighbors within eps to make a core point",
+        "k, the number of clusters to find, and the linkage rule used to merge the closest clusters",
+        "perplexity, the effective neighbor count, and the learning rate used during the optimization",
+        "The number of components m to keep and the explained-variance threshold used to choose them"
       ],
       "answer": 0,
       "explanation": "DBSCAN is parameterized by eps (the radius defining a neighborhood) and minPts (how many points must lie within eps to make a core point). k and linkage belong to k-means/hierarchical; perplexity and m belong to t-SNE/PCA."
@@ -64,9 +64,9 @@
       "question": "In PCA, the principal components are best described as:",
       "options": [
         "The eigenvectors of the covariance matrix, i.e. the orthogonal directions of maximum variance",
-        "The k centroids found by clustering the features",
-        "The features with the smallest variance, removed to denoise the data",
-        "A random rotation chosen to decorrelate the labels"
+        "The k centroids found by clustering the original features into groups of similar columns",
+        "The features with the smallest variance, which are removed in order to denoise the data",
+        "A random rotation of the axes chosen to decorrelate the data from the target labels"
       ],
       "answer": 0,
       "explanation": "PCA takes the eigenvectors of the covariance matrix of centered data, ordered by eigenvalue; PC1 is the direction of greatest spread, PC2 the next-largest orthogonal direction, and so on. Each eigenvalue equals the variance captured along its component."
@@ -79,9 +79,9 @@
       "question": "Lloyd's algorithm for k-means is guaranteed to:",
       "options": [
         "Converge, but only to a local minimum of WCSS, which depends on the initial centroids",
-        "Converge to the global minimum of WCSS regardless of initialization",
-        "Run forever unless a maximum-iteration cap is set, because WCSS can oscillate",
-        "Find the optimal number of clusters k automatically"
+        "Converge to the global minimum of WCSS, regardless of how the centroids were initialized",
+        "Run forever unless a maximum-iteration cap is set, because the WCSS value keeps oscillating",
+        "Find the optimal number of clusters k automatically as part of the same iterative procedure"
       ],
       "answer": 0,
       "explanation": "Each assign/update step never increases WCSS, so the algorithm always converges, but only to a local minimum that depends on the seeds. It does not guarantee the global optimum (hence k-means++ and restarts) and cannot choose k."
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "How does k-means++ initialization choose centroid seeds?",
       "options": [
-        "The first seed is random, then each subsequent seed is chosen with probability proportional to its squared distance from the nearest existing centroid, spreading seeds apart",
-        "It places all k seeds at the global mean and lets them drift apart over iterations",
-        "It runs PCA first and puts one seed on each principal axis",
-        "It picks the k points with the highest density in the dataset"
+        "The first seed is random; each later seed is picked with probability proportional to its squared distance from the nearest existing centroid",
+        "It places all k seeds together at the global mean of the data and lets them drift apart over the first few iterations",
+        "It runs PCA on the data first and then puts exactly one seed on each of the top principal axes",
+        "It simply picks the k individual points that sit in the highest-density regions of the dataset"
       ],
       "answer": 0,
       "explanation": "k-means++ seeds the first centroid at random, then biases later seeds toward points far (squared distance) from existing seeds, spreading them out. This avoids the poor local minima of pure random init and converges faster."
@@ -108,10 +108,10 @@
       "type": "mcq",
       "question": "For a point with mean intra-cluster distance `a` and mean distance to the nearest other cluster `b`, the silhouette is `(b − a) / max(a, b)`. A silhouette value near **−1** indicates:",
       "options": [
-        "The point is likely in the wrong cluster (it is closer to a neighboring cluster than to its own)",
-        "The point is perfectly clustered, deep inside a tight cluster",
-        "The point sits exactly on a boundary between two clusters",
-        "The point is an outlier that DBSCAN would label as noise"
+        "The point is likely in the wrong cluster: it is closer to a neighboring cluster than to its own",
+        "The point is perfectly clustered, sitting deep inside a tight, well-separated cluster of its own",
+        "The point sits exactly on the boundary halfway between two equally distant neighboring clusters",
+        "The point is an outlier in a sparse region that DBSCAN would specifically label as pure noise"
       ],
       "answer": 0,
       "explanation": "Negative silhouette means a > b: the point is on average closer to a neighboring cluster than to its own, so it is probably misassigned. Near +1 means well-clustered, near 0 means on a boundary."
@@ -123,10 +123,10 @@
       "type": "mcq",
       "question": "Which statement about linkage rules in hierarchical agglomerative clustering is correct?",
       "options": [
-        "Ward's method merges the pair that increases total within-cluster variance the least, tending to give balanced, compact clusters",
-        "Single linkage measures cluster distance by the farthest pair, producing compact equal-diameter clusters",
-        "Complete linkage is most prone to the chaining effect where stragglers bridge separate clusters",
-        "Average linkage requires you to specify k in advance before any merging begins"
+        "Ward's method merges the pair that increases total within-cluster variance the least, giving balanced clusters",
+        "Single linkage measures cluster distance by the farthest pair, producing compact, equal-diameter clusters",
+        "Complete linkage is the rule most prone to the chaining effect, where stragglers bridge separate clusters",
+        "Average linkage requires you to specify the number of clusters k in advance before any merging begins"
       ],
       "answer": 0,
       "explanation": "Ward's method minimizes the increase in within-cluster variance per merge and is the common balanced default. Single linkage uses the closest pair (and is the one prone to chaining); complete linkage uses the farthest pair; and no linkage requires k up front since you cut the dendrogram afterward."
@@ -138,10 +138,10 @@
       "type": "mcq",
       "question": "Why does the curse of dimensionality break distance-based methods like clustering and k-NN?",
       "options": [
-        "As dimensions grow, data becomes exponentially sparse and the distances to the nearest and farthest neighbors become nearly equal, so 'near' and 'far' stop differing",
-        "High dimensions make every distance calculation numerically overflow",
-        "Adding dimensions always reduces variance, so PCA finds nothing to keep",
-        "More dimensions force k-means to converge to the global minimum, removing useful structure"
+        "Data becomes exponentially sparse and the nearest- and farthest-neighbor distances become nearly equal, so 'near' and 'far' stop differing",
+        "High dimensions make every pairwise distance calculation numerically overflow and return infinity",
+        "Adding dimensions always reduces total variance, so PCA finds essentially nothing left to keep",
+        "More dimensions force k-means to converge to the global minimum, which removes useful structure"
       ],
       "answer": 0,
       "explanation": "In high-d space volume explodes and data is sparse, and the gap between nearest- and farthest-neighbor distances collapses, so distance contrast is lost and distance-based reasoning erodes. The other options are not real consequences of dimensionality."
@@ -187,10 +187,10 @@
       "code": "points: 1, 2, 3, 8, 9, 10\ninit:   c1 = 1\n        c2 = 9",
       "lang": "text",
       "options": [
-        "c1 = 2, c2 = 9 (clusters {1,2,3} and {8,9,10})",
-        "c1 = 1, c2 = 9 (unchanged, already converged at init)",
-        "c1 = 3, c2 = 8 (clusters {1,2,3,8} and {9,10})",
-        "c1 = 5.5, c2 = 5.5 (both centroids collapse to the global mean)"
+        "c1 = 2, c2 = 9, from clusters {1,2,3} and {8,9,10}",
+        "c1 = 1, c2 = 9, unchanged because the init is already converged",
+        "c1 = 3, c2 = 8, from clusters {1,2,3,8} and {9,10}",
+        "c1 = 5.5, c2 = 5.5, both centroids collapsing to the global mean"
       ],
       "answer": 0,
       "explanation": "Assign each point to the nearer centroid: 1,2,3 go to c1 and 8,9,10 go to c2. New centroids are the cluster means: c1 = (1+2+3)/3 = 2 and c2 = (8+9+10)/3 = 9. A re-assignment would not change the groups, so it has converged."
@@ -219,10 +219,10 @@
       "type": "mcq",
       "question": "A teammate runs k-means with k = 2 on two clean concentric rings (an inner ring inside an outer ring) and is surprised the clusters do not match the rings. What is the root cause?",
       "options": [
-        "k-means minimizes squared distance to a centroid, carving space into convex Voronoi cells, so it slices each ring down the middle instead of recovering the non-convex ring shapes",
-        "k-means did not converge; running more iterations would eventually recover the rings",
-        "The rings have too few points, so WCSS is undefined and the result is random",
-        "k = 2 is too small; with k = 4 k-means would correctly find inner and outer rings"
+        "k-means carves space into convex Voronoi cells, so it slices each ring down the middle rather than recovering the non-convex shapes",
+        "k-means simply did not converge here; running many more iterations would eventually recover the two rings",
+        "The rings contain too few points, so WCSS is undefined and the resulting cluster assignment is random",
+        "k = 2 is too small for this data; with k = 4 instead, k-means would correctly find the inner and outer rings"
       ],
       "answer": 0,
       "explanation": "k-means produces convex (Voronoi) partitions because it minimizes squared Euclidean distance to centroids, so it cannot represent non-convex shapes like nested rings regardless of convergence or k. DBSCAN, which grows clusters by density connectivity, is the right tool."
@@ -234,10 +234,10 @@
       "type": "mcq",
       "question": "Why is k-means sensitive to outliers, and what alternative improves robustness?",
       "options": [
-        "A single far-away point drags its centroid (the mean) toward it; k-medoids uses an actual data point as the center and minimizes absolute distance, so it is more robust",
-        "Outliers are always labeled as noise, shrinking every cluster; switching to Ward linkage fixes it",
-        "k-means ignores outliers entirely, so robustness is never an issue; no change is needed",
-        "Outliers inflate the silhouette score; lowering perplexity restores robustness"
+        "A single far point drags its centroid (a mean) toward it; k-medoids uses an actual data point and minimizes absolute distance",
+        "Outliers are always relabeled as noise, which shrinks every cluster; switching to Ward linkage fixes the problem",
+        "k-means ignores outliers entirely, so robustness is simply never an issue and no change to the method is needed",
+        "Outliers inflate the silhouette score and distort the plot; lowering the perplexity setting restores robustness"
       ],
       "answer": 0,
       "explanation": "Because a centroid is a mean, one extreme point pulls it away, distorting the cluster. k-medoids uses an actual point as the center and minimizes absolute (not squared) distance, making it more robust to outliers. k-means does not flag noise (that is DBSCAN), and perplexity is a t-SNE knob."

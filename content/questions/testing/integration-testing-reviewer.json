@@ -9,10 +9,10 @@
       "type": "mcq",
       "question": "In ASP.NET Core, what distinguishes an **integration test** from a **unit test**?",
       "options": [
-        "It exercises several components through their real wiring (DI, routing, model binding, middleware, EF Core, serialization) rather than one isolated class",
-        "It only runs against a deployed production server over real HTTP",
-        "It mocks every collaborator and performs no I/O so it runs in microseconds",
-        "It tests only the controller method's logic in isolation while stubbing the pipeline"
+        "It exercises several components through their real wiring (DI, routing, model binding, middleware, EF Core) rather than one isolated class",
+        "It runs only against a deployed production server over real HTTP, never in-process",
+        "It mocks every collaborator and performs no I/O, so it runs in microseconds",
+        "It tests only the controller method's logic in isolation while stubbing the whole pipeline"
       ],
       "answer": 0,
       "explanation": "An integration test runs multiple components through their real composition; a unit test isolates one class with mocked collaborators and no I/O. Hitting a deployed server over real HTTP describes a functional/E2E test, not the typical in-process integration test."
@@ -25,7 +25,7 @@
       "question": "What does `TestServer` (the engine behind `WebApplicationFactory`) do with the network?",
       "options": [
         "It opens a real TCP socket on a random free port and the client connects over loopback",
-        "It implements `IServer` but never opens a TCP socket — requests flow through an in-memory pipeline, so there are no ports or network flakiness",
+        "It implements `IServer` but never opens a TCP socket — requests flow through an in-memory pipeline, so there are no ports",
         "It binds to port 80 and requires the test process to run elevated",
         "It proxies requests to a separately deployed Kestrel instance over HTTP"
       ],
@@ -41,7 +41,7 @@
       "options": [
         "`Program` must be `sealed`; mark it `public sealed class Program`",
         "The test project must reference `Microsoft.AspNetCore.App`; add the framework reference",
-        "The implicit `Program` class is inaccessible to the test project; add `public partial class Program { }` (or use `InternalsVisibleTo`)",
+        "The implicit `Program` class is inaccessible to the test project; add `public partial class Program { }` (or `InternalsVisibleTo`)",
         "`Program` must inherit from `WebApplicationFactory`; change its base class"
       ],
       "answer": 2,
@@ -54,13 +54,13 @@
       "type": "mcq",
       "question": "Why use `ConfigureTestServices` rather than `ConfigureServices` on the test builder to replace a production registration?",
       "options": [
-        "`ConfigureTestServices` runs after the app's own service registration, so your replacements win; `ConfigureServices` runs first and gets overwritten",
+        "`ConfigureTestServices` runs after the app's own registration, so your replacements win; `ConfigureServices` runs first and gets overwritten",
         "`ConfigureServices` is not available on `IWebHostBuilder` in test projects",
         "`ConfigureTestServices` runs before the app's registration, letting the app build on top of your stubs",
         "Only `ConfigureTestServices` can resolve scoped services, so `ConfigureServices` throws at startup"
       ],
       "answer": 0,
-      "explanation": "`ConfigureTestServices` runs after the app's `ConfigureServices`, so your replacements override the production ones. Using `ConfigureServices` on the test builder runs first and is overwritten by the app — the classic bug the reviewer flags."
+      "explanation": "`ConfigureTestServices` runs after the app's `ConfigureServices`, so your replacements override the production ones. Using `ConfigureServices` on the test builder runs first and is overwritten by the app — the classic bug to avoid."
     },
     {
       "subtopic": "Test pyramid",
@@ -69,7 +69,7 @@
       "type": "truefalse",
       "question": "Integration tests are the middle layer of the test pyramid: fewer than unit tests and not a replacement for them.",
       "answer": true,
-      "explanation": "The reviewer keeps the pyramid: many fast unit tests, fewer integration tests, fewest E2E/UI tests. Integration tests are the middle layer, not a substitute for units."
+      "explanation": "The test pyramid holds: many fast unit tests, fewer integration tests, fewest E2E/UI tests. Integration tests are the middle layer, not a substitute for units."
     },
     {
       "subtopic": "EF In-Memory provider trap",
@@ -81,9 +81,9 @@
       "lang": "csharp",
       "question_note": "",
       "options": [
-        "The In-Memory provider needs `EnsureCreated()` to build constraints, which was omitted",
-        "The In-Memory provider is not a relational database — it does not enforce unique indexes, FK constraints, or transactions, and evaluates LINQ client-side, so it accepts data and queries real SQL Server rejects",
-        "The connection was closed too early, dropping the constraint metadata",
+        "The In-Memory provider needs `EnsureCreated()` to build its constraints, which was omitted here",
+        "The In-Memory provider is not a relational database — it enforces no unique indexes, FK constraints, or transactions, and evaluates LINQ client-side",
+        "The connection was closed too early, dropping the constraint metadata before the test ran",
         "Respawn was not configured, so stale rows from a prior test caused the violation"
       ],
       "answer": 1,
@@ -97,7 +97,7 @@
       "question": "When using SQLite in-memory mode for tests, what two things must you do for the database to work across the test?",
       "options": [
         "Open a fresh connection per query and call `Migrate()` each time",
-        "Keep the connection open for the test's lifetime and call `Database.EnsureCreated()` to build the schema from the model",
+        "Keep the connection open for the test's lifetime and call `Database.EnsureCreated()` to build the schema",
         "Use `DataSource=:memory:` with pooling enabled and call `Database.Migrate()`",
         "Set `AllowAutoRedirect=false` on the client and call `EnsureDeleted()` first"
       ],
@@ -113,7 +113,7 @@
       "options": [
         "It spins up a throwaway SQL Server in Docker per test run with a dynamically mapped port",
         "It wraps each test in a rolled-back transaction so committed data never persists",
-        "It resets cross-test pollution in a shared real database by deleting data from all tables in FK-safe order (or truncating) while keeping the schema intact",
+        "It resets cross-test pollution in a shared real database by deleting data from all tables in FK-safe order while keeping the schema",
         "It mocks the DbContext so no real SQL is executed between tests"
       ],
       "answer": 2,
@@ -128,7 +128,7 @@
       "options": [
         "Perform a real OAuth/OIDC login once in a fixture and reuse the bearer token across the suite",
         "Disable the `[Authorize]` filters in the Testing environment so every endpoint is reachable",
-        "Register a custom test `AuthenticationHandler` as the default scheme that authenticates a configurable principal, keeping authorization-policy evaluation real",
+        "Register a custom test `AuthenticationHandler` as the default scheme that authenticates a configurable principal, keeping policy evaluation real",
         "Inject a pre-built `ClaimsPrincipal` directly into each controller via constructor injection"
       ],
       "answer": 2,
@@ -152,7 +152,7 @@
         1,
         2
       ],
-      "explanation": "Driving the real pipeline exercises routing, automatic 400s, content negotiation, ProblemDetails shape, serializer casing, and response headers like `Location`. Private-helper internals are a unit-test concern, and the reviewer never advocates asserting raw SQL text character-for-character."
+      "explanation": "Driving the real pipeline exercises routing, automatic 400s, content negotiation, ProblemDetails shape, serializer casing, and response headers like `Location`. Private-helper internals are a unit-test concern, and asserting raw SQL text character-for-character is brittle and not the goal of an integration test."
     },
     {
       "subtopic": "Replacing DbContext registration",
@@ -161,8 +161,8 @@
       "type": "mcq",
       "question": "Why is `services.RemoveAll<DbContextOptions<AppDbContext>>()` preferred over locating and removing a single descriptor before re-adding the test DbContext?",
       "options": [
-        "`RemoveAll` also disposes any already-built provider, preventing leaks",
-        "EF registers several related services, so removing all descriptors for that type is cleaner and safer than hunting one",
+        "`RemoveAll` also disposes any already-built provider, preventing memory leaks",
+        "EF registers several related services, so removing all descriptors for that type is cleaner than hunting one",
         "`RemoveAll` is the only method that works inside `ConfigureTestServices`",
         "A single `Remove` throws if the descriptor is registered as a singleton"
       ],
@@ -176,7 +176,7 @@
       "type": "truefalse",
       "question": "`factory.WithWebHostBuilder(...)` returns a new factory that shares the host setup but layers extra overrides, making it suitable for per-test customization without a separate fixture.",
       "answer": true,
-      "explanation": "`WithWebHostBuilder` returns a new factory sharing the base host configuration while layering additional `ConfigureTestServices` overrides — exactly the reviewer's recommended way to vary setup per test."
+      "explanation": "`WithWebHostBuilder` returns a new factory sharing the base host configuration while layering additional `ConfigureTestServices` overrides — the recommended way to vary setup per test."
     },
     {
       "subtopic": "Fixture sharing scope",

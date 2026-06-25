@@ -11,7 +11,7 @@
       "options": [
         "RAG injects knowledge, not behavior or skill — better context cannot teach the model a different style or output format",
         "RAG cannot be used unless the model is first fine-tuned on the target documents",
-        "RAG only works for numeric data, not free-form prose",
+        "RAG works only for numeric data, never for free-form prose answers",
         "RAG permanently overwrites the model's weights, which would corrupt its formatting"
       ],
       "answer": 0,
@@ -25,9 +25,9 @@
       "question": "Why is cosine similarity the usual default for comparing text embeddings rather than Euclidean distance?",
       "options": [
         "It measures the angle (direction) between vectors and ignores magnitude, so a short query can still match a long passage on meaning",
-        "It is the only measure that returns values bounded between 0 and 1 in all cases",
-        "It is the only similarity measure that ANN indexes can compute",
-        "It always ranks neighbors differently from Euclidean distance, giving more accurate results"
+        "It is the only similarity measure whose output is guaranteed to fall between 0 and 1 in every possible case",
+        "It is the only similarity measure that approximate-nearest-neighbor indexes are able to compute",
+        "It always ranks neighbors differently from Euclidean distance, which makes its results strictly more accurate"
       ],
       "answer": 0,
       "explanation": "Cosine scores direction and ignores vector length, letting a short query match a long document on meaning. On normalized vectors it ranks neighbors identically to Euclidean, so the second and fourth options are wrong; its general range is -1 to 1."
@@ -40,9 +40,9 @@
       "question": "Which sequence correctly describes the offline indexing phase of a RAG pipeline?",
       "options": [
         "Ingest documents, chunk them, embed each chunk, store vectors plus text and metadata in the index",
-        "Embed the query, retrieve top-k chunks, build the prompt, generate the answer",
-        "Fine-tune the LLM, then embed the query, then store the answer",
-        "Rerank candidates, fuse keyword and vector scores, then ingest documents"
+        "Embed the query, retrieve the top-k chunks, build the prompt, then generate the answer",
+        "Fine-tune the LLM, then embed the query, then store the generated answer",
+        "Rerank candidates, fuse keyword and vector scores, then ingest the documents"
       ],
       "answer": 0,
       "explanation": "Offline indexing is ingest, chunk, embed, index, done ahead of time and amortized over queries. The second option is the online query phase; the others mix unrelated steps."
@@ -64,9 +64,9 @@
       "question": "Your RAG system's `recall@k` is low for a class of queries. Why is improving the generator (better prompt, stronger LLM) unlikely to help these queries?",
       "options": [
         "If the relevant chunk never appears in the top-k, the generator has no correct source to ground its answer in",
-        "A stronger LLM automatically re-runs retrieval until recall improves",
-        "Low recall@k only affects latency, not answer correctness",
-        "The generator can reconstruct missing chunks from its training data when recall is low"
+        "A stronger LLM automatically re-runs retrieval until the recall improves",
+        "Low recall@k affects only query latency, never the correctness of the answer",
+        "The generator can reconstruct the missing chunks from its training data instead"
       ],
       "answer": 0,
       "explanation": "Recall@k caps the whole system: if the relevant chunk is not retrieved, no generator can ground on it. The generator does not re-run retrieval or reconstruct missing source text, so improving it cannot fix a retrieval miss."
@@ -81,9 +81,9 @@
       "lang": "python",
       "options": [
         "Correct: on unit-norm vectors dot product equals cosine similarity, so they get cosine's ranking using the cheaper operation",
-        "Incorrect: dot product on normalized vectors ranks neighbors differently from cosine, so results will be wrong",
-        "Correct: dot product on normalized vectors becomes Euclidean distance, which is more accurate than cosine",
-        "Incorrect: normalizing destroys the meaning encoded in the vectors, so similarity is meaningless"
+        "Incorrect: dot product on normalized vectors ranks neighbors differently from cosine, so the results will be wrong",
+        "Correct: dot product on normalized vectors becomes Euclidean distance, which is strictly more accurate than cosine",
+        "Incorrect: normalizing the vectors destroys the meaning they encode, so the similarity score is meaningless"
       ],
       "answer": 0,
       "explanation": "When ‖A‖ = ‖B‖ = 1, A·B equals cosine similarity, so normalizing once and using the cheaper dot product gives identical rankings. Normalization removes only magnitude, not direction, so meaning is preserved."
@@ -113,9 +113,9 @@
       "question": "Brute-force exact nearest-neighbor search over a vector store is O(N·d) per query. What does an approximate nearest-neighbor (ANN) index fundamentally trade to become fast enough at scale?",
       "options": [
         "It gives up some recall (it may miss part of the true top-k) in exchange for much lower query latency",
-        "It gives up the ability to store metadata in exchange for speed",
-        "It gives up precision in the embedding model in exchange for a smaller index",
-        "It gives up nothing — ANN is both faster and exact"
+        "It gives up the ability to store any metadata alongside vectors in exchange for speed",
+        "It gives up precision in the embedding model itself in exchange for a smaller index",
+        "It gives up nothing at all — an ANN index is both faster and fully exact"
       ],
       "answer": 0,
       "explanation": "ANN returns almost the true nearest neighbors much faster; the key dial is recall, the fraction of the true top-k actually returned. Higher recall costs more time/memory. ANN is not exact, and it does not sacrifice metadata or embedding quality."
@@ -128,12 +128,12 @@
       "question": "Which statement correctly contrasts the HNSW and IVF approximate-nearest-neighbor index families?",
       "options": [
         "HNSW builds a layered navigable graph and hops coarse-to-fine toward the query; IVF clusters vectors into cells and searches only the few cells nearest the query",
-        "HNSW clusters vectors into cells and probes a subset; IVF builds a navigable small-world graph",
-        "Both perform exact search, differing only in memory layout",
-        "HNSW requires product quantization to function; IVF cannot be combined with it"
+        "HNSW clusters vectors into cells and probes a subset of them; IVF builds a navigable small-world graph and hops through it",
+        "Both families actually perform exact search, differing only in their in-memory layout",
+        "HNSW requires product quantization to function at all, while IVF can never be combined with it"
       ],
       "answer": 0,
-      "explanation": "HNSW is the graph-based family (layered hops, high recall, more memory); IVF is the partition-based family (cluster cells, probe a subset). The reviewer notes IVF is often paired with product quantization, not HNSW requiring it."
+      "explanation": "HNSW is the graph-based family (layered hops, high recall, more memory); IVF is the partition-based family (cluster cells, probe a subset). IVF is often paired with product quantization, rather than HNSW requiring it."
     },
     {
       "subtopic": "Reranking with cross-encoder",
@@ -143,9 +143,9 @@
       "question": "What does a cross-encoder reranker add over plain bi-encoder vector search, and why is the standard pattern to retrieve broadly first and then rerank?",
       "options": [
         "A cross-encoder reads the query and each chunk together for a more accurate relevance score, but is slow, so you cheaply retrieve a large candidate set first and only rerank those candidates",
-        "A cross-encoder is faster than vector search, so it replaces retrieval entirely and scores the whole corpus directly",
-        "A cross-encoder produces embeddings that are stored in the index, removing the need for a vector database",
-        "A cross-encoder scores the query and chunk independently, which is why it is more accurate than a bi-encoder"
+        "A cross-encoder is faster than vector search, so it replaces retrieval entirely and scores the whole corpus directly on every query",
+        "A cross-encoder produces embeddings stored in the index, which removes the need for a separate vector database altogether",
+        "A cross-encoder scores the query and each chunk independently, and that independence is exactly what makes it more accurate than a bi-encoder"
       ],
       "answer": 0,
       "explanation": "A cross-encoder reads query and chunk jointly for higher accuracy but is slow, so you can't run it over the whole corpus; you retrieve a broad candidate set cheaply with the bi-encoder, then rerank. Scoring independently is what the bi-encoder does, not the cross-encoder."
@@ -169,7 +169,7 @@
         "With equal recall the relevant chunk is present in both, but B sends less noise, costs fewer tokens, and avoids 'lost in the middle', helping the model focus",
         "B has strictly higher recall because reranking adds new relevant chunks beyond the original top-10",
         "A is better because passing more chunks always increases the chance of a correct answer",
-        "They are equivalent because the LLM ignores all but the first retrieved chunk"
+        "They are equivalent because the LLM ignores everything except the first retrieved chunk"
       ],
       "answer": 0,
       "explanation": "Equal recall@10 means the relevant chunk is in both candidate sets; B trims to the best 3, reducing noise, token cost, latency, and 'lost in the middle'. Reranking reorders existing candidates, so it does not raise recall@10."
@@ -198,9 +198,9 @@
       "question": "A team upgrades to a new, better embedding model but only re-embeds new documents going forward, leaving older document vectors as they were. Queries are embedded with the new model. What is the core problem?",
       "options": [
         "Distances are only meaningful within one embedding space, so query vectors and old document vectors are incomparable — 'nearness' to old docs becomes meaningless",
-        "Nothing breaks, because all embedding models place text in the same universal coordinate system",
-        "The new model produces vectors of identical meaning but they must be re-normalized, which fixes the issue automatically",
-        "Only the dimensionality matters; as long as both models output the same length, the vectors are comparable"
+        "Nothing breaks, because every embedding model places text into the same universal coordinate system anyway",
+        "The new model gives vectors of identical meaning that just need re-normalizing, which fixes the issue automatically",
+        "Only the dimensionality matters, so as long as both models output the same length the vectors stay comparable"
       ],
       "answer": 0,
       "explanation": "Different embedding models produce incomparable coordinate systems, so a query embedded with the new model cannot be meaningfully compared to documents embedded with the old one. Changing the model requires re-embedding the whole corpus."
@@ -229,9 +229,9 @@
       "question": "A RAG answer is confidently wrong. You inspect the logs and find the correct passage WAS in the retrieved top-k, yet the model still produced the wrong answer. What does this localize the failure to, and what is the appropriate fix?",
       "options": [
         "A generation failure — tighten the prompt ('answer only from the context; otherwise say you don't know') or use a stronger model",
-        "A retrieval failure — improve chunking, increase top-k, or add a cross-encoder reranker",
-        "An embedding-space mismatch — re-embed the corpus with a compatible model",
-        "An indexing failure — rebuild the ANN index with higher recall settings"
+        "A retrieval failure — improve chunking, increase top-k, or add a cross-encoder reranker to the pipeline",
+        "An embedding-space mismatch — re-embed the entire corpus with a compatible model and retry",
+        "An indexing failure — rebuild the ANN index with higher-recall settings and query again"
       ],
       "answer": 0,
       "explanation": "If the correct context was retrieved but the answer is wrong, the retriever did its job, so it is a generation/prompt failure. The fixes are prompt tightening or a stronger model; the other options all address retrieval, which was not at fault here."
@@ -244,9 +244,9 @@
       "question": "In RAG evaluation, an answer is rated as fully faithful (grounded) yet scores poorly on the system's other quality metric. Which situation best explains how both can be true at once?",
       "options": [
         "The model replied 'I don't know' even though the retrieved context did contain the answer — faithful but not relevant/complete",
-        "The model invented a citation to a chunk that was never retrieved — unfaithful but highly relevant",
-        "The retrieved chunk was off-topic, so the model could not be faithful to it at all",
-        "Faithfulness and relevance are the same metric, so this situation is impossible"
+        "The model invented a citation to a chunk that was never retrieved — that is unfaithful, yet still highly relevant",
+        "The retrieved chunk was completely off-topic, so the model could not have been faithful to it at all",
+        "Faithfulness and relevance are really the same metric, which makes this described situation impossible"
       ],
       "answer": 0,
       "explanation": "Faithfulness asks whether the answer is supported only by context; an answer can make no unsupported claims yet still fail to address the question (e.g. an unnecessary 'I don't know'), so it is faithful but not relevant/complete. The two metrics are distinct."
@@ -256,7 +256,7 @@
       "source": "ai/rag-and-vector-search-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "A colleague argues that a model with a very large context window removes the need for RAG entirely. Which counterpoints from the reviewer are valid? Select all that apply.",
+      "question": "A colleague argues that a model with a very large context window removes the need for RAG entirely. Which counterpoints are valid? Select all that apply.",
       "options": [
         "A big window does not add knowledge past the model's training cutoff — you still need to supply the text somehow",
         "Dumping a whole corpus re-pays the token cost on every call and suffers 'lost in the middle'",

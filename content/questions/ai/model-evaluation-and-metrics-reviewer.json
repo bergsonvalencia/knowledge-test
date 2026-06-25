@@ -109,9 +109,9 @@
       "question": "A classifier has precision = 1.0 and recall = 0.0. What is its F1 score, and why is the harmonic mean used instead of the arithmetic mean?",
       "options": [
         "F1 = 0.5; the arithmetic and harmonic means agree at the extremes",
-        "F1 = 0.0; the harmonic mean is dominated by the smaller value, punishing a sacrificed metric",
+        "F1 = 0.0; the harmonic mean is pulled to the smaller value, so it punishes a sacrificed metric",
         "F1 = 1.0; F1 rewards perfect precision regardless of recall",
-        "F1 is undefined; F1 cannot be computed when recall is zero"
+        "F1 is undefined; it cannot be computed whenever recall equals zero"
       ],
       "answer": 1,
       "explanation": "F1 = 2PR/(P+R) = 0 when R = 0. The harmonic mean is dominated by the smaller value, so it refuses to reward a model that maxes one metric by abandoning the other — unlike the arithmetic mean, which would give 0.5."
@@ -241,9 +241,9 @@
       "lang": "python",
       "question": "Given the R² computation above, under what condition does the result become **negative**?",
       "options": [
-        "When the model's predictions perfectly match the actuals",
-        "When SS_res exceeds SS_tot, i.e. the model's squared error is worse than predicting the mean",
-        "When the target variance SS_tot is zero",
+        "When the model's predictions perfectly match the actual values",
+        "When SS_res exceeds SS_tot — the model's squared error beats the mean baseline",
+        "When the target variance SS_tot is exactly zero",
         "When residuals are negative on average (systematic under-prediction)"
       ],
       "answer": 1,
@@ -257,9 +257,9 @@
       "question": "A fraud model reports **99.5% accuracy** on data where fraud is 0.5% of transactions. What is the correct senior assessment?",
       "options": [
         "It is excellent, since 99.5% far exceeds typical model accuracy",
-        "It may be no better than the majority-class baseline, which also scores 99.5% by calling everything legitimate",
-        "It is broken, because accuracy can never reach 99.5% on imbalanced data",
-        "It is fine for fraud as long as its specificity is above 0.99"
+        "It may match the majority-class baseline, which also scores 99.5% by calling everything legitimate",
+        "It is broken, because accuracy cannot reach 99.5% on imbalanced data",
+        "It is fine for fraud as long as its specificity stays above 0.99"
       ],
       "answer": 1,
       "explanation": "The always-legitimate baseline already scores 99.5% while catching zero fraud — the accuracy paradox. You must check recall on the fraud class and the PR-AUC; high accuracy alone proves nothing here. High specificity also says nothing about catching the rare positives."

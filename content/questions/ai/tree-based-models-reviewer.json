@@ -67,7 +67,7 @@
       "difficulty": "medium",
       "type": "mcq",
       "question": "Why is Gini impurity the default classification criterion in CART rather than entropy?",
-      "options": ["It avoids the logarithm and is slightly cheaper to compute while almost always picking the same split", "It is guaranteed to find a globally optimal tree whereas entropy is greedy", "It is immune to overfitting whereas entropy overfits", "It can be used for regression while entropy cannot"],
+      "options": ["It avoids the logarithm, so it is cheaper while picking nearly the same split", "It is guaranteed to find the globally optimal tree, unlike greedy entropy", "It is immune to overfitting, whereas entropy tends to overfit", "It also works for regression splits, whereas entropy cannot"],
       "answer": 0,
       "explanation": "Gini and entropy almost always select the same split; Gini is preferred because it skips the log₂ computation and is cheaper. Both are greedy criteria, both can overfit, and neither is the regression criterion (variance is)."
     },
@@ -108,7 +108,7 @@
       "difficulty": "medium",
       "type": "mcq",
       "question": "In gradient boosting, why are the base learners deliberately kept shallow (e.g., stumps)?",
-      "options": ["Each weak, high-bias learner reduces a bit of residual bias; summing many of them cuts bias without each one adding much variance", "Shallow trees are needed so they can be trained fully in parallel", "Shallow trees are the only kind that can fit residuals", "Shallow trees guarantee the ensemble cannot overfit no matter how many rounds run"],
+      "options": ["Each high-bias learner trims a bit of residual bias without adding much variance", "Shallow trees are needed so the rounds can all be trained in parallel", "Shallow trees are the only kind that are able to fit residuals", "Shallow trees make the ensemble unable to overfit at any number of rounds"],
       "answer": 0,
       "explanation": "Boosting sums many high-bias, low-variance weak learners, each chipping away residual bias. Boosting is sequential (not parallel), any tree can fit residuals, and too many rounds still overfit even with stumps."
     },
@@ -118,7 +118,7 @@
       "difficulty": "medium",
       "type": "mcq",
       "question": "How is the out-of-bag (OOB) error of a random forest computed?",
-      "options": ["For each row, predict it using only the trees whose bootstrap sample excluded it, then aggregate those predictions", "Average the training accuracy of all trees on the full dataset", "Hold out 37% of rows as a separate test set before any training begins", "Use the single tree with the lowest training error to score every row"],
+      "options": ["Predict each row using only the trees whose sample excluded it, then aggregate", "Average the training accuracy of every tree over the full dataset", "Hold out 37% of rows as a separate test set before any training", "Score every row with the single tree that has the lowest training error"],
       "answer": 0,
       "explanation": "Each row was unseen by ≈37% of trees; predicting it from only those trees and aggregating gives an OOB error that approximates cross-validation for free. No separate holdout is carved out up front, and it uses the excluding trees, not one tree."
     },
@@ -148,7 +148,7 @@
       "difficulty": "hard",
       "type": "mcq",
       "question": "You must predict next quarter's revenue, which is trending steadily upward and will exceed every value in the training data. Why is a plain decision tree or random forest a poor choice?",
-      "options": ["Piecewise-constant leaves cannot extrapolate beyond the training target range, so predictions flatten at the last seen level", "Trees require feature scaling that destroys the temporal ordering of the data", "Trees cannot handle a numeric target, only categorical labels", "Random forests average away the trend so all predictions converge to the global mean"],
+      "options": ["Piecewise-constant leaves cannot extrapolate, so predictions flatten at the last seen level", "Feature scaling required by trees destroys the temporal ordering of the data", "Trees handle only categorical labels, never a continuous numeric target", "Forests average the trend away, so every prediction converges to the global mean"],
       "answer": 0,
       "explanation": "Tree leaves output constants, so the model cannot extrapolate a rising trend — it saturates at the highest leaf value seen in training. Trees handle numeric targets fine and need no scaling; the issue is purely the inability to extrapolate."
     },
@@ -168,7 +168,7 @@
       "difficulty": "hard",
       "type": "mcq",
       "question": "Why is gradient boosting more prone to overfitting than a random forest, and what mitigates it?",
-      "options": ["It keeps reducing bias by fitting residuals, so too many rounds or too high a learning rate begins fitting noise; early stopping, shrinkage, and subsampling mitigate it", "It bootstraps fewer rows per tree, so each tree memorizes its sample; using more rows fixes it", "It averages correlated trees, so variance never falls; decorrelating features fixes it", "It cannot use a validation set, so overfitting is undetectable; only OOB error mitigates it"],
+      "options": ["Fitting residuals keeps cutting bias, so excess rounds fit noise; early stopping and shrinkage help", "Bootstrapping fewer rows per tree lets each tree memorize its sample; using more rows fixes it", "Averaging correlated trees stops variance from falling; decorrelating features fixes it", "Validation is impossible, so overfitting stays hidden; only OOB error can mitigate it"],
       "answer": 0,
       "explanation": "Boosting sequentially fits residuals to drive down bias, so excess rounds or a large η start fitting noise and raise variance — countered by early stopping, shrinkage (small η), and row/column subsampling. Boosting does not work by averaging or bootstrapping like a forest."
     },
@@ -178,7 +178,7 @@
       "difficulty": "hard",
       "type": "mcq",
       "question": "A single unpruned tree scores 100% train / 78% test while a 500-tree forest on the same data scores 96% train / 89% test. What best explains the difference?",
-      "options": ["The lone tree is high-variance and memorized noise; the forest averages decorrelated trees to cut variance, trading a little training fit for much better generalization", "The forest underfits because its lower training accuracy means it failed to learn the data", "The lone tree generalizes better because its training accuracy is higher", "The forest has higher bias, which is why its test accuracy is higher"],
+      "options": ["The lone tree memorized noise; averaging decorrelated trees cuts variance and generalizes better", "The forest underfits, since its lower training accuracy means it failed to learn the data", "The lone tree generalizes better, because its training accuracy is the higher of the two", "The forest has higher bias, and that higher bias is what lifts its test accuracy"],
       "answer": 0,
       "explanation": "Perfect train accuracy with a large train-test gap is the signature of an overfit high-variance tree; bagging averages decorrelated trees to reduce variance, giving slightly lower train but markedly higher test accuracy. Higher training accuracy does not mean better generalization."
     }

@@ -140,7 +140,7 @@
       "question": "A team fronts a workload with an internet-facing **NLB** and wants AWS WAF SQLi and rate-limiting rules applied. What is the correct guidance?",
       "options": [
         "Attach the WAF web ACL directly to the NLB using REGIONAL scope",
-        "WAF cannot attach to an NLB; front the workload with CloudFront or an ALB that hosts the web ACL",
+        "WAF cannot attach to an NLB; front the workload with CloudFront or an ALB",
         "Enable WAF inspection inside the NLB target group's health checks",
         "Recreate the web ACL in us-west-2 so it can bind to the NLB"
       ],
@@ -212,7 +212,7 @@
       "question": "Requests like `/p?id=42&utm_source=a` and `/p?id=42&utm_source=c` return identical content but both miss the cache. The cache policy includes **all** query strings, and the origin genuinely needs the `utm_*` params for analytics. What is the senior fix?",
       "options": [
         "Add a CloudFront Function to strip `utm_*` before the request reaches the origin",
-        "Put only `id` in the cache policy key, and forward `utm_*` to the origin via an origin request policy",
+        "Put only `id` in the cache policy key, and forward `utm_*` via an origin request policy",
         "Raise `MinTTL` so the separate entries simply live longer at the edge",
         "Create an invalidation for `/p*` after each marketing campaign"
       ],
@@ -242,7 +242,7 @@
       "question": "What does CloudFront **field-level encryption** accomplish for a sensitive form field such as a credit-card number?",
       "options": [
         "It re-encrypts the entire request body using the viewer's TLS session key",
-        "It encrypts specific fields with your public key at the edge so only the private-key holder can decrypt them",
+        "It encrypts specific fields with your public key at the edge so only the private-key holder can decrypt",
         "It tokenizes the field and stores the plaintext value in CloudFront KeyValueStore",
         "It silently blocks the field from being forwarded to the origin at all"
       ],

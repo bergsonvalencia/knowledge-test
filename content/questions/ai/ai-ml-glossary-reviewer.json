@@ -178,7 +178,7 @@
       "source": "ai/ai-ml-glossary-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "A deep network's early layers barely learn while later layers train fine. This is the vanishing gradient problem. Which of the following are valid contributors or fixes mentioned in the reviewer? (Select all that apply.)",
+      "question": "A deep network's early layers barely learn while later layers train fine. This is the vanishing gradient problem. Which of the following are valid contributors to it or fixes for it? (Select all that apply.)",
       "options": [
         "Saturating activations like sigmoid squash gradients, contributing to the problem",
         "Replacing sigmoid/tanh with ReLU helps because ReLU's gradient is 1 for positive inputs",

@@ -129,7 +129,7 @@
         "It loses category identity on collisions; mitigate by switching to frequency encoding"
       ],
       "answer": 0,
-      "explanation": "Replacing a category with its target mean leaks the answer into the feature unless the means are computed out-of-fold on training data and smoothed for rare levels. Direct mean-encoding leaks the answer into the feature. Column explosion is a one-hot problem, and false ordering is a label-encoding problem."
+      "explanation": "Replacing a category with its target mean leaks the answer into the feature unless the means are computed out-of-fold on training data and smoothed for rare levels. Column explosion is a one-hot problem, and false ordering is a label-encoding problem."
     },
     {
       "subtopic": "IQR outlier computation",
@@ -210,10 +210,10 @@
       "type": "mcq",
       "question": "Predicting whether a loan will default, you have features: `income`, `credit_score`, `num_late_payments_after_default`, `loan_amount`. Which is leakage and why?",
       "options": [
-        "`num_late_payments_after_default` — it is recorded only after default, so it cannot exist at prediction time",
+        "`num_late_payments_after_default` — it is recorded only after default occurs, so it cannot exist at prediction time",
         "`credit_score` — it is correlated with the target, so it must be removed to avoid leakage",
-        "`loan_amount` — larger loans default more, which biases the model",
-        "`income` — income is collected after approval, so it leaks future information"
+        "`loan_amount` — larger loans default more often, which biases the model unfairly",
+        "`income` — income is collected only after loan approval, so it leaks future information"
       ],
       "answer": 0,
       "explanation": "`num_late_payments_after_default` is populated only after the outcome occurs, so it would be unavailable at prediction time and encodes the answer directly — classic target leakage. Correlation with the target (credit_score) is legitimate signal, not leakage."
@@ -225,10 +225,10 @@
       "type": "mcq",
       "question": "Why must SMOTE (or any oversampling) be applied **inside** cross-validation, on training folds only?",
       "options": [
-        "Oversampling before the split places synthetic/duplicate minority points in both train and validation folds, so the model is tested on near-copies of its training data",
+        "Synthetic/duplicate minority points would otherwise land in both train and validation folds, testing on near-copies",
         "SMOTE can only interpolate correctly once the validation fold is included in the neighbor search",
-        "Applying SMOTE before splitting makes the classes balanced, which removes the need for any metric other than accuracy",
-        "Cross-validation cannot run on a class-balanced dataset, so resampling must wait until after the folds are scored"
+        "Balancing the classes first removes the need for any metric other than plain accuracy",
+        "Cross-validation cannot run on a class-balanced dataset, so resampling must wait until folds are scored"
       ],
       "answer": 0,
       "explanation": "Resampling before the split lets synthetic or duplicated minority points end up on both sides, so validation effectively tests on copies of training data — a leakage variant that inflates the score. Rebalance only the training fold."
@@ -255,7 +255,7 @@
       "source": "ai/data-preprocessing-and-feature-engineering-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which of the following are genuine preprocessing pitfalls described in the reviewer? (Select all that apply.)",
+      "question": "Which of the following are genuine preprocessing pitfalls? (Select all that apply.)",
       "options": [
         "Label-encoding a nominal feature, creating a fake ordering that linear and distance models obey",
         "Mean-imputing a skewed column, since the mean is dragged by the tail",
@@ -264,7 +264,7 @@
         "Frequency-encoding a high-cardinality column instead of one-hot"
       ],
       "answer": [0, 1, 2],
-      "explanation": "Label-encoding nominal data, mean-imputing skewed columns, and reflexively deleting outliers are all listed pitfalls. Standardizing before an SVM is correct practice (SVMs need scaling), and frequency-encoding a high-cardinality column is a recommended fix, not a pitfall."
+      "explanation": "Label-encoding nominal data, mean-imputing skewed columns, and reflexively deleting outliers are all genuine pitfalls. Standardizing before an SVM is correct practice (SVMs need scaling), and frequency-encoding a high-cardinality column is a recommended fix, not a pitfall."
     }
   ]
 }

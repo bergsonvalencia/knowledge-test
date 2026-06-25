@@ -141,7 +141,7 @@
       "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which of the following are named STAR failure modes in the reviewer? (Select all that apply.)",
+      "question": "Which of the following are recognized STAR failure modes? (Select all that apply.)",
       "options": [
         "No measurable Result (\"it went really well\")",
         "\"We\" instead of \"I\", hiding your contribution",
@@ -154,7 +154,7 @@
         1,
         2
       ],
-      "explanation": "No measurable Result, 'we' instead of 'I', and hypothetical drift are three of the listed failure modes (along with over-long Situation, no reflection, no stakes, and lone-hero framing). Naming a model and quantifying the Result are strengths the reviewer recommends, not failures."
+      "explanation": "No measurable Result, 'we' instead of 'I', and hypothetical drift are three of the listed failure modes (along with over-long Situation, no reflection, no stakes, and lone-hero framing). Naming a model and quantifying the Result are strengths to aim for, not failures."
     },
     {
       "subtopic": "Tailoring SM vs manager",
@@ -236,7 +236,7 @@
       "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Why is it recommended to a story bank of ~6–10 stories rather than one story per competency?",
+      "question": "Why is it recommended to build a story bank of ~6–10 stories rather than one story per competency?",
       "options": [
         "Most strong stories are reusable across two or three competencies, so high coverage beats one-per-question",
         "Interviewers only ever ask about six to ten competencies, so more would be wasted",
@@ -251,9 +251,9 @@
       "source": "agile-leadership/behavioral-interview-and-star-reviewer.md",
       "difficulty": "hard",
       "type": "truefalse",
-      "question": "The reviewer identifies an over-long Situation and hypothetical drift as the two most common and most fatal STAR failure modes to fix first.",
+      "question": "An over-long Situation and hypothetical drift are the two most common and most fatal STAR failure modes, the ones to fix first.",
       "answer": false,
-      "explanation": "The two most common and most fatal failure modes are no measurable Result and 'we' instead of 'I' — the reviewer says to fix those first. Over-long Situation and hypothetical drift are real failure modes but not the pair singled out as most fatal."
+      "explanation": "The two most common and most fatal failure modes are no measurable Result and 'we' instead of 'I' — those are the ones to fix first. Over-long Situation and hypothetical drift are real failure modes but not the pair singled out as most fatal."
     },
     {
       "subtopic": "Reading a STAR answer",
@@ -267,10 +267,10 @@
         "Hypothetical drift — \"I would usually\" generalizes instead of recounting one real event",
         "Over-long Situation — too many sentences are spent setting the scene",
         "Lone-hero framing — the candidate takes sole credit for the resolution",
-        "No reflection — the answer omits a closing line of learning"
+        "Technical name-dropping — the answer leans on jargon to sound impressive"
       ],
       "answer": 0,
-      "explanation": "\"Generally\" and \"I would usually\" are textbook hypothetical drift: the moment you generalize, it stops being a real past event — exactly what behavioral interviews exclude. The Situation is actually too short, and the answer says 'we' rather than claiming lone-hero credit."
+      "explanation": "\"Generally\" and \"I would usually\" are textbook hypothetical drift: the moment you generalize, it stops being a real past event — exactly what behavioral interviews exclude. The Situation is actually too short, the answer says 'we' rather than claiming lone-hero credit, and it names no frameworks."
     }
   ]
 }

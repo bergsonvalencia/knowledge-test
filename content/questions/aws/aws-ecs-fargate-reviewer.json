@@ -252,10 +252,10 @@
       "type": "mcq",
       "question": "A team wants to run a short, spiky, event-driven job that must scale to zero when idle and never exceeds a few seconds per invocation. Why is plain ECS/Fargate a poor fit compared with Lambda?",
       "options": [
-        "Fargate cannot run containers at all; only EC2-based workloads can run them",
-        "An ECS service holds its desired count and does not scale to zero, so you pay for idle tasks; Lambda scales to zero and bills per invocation",
-        "Fargate caps execution at 15 minutes, which is shorter than Lambda's limit",
-        "Only Lambda supports the awsvpc network mode that event-driven work requires"
+        "Fargate runs only EC2-backed containers and cannot host serverless workloads at all",
+        "An ECS service holds its desired count and does not scale to zero, so idle tasks still cost money; Lambda scales to zero and bills per invocation",
+        "Fargate caps execution at 15 minutes, an even shorter limit than Lambda imposes on functions",
+        "Only Lambda supports the awsvpc network mode that event-driven workloads strictly require"
       ],
       "answer": 1,
       "explanation": "An ECS service holds a desired count and has no native scale-to-zero, so idle tasks still cost money, whereas Lambda scales to zero and bills per invocation/ms, fitting short spiky work. The 15-minute cap is Lambda's limit (a reason to choose Fargate for long-running work), not Fargate's."

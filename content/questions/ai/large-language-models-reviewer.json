@@ -11,7 +11,7 @@
       "options": [
         "Predict the next token given all the tokens before it",
         "Classify each input sentence into a fixed set of categories",
-        "Reconstruct a sentence after randomly masking interior words bidirectionally",
+        "Reconstruct a sentence after masking interior words bidirectionally",
         "Maximize a human-provided reward signal during pretraining"
       ],
       "answer": 0,
@@ -24,10 +24,10 @@
       "type": "mcq",
       "question": "Why do modern LLMs use subword tokenization (e.g. BPE) rather than a pure-word or pure-character vocabulary?",
       "options": [
-        "Subwords give a fixed vocabulary that can spell anything by composing pieces, avoiding the out-of-vocabulary problem while keeping sequences a reasonable length",
-        "Subwords guarantee exactly one token per English word, making token and word counts identical",
-        "Subwords let the model skip the embedding table entirely and process raw characters",
-        "Subwords are required so the model can attend bidirectionally across the sequence"
+        "A fixed vocabulary can spell anything by composing pieces, with no out-of-vocabulary problem and reasonable sequence length",
+        "Subwords guarantee exactly one token per English word, so token and word counts always match",
+        "Subwords let the model skip the embedding table and process raw character codes directly",
+        "Subwords are required for the model to attend bidirectionally across the whole sequence"
       ],
       "answer": 0,
       "explanation": "A pure word vocabulary explodes and can't cover new/misspelled words; a pure character vocabulary makes sequences too long. Subwords hit the sweet spot: a fixed vocab with no OOV problem. Tokens are explicitly not one-per-word, and each token still indexes an embedding."
@@ -39,10 +39,10 @@
       "type": "mcq",
       "question": "What loss function does next-token pretraining minimize?",
       "options": [
-        "Cross-entropy: the negative log-probability assigned to the true next token, averaged over the sequence",
-        "Mean squared error between predicted and target embedding vectors",
+        "Cross-entropy: the negative log-probability assigned to the true next token, averaged over positions",
+        "Mean squared error between the predicted and target embedding vectors",
         "Cosine distance between the prompt embedding and the answer embedding",
-        "Hinge loss over the top-k candidate tokens"
+        "Hinge loss computed over the top-k candidate next tokens"
       ],
       "answer": 0,
       "explanation": "Pretraining penalizes the model by the negative log-probability it assigned to the actual next token, summed/averaged over positions — standard cross-entropy. The other losses (MSE, cosine, hinge) are not the next-token-prediction objective."
@@ -63,7 +63,7 @@
       "type": "mcq",
       "question": "In the autoregressive generation loop, what happens after the decoder picks a token?",
       "options": [
-        "The chosen token is appended to the sequence and the whole input is run through the model again to predict the next token",
+        "The token is appended and the whole input is run through the model again to predict the next one",
         "The model emits all remaining tokens of the answer in a single parallel pass",
         "The token is discarded and the model re-samples the entire output from scratch",
         "The model updates its weights via backpropagation before producing the next token"
@@ -78,9 +78,9 @@
       "type": "mcq",
       "question": "Mechanically, how does the temperature parameter `T` affect decoding?",
       "options": [
-        "It divides the logits by `T` before the softmax: `T < 1` sharpens the distribution, `T > 1` flattens it, and `T → 0` approaches greedy",
+        "It divides the logits by `T` before the softmax: `T < 1` sharpens, `T > 1` flattens, `T → 0` approaches greedy",
         "It multiplies the final probabilities by `T`, then re-normalizes them to sum to 1",
-        "It caps the candidate set to the top `T` tokens before sampling",
+        "It caps the candidate set to the top `T` highest-probability tokens before sampling",
         "It adds Gaussian noise of standard deviation `T` to each sampled token's embedding"
       ],
       "answer": 0,
@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "What is the key difference between top-k and top-p (nucleus) sampling?",
       "options": [
-        "Top-k always keeps a fixed number of tokens; top-p keeps a variable-size set — the smallest whose cumulative probability reaches `p` — so it adapts to the model's confidence",
-        "Top-k keeps tokens above a probability threshold; top-p keeps exactly `p` percent of the vocabulary",
-        "Top-k operates on whole sequences while top-p operates on individual tokens",
-        "Top-k is deterministic while top-p is always equivalent to greedy decoding"
+        "Top-k keeps a fixed number of tokens; top-p keeps the smallest set reaching cumulative probability `p`, adapting to confidence",
+        "Top-k keeps tokens above a probability threshold, while top-p keeps exactly `p` percent of the whole vocabulary",
+        "Top-k operates on whole candidate sequences, while top-p operates on individual next tokens",
+        "Top-k is deterministic, while top-p is always exactly equivalent to greedy argmax decoding"
       ],
       "answer": 0,
       "explanation": "Top-k hard-limits to k tokens regardless of the distribution's shape; top-p keeps the smallest set whose cumulative probability ≥ p, so the candidate set shrinks when the model is confident and grows when it is unsure. Neither operates on whole sequences (that's beam search)."
@@ -108,10 +108,10 @@
       "type": "mcq",
       "question": "Why is beam search common for machine translation but rarely used for open-ended chat?",
       "options": [
-        "It optimizes for the highest-probability whole sequence, which suits short closed-ended tasks but tends to produce bland, generic, repetitive text for open-ended generation",
-        "It is the only decoding method that can run at temperature 0",
-        "It injects more randomness than sampling, which translation tasks require",
-        "It cannot be used with a causal attention mask, which chat models need"
+        "It optimizes for the highest-probability whole sequence, which suits closed-ended tasks but yields bland text for chat",
+        "It is the only decoding method that is able to run correctly at a temperature of exactly 0",
+        "It injects far more randomness than plain sampling, which translation tasks specifically require",
+        "It cannot be used together with a causal attention mask, which chat models always need"
       ],
       "answer": 0,
       "explanation": "Beam search keeps the b best whole sequences and returns the most probable one — ideal for tasks with one right answer like translation, but it yields safe, generic text for open-ended chat. It is deterministic-leaning, not a source of extra randomness."
@@ -153,8 +153,8 @@
       "question": "A freshly pretrained base model fluently continues text but won't reliably follow instructions. Which post-training stage most directly fixes this?",
       "options": [
         "Instruction tuning (supervised fine-tuning on instruction–response pairs)",
-        "Increasing the context window at inference time",
-        "Lowering the decoding temperature to 0",
+        "Increasing the context window available at inference time",
+        "Lowering the decoding temperature all the way to 0",
         "Building a vector index for retrieval-augmented generation"
       ],
       "answer": 0,
@@ -167,10 +167,10 @@
       "type": "mcq",
       "question": "What does LoRA (Low-Rank Adaptation) do to make fine-tuning cheaper?",
       "options": [
-        "Trains a small number of added weights instead of updating all of the model's parameters",
-        "Quantizes every weight to a single bit during the forward pass",
-        "Prunes the context window down to the most relevant tokens before inference",
-        "Replaces gradient descent with a closed-form least-squares solution over the full weight matrix"
+        "Trains a small number of added weights instead of updating all the model's parameters",
+        "Quantizes every weight in the model down to a single bit during the forward pass",
+        "Prunes the context window down to only the most relevant tokens before inference",
+        "Replaces gradient descent with a closed-form least-squares solution over all weights"
       ],
       "answer": 0,
       "explanation": "LoRA is a parameter-efficient fine-tuning method that trains small added matrices instead of all the model's weights, getting most of the benefit at a fraction of the cost. It is unrelated to bit-quantization, context pruning, or replacing gradient descent."
@@ -205,8 +205,8 @@
       "code": "prompt: \"2 + 2 =\"\ndistribution: \" 4\" 0.90 | \" four\" 0.06 | \" 5\" 0.03 | \" ...\" 0.01\n\n# call A: temperature = 0\n# call B: temperature = 1.2",
       "lang": "text",
       "options": [
-        "Call A emits ` 4` deterministically every time; call B usually emits ` 4` but can occasionally emit a different (possibly wrong) token and is not reproducible",
-        "Both calls emit ` 4` deterministically because ` 4` is the argmax in both",
+        "Call A always emits ` 4`; call B usually emits ` 4` but can sometimes emit another token and is not reproducible",
+        "Both calls emit ` 4` deterministically because ` 4` is the argmax in both settings",
         "Call A is random and call B is deterministic, since higher temperature concentrates probability",
         "Call B always emits ` 4` because temperature only affects tokens below probability 0.5"
       ],
@@ -220,10 +220,10 @@
       "type": "mcq",
       "question": "Why does generation latency grow with the length of the output, even when a KV-cache is used?",
       "options": [
-        "Each new token depends on all previous ones, so output tokens are produced one after another — the loop is inherently sequential even though the KV-cache makes each step cheaper",
-        "The KV-cache must be fully recomputed from scratch for every output token",
-        "Self-attention becomes a constant-time operation, so only output length contributes any cost at all",
-        "Longer outputs force the model to re-run pretraining on the new tokens"
+        "Each new token depends on all previous ones, so the loop is inherently sequential even though the cache makes each step cheaper",
+        "The KV-cache must be fully recomputed from scratch before every single output token is produced",
+        "Self-attention becomes a constant-time operation, so only the output length contributes any cost",
+        "Longer outputs force the model to re-run part of pretraining on the newly generated tokens"
       ],
       "answer": 0,
       "explanation": "Autoregressive decoding is inherently sequential: each output token is conditioned on all prior tokens, so they must be produced one at a time. A KV-cache makes each step cheaper but does not remove the sequential dependency, and it certainly is not recomputed from scratch each step."
@@ -261,10 +261,10 @@
       "type": "mcq",
       "question": "A pipeline extracts a structured JSON record from a document and must be testable and reproducible. Which decoding setting is most appropriate, and why?",
       "options": [
-        "Greedy / temperature 0, because extraction needs one correct, reproducible, well-structured answer and randomness only hurts",
-        "High temperature (>1) with top-p, because diverse candidates make the JSON more robust",
-        "Beam search with a wide beam, because it maximizes creative variety in the output",
-        "Temperature 1.0 with no top-p, because the model's raw distribution is always the most accurate"
+        "Greedy / temperature 0, because extraction needs one correct, reproducible answer and randomness only hurts",
+        "High temperature (>1) with top-p, because diverse candidates make the JSON output more robust",
+        "Beam search with a wide beam, because it maximizes creative variety across the output",
+        "Temperature 1.0 with no top-p, because the model's raw distribution is always most accurate"
       ],
       "answer": 0,
       "explanation": "Deterministic extraction wants a single correct, reproducible answer, so greedy/temperature 0 is the right choice — randomness only introduces variability and test flakiness. High temperature and wide beams add diversity that hurts a task with one correct structured output."

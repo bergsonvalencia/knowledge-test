@@ -110,10 +110,10 @@
       "type": "mcq",
       "question": "For a fault-tolerant 3-AZ design, what is the recommended NAT Gateway layout and what does it cost?",
       "options": [
-        "One NAT Gateway for the whole VPC, billed only per-GB processed",
-        "One NAT Gateway per AZ with each AZ's private route table pointing at its local NAT, billed hourly per gateway plus per-GB",
-        "One NAT Gateway in any AZ shared by all subnets, with no hourly charge",
-        "Two NAT Gateways for HA regardless of AZ count, billed only hourly"
+        "One NAT Gateway for the whole VPC, billed only per-GB of data processed",
+        "One NAT Gateway per AZ, each AZ's route table pointing at its local NAT, billed hourly per gateway plus per-GB",
+        "One NAT Gateway in any AZ shared by all subnets, billed with no hourly charge at all",
+        "Two NAT Gateways for HA regardless of AZ count, billed only by the hour"
       ],
       "answer": 1,
       "explanation": "A NAT Gateway lives in a single AZ, so for fault tolerance and to avoid cross-AZ data charges you deploy one per AZ (three for 3 AZs) with each private route table pointing at its local NAT. NAT bills hourly per gateway plus a per-GB data-processing fee."
@@ -141,10 +141,10 @@
       "type": "mcq",
       "question": "Auditors require interactive shell access to production EC2 instances with full session logging, no inbound SSH, and no shared keys. What is the correct approach?",
       "options": [
-        "A hardened bastion host in a public subnet with key rotation",
-        "SSM Session Manager: the SSM Agent runs with an IAM role and connects outbound, so no inbound port 22 or SSH keys are needed",
-        "An interface endpoint for SSH that proxies port 22 over PrivateLink",
-        "A NAT Gateway that forwards inbound SSH to the private instances"
+        "A hardened bastion host in a public subnet, fronted by strict SSH key rotation",
+        "SSM Session Manager: the SSM Agent uses an IAM role and connects outbound, so no inbound port 22 or SSH keys are needed",
+        "An interface endpoint for SSH that proxies port 22 over a PrivateLink ENI",
+        "A NAT Gateway configured to forward inbound SSH to the private instances"
       ],
       "answer": 1,
       "explanation": "SSM Session Manager gives a shell via the SSM Agent making an outbound connection (IAM role with AmazonSSMManagedInstanceCore), eliminating the bastion, SSH keys, and open port 22, with sessions logged to CloudWatch/S3 and audited in CloudTrail. A bastion still requires inbound access and keys."
@@ -226,10 +226,10 @@
       "type": "mcq",
       "question": "An organization has 25 VPCs across accounts that all need to communicate, plus a requirement for central egress inspection, and the existing peering mesh has become unmanageable. Why is a Transit Gateway the better design?",
       "options": [
-        "A peering mesh of 25 VPCs needs 300 connections and is non-transitive; a TGW lets each VPC attach once with transitive routing and centralized inspection",
-        "Transit Gateway removes the need for non-overlapping CIDRs, so re-IPing is unnecessary",
-        "Peering cannot connect VPCs across accounts, but Transit Gateway can",
-        "Transit Gateway is free, whereas peering charges per-GB for all traffic"
+        "A 25-VPC peering mesh needs 300 connections and is non-transitive; a TGW lets each VPC attach once with transitive routing and central inspection",
+        "Transit Gateway removes the need for non-overlapping CIDRs, so re-IPing is no longer required",
+        "Peering cannot connect VPCs across separate AWS accounts, but Transit Gateway can",
+        "Transit Gateway is entirely free, whereas peering charges a per-GB fee for all traffic"
       ],
       "answer": 0,
       "explanation": "A 25-VPC full mesh is 25*24/2 = 300 non-transitive peering connections. A TGW is hub-and-spoke: each VPC attaches once, routing is transitive via TGW route tables, and a dedicated inspection VPC centralizes egress. CIDRs must still be non-overlapping, peering does support cross-account, and TGW adds hourly + per-GB charges."
@@ -241,10 +241,10 @@
       "type": "mcq",
       "question": "A Lambda function is attached to a private subnet to reach an RDS database. It now also needs to call the public S3 and Secrets Manager APIs. What is true about its internet access?",
       "options": [
-        "A VPC-attached Lambda keeps its default AWS-managed internet access, so no extra configuration is needed",
-        "A VPC-attached Lambda has no internet access unless routed through a NAT; use a gateway endpoint for S3 and an interface endpoint for Secrets Manager to avoid the NAT",
-        "Lambda cannot be attached to a VPC and reach RDS at the same time",
-        "Attaching Lambda to a VPC requires assigning it an Elastic IP for outbound calls"
+        "A VPC-attached Lambda keeps its default AWS-managed internet access, so no extra setup is needed",
+        "A VPC-attached Lambda has no internet access unless routed through a NAT; use a gateway endpoint for S3 and an interface endpoint for Secrets Manager to skip the NAT",
+        "Lambda cannot be attached to a VPC and reach an RDS database at the same time",
+        "Attaching Lambda to a VPC requires assigning it an Elastic IP for any outbound calls"
       ],
       "answer": 1,
       "explanation": "Once attached to a VPC, a Lambda loses the default managed internet access and has none unless you route through a NAT. The secure-by-default pattern is a free gateway endpoint for S3 and an interface endpoint for Secrets Manager, avoiding the NAT entirely."

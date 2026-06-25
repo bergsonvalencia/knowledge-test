@@ -72,10 +72,10 @@
       "type": "mcq",
       "question": "Why is cross-entropy preferred over MSE for a logistic-regression classifier?",
       "options": [
-        "With sigmoid/softmax outputs, cross-entropy stays convex and gives strong gradients when the model is confidently wrong, whereas MSE on probabilities is non-convex with weak/vanishing gradients",
-        "MSE cannot be computed on probability outputs because they lie in (0,1)",
-        "Cross-entropy is robust to outliers while MSE is not, which only matters in classification",
-        "Cross-entropy requires no derivative, so it trains faster than the differentiable MSE"
+        "With sigmoid/softmax outputs, cross-entropy stays convex and gives strong gradients when the model is confidently wrong, whereas MSE on probabilities is non-convex with weak gradients",
+        "MSE cannot be computed at all on probability outputs because they are constrained to lie in the open interval (0,1)",
+        "Cross-entropy is inherently robust to outliers while MSE is not, and this robustness is the only thing that matters in classification",
+        "Cross-entropy requires no derivative to optimize, so it trains strictly faster than the differentiable MSE on the same data"
       ],
       "answer": 0,
       "explanation": "Cross-entropy explodes toward +∞ when confidently wrong, producing well-behaved gradients, and stays convex for logistic regression; MSE on probabilities yields weak, sometimes vanishing gradients and a non-convex surface. MSE is computable on probabilities and cross-entropy still needs derivatives."
@@ -221,9 +221,9 @@
       "question": "You have one hyperparameter that strongly affects the score (η) and one that barely matters (a minor λ), with a fixed budget of 16 trials. Which search is better and why?",
       "options": [
         "Random search, because 16 random trials explore up to 16 distinct η values, whereas a 4×4 grid samples only 4 distinct η values",
-        "Grid search, because exhaustively covering both axes guarantees the optimum within the budget",
-        "Grid search, because random sampling wastes trials by ignoring the η axis entirely",
-        "It makes no difference; both explore the same number of distinct η values for a fixed budget"
+        "Grid search, because exhaustively covering both axes is guaranteed to land on the true optimum within the 16-trial budget",
+        "Grid search, because random sampling wastes trials by effectively ignoring the η axis that matters most",
+        "It makes no difference; both methods explore the same number of distinct η values for any fixed trial budget"
       ],
       "answer": 0,
       "explanation": "A 4×4 grid spends 4 trials at each of only 4 η values, wasting resolution on the λ axis that barely moves the score; 16 random trials give up to 16 distinct η values along the axis that matters. Grid search does not guarantee the optimum on continuous ranges with a small budget."

@@ -164,10 +164,10 @@
       "code": "using Amazon.S3.Transfer;\n\nvar transfer = new TransferUtility(s3);\nawait transfer.UploadAsync(new TransferUtilityUploadRequest\n{\n    BucketName = \"my-app-prod\",\n    Key        = \"video/keynote-4k.mp4\",\n    FilePath   = \"keynote-4k.mp4\"\n});",
       "lang": "csharp",
       "options": [
-        "TransferUtility always uses a single PUT regardless of file size",
-        "TransferUtility auto-switches to multipart with parallel parts for large files, handling sizing and retries",
-        "This code fails for files over 100 MB unless you call InitiateMultipartUpload first",
-        "TransferUtility disables retries, so a failed part restarts the whole upload"
+        "TransferUtility always uses a single PUT regardless of how large the file is",
+        "TransferUtility auto-switches to parallel multipart for large files, handling sizing and retries",
+        "This code fails for files over 100 MB unless you call InitiateMultipartUpload first yourself",
+        "TransferUtility disables retries, so any failed part restarts the whole upload from scratch"
       ],
       "answer": 1,
       "explanation": "The high-level TransferUtility auto-switches to multipart and parallel parts for large files, handling part sizing, parallelism, and retries — which is why it is preferred over hand-rolling the part API. A failed part retries without restarting the whole upload."
@@ -191,9 +191,9 @@
       "lang": "json",
       "options": [
         "It denies all S3 actions on the bucket whenever the request does not use TLS (HTTPS)",
-        "It allows public read access only over HTTPS",
-        "It blocks all access to the bucket from every principal at all times",
-        "It denies requests that lack a KMS encryption header"
+        "It allows public read access to the bucket, but only over HTTPS connections",
+        "It blocks all access to the bucket from every principal under all conditions",
+        "It denies any request that lacks a KMS server-side-encryption header"
       ],
       "answer": 0,
       "explanation": "The condition `aws:SecureTransport=false` matches non-TLS requests, and the Deny on `s3:*` for both the bucket and its objects (`/*`) forces all access over HTTPS. It does not grant anything (it is a Deny) and is unrelated to encryption-header enforcement."

@@ -63,9 +63,9 @@
       "type": "mcq",
       "question": "How does DynamoDB **TTL** decide when to delete an item, and how timely is the deletion?",
       "options": [
-        "It reads a numeric epoch-seconds attribute; deletion is asynchronous and best-effort, often within a few days of expiry",
+        "It reads a numeric epoch-seconds attribute and deletes asynchronously, best-effort, often within a few days",
         "It reads an ISO-8601 string attribute and deletes the item exactly at the expiry second",
-        "It deletes each item the moment a query first encounters it past expiry",
+        "It deletes each item the moment a query first encounters it past its expiry time",
         "It uses the item's last-modified system timestamp and deletes synchronously on the next write"
       ],
       "answer": 0,
@@ -94,10 +94,10 @@
       "type": "mcq",
       "question": "A table uses `country` as its partition key and most traffic is `US`. Despite generous provisioned throughput, writes still throttle. What is the root cause and best fix?",
       "options": [
-        "The key is low-cardinality, so traffic concentrates on one hot partition; fix it with a high-cardinality key or by write-sharding the hot value",
+        "The key is low-cardinality, so traffic concentrates on one hot partition; raise cardinality or write-shard it",
         "The table is under-provisioned overall, so raise the table's total WCUs until throttling stops",
         "Eventually consistent reads are interfering with writes, so switch all reads to strongly consistent",
-        "The sort key is missing, so add a sort key to spread writes across partitions"
+        "The sort key is missing, so add a sort key to spread the writes evenly across partitions"
       ],
       "answer": 0,
       "explanation": "Low cardinality funnels nearly all traffic to the `US` partition, creating a hot partition that throttles even though the table looks under-utilized. The cure is a high-cardinality, evenly-accessed key, or write-sharding the hot value (`US#<0..N>`). Raising total capacity does not help because the limit is per-partition."
@@ -134,9 +134,9 @@
       "question": "When should you choose `TransactWriteItems` over a single conditional write?",
       "options": [
         "When an invariant spans multiple items or tables and you need all-or-nothing serializable semantics",
-        "Whenever you write any item, since transactions are always cheaper than conditional writes",
-        "When you need to read your own write immediately on the base table",
-        "When you want to atomically increment a single counter on one item"
+        "Whenever you write any item, since transactions are always cheaper than a plain conditional write",
+        "When you need to read your own write immediately after committing it on the base table",
+        "When you want to atomically increment a single counter on one item without a version check"
       ],
       "answer": 0,
       "explanation": "Transactions exist for multi-item/multi-table invariants (e.g., debit one account and credit another) with all-or-nothing serializable isolation. For a single item, a conditional write is atomic, cheaper (1x vs 2x capacity), and sufficient."
@@ -213,10 +213,10 @@
       "type": "mcq",
       "question": "Two regions of a Global Table both write to the *same* item at nearly the same time. What is the result, and what is the correct design response?",
       "options": [
-        "Last-writer-wins by timestamp resolves it, so one update can be silently dropped; design so different regions own different keys",
-        "DynamoDB merges the two writes attribute-by-attribute so that no data is ever lost",
-        "The second write is rejected with a conflict error that the application must retry",
-        "A cross-region quorum blocks the write until all replicas agree, guaranteeing serializability"
+        "Last-writer-wins by timestamp picks one, so an update can be silently dropped; steer regions to own distinct keys",
+        "DynamoDB merges the two writes attribute-by-attribute so that no data is ever lost in either region",
+        "The second write is rejected with a conflict error that the application is expected to detect and retry",
+        "A cross-region quorum blocks the write until all replicas agree, guaranteeing global serializability"
       ],
       "answer": 0,
       "explanation": "Global Tables use last-writer-wins by timestamp, which is not true conflict reconciliation — a concurrent same-item cross-region write can be dropped. The senior design response is to partition key ownership by region or accept that one update may be lost."
@@ -253,10 +253,10 @@
       "type": "mcq",
       "question": "A service writes an item to the base table, then immediately reads it back via a **GSI** and intermittently gets stale data. Why, and what is the most appropriate fix?",
       "options": [
-        "GSIs are eventually consistent and updated asynchronously, so read the base table with a strongly consistent read for read-your-write correctness",
+        "GSIs are eventually consistent and propagated asynchronously, so read the base table with a strong read instead",
         "The strongly consistent read on the GSI was misconfigured; enable `ConsistentRead = true` on the GSI query",
-        "The base-table write was not durable; wrap the write in a transaction to force durability",
-        "Adaptive capacity delayed the write; increase the table's provisioned WCUs to remove the lag"
+        "The base-table write was not durable; wrap the write in a transaction to force durability on commit",
+        "Adaptive capacity delayed the write; increase the table's provisioned WCUs to remove the replication lag"
       ],
       "answer": 0,
       "explanation": "GSIs are eventually consistent and propagated asynchronously, so a read-after-write against a GSI can be stale. Strong reads are not available on GSIs; for read-your-write you must read the base table with `ConsistentRead = true`. Base-table writes are already durable and replicated synchronously across AZs."

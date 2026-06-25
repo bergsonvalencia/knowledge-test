@@ -93,10 +93,10 @@
       "type": "mcq",
       "question": "Lambda throttles and returns **429 `TooManyRequestsException`**. Which callers must handle/retry the 429 in their own code?",
       "options": [
-        "Synchronous callers (API Gateway clients, direct SDK `Invoke`)",
-        "Asynchronous sources like S3 and SNS",
-        "Poll-based sources like SQS and Kinesis",
-        "Only EventBridge scheduled rules"
+        "Synchronous callers such as API Gateway clients and direct SDK `Invoke`",
+        "Asynchronous push sources such as S3 and SNS event notifications",
+        "Poll-based event source mappings such as SQS and Kinesis streams",
+        "Only EventBridge scheduled rules and their retry policies"
       ],
       "answer": 0,
       "explanation": "Synchronous callers see the 429 immediately and must handle/retry it themselves. Async and poll-based sources absorb 429s automatically by retrying — throttling there is expected backpressure, not necessarily an error."
@@ -186,10 +186,10 @@
       "code": "await _ddb.PutItemAsync(new PutItemRequest {\n    TableName = \"Charges\", Item = charge.ToItem(),\n    ConditionExpression = \"attribute_not_exists(chargeId)\" });\nawait _gateway.ChargeAsync(charge);",
       "lang": "csharp",
       "options": [
-        "The conditional write fails on redelivery, throwing before the gateway charge runs — making the duplicate a no-op",
-        "The SQS visibility timeout deletes the duplicate before it reaches the handler",
-        "DynamoDB automatically deduplicates identical PutItem requests",
-        "The charge gateway is idempotent by default, so the second call is ignored"
+        "The conditional write fails on redelivery and throws before the gateway charge runs, so the duplicate is a no-op",
+        "The SQS visibility timeout deletes the duplicate message before it ever reaches the handler again",
+        "DynamoDB automatically deduplicates identical PutItem requests with the same item contents",
+        "The charge gateway is idempotent by default, so the second ChargeAsync call is silently ignored"
       ],
       "answer": 0,
       "explanation": "SQS delivers at least once, so on redelivery the conditional write `attribute_not_exists(chargeId)` throws ConditionalCheckFailedException before `ChargeAsync` runs. The conditional write is the gate; an unconditional put would let the charge run twice."
@@ -217,9 +217,9 @@
       "question": "A .NET function uses SnapStart and generates a `Guid` correlation seed during Init. Why is this a bug, and what is the fix?",
       "options": [
         "The seed is frozen into the snapshot and shared across all restores; regenerate it in an after-restore runtime hook",
-        "SnapStart disallows GUID generation entirely; switch to a sequential id",
-        "Init code never runs under SnapStart; move the generation into the handler permanently",
-        "The seed is fine because SnapStart re-runs Init on every restore"
+        "SnapStart disallows GUID generation entirely, so you must switch to a sequential id generated per request",
+        "Init code never runs under SnapStart, so the generation must move into the handler body permanently",
+        "The seed is fine because SnapStart re-runs all Init code fresh on every single environment restore"
       ],
       "answer": 0,
       "explanation": "SnapStart snapshots a fully-Init'd environment, so anything generated during Init (random seeds, ephemeral creds, unique ids) is frozen into the snapshot and reused across every restore. The fix is to re-randomize in an after-restore hook (e.g. `RegisterAfterRestore`), not to move it into the handler or abandon GUIDs."
@@ -231,10 +231,10 @@
       "type": "mcq",
       "question": "You need to make a network call to an origin and assemble dynamic content on the CloudFront **origin request** event. Which edge runtime fits, and why not the other?",
       "options": [
-        "Lambda@Edge — it runs on all four CloudFront events and can make network calls; CloudFront Functions run only on viewer events with no network access",
-        "CloudFront Functions — they run on all four events and allow network access at sub-millisecond latency",
-        "CloudFront Functions — they are the only option that can run on origin events",
-        "Lambda@Edge — but only because CloudFront Functions cannot rewrite headers"
+        "Lambda@Edge — it runs on origin events and can make network calls; CloudFront Functions are viewer-only with no network access",
+        "CloudFront Functions — they run on all four events and allow network calls at sub-millisecond latency for any logic",
+        "CloudFront Functions — they are the only edge runtime that can be attached to CloudFront origin request events",
+        "Lambda@Edge — but only because CloudFront Functions are unable to rewrite or add HTTP request headers"
       ],
       "answer": 0,
       "explanation": "CloudFront Functions are restricted to viewer request/response with no network or filesystem access. Lambda@Edge runs on all four events (viewer + origin) and can make network calls, so it is the correct choice for origin-side dynamic assembly."

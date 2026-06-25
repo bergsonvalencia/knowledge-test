@@ -69,7 +69,7 @@
       "question": "A fully connected (dense) network has layer sizes 4 → 8 → 8 → 3. How many trainable parameters does it have in total?",
       "options": ["139", "131", "112", "147"],
       "answer": 0,
-      "explanation": "Each dense layer m→n has m·n + n params. (4·8+8) + (8·8+8) + (8·3+3) = 40 + 72 + 27 = 139. Forgetting the bias terms gives the wrong 112."
+      "explanation": "Each dense layer m→n has m·n + n params. (4·8+8) + (8·8+8) + (8·3+3) = 40 + 72 + 27 = 139. The other options come from miscounting biases or weights."
     },
     {
       "subtopic": "Backprop output error",
@@ -190,10 +190,10 @@
       "type": "mcq",
       "question": "What does the universal approximation theorem actually guarantee about a single-hidden-layer network with a non-polynomial activation?",
       "options": [
-        "That a network of sufficient width exists which approximates any continuous function on a bounded domain to arbitrary accuracy — existence only, with no bound on width or guarantee that training finds it",
-        "That gradient descent will always converge to such an approximation given enough epochs",
-        "That a single hidden layer is at least as parameter-efficient as any deep network for the same function",
-        "That any function whatsoever (continuous or not) can be represented exactly with finitely many neurons"
+        "That a wide-enough such network exists which approximates any continuous function on a bounded domain to arbitrary accuracy (existence only)",
+        "That gradient descent will always converge to such an approximation given enough training epochs to do so",
+        "That a single hidden layer is at least as parameter-efficient as any deep network for the same target function",
+        "That any function whatsoever, continuous or not, can be represented exactly with finitely many hidden neurons"
       ],
       "answer": 0,
       "explanation": "The theorem is an existence result for continuous functions on a bounded region; it says nothing about the required width (which can be astronomical), whether SGD finds the solution, or efficiency — indeed deep nets often need exponentially fewer neurons than a shallow one."
@@ -203,7 +203,7 @@
       "source": "ai/neural-networks-fundamentals-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Per the activation cheat-sheet and discussion, which statements are TRUE? (Select all that apply.)",
+      "question": "Which of these statements about activation functions are TRUE? (Select all that apply.)",
       "options": [
         "Tanh is zero-centered with range (−1, 1) and a derivative that maxes at 1.0, but still saturates at the tails",
         "Leaky ReLU keeps a non-zero slope α for z < 0, which prevents the 'dead ReLU' failure mode",

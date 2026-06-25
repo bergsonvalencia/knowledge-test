@@ -12,7 +12,7 @@
         "HTTP API, because it is cheaper and lower latency",
         "REST API, because it is the full-featured original",
         "WebSocket API, because it supports bidirectional push",
-        "REST API with an edge-optimized endpoint for global reach"
+        "REST API, for its edge-optimized global reach"
       ],
       "answer": 0,
       "explanation": "HTTP API is the default for new Lambda- or HTTP-backed REST-style APIs because it is materially cheaper per million requests and lower latency. REST API is only chosen when you need its premium features (usage plans, VTL, caching, WAF, private/edge endpoints, canary)."
@@ -33,7 +33,7 @@
       "type": "mcq",
       "question": "You want built-in response caching at the API Gateway layer. Which statement is correct?",
       "options": [
-        "Response caching is a REST API feature; HTTP APIs have none, so front them with CloudFront",
+        "Response caching is REST-only; HTTP APIs have none, so front them with CloudFront",
         "Both HTTP and REST APIs cache responses by default once deployed",
         "Only HTTP APIs support a built-in response cache",
         "WebSocket APIs cache each message response automatically"
@@ -48,9 +48,9 @@
       "type": "mcq",
       "question": "A backend runs on ECS in private subnets. How does a managed public API reach it without giving the tasks public IPs?",
       "options": [
-        "A VPC link to a load balancer (REST links to an NLB; HTTP can link to an ALB, NLB, or Cloud Map)",
-        "A NAT gateway placed in front of the ECS tasks",
-        "An internet gateway attached to the private subnets",
+        "A VPC link to a load balancer (REST to an NLB; HTTP to an ALB, NLB, or Cloud Map)",
+        "A NAT gateway placed directly in front of the ECS tasks",
+        "An internet gateway attached to the private ECS subnets",
         "A Cognito user pool authorizer that tunnels into the VPC"
       ],
       "answer": 0,
@@ -63,7 +63,7 @@
       "type": "mcq",
       "question": "On a REST stage, what does `Latency` minus `IntegrationLatency` approximately represent?",
       "options": [
-        "Time spent in the gateway/authorizer/mapping path rather than the backend",
+        "Time in the gateway/authorizer/mapping path rather than the backend",
         "Network round-trip time between the client and the edge location",
         "Time the backend spent processing the request",
         "The cache GB-hour overhead billed for the stage cache"
@@ -78,7 +78,7 @@
       "type": "mcq",
       "question": "With Lambda **proxy** integration (`AWS_PROXY`), who owns the HTTP request/response contract, and what must the function return?",
       "options": [
-        "The function owns the contract and returns a `{statusCode, headers, body}` JSON shape; no VTL is used",
+        "The function owns the contract and returns a `{statusCode, headers, body}` JSON; no VTL is used",
         "The gateway owns the contract via VTL mapping templates; the function returns a raw object",
         "The function owns the contract but returns only a plain string body; the gateway adds the status",
         "Neither owns it; API Gateway derives the response automatically from the model"
@@ -93,7 +93,7 @@
       "type": "mcq",
       "question": "After enabling a Lambda authorizer, you find that revoking a leaked token does not take effect for a few minutes. What is the cause and fix?",
       "options": [
-        "The authorizer result is cached by identity source for the TTL; set the cache TTL to 0 to evaluate every request",
+        "The result is cached by identity source for the TTL; set cache TTL to 0 to evaluate every request",
         "The token bucket is replenishing slowly; raise the stage burst limit",
         "CloudFront edge caching is serving stale 200s; invalidate the distribution",
         "Cognito user pool propagation lag is to blame; switch to a JWT authorizer"
@@ -123,10 +123,10 @@
       "type": "mcq",
       "question": "A POST endpoint must simply enqueue its payload to SQS with no business logic. What avoids running a Lambda entirely?",
       "options": [
-        "An AWS service integration that calls SQS `SendMessage` directly with a VTL template and an IAM role",
+        "An AWS service integration calling SQS `SendMessage` directly with a VTL template and an IAM role",
         "A Lambda proxy integration whose function only calls SQS, so cold starts are negligible",
         "An HTTP-proxy integration pointed at the public SQS endpoint with the queue URL",
-        "A mock integration that returns a 202 and asynchronously copies the body to SQS"
+        "A mock integration that returns 202 and asynchronously copies the body to SQS"
       ],
       "answer": 0,
       "explanation": "An AWS service integration lets the gateway call the SQS `SendMessage` action directly with a VTL request mapping and an IAM role granting `sqs:SendMessage`, skipping Lambda (no cold start, one fewer thing to operate). HTTP-proxy would not sign the SQS API call, a mock integration has no backend, and the Lambda option still runs a function."
@@ -237,7 +237,7 @@
       "code": "PolicyDocument = new APIGatewayCustomAuthorizerPolicy {\n  Version = \"2012-10-17\",\n  Statement = {\n    new APIGatewayCustomAuthorizerPolicy.IAMPolicyStatement {\n      Action = new HashSet<string> { \"execute-api:Invoke\" },\n      Effect = \"Allow\",\n      Resource = new HashSet<string> { \"arn:aws:execute-api:*:*:*/*/*/*\" }\n    }\n  }\n},\nContext = new Dictionary<string, object> { [\"tenantId\"] = \"acme\" }",
       "question": "A Lambda authorizer returns the policy above plus the `Context` map. What is the practical effect of the wildcard `Resource` together with authorizer caching?",
       "options": [
-        "One cached Allow can cover many methods on the API/stage, and `tenantId` surfaces as `$context.authorizer.tenantId`",
+        "One cached Allow covers many methods on the API/stage, and `tenantId` surfaces as `$context.authorizer.tenantId`",
         "The wildcard forces the gateway to re-invoke the authorizer per method, but `tenantId` is cached separately",
         "The wildcard is rejected by IAM, so the gateway falls back to denying all methods",
         "The `Context` map overrides the policy effect, allowing access even on a Deny"

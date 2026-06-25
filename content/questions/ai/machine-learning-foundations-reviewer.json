@@ -110,12 +110,12 @@
       "question": "Why is k-Nearest Neighbors considered a non-parametric model?",
       "options": [
         "The training set itself is part of the model, so its size grows with the data",
-        "It has no tunable settings of any kind",
-        "It compresses the data into a fixed-size set of weights and discards the data",
-        "It makes strong assumptions about the shape of the decision boundary"
+        "It compresses the data into fixed-size weights and discards the data",
+        "It makes strong assumptions about the decision boundary's shape",
+        "It has no tunable settings of any kind"
       ],
       "answer": 0,
-      "explanation": "Non-parametric models keep the data around — k-NN stores every training point, so the effective number of parameters grows with the dataset. Compressing into a fixed-size summary and making strong shape assumptions describe parametric models like linear regression."
+      "explanation": "Non-parametric models keep the data around — k-NN stores every training point, so the effective number of parameters grows with the dataset. Compressing into a fixed-size summary and making strong shape assumptions describe parametric models like linear regression; k-NN also has tunable settings such as k."
     },
     {
       "subtopic": "Data leakage in preprocessing",
@@ -145,7 +145,7 @@
         "You should pick the algorithm with the best published benchmark and never reconsider"
       ],
       "answer": 0,
-      "explanation": "Averaged over all possible problems no learner beats any other, so there is no universally best model — the right choice depends on the problem's structure, which is why you try a few sensible families and let validation performance pick. The other options contradict the theorem or the data-centric advice in the reviewer."
+      "explanation": "Averaged over all possible problems no learner beats any other, so there is no universally best model — the right choice depends on the problem's structure, which is why you try a few sensible families and let validation performance pick. The other options contradict the theorem or the data-centric view that more and better data often beats a fancier model."
     },
     {
       "subtopic": "When not to use ML",
@@ -220,8 +220,8 @@
       "question": "A model underfits: error is high on both the training and validation sets. Which action is most likely to help?",
       "options": [
         "Increase model capacity or add more informative features",
-        "Add stronger L2 regularization",
-        "Apply dropout and early stopping",
+        "Add stronger L2 regularization to the model",
+        "Apply dropout and early stopping during training",
         "Reduce the number of features the model can use"
       ],
       "answer": 0,
@@ -243,9 +243,9 @@
       "type": "mcq",
       "question": "A pricing model's predictions themselves cause the market to react, so the input-output relationship shifts faster than data can be collected and the model retrained. Which concept best names this failure, and what does it imply?",
       "options": [
-        "Concept drift — the learned model is stale on arrival, so a learned model may be the wrong tool here",
+        "Concept drift — the learned model is stale on arrival, so ML may be the wrong tool here",
         "Data leakage — the test set was contaminated during training",
-        "High irreducible error — no model could ever do better, so add capacity",
+        "High irreducible error — no model could do better, so add capacity",
         "Underfitting — the model is too simple, so increase capacity"
       ],
       "answer": 0,

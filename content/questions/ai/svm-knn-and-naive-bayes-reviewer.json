@@ -10,9 +10,9 @@
       "question": "Why is k-NN described as a \"lazy\" learner, and what does that imply about its cost profile?",
       "options": [
         "It does no real work at training time beyond storing the data, so training is `O(1)` but a naive query is `O(n·d)`",
-        "It fits a model slowly but answers queries instantly, so training is expensive and inference is `O(1)`",
-        "It lazily skips outliers during training, making both training and inference cheaper than other models",
-        "It learns parameters lazily over several passes, so training is `O(n·d)` and inference is `O(1)`"
+        "It fits a model slowly but answers queries instantly, so training is expensive but inference is `O(1)`",
+        "It lazily skips outliers during training, which makes both training and inference cheaper than rival models",
+        "It learns parameters lazily over several passes, so training is `O(n·d)` but inference is only `O(1)`"
       ],
       "answer": 0,
       "explanation": "k-NN stores the dataset at train time (O(1)) and defers all computation to query time, where it computes distances to all n points in d dimensions (O(n·d)). The other options invert this cheap-to-build, slow-to-serve profile."
@@ -50,8 +50,8 @@
       "options": [
         "Low bias, high variance — a jagged boundary that overfits and is swayed by single noisy neighbors",
         "High bias, low variance — a smooth boundary that underfits toward the global majority class",
-        "Low bias, low variance — the ideal setting that both fits the signal and resists noise",
-        "High bias, high variance — the worst case where the model neither fits nor generalizes"
+        "Low bias, low variance — the ideal setting that both fits the signal and fully resists noise",
+        "High bias, high variance — the worst case where the model neither fits nor generalizes at all"
       ],
       "answer": 0,
       "explanation": "Small k makes the boundary hug every point: zero training error but jagged, unstable boundaries — low bias, high variance (overfitting). High bias / low variance / underfitting is the large-k extreme (k = n returns the global majority)."
@@ -63,10 +63,10 @@
       "type": "mcq",
       "question": "Why is Laplace (additive) smoothing essential in Naive Bayes?",
       "options": [
-        "Without it, a feature value unseen for a class gets probability 0, which zeros out the entire product and makes that class impossible",
-        "It rescales the features to zero mean and unit variance so distances are comparable across dimensions",
-        "It removes the conditional-independence assumption, letting the model capture feature correlations",
-        "It converts the multiplied probabilities into logs to prevent floating-point underflow"
+        "Without it, a feature value unseen for a class gets probability 0, which zeros out the whole product and forbids that class",
+        "It rescales the features to zero mean and unit variance so distances stay comparable across all the dimensions",
+        "It removes the conditional-independence assumption, letting the model capture correlations between the features",
+        "It converts the multiplied probabilities into logarithms, which prevents the floating-point values from underflowing"
       ],
       "answer": 0,
       "explanation": "A single unseen feature with raw P = 0 multiplies the whole class score to zero, vetoing the class; a pseudocount α reserves a sliver of probability for unseen events. Scaling is irrelevant to NB, smoothing does not change the independence assumption, and log-summing (a separate technique) handles underflow."
@@ -103,9 +103,9 @@
       "question": "In a soft-margin SVM minimizing `½‖w‖² + C·Σ ξᵢ`, what does a **very large** C do?",
       "options": [
         "Heavily penalizes margin violations, producing a narrow margin that fits the training data hard — risking overfitting",
-        "Tolerates many violations, producing a wide, smooth margin — risking underfitting",
-        "Forces the kernel to map into an infinite-dimensional space regardless of the data",
-        "Disables the slack variables entirely, which is only valid when classes are perfectly separable"
+        "Tolerates many margin violations, producing a wide and smooth margin that generalizes loosely — risking underfitting",
+        "Forces the kernel to map the data into an infinite-dimensional feature space regardless of how the data is shaped",
+        "Disables the slack variables entirely, which is only valid when the two classes are already perfectly separable"
       ],
       "answer": 0,
       "explanation": "C behaves like the inverse of regularization strength: large C punishes every slack term ξᵢ heavily, shrinking the margin to fit noise (overfit). Small C tolerates violations for a wider margin (underfit). C does not control kernel dimensionality."
@@ -118,12 +118,12 @@
       "question": "For hinge loss `max(0, 1 − y·s)` with label `y ∈ {−1, +1}` and score `s = w·x + b`, which points contribute **zero** loss and thus nothing to the gradient?",
       "options": [
         "Points on the correct side and at least one margin unit away (`y·s ≥ 1`)",
-        "Points exactly on the decision boundary (`y·s = 0`)",
-        "Only the support vectors lying precisely on the margin edges",
-        "Misclassified points, since their negative score cancels the loss"
+        "Points sitting exactly on the decision boundary, where the score `y·s = 0`",
+        "Only the support vectors lying precisely on the two margin edges (`y·s = 1`)",
+        "Misclassified points, since their negative score is taken to cancel the loss"
       ],
       "answer": 0,
-      "explanation": "When y·s ≥ 1 the point is correct and beyond the margin, so 1 − y·s ≤ 0 and max(0, …) = 0. Points on the boundary (y·s = 0) incur loss 1, and misclassified points (y·s < 0) incur loss > 1 — exactly the borderline/wrong points that drive training."
+      "explanation": "When y·s ≥ 1 the point is correct and beyond the margin, so 1 − y·s ≤ 0 and max(0, …) = 0. Points on the boundary (y·s = 0) incur loss 1, and misclassified points (y·s < 0) incur loss > 1 — exactly the borderline/wrong points that drive training. Support vectors on the edge are a subset of y·s ≥ 1, not the full zero-loss set."
     },
     {
       "subtopic": "Kernel trick",
@@ -133,9 +133,9 @@
       "question": "What is the core insight that makes the kernel trick work in an SVM?",
       "options": [
         "The SVM math only ever needs inner products `φ(x)·φ(z)`, so a kernel `K(x,z)` computes them directly without building `φ`",
-        "The kernel reduces dimensionality first, so a linear boundary in the smaller space maps to a curve in the original space",
-        "The kernel pre-clusters the data so each class lands in a separable region before the hyperplane is fit",
-        "The kernel replaces the dot product with a Euclidean distance, which is always linearly separable"
+        "The kernel reduces dimensionality first, so a linear boundary in the smaller space then maps back to a curve in the original",
+        "The kernel pre-clusters the data so that each class lands in its own separable region before any hyperplane is ever fit",
+        "The kernel replaces the dot product with a Euclidean distance, which is guaranteed to make any dataset linearly separable"
       ],
       "answer": 0,
       "explanation": "SVM optimization and prediction depend only on inner products between points; a kernel returns φ(x)·φ(z) directly, granting a huge (even infinite) feature space at the cost of one kernel evaluation. The kernel lifts (not reduces) dimensions and does no clustering."
@@ -147,10 +147,10 @@
       "type": "mcq",
       "question": "An RBF-kernel SVM gets 100% training accuracy but poor test accuracy. Which adjustment is most likely correct?",
       "options": [
-        "Lower both `C` and `γ`, choosing values by cross-validation",
-        "Raise both `C` and `γ` to fit the structure more tightly",
-        "Raise `C` but lower `γ` to widen the margin while keeping locality high",
-        "Switch to a hard-margin formulation to eliminate the slack penalty"
+        "Lower both `C` and `γ`, choosing the values by cross-validation",
+        "Raise both `C` and `γ` to fit the training structure more tightly",
+        "Raise `C` but lower `γ` to widen the margin while keeping high locality",
+        "Switch to a hard-margin formulation to remove the slack penalty term"
       ],
       "answer": 0,
       "explanation": "100% train / poor test is classic overfitting. Large C shrinks the margin to fit noise and large γ makes each point's influence very local (a wiggly boundary). Lowering both (via cross-validation) generalizes better; raising them worsens overfitting, and a hard margin overfits even more."
@@ -163,9 +163,9 @@
       "question": "Why do Naive Bayes implementations sum logs (`log P(y) + Σ log P(xᵢ|y)`) instead of multiplying probabilities, and is the argmax affected?",
       "options": [
         "To avoid floating-point underflow from multiplying many tiny probabilities; the argmax is unchanged because `log` is monotonic",
-        "To make the posteriors well-calibrated; the argmax can change because logs reweight rare classes",
-        "To remove the conditional-independence assumption; the argmax is unchanged because logs are additive",
-        "To speed up training to a single counting pass; the argmax can change due to rounding in the log table"
+        "To make the posteriors well-calibrated; the argmax can shift because taking logs reweights the rarer classes upward",
+        "To remove the conditional-independence assumption; the argmax stays fixed because logs turn products into additions",
+        "To speed up training down to a single counting pass; the argmax can shift due to rounding inside the log lookup table"
       ],
       "answer": 0,
       "explanation": "Multiplying many small probabilities underflows to zero, so summing logs is numerically stable; because log is strictly monotonic, the class that maximizes the product also maximizes the log-sum, leaving the argmax identical. Logs do not change calibration or the independence assumption."
@@ -227,9 +227,9 @@
       "question": "Why does Naive Bayes often beat a more \"correct\" model that captures feature interactions when training data is scarce, despite its false independence assumption?",
       "options": [
         "Estimating each `P(xᵢ|y)` from single-feature counts is low-variance, and with scarce data low variance beats the high variance of estimating joint terms",
-        "The independence assumption is actually true for most real datasets, so Naive Bayes has lower bias than interaction models",
-        "Naive Bayes uses cross-validation internally to regularize, which interaction models cannot do",
-        "Naive Bayes produces perfectly calibrated posteriors, so its probability estimates are more reliable on small samples"
+        "The independence assumption is actually true for most real-world datasets, so Naive Bayes simply has lower bias than any interaction-aware model",
+        "Naive Bayes runs cross-validation internally to regularize itself, a step that the interaction-capturing models are structurally unable to perform",
+        "Naive Bayes produces perfectly calibrated posterior probabilities, so its probability estimates stay more reliable than rivals on small samples"
       ],
       "answer": 0,
       "explanation": "Per-feature count estimates are low-variance and stable even with little data, while modeling joint feature interactions needs far more data and yields high variance — so NB's biased-but-stable assumption wins when data is scarce. The independence assumption is almost always false, NB does no internal CV, and its posteriors are poorly calibrated."
@@ -242,9 +242,9 @@
       "question": "You have 5 million rows, 8 well-scaled numeric features, and need fast nightly retraining. Why are k-NN and a kernel SVM poor choices here?",
       "options": [
         "k-NN's naive `O(n·d)` queries and kernel SVM's roughly `O(n²)`–`O(n³)` training are too slow at millions of rows",
-        "Both require feature scaling, which is impossible to apply correctly to numeric features at this scale",
-        "Both assume conditional feature independence, which fails with only 8 features",
-        "Both produce native probability outputs that are too expensive to compute on large datasets"
+        "Both require feature scaling, and scaling cannot be applied correctly to numeric features at a dataset of this size",
+        "Both assume conditional independence between features, an assumption that breaks down with only 8 input features",
+        "Both produce native probability outputs, and computing those probabilities is too expensive on a large dataset"
       ],
       "answer": 0,
       "explanation": "k-NN pays O(n·d) per query and kernel SVM training is super-linear (~O(n²)–O(n³)), so both choke on millions of rows; a faster model (e.g. Gaussian NB, a linear model, or a tree) fits the nightly budget. Scaling is trivial here, the independence assumption belongs to Naive Bayes, and probabilistic output is not the bottleneck."
@@ -258,10 +258,10 @@
       "code": "P(free|S)=4/9, P(meeting|S)=1/9  -> score(S)=0.5*4/9*1/9 ≈ 0.02469\nP(free|H)=1/10, P(meeting|H)=5/10 -> score(H)=0.5*1/10*5/10 = 0.025",
       "lang": "text",
       "options": [
-        "Classify as **ham**, because score(H) > score(S): \"free\" pulls toward spam while \"meeting\" pulls strongly toward ham, nearly canceling",
-        "Classify as **spam**, because \"free\" is a strong spam word that dominates the product",
-        "It is an exact tie, so the prior P(S) = P(H) = 0.5 must break it in favor of spam",
-        "Classify as **ham**, because Laplace smoothing always biases the result toward the larger class total"
+        "Classify as **ham** (score(H) > score(S)): \"free\" pulls toward spam while \"meeting\" pulls strongly toward ham, nearly canceling",
+        "Classify as **spam**, because \"free\" is such a strong spam-indicating word that it dominates the whole product on its own",
+        "It is an exact numeric tie, so the equal priors P(S) = P(H) = 0.5 must be used to break it in favor of the spam class",
+        "Classify as **ham**, because Laplace smoothing systematically biases every result toward whichever class has the larger total"
       ],
       "answer": 0,
       "explanation": "Since 0.025 > 0.02469, the argmax picks ham; the scores are close because \"free\" favors spam while \"meeting\" strongly favors ham, leaving only a razor-thin margin (~50.3% ham). It is not a tie, \"free\" does not dominate, and smoothing does not systematically bias toward the larger total — the per-word likelihoods drive the outcome."

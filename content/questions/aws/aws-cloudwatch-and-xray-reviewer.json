@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "A high-throughput .NET Lambda already writes structured JSON logs and needs to emit an `OrdersPlaced` count and `LatencyMs` per invocation **without** adding latency or an extra API call on the hot path, keeping each metric correlated to its log line. What should it use?",
       "options": [
-        "Embedded Metric Format (EMF): write one structured log line CloudWatch extracts from",
+        "Embedded Metric Format (EMF): one structured log line CloudWatch extracts from",
         "A synchronous `PutMetricData` API call on every single invocation",
         "A metric filter applied after the fact to the function's log group",
-        "A subscription filter forwarding all matching events to Kinesis Data Streams"
+        "A subscription filter forwarding matching events to Kinesis Data Streams"
       ],
       "answer": 0,
       "explanation": "EMF emits one structured log line from which CloudWatch extracts the metric asynchronously — no hot-path API call, no added latency, and the metric shares dimensions/properties with its log line. `PutMetricData` adds a synchronous call per invocation; metric/subscription filters are downstream of logs and don't solve the per-invocation emission."
@@ -201,7 +201,7 @@
       "type": "mcq",
       "question": "What distinguishes CloudWatch **Synthetics canaries** from **RUM**?",
       "options": [
-        "Canaries are proactive scripted checks that hit an endpoint on a schedule; RUM is real-user telemetry reported from the browser",
+        "Canaries are proactive scripted checks on a schedule; RUM is real-user browser telemetry",
         "Canaries report telemetry from real users; RUM runs scripted checks on a schedule",
         "Both are proactive synthetic checks, differing only in language (Node vs Python)",
         "Canaries collect traces while RUM collects metrics, but neither involves real users"
@@ -218,7 +218,7 @@
       "code": "metrics.SetDimensions(new DimensionSet(\"Service\", \"checkout\"));\nmetrics.PutMetric(\"LatencyMs\", 87, Unit.MILLISECONDS);\n// added in the deploy:\nmetrics.SetDimensions(new DimensionSet(\"Service\", \"checkout\", \"OrderId\", \"ord-9f3a\"));",
       "lang": "csharp",
       "options": [
-        "`OrderId` was promoted into a dimension set, so every unique order id became a separate billable custom metric",
+        "`OrderId` was promoted into a dimension, so every unique order id became a billable metric",
         "`PutMetric` was called with milliseconds instead of count, doubling the metric charge",
         "Two `SetDimensions` calls are not allowed and silently duplicate every metric",
         "Adding a second dimension set disables EMF extraction, forcing fallback to `PutMetricData`"
@@ -258,10 +258,10 @@
       "type": "mcq",
       "question": "A fleet mixes services that propagate the X-Ray `X-Amzn-Trace-Id` header with services that propagate W3C `traceparent`, and traces break at the boundary between them. What is the correct senior fix?",
       "options": [
-        "Standardize on one propagator across the fleet, using ADOT to translate between W3C trace context and X-Ray ids",
+        "Standardize on one propagator, using ADOT to translate between W3C and X-Ray ids",
         "Disable sampling so every request is captured and the broken edges disappear",
         "Move all annotations to metadata so the trace ids stop conflicting",
-        "Switch every service to high-resolution metrics so the trace ids align on a 1-second boundary"
+        "Switch every service to high-resolution metrics to align ids on a 1-second boundary"
       ],
       "answer": 0,
       "explanation": "Mixed propagators break traces at the boundary; the fix is to choose one propagator consistently, and ADOT can translate between W3C trace context and X-Ray ids so mixed fleets interoperate. Sampling, annotations/metadata, and metric resolution are unrelated to header propagation."

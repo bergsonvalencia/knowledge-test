@@ -7,15 +7,15 @@
       "source": "ai/deep-learning-architectures-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "What is the **inductive bias** of an architecture, in the sense used in this reviewer?",
+      "question": "What is the **inductive bias** of a neural-network architecture?",
       "options": [
-        "The built-in assumption about the data's structure that is wired into the model so it need not learn that structure from scratch",
-        "A constant added to every neuron's weighted sum before the activation",
-        "The tendency of gradient descent to converge to a local rather than global minimum",
-        "The bias introduced when training and test data come from different distributions"
+        "A built-in assumption about the data's structure, wired into the model so it need not learn that structure from scratch",
+        "A constant added to every neuron's weighted sum before the activation function is applied",
+        "The tendency of gradient descent to converge to a local rather than the global minimum",
+        "The bias that arises when the training and test data are drawn from different distributions"
       ],
       "answer": 0,
-      "explanation": "The reviewer defines inductive bias as the built-in assumption about data structure (e.g. 'patterns are local' for CNNs) wired into the model's design. The bias term in a neuron and dataset shift are unrelated concepts."
+      "explanation": "Inductive bias is the built-in assumption about data structure (e.g. 'patterns are local' for CNNs) wired into the model's design. The bias term in a neuron and dataset shift are unrelated concepts."
     },
     {
       "subtopic": "Architecture-to-data matching",
@@ -30,7 +30,7 @@
         "Autoencoder"
       ],
       "answer": 0,
-      "explanation": "The reviewer attributes 'the input is a sequence and the past should inform the present' to RNNs. CNNs assume locality; an MLP is the no-bias baseline."
+      "explanation": "The assumption 'the input is a sequence and the past should inform the present' belongs to RNNs. CNNs assume locality; an MLP is the no-bias baseline."
     },
     {
       "subtopic": "Convolution output size",
@@ -47,7 +47,7 @@
         "7"
       ],
       "answer": 0,
-      "explanation": "(7 − 3 + 2)/2 + 1 = 6/2 + 1 = 3 + 1 = 4. The reviewer works this exact example. The common wrong answer 3 forgets the +1."
+      "explanation": "(7 − 3 + 2)/2 + 1 = 6/2 + 1 = 3 + 1 = 4. The common wrong answer 3 forgets the +1 term."
     },
     {
       "subtopic": "Parameter count of a conv layer",
@@ -62,7 +62,7 @@
         "32"
       ],
       "answer": 0,
-      "explanation": "Each filter is 3×3×3 = 27 weights; 32 filters = 864 weights, plus 32 biases = 896. The reviewer stresses that parameter count depends on filter size and channel depth, not the image's spatial dimensions (so 64×64 is irrelevant). 864 omits the biases."
+      "explanation": "Each filter is 3×3×3 = 27 weights; 32 filters = 864 weights, plus 32 biases = 896. Parameter count depends on filter size and channel depth, not the image's spatial dimensions (so 64×64 is irrelevant). The answer 864 omits the biases."
     },
     {
       "subtopic": "Padding semantics",
@@ -132,14 +132,14 @@
         "ReLU randomly zeros activations to prevent co-adaptation of features"
       ],
       "answer": 0,
-      "explanation": "The reviewer states ReLU lets the stack model nonlinear patterns; without it, stacked (linear) convolutions collapse to one linear map. Normalizing is batch normalization, and randomly zeroing activations is dropout."
+      "explanation": "ReLU lets the stack model nonlinear patterns; without it, stacked (linear) convolutions collapse to one linear map. Normalizing is batch normalization, and randomly zeroing activations is dropout."
     },
     {
       "subtopic": "Transfer learning strategy",
       "source": "ai/deep-learning-architectures-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "You have only 500 labeled X-ray images and a CNN pretrained on a large general image dataset. Per the practical rule, what is the best transfer-learning strategy?",
+      "question": "You have only 500 labeled X-ray images and a CNN pretrained on a large general image dataset. What is the best transfer-learning strategy?",
       "options": [
         "Freeze the pretrained backbone and train only a new classifier head (feature extraction)",
         "Unfreeze and retrain all convolutional layers at a high learning rate",
@@ -147,22 +147,22 @@
         "Randomly reinitialize the early convolutional layers and freeze the head"
       ],
       "answer": 0,
-      "explanation": "With small, somewhat-similar data the reviewer says to freeze the backbone and train only the head; the universal low-level features transfer well. Retraining everything (especially at a high LR) or training from scratch would overfit badly on 500 images."
+      "explanation": "With small, somewhat-similar data, freeze the backbone and train only the head; the universal low-level features transfer well. Retraining everything (especially at a high LR) or training from scratch would overfit badly on 500 images."
     },
     {
       "subtopic": "Fine-tuning learning rate",
       "source": "ai/deep-learning-architectures-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "When fine-tuning the top convolutional blocks of a pretrained backbone, why does the reviewer insist on a **small** learning rate?",
+      "question": "When fine-tuning the top convolutional blocks of a pretrained backbone, why should you use a **small** learning rate?",
       "options": [
         "So gradient updates nudge the well-trained pretrained weights rather than destroying the useful features they already encode",
-        "Because a large learning rate would make the convolution output size formula produce non-integer dimensions",
-        "Because frozen layers require a higher learning rate, so unfrozen layers must use a lower one to balance",
+        "Because a large learning rate would make the convolution output-size formula produce non-integer dimensions",
+        "Because frozen layers require a higher learning rate, so the unfrozen layers must use a lower one to balance",
         "Because batch normalization only converges when the learning rate is below a fixed threshold"
       ],
       "answer": 0,
-      "explanation": "A low LR ensures you 'nudge, not destroy' the pretrained weights, preserving the general features learned on the large dataset. The other options invent constraints that the reviewer does not state and are not true."
+      "explanation": "A low LR ensures you nudge, not destroy, the pretrained weights, preserving the general features learned on the large dataset. The other options invent constraints that are not true."
     },
     {
       "subtopic": "RNN hidden state",
@@ -184,12 +184,12 @@
       "source": "ai/deep-learning-architectures-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer models the gradient reaching a step k positions back as roughly `factor^k`. If `factor ≈ 0.5`, why can a vanilla RNN not learn that a token 20 steps earlier determines the label?",
+      "question": "Model the gradient reaching a step k positions back as roughly `factor^k`. If `factor ≈ 0.5`, why can a vanilla RNN not learn that a token 20 steps earlier determines the label?",
       "options": [
         "0.5^20 ≈ 9.5e-7, so the gradient signal from 20 steps back is essentially zero and those early weights barely update",
         "0.5^20 explodes the gradient, so gradient clipping erases the early-token contribution",
         "tanh saturates to exactly 0.5, freezing the hidden state after 20 steps",
-        "The output size formula limits the receptive field of an RNN to 10 steps"
+        "The output-size formula limits the receptive field of an RNN to 10 steps"
       ],
       "answer": 0,
       "explanation": "With factor < 1, contributions decay exponentially: 0.5^20 ≈ 9.5e-7, so distant gradients vanish and the early token cannot be learned. This is vanishing, not exploding (clipping addresses the opposite case), and the output-size formula is a CNN concept."
@@ -199,7 +199,7 @@
       "source": "ai/deep-learning-architectures-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Which technique does the reviewer name as the standard fix for the **exploding-gradient** case in RNN training?",
+      "question": "What is the standard fix for the **exploding-gradient** case in RNN training?",
       "options": [
         "Gradient clipping (capping the gradient norm)",
         "Adding a cell state updated by multiplication",
@@ -214,7 +214,7 @@
       "source": "ai/deep-learning-architectures-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which statements about LSTMs and GRUs are correct ?",
+      "question": "Which statements about LSTMs and GRUs are correct?",
       "options": [
         "The LSTM cell state is updated mainly by addition, letting gradients flow across many steps without vanishing",
         "The forget, input, and output gates are sigmoid valves producing values in (0,1)",
@@ -238,7 +238,7 @@
       "options": [
         "The old value is erased and fully replaced by the new candidate",
         "The old value is kept untouched and the candidate is ignored",
-        "The old value and the candidate are averaged",
+        "The old value and the candidate are averaged together",
         "The slot is exposed unchanged as the hidden state"
       ],
       "answer": 0,
@@ -264,7 +264,7 @@
       "source": "ai/deep-learning-architectures-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Per the cheat-sheet, which architecture canNOT parallelize computation over positions during training, and why?",
+      "question": "Which architecture canNOT parallelize computation over positions during training, and why?",
       "options": [
         "RNN/LSTM/GRU, because each step's hidden state depends on the previous step, forcing sequential processing in T",
         "CNN, because each filter must be applied before the next filter starts",

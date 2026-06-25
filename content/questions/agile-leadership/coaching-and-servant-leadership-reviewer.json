@@ -15,14 +15,14 @@
         "Lead first; serve only the highest-performing individuals"
       ],
       "answer": 1,
-      "explanation": "Greenleaf's idea is 'serve first, lead second' — leadership is a consequence of serving, not the other way around. The option framing serving as a tactic for compliance is closer to transactional/command-and-control, which the reviewer explicitly contrasts."
+      "explanation": "Greenleaf's idea is 'serve first, lead second' — leadership is a consequence of serving, not the other way around. Framing serving as a tactic for compliance is closer to transactional/command-and-control, which servant leadership explicitly contrasts."
     },
     {
       "subtopic": "Coaching vs mentoring",
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "What is the crispest distinction the reviewer draws between coaching and mentoring?",
+      "question": "What is the crispest distinction between coaching and mentoring?",
       "options": [
         "A coach tells from experience; a mentor asks questions",
         "A coach needs deep domain expertise; a mentor does not",
@@ -54,14 +54,14 @@
       "type": "truefalse",
       "question": "A powerful coaching question is open, short, and forward-moving, and typically starts with **What** or **How** rather than being a closed yes/no question.",
       "answer": true,
-      "explanation": "The reviewer defines a powerful question as open, short, and forward-moving, starting with What or How, and warns against closed (yes/no) and leading questions."
+      "explanation": "A powerful question is open, short, and forward-moving, starting with What or How; closed (yes/no) and leading questions are the things to avoid."
     },
     {
       "subtopic": "Self-sufficiency",
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "By the logic, what is the best real-world test of whether your coaching has built a self-sufficient team?",
+      "question": "What is the best real-world test of whether your coaching has built a self-sufficient team?",
       "options": [
         "How many impediments you personally resolve each sprint",
         "How well the team performs when you are on vacation and not in the room",
@@ -69,7 +69,7 @@
         "How often the team routes decisions through you for sign-off"
       ],
       "answer": 1,
-      "explanation": "The reviewer says to 'optimize for absence' — the measure is how the team runs when you are away. Being the single point of failure for decisions is the dependency anti-pattern, not success."
+      "explanation": "Optimize for absence — the measure is how the team runs when you are away. Being the single point of failure for decisions is the dependency anti-pattern, not success."
     },
     {
       "subtopic": "Stances: push vs pull",
@@ -91,7 +91,7 @@
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Why does the reviewer call facilitating the 'odd one out' among the five stances, and what is its key risk?",
+      "question": "Why is facilitating the 'odd one out' among the five stances, and what is its key risk?",
       "options": [
         "It requires the deepest domain expertise; the risk is out-coding the team",
         "It is content-neutral; if the facilitator has a stake in the outcome it becomes covert consulting",
@@ -106,22 +106,22 @@
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "A developer has genuinely never encountered the technique of mocking the clock to fix a timing-dependent test. The stance on whether you should withhold that fact and keep asking questions is:",
+      "question": "A developer has genuinely never encountered the technique of mocking the clock to fix a timing-dependent test. Should you withhold that fact and keep asking questions?",
       "options": [
         "Withhold it — a coach must never give the answer, no matter what",
-        "Withhold it, but only escalate to a manager if they stay stuck",
-        "Teach the missing fact first, then coach the application; withholding a teachable fact here is cruelty, not coaching",
-        "Mentor them by sharing a war story instead, since coaching does not apply"
+        "Withhold it, but escalate to a manager if they stay stuck",
+        "Teach the missing fact first, then coach the application",
+        "Mentor them with a war story instead, since coaching does not apply"
       ],
       "answer": 2,
-      "explanation": "The reviewer's explicit gotcha: 'not giving the answer' is a default, not an absolute. When someone truly lacks a teachable fact, teach it, then coach the application. Pure-coaching zealotry that withholds needed knowledge is an anti-pattern."
+      "explanation": "'Not giving the answer' is a default, not an absolute. When someone truly lacks a teachable fact, teach it, then coach the application. Withholding needed knowledge here is cruelty, not coaching — pure-coaching zealotry is an anti-pattern."
     },
     {
       "subtopic": "GROW closing discipline",
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer says GROW is non-linear in practice but that you should always *end* on a particular stage. Which one, and why?",
+      "question": "GROW is non-linear in practice, but you should always *end* on a particular stage. Which one, and why?",
       "options": [
         "End on Reality, because staying there long enough dissolves the problem",
         "End on Options, because the person should leave with many possibilities open",
@@ -136,7 +136,7 @@
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "At which level of listening does advice-giving 'hide,' ?",
+      "question": "At which level of listening does advice-giving 'hide'?",
       "options": [
         "Level 1 — Internal listening (attention on yourself and what you'll say next)",
         "Level 2 — Focused listening (attention fully on the other person)",
@@ -153,10 +153,10 @@
       "type": "mcq",
       "question": "What is the mistake of coaching a *Shu*-stage developer with open questions like 'what do you think the right pattern is?'",
       "options": [
-        "It insults them by treating an expert like a beginner",
-        "It is cruel because they lack the foundation to answer; they need teaching, not open questions",
-        "It is correct — open questions are always the right move regardless of stage",
-        "It violates content-neutrality, turning coaching into covert consulting"
+        "It insults them by treating an expert like a rank beginner",
+        "It is cruel because they lack the foundation to answer; they need teaching",
+        "It is correct — open questions are always right regardless of stage",
+        "It breaks content-neutrality, turning coaching into covert consulting"
       ],
       "answer": 1,
       "explanation": "A Shu-stage learner wants concrete rules and recipes; coaching them with open questions just frustrates them — teach them instead. Insulting an expert with a recipe is the opposite error (teaching a Ri-stage person)."
@@ -196,7 +196,7 @@
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Which of Spears' ten servant-leader characteristics does the reviewer call the 'spine' qualities that keep servant leadership from collapsing into people-pleasing? Select all that apply.",
+      "question": "Which of Spears' ten servant-leader characteristics are the 'spine' qualities that keep servant leadership from collapsing into people-pleasing? Select all that apply.",
       "options": [
         "Stewardship",
         "Foresight",
@@ -208,14 +208,14 @@
         0,
         1
       ],
-      "explanation": "The reviewer names stewardship and foresight as the 'spine' characteristics that prevent servant leadership from becoming people-pleasing. Healing, community, and empathy are the relational/institutional characteristics but are not the named 'spine' pair."
+      "explanation": "Stewardship and foresight are the 'spine' characteristics that prevent servant leadership from becoming people-pleasing. Healing, community, and empathy are relational/institutional characteristics but are not the named 'spine' pair."
     },
     {
       "subtopic": "Leading vs powerful questions",
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "An engineer is stuck. Which utterance does the reviewer classify as 'advice-in-disguise' (consulting masquerading as a coaching question) rather than a genuinely powerful question?",
+      "question": "An engineer is stuck. Which utterance is 'advice-in-disguise' (consulting masquerading as a coaching question) rather than a genuinely powerful question?",
       "options": [
         "\"What's the real obstacle here?\"",
         "\"Don't you think you should just refactor it?\"",
@@ -237,7 +237,7 @@
       "options": [
         "Options stage; the second question generates more alternatives",
         "Reality stage; the second question surfaces the current obstacle",
-        "Will stage; the second question is a commitment check that strengthens the action plan toward a higher confidence",
+        "Will stage; the second question is a commitment check that firms up the action plan toward higher confidence",
         "Goal stage; the second question redefines what success looks like"
       ],
       "answer": 2,
@@ -248,7 +248,7 @@
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer describes a 'fading ladder' for building self-sufficiency. What is the correct order of scaffolding steps?",
+      "question": "In the 'fading ladder' for building self-sufficiency, what is the correct order of scaffolding steps?",
       "options": [
         "Watch them do it -> do it with them -> do it for them -> they own it",
         "Do it for them -> do it with them -> watch them do it -> they own it",
@@ -263,7 +263,7 @@
       "source": "agile-leadership/coaching-and-servant-leadership-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Regarding coaching across the three altitudes (individual, team, organization), which statements are accurate per the reviewer? Select all that apply.",
+      "question": "Regarding coaching across the three altitudes (individual, team, organization), which statements are accurate? Select all that apply.",
       "options": [
         "Coaching the team means treating it as a system with its own dynamics (trust, conflict norms, shared agreements), not as the sum of its members",
         "Conway's Law is a reason org-level coaching is often the real lever, because architecture is tied to team boundaries",

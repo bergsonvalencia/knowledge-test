@@ -15,7 +15,7 @@
         "Documentation should be written only after the software is fully complete"
       ],
       "answer": 0,
-      "explanation": "The Manifesto's closing line is \"while there is value in the items on the right, we value the items on the left more\" — it is a statement of priority under tension, not a deletion. The reviewer stresses the Manifesto does NOT say documentation is bad."
+      "explanation": "The Manifesto's closing line is \"while there is value in the items on the right, we value the items on the left more\" — a statement of priority under tension, not a deletion. It does NOT say documentation is bad."
     },
     {
       "subtopic": "Empiricism pillars",
@@ -129,7 +129,7 @@
         "The team needs a defined process instead, since agile clearly does not work here"
       ],
       "answer": 0,
-      "explanation": "Rituals without the mindset is cargo-cult agile. The reviewer is emphatic: the fix is never more ceremony — it is the mindset shift (genuine transparency, retrospectives that change behavior, an empowered PO, and engineering practices enabling small frequent delivery)."
+      "explanation": "Rituals without the mindset is cargo-cult agile. The fix is never more ceremony — it is the mindset shift: genuine transparency, retrospectives that change behavior, an empowered Product Owner, and engineering practices enabling small frequent delivery."
     },
     {
       "subtopic": "Iterative vs incremental",
@@ -151,7 +151,7 @@
       "source": "agile-leadership/agile-foundations-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which of the following are among the classic seven Lean wastes (manufacturing terms) as mapped to software in the reviewer? Select all that apply.",
+      "question": "Which of the following are among the classic seven Lean wastes (manufacturing terms) as mapped to software? Select all that apply.",
       "options": [
         "Inventory (work in progress, half-done features)",
         "Defects (bugs, rework, escaped errors)",
@@ -171,7 +171,7 @@
       "source": "agile-leadership/agile-foundations-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "In which situations does the reviewer say agile is a **poor fit**? Select all that apply.",
+      "question": "In which situations is agile a **poor fit**? Select all that apply.",
       "options": [
         "The problem is well understood and stable with a fixed, fully-specified scope",
         "Change is irreversible or extremely expensive (long-fabrication hardware)",
@@ -230,7 +230,7 @@
       "source": "agile-leadership/agile-foundations-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "The reviewer argues that principles 8 (sustainable pace) and 9 (technical excellence) are the first casualties under deadline pressure, and that abandoning them is self-defeating. Why?",
+      "question": "Principles 8 (sustainable pace) and 9 (technical excellence) are often the first casualties under deadline pressure, yet abandoning them is self-defeating. Why?",
       "options": [
         "Skipping tests and crunching people creates defects and burnout, which slow you down, creating more pressure — agility *is* the ability to change cheaply",
         "They are optional principles, so dropping them simply makes the team more efficient under pressure",
@@ -245,7 +245,7 @@
       "source": "agile-leadership/agile-foundations-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "Comparing waterfall (predictive) and agile (empirical) as in the side-by-side table, which statements are accurate? Select all that apply.",
+      "question": "Comparing waterfall (predictive) and agile (empirical), which statements are accurate? Select all that apply.",
       "options": [
         "Waterfall fixes scope and lets time/cost flex; agile fixes time/cost and lets scope flex",
         "In waterfall, risk accumulates and surfaces late at integration; in agile, risk is retired early, iteration by iteration",
@@ -258,14 +258,14 @@
         1,
         2
       ],
-      "explanation": "Options 1-3 match the table (iron-triangle flip, risk timing, delivery cadence). The last two invert reality: it is waterfall that uses a change-control board and measures progress by phase/document completion, while agile welcomes change and measures by working software."
+      "explanation": "Options 1-3 are accurate (iron-triangle flip, risk timing, delivery cadence). The last two invert reality: it is waterfall that uses a change-control board and measures progress by phase/document completion, while agile welcomes change and measures by working software."
     },
     {
       "subtopic": "Defects as costliest waste",
       "source": "agile-leadership/agile-foundations-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Among the seven Lean wastes mapped to a software pipeline, the reviewer singles out **defects** as typically the most expensive. What is the underlying reason, and the Lean prescription?",
+      "question": "Among the seven Lean wastes mapped to a software pipeline, **defects** are typically the most expensive. What is the underlying reason, and the Lean prescription?",
       "options": [
         "The cost-of-change curve means a defect found late (UAT/production) can cost orders of magnitude more and force cross-module rework; the fix is to *build quality in* at the source",
         "Defects waste the most raw developer hours per occurrence, so the fix is to add a dedicated end-of-cycle QA gate",

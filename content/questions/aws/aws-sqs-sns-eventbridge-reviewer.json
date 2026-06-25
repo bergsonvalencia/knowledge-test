@@ -12,7 +12,7 @@
         "SQS pulls work, SNS pushes copies, EventBridge routes by content",
         "SQS pushes copies, SNS routes by content, EventBridge pulls work",
         "SQS routes by content, SNS pulls work, EventBridge pushes copies",
-        "All three pull work; only the consumer model differs"
+        "All three pull work, differing only in their consumer polling model"
       ],
       "answer": 0,
       "explanation": "SQS is a pull-based point-to-point work queue, SNS pushes a copy to every subscription, and EventBridge routes events to targets by matching content-based patterns. The other options scramble these roles."
@@ -48,10 +48,10 @@
       "type": "mcq",
       "question": "Why is long polling (`WaitTimeSeconds` up to 20) preferred over short polling for SQS?",
       "options": [
-        "It queries all servers, returning fewer empty responses, which lowers cost and latency-to-first-message",
-        "It guarantees messages are returned in strict FIFO order",
-        "It deletes messages automatically after they are received",
-        "It increases the maximum message size beyond 256 KB"
+        "It queries all servers and returns fewer empty responses, lowering cost and latency-to-first-message",
+        "It guarantees that messages are always returned in strict FIFO order",
+        "It deletes messages automatically as soon as they are received",
+        "It raises the maximum message size for the queue beyond 256 KB"
       ],
       "answer": 0,
       "explanation": "Long polling waits until a message arrives (or the timeout elapses) and queries all servers, so it returns fewer empty receives, cutting cost and latency. It has nothing to do with ordering, auto-delete, or message size."
@@ -64,9 +64,9 @@
       "question": "What is the default delivery guarantee across SQS Standard, SNS, and EventBridge?",
       "options": [
         "At-least-once delivery — design every consumer to be idempotent",
-        "Exactly-once delivery — idempotency is unnecessary",
-        "At-most-once delivery — messages may be silently dropped but never duplicated",
-        "Ordered exactly-once delivery guaranteed end-to-end"
+        "Exactly-once delivery — making idempotency entirely unnecessary",
+        "At-most-once delivery — messages may be dropped but never duplicated",
+        "Ordered exactly-once delivery, guaranteed end-to-end by the transport"
       ],
       "answer": 0,
       "explanation": "At-least-once is the default everywhere (even FIFO across its dedup boundary), so consumers must be idempotent. Exactly-once is a property built at the consumer, not handed to you by the transport."
@@ -78,10 +78,10 @@
       "type": "mcq",
       "question": "In an SQS FIFO queue, how does the **message group id** govern ordering and parallelism?",
       "options": [
-        "Messages with the same group id are strictly ordered and processed one in-flight at a time; different group ids process in parallel",
-        "All messages in the queue are globally ordered regardless of group id",
-        "The group id only affects deduplication, not ordering or parallelism",
-        "Each group id can have unlimited in-flight messages processed concurrently while preserving order"
+        "Same group id is strictly ordered, one in-flight at a time; different group ids process in parallel",
+        "All messages in the queue are globally ordered, regardless of their group id",
+        "The group id only affects deduplication and has no effect on ordering or parallelism",
+        "Each group id may have unlimited in-flight messages processed concurrently while still preserving order"
       ],
       "answer": 0,
       "explanation": "FIFO orders messages within a group id and keeps one message per group in-flight at a time, while different group ids run in parallel. A high-cardinality group id (e.g. per customer) preserves the ordering that matters while still scaling."
@@ -105,9 +105,9 @@
       "lang": "json",
       "options": [
         "After the message has been received 5 times without being deleted, SQS moves it to the DLQ",
-        "After the message sits in the queue for 5 days it is moved to the DLQ",
-        "After 5 consumers subscribe to the queue the message is moved to the DLQ",
-        "After 5 seconds of visibility timeout the message is moved to the DLQ"
+        "After the message has sat in the queue for 5 days, SQS moves it to the DLQ",
+        "After 5 different consumers have subscribed to the queue, the message goes to the DLQ",
+        "After 5 seconds of visibility timeout elapse, the message is moved to the DLQ"
       ],
       "answer": 0,
       "explanation": "`maxReceiveCount` counts how many times a message is received without being successfully deleted; once it exceeds the limit (5 here), SQS moves the message to the DLQ, isolating poison messages. It is unrelated to retention days, subscriber count, or the visibility timeout value."
@@ -119,10 +119,10 @@
       "type": "mcq",
       "question": "A team plans to fan out via **SNS directly to three Lambdas**. What is the senior pushback in favor of **SNS to SQS to compute**?",
       "options": [
-        "SQS in the middle gives each consumer durability, buffering, independent retry, and a DLQ, so a slow or down consumer does not lose messages",
-        "SNS cannot deliver to Lambda at all, so an SQS queue is mandatory",
-        "Lambda cannot be made idempotent, whereas SQS messages are processed exactly once",
-        "SNS to Lambda costs more per message than SNS to SQS to Lambda"
+        "SQS in the middle gives each consumer durability, buffering, independent retry, and a DLQ",
+        "SNS is technically unable to deliver to Lambda at all, so an SQS queue is mandatory",
+        "Lambda can never be made idempotent, whereas SQS processes every message exactly once",
+        "SNS-to-Lambda is billed at a strictly higher per-message rate than SNS-to-SQS-to-Lambda"
       ],
       "answer": 0,
       "explanation": "SNS-to-Lambda is deliver-and-forget with limited retry, so back-pressure is unmanaged and a down consumer can lose messages. Putting SQS in front gives each service buffering, independent retry, and a DLQ. SNS can deliver to Lambda directly, and the issue is durability, not cost or idempotency impossibility."
@@ -134,10 +134,10 @@
       "type": "mcq",
       "question": "For an SNS topic to fan out into an SQS queue, what permission configuration is required, and what does **raw message delivery** control?",
       "options": [
-        "The SQS queue's resource policy must allow `sqs:SendMessage` from the topic (via `aws:SourceArn`); raw delivery off wraps the payload in an SNS envelope, on delivers the bare message",
-        "The SNS topic's resource policy must allow `sns:Subscribe` from the queue; raw delivery controls message retention duration",
-        "No permissions are needed because SNS and SQS share a trust relationship; raw delivery controls the dedup window",
-        "An IAM user access key must be embedded in the subscription; raw delivery controls the visibility timeout"
+        "The queue's resource policy must allow `sqs:SendMessage` from the topic (via `aws:SourceArn`); raw delivery off wraps the payload in an SNS envelope, on sends the bare message",
+        "The topic's resource policy must allow `sns:Subscribe` from the queue; raw delivery sets the message retention duration",
+        "No permissions are needed because SNS and SQS share a built-in trust relationship; raw delivery sets the dedup window",
+        "An IAM user access key must be embedded into the subscription; raw delivery sets the queue's visibility timeout"
       ],
       "answer": 0,
       "explanation": "The SQS queue's resource policy must permit `sqs:SendMessage` from the SNS topic, scoped with an `aws:SourceArn` condition. Raw message delivery off (default) wraps the payload in an SNS envelope; turning it on delivers the bare message. The other options misattribute the policy and misstate what raw delivery does."
@@ -151,10 +151,10 @@
       "code": "{\n  \"source\": [\"com.acme.orders\"],\n  \"detail-type\": [\"OrderPlaced\"],\n  \"detail\": {\n    \"amount\": [{ \"numeric\": [\">=\", 100] }],\n    \"country\": [\"US\", \"CA\"]\n  }\n}",
       "lang": "json",
       "options": [
-        "EventBridge event patterns match nested fields with numeric, prefix, anything-but, and exists operators that SNS filter policies cannot express as richly",
-        "EventBridge filter policies only work on top-level message attributes, exactly like SNS",
-        "SNS filter policies natively support numeric comparison on nested JSON, so either works equally",
-        "Only SNS can match the `detail` block; EventBridge requires a Lambda to parse content"
+        "EventBridge patterns match nested fields with numeric, prefix, anything-but, and exists operators that SNS cannot express as richly",
+        "EventBridge filter policies work only on top-level message attributes, exactly like SNS does",
+        "SNS filter policies natively support numeric comparison on nested JSON, so either service works equally well",
+        "Only SNS can match the `detail` block; EventBridge would require a Lambda to parse the content first"
       ],
       "answer": 0,
       "explanation": "EventBridge patterns match nested `detail` fields with numeric, prefix, anything-but, and exists operators — richer content-based routing than SNS filter policies, which match message attributes (or the body) more simply. The distractors invert these capabilities."
@@ -185,9 +185,9 @@
       "lang": "csharp",
       "options": [
         "The conditional put fails with `ConditionalCheckFailedException`, the handler returns early, and `DoWorkAsync` is skipped",
-        "The put overwrites the existing item and `DoWorkAsync` runs again, double-processing the message",
-        "The put succeeds because DynamoDB ignores the condition on duplicates, and work runs twice",
-        "A `ConditionalCheckFailedException` is thrown and propagates, crashing the handler"
+        "The put overwrites the existing item, and `DoWorkAsync` runs again, double-processing the message",
+        "The put succeeds because DynamoDB ignores the condition on duplicates, so the work runs twice",
+        "A `ConditionalCheckFailedException` is thrown and propagates uncaught, crashing the handler"
       ],
       "answer": 0,
       "explanation": "The first write claims the id; on a duplicate the `attribute_not_exists(id)` condition fails, throwing `ConditionalCheckFailedException`, which is caught and triggers an early `return`, so `DoWorkAsync` never runs again. The condition prevents overwrite, and the exception is handled rather than propagated."
@@ -215,10 +215,10 @@
       "type": "mcq",
       "question": "A Lambda has a **60s** function timeout and processes a queue whose **visibility timeout is 30s**; messages keep returning mid-processing. What is wrong and the fix?",
       "options": [
-        "The 30s visibility timeout is shorter than the 60s function timeout, so messages reappear and are redelivered while still processing — raise it to roughly 6x the function timeout",
-        "The function timeout must always be longer than the visibility timeout, so lower the function timeout to 15s",
-        "Long polling is disabled, causing redelivery — set `WaitTimeSeconds` to 20",
-        "The queue is FIFO without a message group id, so it redelivers — add a group id"
+        "The 30s visibility timeout is shorter than the 60s processing time, so messages reappear — raise it to roughly 6x the function timeout",
+        "The function timeout must always exceed the visibility timeout, so lower the function timeout to 15s instead",
+        "Long polling is disabled, which causes the redelivery — set `WaitTimeSeconds` to its maximum of 20",
+        "The queue is FIFO and is missing a message group id, so it redelivers — add a group id to fix it"
       ],
       "answer": 0,
       "explanation": "When the visibility timeout (30s) is shorter than worst-case processing (60s), the message becomes visible again and is redelivered before the worker finishes. The rule of thumb is to set the visibility timeout to about 6x the function timeout. Long polling and FIFO group ids do not cause this redelivery."
@@ -230,10 +230,10 @@
       "type": "mcq",
       "question": "You must enqueue a 5 MB document for asynchronous processing, but SQS caps messages at 256 KB. What is the correct approach?",
       "options": [
-        "Store the payload in S3 and enqueue a pointer under 256 KB; the SQS Extended Client Library automates write-on-send and dereference-on-receive (up to 2 GB)",
-        "Split the document into 20 separate 256 KB SQS messages and reassemble in the consumer",
-        "Raise the SQS maximum message size limit to 5 MB via a queue attribute",
-        "Compress the document so it always fits under 256 KB, since the cap is on compressed size"
+        "Store the payload in S3 and enqueue a small pointer; the SQS Extended Client Library handles write-on-send and dereference-on-receive (up to 2 GB)",
+        "Split the document into roughly 20 separate 256 KB SQS messages and reassemble them in the consumer",
+        "Raise the SQS maximum message size limit from 256 KB to 5 MB using a queue attribute",
+        "Compress the document so it always fits under 256 KB, since the cap applies to compressed size"
       ],
       "answer": 0,
       "explanation": "The S3 large-payload pattern stores the body in S3 and enqueues a small pointer; the SQS Extended Client Library handles write-on-send and dereference-on-receive, supporting payloads up to 2 GB. The 256 KB cap is fixed (not raisable to 5 MB), and manual splitting or relying on compression is not the documented approach."
@@ -245,10 +245,10 @@
       "type": "mcq",
       "question": "Which statement about SQS delay queues and per-message message timers is correct?",
       "options": [
-        "A queue-level `DelaySeconds` hides every new message for up to 15 minutes; a per-message `DelaySeconds` overrides it on Standard queues only — FIFO does not support per-message delay",
-        "Per-message `DelaySeconds` works on FIFO queues but not Standard queues",
-        "Both delay queues and message timers can delay messages for up to 14 days",
-        "A delay queue retroactively hides messages already sitting in the queue, not just new ones"
+        "Queue-level `DelaySeconds` hides every new message up to 15 minutes; per-message `DelaySeconds` overrides it on Standard only — FIFO has no per-message delay",
+        "Per-message `DelaySeconds` works on FIFO queues but is not supported on Standard queues",
+        "Both delay queues and per-message message timers can delay messages for up to 14 days",
+        "A delay queue retroactively hides messages already sitting in the queue, not just newly sent ones"
       ],
       "answer": 0,
       "explanation": "Queue-level `DelaySeconds` delays every new message up to 15 minutes; a per-message `DelaySeconds` (message timer) overrides the default but only on Standard queues — FIFO does not support per-message delay. The maximum is 15 minutes (not 14 days), and a delay queue only affects newly sent messages."

@@ -81,7 +81,7 @@
         "Inverting the d×d matrix XᵀX costs roughly O(d³), which is prohibitive at d ≈ 50,000",
         "The normal equation cannot represent a bias/intercept term",
         "The normal equation only works for classification, not regression",
-        "The normal equation requires choosing a learning rate that does not exist for large d"
+        "The normal equation requires a learning rate that does not exist for large d"
       ],
       "answer": 0,
       "explanation": "The matrix inverse is roughly O(d³), which becomes painful past ~10⁴ features, so gradient descent / SGD is preferred for very high dimensions. The normal equation handles the intercept fine and needs no learning rate — those distractors are false."
@@ -236,17 +236,17 @@
       "source": "ai/linear-and-logistic-regression-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "This loop fits y ≈ w·x with MSE gradient descent on points (1,2),(2,4),(3,6). After running it, which statement best describes the printed loss sequence?",
+      "question": "This loop fits y ≈ w·x (no bias term) with MSE gradient descent on points (1,2),(2,4),(3,6). After running it, which statement best describes the printed loss sequence?",
       "code": "w = 0.0\nfor step in range(6):\n    yhat = [w * xi for xi in [1, 2, 3]]\n    err  = [p - t for p, t in zip(yhat, [2, 4, 6])]\n    mse  = sum(e*e for e in err) / 3\n    grad = sum(e*xi for e, xi in zip(err, [1, 2, 3])) * 2 / 3\n    print(step, round(w, 4), round(mse, 4))\n    w = w - 0.1 * grad",
       "lang": "python",
       "options": [
-        "MSE decreases monotonically toward zero as w climbs toward 2",
+        "MSE drops sharply toward zero and never rises, as w climbs toward 2",
         "MSE oscillates up and down because the learning rate is too large",
         "MSE stays constant because the gradient is always zero from the start",
         "MSE increases because the update moves w away from the optimum"
       ],
       "answer": 0,
-      "explanation": "The true line is y = 2x, MSE is convex, and η = 0.1 is small enough that each step lowers the loss — the reviewer's run shows 18.67 → 0.30 → 0.073 → … decreasing monotonically as w rises toward 2. With w starting at 0 the initial gradient is non-zero, so the loss is not constant and does not increase."
+      "explanation": "The true line is y = 2x and a single weight w can represent it exactly, so with η = 0.1 the loss falls fast and never increases: it prints about 18.67 → 0.083 → 0.0004 → 0 → 0 → 0 as w rises toward 2. With w starting at 0 the initial gradient is non-zero, so the loss is not constant and does not increase or oscillate."
     },
     {
       "subtopic": "Linear vs logistic at a glance",

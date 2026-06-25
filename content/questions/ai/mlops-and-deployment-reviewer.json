@@ -7,15 +7,15 @@
       "source": "ai/mlops-and-deployment-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "According to the Google 'technical debt' framing in the reviewer, what is the trained model relative to a real production ML system?",
+      "question": "In the Google 'technical debt' framing of ML systems, what is the trained model relative to a real production ML system?",
       "options": [
-        "The bulk of the system, with monitoring and serving as minor add-ons",
-        "A tiny box; configuration, data collection, feature extraction, serving infrastructure, and monitoring dwarf it",
-        "Roughly half the system, balanced against the data pipeline",
-        "Irrelevant once the system is in production"
+        "The bulk of the system, with serving and monitoring as minor add-ons",
+        "A tiny box dwarfed by config, data collection, feature extraction, serving, and monitoring",
+        "Roughly half the system, balanced against the data pipeline alone",
+        "Largely irrelevant once the system has reached production"
       ],
       "answer": 1,
-      "explanation": "The reviewer stresses that ML code is a tiny sliver of a real system; the surrounding plumbing (data, features, serving, monitoring) is the bulk and where most failures originate. The model is not the majority of the work."
+      "explanation": "ML code is a tiny sliver of a real system; the surrounding plumbing (data, features, serving, monitoring) is the bulk and where most failures originate. The model is not the majority of the work."
     },
     {
       "subtopic": "MLOps as a loop",
@@ -26,7 +26,7 @@
       "options": [
         "It uses containers to package the application",
         "It runs unit tests in continuous integration",
-        "The return edge from production monitoring back to data, so the system is designed to be retrained rather than shipped once",
+        "A return edge from monitoring back to data, so the system is designed to be retrained rather than shipped once",
         "It deploys behind a load balancer with multiple replicas"
       ],
       "answer": 2,
@@ -37,15 +37,15 @@
       "source": "ai/mlops-and-deployment-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "To reproduce an exact model, the reviewer says a model is a function of which inputs?",
+      "question": "To reproduce an exact model, a model is best understood as a function of which inputs?",
       "options": [
         "Code only — version control of the source is sufficient",
-        "Code and data only — config is incidental",
+        "Code and data only — config is incidental to the result",
         "Code, data, configuration (hyperparameters), and the random seed",
         "Data and hyperparameters only — code is regenerated from them"
       ],
       "answer": 2,
-      "explanation": "The reviewer states a model is a function of (code + data + config + random seed), so reproducibility requires capturing every one. Versioning code alone leaves the data and hyperparameters unpinned."
+      "explanation": "A model is a function of (code + data + config + random seed), so reproducibility requires capturing every one. Versioning code alone leaves the data and hyperparameters unpinned."
     },
     {
       "subtopic": "Pickle security",
@@ -54,7 +54,7 @@
       "type": "truefalse",
       "question": "Loading (unpickling) a model file from an untrusted source is safe because pickle only deserializes data, not executable code.",
       "answer": false,
-      "explanation": "False. Loading a pickle executes arbitrary code, so you must never unpickle a model from an untrusted source; the reviewer says to treat untrusted artifacts as code and prefer ONNX/SavedModel or a signed, provenance-checked artifact."
+      "explanation": "False. Loading a pickle executes arbitrary code, so you must never unpickle a model from an untrusted source; treat untrusted artifacts as code and prefer ONNX/SavedModel or a signed, provenance-checked artifact."
     },
     {
       "subtopic": "Serving regimes",
@@ -63,10 +63,10 @@
       "type": "mcq",
       "question": "Which statement best captures the main trade-off of batch (offline) serving?",
       "options": [
-        "Low per-request latency but predictions can become stale",
-        "High throughput and simple, but predictions can be stale (hours old)",
-        "Always-on, per-request freshness at the cost of a scalable service to operate",
-        "Near-real-time per-event reaction without a synchronous request"
+        "Low per-request latency, but predictions can become stale over time",
+        "High throughput and simplicity, but predictions can be stale (hours old)",
+        "Always-on, per-request freshness, but a scalable service to operate",
+        "Near-real-time per-event reaction without any synchronous request"
       ],
       "answer": 1,
       "explanation": "Batch serving runs inference on a schedule over a large dataset and stores results: simple and high-throughput with no latency pressure, but the cost is staleness. Per-request freshness and always-on operation describe online serving; per-event reaction describes streaming."
@@ -81,8 +81,8 @@
       "question": "A model has excellent offline accuracy on its test set but degraded live accuracy. The feature `avg_purchase` is computed by the training SQL and the serving code shown below. Why does offline evaluation fail to catch the problem?",
       "options": [
         "Offline evaluation uses too small a test set to detect the difference",
-        "Offline evaluation uses the training-side feature computation, so it never exercises the divergent serving-side code",
-        "The model overfits the test set, masking the serving bug",
+        "Offline evaluation uses the training-side computation, never exercising the divergent serving code",
+        "The model overfits the test set, which masks the serving-side bug",
         "Concept drift has changed P(y|x) since the test set was created"
       ],
       "answer": 1,
@@ -96,9 +96,9 @@
       "question": "How does a feature store eliminate training/serving skew?",
       "options": [
         "It retrains the model more frequently so serving values stay current",
-        "It computes each feature from a single definition and serves it to both the offline store (training) and the online store (serving)",
+        "It computes each feature from one definition, serving it to both the offline (training) and online (serving) stores",
         "It caches serving predictions so repeated inputs return identical answers",
-        "It converts all features to ONNX so they are framework-independent"
+        "It converts all features to ONNX so they become framework-independent"
       ],
       "answer": 1,
       "explanation": "A feature store derives both training and serving values from one definition, so train and serve see identical values. Frequent retraining, prediction caching, and ONNX conversion do nothing to unify how a feature is computed across the two paths."
@@ -111,7 +111,7 @@
       "question": "A six-month-old churn model still passes its original offline test set, and its input features are statistically unchanged, yet live predictions are clearly worse. What is the most likely cause?",
       "options": [
         "Data drift — the input distribution P(x) has shifted",
-        "Concept drift — the relationship P(y|x) has changed while inputs look the same",
+        "Concept drift — P(y|x) has changed while inputs look the same",
         "Training/serving skew in the feature pipeline",
         "A data-quality bug such as a surge of nulls"
       ],
@@ -128,7 +128,7 @@
         "≈0.044 — stable, no significant drift",
         "≈0.150 — moderate shift, watch the feature",
         "≈0.245 — major shift, raise a drift alert",
-        "≈0.000 — identical distributions"
+        "≈0.000 — the distributions are identical"
       ],
       "answer": 0,
       "explanation": "The per-bucket terms are 0.0223 + 0.0077 + 0.0144 + 0 ≈ 0.0444, which is below the 0.1 threshold, so the feature is stable. The distributions are clearly not identical (so not 0), and the value does not reach the moderate (0.1–0.25) or major (>0.25) bands."
@@ -169,7 +169,7 @@
       "question": "A nightly CT pipeline retrained a model and auto-deployed it, but the new model was significantly worse than the previous one. What is missing from the pipeline?",
       "options": [
         "A larger training dataset to improve the retrain",
-        "An evaluation gate that promotes a model only if it beats the current production model (and baseline) by a meaningful margin",
+        "An evaluation gate that promotes a model only if it beats production (and baseline) meaningfully",
         "A faster GPU so retraining completes before deployment",
         "More frequent retraining to overwrite the bad model sooner"
       ],
@@ -181,7 +181,7 @@
       "source": "ai/mlops-and-deployment-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which statements about safe-rollout strategies are accurate per the reviewer? (Select all that apply.)",
+      "question": "Which statements about safe-rollout strategies are accurate? (Select all that apply.)",
       "options": [
         "Shadow deployment sends mirrored traffic to the new model but does not use its output, giving zero user risk",
         "A/B testing is primarily for comparing a business outcome (e.g. click-through) with statistical significance",
@@ -215,15 +215,15 @@
       "source": "ai/mlops-and-deployment-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A recommender's own predictions shape what users see, and those interactions become the next training set. What risk does the reviewer call out, and what is the suggested mitigation?",
+      "question": "A recommender's own predictions shape what users see, and those interactions become the next training set. What risk does this create, and what is the suggested mitigation?",
       "options": [
         "Training/serving skew; fix it with a feature store",
-        "Self-reinforcing bias, where the model amplifies its own predictions; mitigate by logging enough to detect it and injecting exploration/randomization",
+        "Self-reinforcing bias, where the model amplifies its own predictions; mitigate by logging to detect it and injecting exploration/randomization",
         "Concept drift; mitigate by retraining on a fixed schedule",
         "Data leakage; mitigate by removing the target column from features"
       ],
       "answer": 1,
-      "explanation": "When a model's predictions influence its future training data, it can reinforce its own biases; the reviewer advises logging to detect this and injecting exploration/randomization. Skew, concept drift, and leakage are distinct problems with different causes and fixes."
+      "explanation": "When a model's predictions influence its future training data, it can reinforce its own biases; mitigate by logging enough to detect this and injecting exploration/randomization. Skew, concept drift, and leakage are distinct problems with different causes and fixes."
     },
     {
       "subtopic": "Latency budget and scaling",
@@ -242,7 +242,7 @@
         2,
         3
       ],
-      "explanation": "The reviewer emphasizes p95/p99 over the mean, batching as a throughput-for-latency trade, and measuring the entire path. Statelessness — not per-request state — is exactly what makes replicas interchangeable behind a load balancer, so that option is wrong."
+      "explanation": "p95/p99 matters more than the mean, batching trades a little latency for throughput, and the budget must measure the entire path. Statelessness — not per-request state — is exactly what makes replicas interchangeable behind a load balancer, so that option is wrong."
     },
     {
       "subtopic": "Drift detection code reading",
@@ -266,15 +266,15 @@
       "source": "ai/mlops-and-deployment-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "When an LLM-powered system is built on a hosted model API you do not train, which operational shift does the reviewer identify as the key change to how you version and deploy?",
+      "question": "When an LLM-powered system is built on a hosted model API you do not train, what is the key change to how you version and deploy?",
       "options": [
-        "The model weights become the primary versioned artifact and must be re-pushed on each change",
-        "The prompt template becomes the artifact that changes behavior, so it must be versioned, tested, and rollback-able like code",
-        "Versioning becomes unnecessary because the API provider guarantees deterministic outputs",
+        "The model weights become the primary versioned artifact, re-pushed on each change",
+        "The prompt template becomes the artifact that changes behavior, versioned, tested, and rollback-able like code",
+        "Versioning becomes unnecessary because the provider guarantees deterministic outputs",
         "The feature store replaces the prompt as the unit of deployment"
       ],
       "answer": 1,
-      "explanation": "With a fixed hosted model, the prompt template is what changes behavior, so the reviewer treats a prompt edit as a deployment to be versioned, tested, and rolled back. You do not control the provider's weights, outputs are nondeterministic (not deterministic), and feature stores are not the LLM deployment unit."
+      "explanation": "With a fixed hosted model, the prompt template is what changes behavior, so a prompt edit is a deployment to be versioned, tested, and rolled back. You do not control the provider's weights, outputs are nondeterministic (not deterministic), and feature stores are not the LLM deployment unit."
     }
   ]
 }

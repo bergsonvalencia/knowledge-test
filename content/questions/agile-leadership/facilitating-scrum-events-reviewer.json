@@ -11,7 +11,7 @@
       "options": [
         "The facilitator owns the HOW (process); the group owns the WHAT (content)",
         "The facilitator owns the WHAT (content); the group owns the HOW (process)",
-        "The facilitator decides the outcome and the group executes it",
+        "The facilitator decides the outcome and the group simply executes it",
         "The facilitator and the group jointly own both process and content equally"
       ],
       "answer": 0,
@@ -24,22 +24,22 @@
       "type": "truefalse",
       "question": "By the neutrality test, if participants could guess your opinion on the decision from how you ran the session, you were leading rather than facilitating.",
       "answer": true,
-      "explanation": "The reviewer's neutrality test is exactly this: if people couldn't guess your opinion from how you ran it, you facilitated; if they could, you leaked content opinion and were leading."
+      "explanation": "The neutrality test is exactly this: if people couldn't guess your opinion from how you ran it, you facilitated; if they could, you leaked a content opinion and were leading."
     },
     {
       "subtopic": "Daily Scrum timebox and ownership",
       "source": "agile-leadership/facilitating-scrum-events-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Per the 2020 Scrum Guide as summarized in the reviewer, the Daily Scrum is best described as:",
+      "question": "Per the 2020 Scrum Guide, the Daily Scrum is best described as:",
       "options": [
-        "A 15-minute Developer-owned planning event to inspect progress toward the Sprint Goal and re-plan the next 24 hours",
+        "A 15-minute Developer-owned planning event to inspect progress toward the Sprint Goal",
         "A 15-minute status report the Developers give to the Scrum Master each day",
-        "A 30-minute event the Product Owner runs to reassign tasks",
+        "A 30-minute event the Product Owner runs to reassign the day's tasks",
         "An optional event where Developers answer the three mandatory questions"
       ],
       "answer": 0,
-      "explanation": "The Daily is a 15-minute, Developer-owned planning event focused on the Sprint Goal. It is not a status report, the PO does not run it, and the 2020 Guide dropped (did not mandate) the three questions."
+      "explanation": "The Daily is a 15-minute, Developer-owned planning event focused on the Sprint Goal and re-planning the next 24 hours. It is not a status report, the PO does not run it, and the 2020 Guide dropped (did not mandate) the three questions."
     },
     {
       "subtopic": "Number of Scrum events",
@@ -49,9 +49,9 @@
       "question": "How many events does the 2020 Scrum Guide define, and how is Backlog Refinement classified?",
       "options": [
         "Five events (the Sprint contains the other four); Backlog Refinement is an ongoing activity, not an event",
-        "Four events; Backlog Refinement is the fifth event",
-        "Five events, with Backlog Refinement counted as one of them",
-        "Six events, including Backlog Refinement and the Sprint"
+        "Four events; Backlog Refinement is counted as the fifth Scrum event",
+        "Five events, with Backlog Refinement counted as one of the five",
+        "Six events, including both Backlog Refinement and the Sprint itself"
       ],
       "answer": 0,
       "explanation": "There are five events: the Sprint as the container plus Planning, Daily, Review, and Retrospective. Backlog Refinement is an ongoing activity and must not be called a Scrum event."
@@ -76,11 +76,11 @@
       "source": "agile-leadership/facilitating-scrum-events-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "The reviewer argues an event that ends without changing anything was 'a status meeting, not an empirical loop.' What is the underlying reasoning?",
+      "question": "An event that ends without changing anything is 'a status meeting, not an empirical loop.' What is the underlying reasoning?",
       "options": [
         "Adaptation is the proof that inspection actually happened",
         "Every event has a fixed timebox that must be fully consumed",
-        "Inspection can only occur if stakeholders are present",
+        "Inspection can only occur if external stakeholders are present",
         "Transparency requires that no plan ever changes mid-Sprint"
       ],
       "answer": 0,
@@ -91,11 +91,11 @@
       "source": "agile-leadership/facilitating-scrum-events-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "A Daily Scrum has become a round of reports aimed at the Scrum Master. Which move most directly fixes the dynamic per the reviewer?",
+      "question": "A Daily Scrum has become a round of reports aimed at the Scrum Master. Which move most directly fixes the dynamic?",
       "options": [
-        "Walk the board right-to-left and step physically back so Developers talk to each other, not to the SM",
-        "Reinstate the three mandatory questions to give everyone a turn",
-        "Have the Product Owner run the event to keep it on track",
+        "Walk the board right-to-left and step physically back so Developers talk to each other",
+        "Reinstate the three mandatory questions so everyone is given a turn",
+        "Have the Product Owner run the event to keep the team on track",
         "Extend the timebox to 30 minutes so everyone can finish reporting"
       ],
       "answer": 0,
@@ -108,10 +108,10 @@
       "type": "mcq",
       "question": "Which framing of the Sprint Review is correct, and what is the most common failure mode?",
       "options": [
-        "It is a working session to inspect the Increment with stakeholders and adapt the Product Backlog; the common failure is demo theater with no backlog changes",
-        "It is a sign-off gate where stakeholders accept the Sprint; the common failure is the team forgetting to ask for approval",
-        "It is a private team-only demo; the common failure is inviting too many stakeholders",
-        "It is where the team inspects how it worked; the common failure is skipping the Prime Directive"
+        "A working session to inspect the Increment with stakeholders and adapt the Product Backlog; the common failure is demo theater with no backlog changes",
+        "A sign-off gate where stakeholders formally accept the Sprint; the common failure is the team forgetting to ask for approval",
+        "A private team-only demo of the build; the common failure is inviting too many outside stakeholders into the room",
+        "The event where the team inspects how it worked; the common failure is skipping the Prime Directive at the start"
       ],
       "answer": 0,
       "explanation": "The Review inspects the Increment with stakeholders and adapts the Product Backlog; demo theater (a polished presentation with no real software and no backlog changes) is inspection without adaptation. Sign-off framing and team-only demos are themselves antipatterns; inspecting how we worked is the Retrospective."
@@ -124,9 +124,9 @@
       "question": "In the Derby and Larsen five-step arc, why is Gather Data sequenced before Generate Insights?",
       "options": [
         "Jumping to insights or solutions before establishing shared facts produces opinion fights instead of analysis",
-        "Generate Insights is optional and only run when metrics are available",
-        "Gathering data is the only phase that requires psychological safety",
-        "Insights must be voted on before any data can be collected"
+        "Generate Insights is optional and only ever run when metrics are available",
+        "Gathering data is the only phase that actually requires psychological safety",
+        "Insights must always be voted on before any data can be collected"
       ],
       "answer": 0,
       "explanation": "Facts first, then meaning, then action: establishing a shared factual picture prevents the opinion fights that come from leaping to root cause or solutions prematurely. The other options misstate the phases and the role of safety and voting."
@@ -136,12 +136,12 @@
       "source": "agile-leadership/facilitating-scrum-events-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "Why does the reviewer call consent the 'agile sweet spot' compared with consensus and voting?",
+      "question": "Why is consent called the 'agile sweet spot' compared with consensus and voting?",
       "options": [
-        "It asks 'does anyone object (safe to try)?', so it is faster than consensus and stickier than voting because dissent is heard rather than outvoted",
-        "It requires unanimous active agreement, giving it the highest possible buy-in",
-        "It is the fastest rule because the majority simply wins",
-        "It eliminates dissent entirely by requiring every objection to be resolved before proceeding"
+        "It asks 'does anyone object (safe to try)?', so it is faster than consensus and stickier than voting because dissent is heard",
+        "It requires unanimous active agreement, which gives it the single highest possible buy-in of the three",
+        "It is the fastest of the three rules because the majority preference simply wins outright",
+        "It eliminates dissent entirely by requiring every objection to be fully resolved before proceeding"
       ],
       "answer": 0,
       "explanation": "Consent proceeds unless there is a reasoned, safe-to-try objection: faster than consensus (which seeks agreement and can deadlock on a holdout) and producing more buy-in than voting (which leaves a losing minority). Requiring unanimous agreement describes consensus, and 'majority wins' describes voting."
@@ -154,9 +154,9 @@
       "question": "The meta-move for nearly every group dysfunction is to 'change the structure, not the person.' Why is the structural fix preferred over calling someone out?",
       "options": [
         "A structural fix (silent writing, round-robin, timebox) corrects behavior without singling anyone out and triggering defensiveness",
-        "Calling someone out is faster and more reliable, but violates the timebox",
-        "Structural fixes let the facilitator decide the content on the group's behalf",
-        "Naming the person publicly is the only way to enforce working agreements"
+        "Calling someone out is faster and more reliable, but it happens to violate the agreed timebox",
+        "Structural fixes let the facilitator quietly decide the content on the group's behalf",
+        "Naming the person publicly is the only reliable way to enforce working agreements"
       ],
       "answer": 0,
       "explanation": "Structural changes make airtime structurally equal and correct behavior without naming a person, avoiding the defensiveness that scolding provokes. Structural fixes do not let the facilitator decide content, and working agreements are group-authored, not imposed by public call-outs."
@@ -169,9 +169,9 @@
       "question": "Which sequence correctly describes the Liberating Structure '1-2-4-All', and what problem is it the named antidote to?",
       "options": [
         "Think alone, pair up, join into a four, then share to the whole group; antidote to both the dominator and the silent room",
-        "Whole group brainstorm, then split into fours, then pairs, then individuals; antidote to over-structuring",
-        "One facilitator, two scribes, four voters, all observers; antidote to unclear decision rules",
-        "Alone for one minute, two minutes paired, four minutes in fours, all day; antidote to short timeboxes"
+        "Whole group brainstorm, then split into fours, then pairs, then individuals; antidote to over-structuring a meeting",
+        "One facilitator, two scribes, four voters, and all the rest observers; antidote to unclear group decision rules",
+        "Alone for one minute, two minutes paired, four minutes in fours, all day; antidote to overly short timeboxes"
       ],
       "answer": 0,
       "explanation": "1-2-4-All funnels from silent individual thinking through pairs and foursomes to the whole group, so ideas are pressure-tested and everyone has already spoken. It is the structure to name for getting a quiet group talking while also containing the dominator."
@@ -200,8 +200,8 @@
       "options": [
         "Hold it rather than escape early, because premature convergence produces shallow decisions",
         "Escape it as fast as possible, because the discomfort signals the group has lost focus",
-        "Skip the first diamond entirely so the group can converge on solutions sooner",
-        "Converge during divergence to kill weak ideas before they spread"
+        "Skip the first diamond entirely so the group can converge on solutions much sooner",
+        "Converge during divergence so weak ideas are killed before they spread further"
       ],
       "answer": 0,
       "explanation": "The groan zone is the normal messy middle; deciding early just to escape discomfort yields shallow decisions, so the facilitator names and holds it. Skipping the first diamond solves the wrong problem, and converging during divergence collapses the diamond and loses the good-idea tail."
@@ -213,14 +213,14 @@
       "type": "truefalse",
       "question": "Disagreeing with the content of a decision the group is converging on is, by itself, legitimate grounds for a facilitator to intervene.",
       "answer": false,
-      "explanation": "The reviewer is explicit: intervene only when process, safety, timebox, or participation is at risk — never merely because you disagree with the content. Intervening on a content opinion is leading, not facilitating."
+      "explanation": "Intervene only when process, safety, timebox, or participation is at risk — never merely because you disagree with the content. Intervening on a content opinion is leading, not facilitating."
     },
     {
       "subtopic": "Retrospective design (multi)",
       "source": "agile-leadership/facilitating-scrum-events-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "A team keeps surfacing the same complaints every retro with nothing changing ('Groundhog Day'). Which of the following directly address the documented root cause? (Select all that apply.)",
+      "question": "A team keeps surfacing the same complaints every retro with nothing changing ('Groundhog Day'). Which of the following directly address the root cause? (Select all that apply.)",
       "options": [
         "Converge to one owned, dated improvement placed on the next Sprint Backlog",
         "Review last retro's action(s) first at the start of every retro",
@@ -263,9 +263,9 @@
       "question": "In SAFe 6.0 (current in 2026), which statement about the marquee cross-team planning event is correct?",
       "options": [
         "It is Planning Interval (PI) Planning — 'Program Increment' was renamed 'Planning Interval' (PI acronym kept) — facilitated by the Release Train Engineer and closed with a fist-of-five confidence vote",
-        "It is Program Increment Planning, facilitated by the Scrum Master, with the Program Board as its central artifact",
-        "It is Planning Interval Planning, facilitated by the Product Owner, and the acronym PI was dropped",
-        "It is PI Planning, facilitated by the Release Train Engineer, closed by a consensus vote requiring unanimous agreement"
+        "It is Program Increment Planning, facilitated by the Scrum Master, with the Program Board as its central artifact and no confidence vote at the close",
+        "It is Planning Interval Planning, facilitated by the Product Owner, and the PI acronym was dropped along with the old name",
+        "It is PI Planning, facilitated by the Release Train Engineer, but closed by a consensus vote requiring unanimous agreement from every team"
       ],
       "answer": 0,
       "explanation": "SAFe 6.0 renamed Program Increment to Planning Interval while keeping the PI acronym; the RTE facilitates and it closes with a fist-of-five confidence vote (below-3 hands trigger a re-plan). The Program Board was also renamed the ART Planning Board, and the close is a fist-of-five gradient, not a unanimous consensus vote."

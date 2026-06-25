@@ -22,7 +22,7 @@
       "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
       "difficulty": "easy",
       "type": "mcq",
-      "question": "Which statement is the comment **\"you always over-engineer everything\"** an example of?",
+      "question": "Which kind of conflict is the comment **\"you always over-engineer everything\"** an example of?",
       "options": [
         "Relationship conflict — it attacks the person, not the work",
         "Task conflict — it is about a design approach",
@@ -151,7 +151,7 @@
       "source": "agile-leadership/conflict-and-difficult-conversations-reviewer.md",
       "difficulty": "medium",
       "type": "mcq",
-      "question": "A teammate becomes visibly flooded — raised voice, accusations — in what Goleman calls an **amygdala hijack**. Why does the reviewer say to de-escalate *before* problem-solving?",
+      "question": "A teammate becomes visibly flooded — raised voice, accusations — in what Goleman calls an **amygdala hijack**. Why should you de-escalate *before* problem-solving?",
       "options": [
         "The thinking brain is partly offline, so you cannot reason with them in that state",
         "Problem-solving first signals weakness and invites further attacks",

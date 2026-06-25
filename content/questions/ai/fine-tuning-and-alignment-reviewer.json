@@ -15,7 +15,7 @@
         "The retrieval index used to fetch documents at query time"
       ],
       "answer": 0,
-      "explanation": "The reviewer's throughline is that fine-tuning changes behavior, skill, and format by editing weights — it is not the tool for injecting fresh facts (that is RAG's job)."
+      "explanation": "Fine-tuning changes behavior, skill, and format by editing weights — it is not the tool for injecting fresh facts (that is RAG's job)."
     },
     {
       "subtopic": "Transfer learning",
@@ -130,17 +130,17 @@
       "source": "ai/fine-tuning-and-alignment-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "Given the snippet, what is the printed trainable-parameter ratio of LoRA (rank 16) versus full fine-tuning for a 2048 × 2048 matrix?",
+      "question": "Given the snippet, what value does it print for the trainable-parameter ratio of LoRA (rank 16) versus full fine-tuning for a 2048 × 2048 matrix?",
       "code": "d = 2048\nr = 16\nfull = d * d\nlora = (r * d) + (d * r)\nprint(round(lora / full, 5))",
       "lang": "python",
       "options": [
+        "0.01562",
         "0.01563",
-        "0.00781",
         "0.03125",
         "0.00391"
       ],
       "answer": 0,
-      "explanation": "full = 2048·2048 = 4,194,304; lora = 16·2048 + 2048·16 = 65,536; ratio = 65,536/4,194,304 = 0.015625 ≈ 1.56%."
+      "explanation": "full = 2048·2048 = 4,194,304; lora = 16·2048 + 2048·16 = 65,536; the exact ratio is 0.015625. Python's round() uses round-half-to-even, so round(0.015625, 5) yields 0.01562 (not 0.01563)."
     },
     {
       "subtopic": "QLoRA",
@@ -149,10 +149,10 @@
       "type": "mcq",
       "question": "What does QLoRA change relative to standard LoRA?",
       "options": [
-        "It loads the frozen base in low precision (e.g. 4-bit) to cut memory, training LoRA adapters on top",
-        "It quantizes the LoRA adapters to 4-bit while keeping the base in full precision",
-        "It replaces the low-rank update with a full-rank update for higher quality",
-        "It removes the need for a frozen base by quantizing gradients instead of weights"
+        "It loads the frozen base in low precision (e.g. 4-bit), training LoRA adapters on top",
+        "It quantizes the LoRA adapters to 4-bit but keeps the base in full precision",
+        "It swaps the low-rank update for a full-rank update for higher quality",
+        "It drops the frozen base, quantizing gradients instead of weights"
       ],
       "answer": 0,
       "explanation": "QLoRA loads the frozen base in low precision (e.g. 4-bit) to slash memory and trains LoRA adapters on top in higher precision, letting very large models be fine-tuned on a single accelerator."
@@ -162,7 +162,7 @@
       "source": "ai/fine-tuning-and-alignment-reviewer.md",
       "difficulty": "medium",
       "type": "multi",
-      "question": "Which of the following are true of the PEFT family as described in the reviewer? (Select all that apply.)",
+      "question": "Which of the following are true of the PEFT family? (Select all that apply.)",
       "options": [
         "All PEFT methods freeze the bulk of the model and train a small set of parameters",
         "Prefix/prompt tuning prepends trainable soft-prompt vectors and trains only those",
@@ -241,10 +241,10 @@
       "type": "mcq",
       "question": "How does DPO differ from the classic RLHF recipe?",
       "options": [
-        "It optimizes the same preference objective with a direct supervised-style loss on preferred-vs-rejected pairs, with no separate reward model and no RL loop",
-        "It trains a stronger reward model first, then runs PPO twice for stability",
-        "It replaces human preferences with self-generated labels and skips the SFT stage",
-        "It adds knowledge to the model that RLHF cannot, by editing the reward model directly"
+        "It optimizes the preference objective with a direct loss on preferred-vs-rejected pairs, with no reward model and no RL loop",
+        "It trains a stronger reward model first, then runs the PPO loop twice over for added stability",
+        "It replaces collected human preferences with self-generated labels and skips the SFT stage entirely",
+        "It adds factual knowledge the standard RLHF recipe cannot, by editing the reward model directly"
       ],
       "answer": 0,
       "explanation": "DPO collapses RLHF into a direct loss on preferred-vs-rejected pairs — no separate reward model and no PPO/RL loop — which is simpler and more stable. It still uses human preferences and does not add knowledge."

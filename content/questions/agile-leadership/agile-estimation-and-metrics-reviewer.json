@@ -9,7 +9,7 @@
       "type": "mcq",
       "question": "What does a story point measure?",
       "options": [
-        "The overall relative size of a backlog item, blending effort, complexity, and uncertainty/risk",
+        "The relative size of a backlog item, blending effort, complexity, and uncertainty/risk",
         "The number of ideal engineering hours a senior developer needs to complete the item",
         "The business value the customer will receive once the item is delivered",
         "The calendar duration from when work starts to when it reaches production"
@@ -24,10 +24,10 @@
       "type": "mcq",
       "question": "Why do agile teams prefer relative estimation (story points) over absolute estimation (hours)?",
       "options": [
-        "Humans compare sizes more reliably than they predict absolute time, so relative estimates are more stable across people and time",
-        "Story points convert directly into a guaranteed delivery date, removing forecasting uncertainty",
-        "Relative estimates let managers compare productivity across different teams on a common scale",
-        "Hours are forbidden by the Scrum Guide, so teams must use points instead"
+        "Humans compare sizes more reliably than they predict absolute time, so relative estimates stay more stable",
+        "Story points convert directly into a guaranteed delivery date, removing all forecasting uncertainty",
+        "Relative estimates let managers compare productivity across different teams on one common scale",
+        "Hours are forbidden by the Scrum Guide, so teams are required to use points instead"
       ],
       "answer": 0,
       "explanation": "Size is a property of the work, while hours are a property of the worker and drift with skill and interruptions; humans compare better than they predict, making relative estimates more stable. Points are team-local and never a cross-team comparison scale."
@@ -48,10 +48,10 @@
       "type": "mcq",
       "question": "Why does the modified Fibonacci scale (1, 2, 3, 5, 8, 13, 20, 40, 100) use gaps that widen as numbers grow?",
       "options": [
-        "Because at larger sizes you cannot meaningfully distinguish (e.g.) a 21 from a 22, so the scale refuses to offer false precision and the gaps encode growing uncertainty",
-        "Because larger items are completed by more developers, so their points must be multiplied",
-        "Because the gaps must mirror the actual number of hours each size takes",
-        "Because rounding to Fibonacci numbers makes summing velocity arithmetically exact"
+        "At larger sizes you cannot meaningfully tell a 21 from a 22, so the widening gaps encode growing uncertainty",
+        "Larger items are completed by more developers at once, so their points have to be multiplied up",
+        "The gaps must mirror the actual number of hours that each size of item takes to finish",
+        "Rounding to Fibonacci numbers makes summing the points into a velocity arithmetically exact"
       ],
       "answer": 0,
       "explanation": "The widening gaps deliberately encode uncertainty: large items cannot be sized precisely, so the scale stops offering granularity you could not honor anyway. The scale is a conversation device, not arithmetic."
@@ -64,9 +64,9 @@
       "question": "In Planning Poker, what is the primary purpose of revealing all estimate cards simultaneously?",
       "options": [
         "It removes the anchoring bias of the first number spoken aloud, preserving independent judgment",
-        "It guarantees the team reaches unanimous agreement on the first round",
-        "It lets the Product Owner cast the deciding vote when estimates diverge",
-        "It speeds the meeting by skipping any discussion of outliers"
+        "It guarantees the team reaches unanimous agreement on the very first voting round",
+        "It lets the Product Owner cast the deciding vote whenever the estimates diverge",
+        "It speeds the meeting up by letting the team skip any discussion of the outliers"
       ],
       "answer": 0,
       "explanation": "Simultaneous reveal defeats anchoring so each estimator judges independently; the divergence (especially outliers) is then mined for hidden scope or risk. The goal is convergence, not unanimity, and the PO clarifies scope but does not vote."
@@ -94,10 +94,10 @@
       "type": "mcq",
       "question": "A release burndown chart has been flat for two Sprints, but the team insists it has been delivering steadily. What does the flat line most likely indicate, and which chart would disambiguate it?",
       "options": [
-        "The result is ambiguous (no work done vs. work done but scope added); a burnup chart with a separate scope line would make the scope change explicit",
-        "The team definitely did nothing; a more granular burndown would confirm it",
-        "Scope definitely shrank; a velocity chart would show the lost points",
-        "The Sprint Goal was met early; a cumulative flow diagram would hide the issue"
+        "The result is ambiguous (no work done vs. work done but scope added); a burnup chart with a separate scope line would make the change explicit",
+        "The team definitely did nothing at all over those Sprints; a more granular burndown chart would confirm it conclusively",
+        "Scope must have shrunk during the Sprints; a velocity chart would reveal the points that were lost from the plan",
+        "The Sprint Goal was simply met early; a cumulative flow diagram would conveniently hide the underlying issue"
       ],
       "answer": 0,
       "explanation": "A burndown hides scope change, so a flat line cannot distinguish 'no progress' from 'progress offset by added scope.' A burnup separates the rising completed-work line from a distinct scope line, making added scope undeniable."
@@ -111,7 +111,7 @@
       "options": [
         "It rises from 2 weeks to 3 weeks",
         "It stays at 2 weeks because throughput did not change",
-        "It falls from 2 weeks to about 1.5 weeks because more items are being worked",
+        "It falls to about 1.5 weeks because more items are in progress",
         "It rises from 2 weeks to 6 weeks"
       ],
       "answer": 0,
@@ -124,10 +124,10 @@
       "type": "mcq",
       "question": "Which statement correctly distinguishes lead time from cycle time?",
       "options": [
-        "Lead time starts when the request is created (enters the backlog); cycle time starts when work is pulled into In Progress, so lead time is always ≥ cycle time",
-        "Cycle time starts when the request is created; lead time starts when work begins, so cycle time is always ≥ lead time",
-        "Lead time and cycle time both start when work begins; they differ only in the unit used",
-        "Lead time measures the team's process speed while cycle time measures the customer's experience of speed"
+        "Lead time starts when the request is created and cycle time starts when work is pulled into In Progress, so lead time is always ≥ cycle time",
+        "Cycle time starts when the request is created and lead time starts when work begins, so cycle time is always ≥ lead time",
+        "Lead time and cycle time both start when the work begins, and they differ only in the unit of measurement used for each",
+        "Lead time measures the team's internal process speed while cycle time measures the customer's experience of delivery speed"
       ],
       "answer": 0,
       "explanation": "Lead time is the customer clock (created → delivered) and includes backlog wait; cycle time is the team clock (started → done). Because lead time adds the queue/wait time, lead time ≥ cycle time always."
@@ -139,10 +139,10 @@
       "type": "mcq",
       "question": "A team has 180 points of remaining scope. Their last six Sprint velocities were 28, 22, 31, 25, 19, 27. What is the most defensible way to forecast the release?",
       "options": [
-        "Roughly 6–10 Sprints, most likely about 8, by dividing scope by the optimistic (~31), average (~25), and pessimistic (~19) velocities",
-        "Exactly 7.2 Sprints, by dividing 180 by the mean velocity of 25.3",
-        "6 Sprints, by dividing 180 by the best-ever velocity of 31 to stay aggressive",
-        "10 Sprints, by dividing 180 by the lowest velocity of 19 to stay safe"
+        "Roughly 6–10 Sprints, most likely about 8, dividing scope by the optimistic (~31), average (~25), and pessimistic (~19) velocities",
+        "Exactly 7.2 Sprints, by dividing the 180 points by the precise mean velocity of 25.3 across the six Sprints",
+        "6 Sprints, by dividing the 180 points by the best-ever velocity of 31 in order to stay aggressive on the date",
+        "10 Sprints, by dividing the 180 points by the single lowest velocity of 19 in order to stay completely safe"
       ],
       "answer": 0,
       "explanation": "Use a range: 180/31 ≈ 6 (best), 180/25 ≈ 7–8 (likely), 180/19 ≈ 10 (worst), giving a 6–10 Sprint window most likely ~8. A single number is a lie of precision; the window communicates risk and should be re-forecast each Sprint."
@@ -194,10 +194,10 @@
       "type": "mcq",
       "question": "A manager sets 'velocity must increase every Sprint' as a goal. Per Goodhart's Law, what is the predictable result?",
       "options": [
-        "The cheapest way to comply is to inflate estimates, so the number rises while actual delivery stays flat and the metric stops measuring anything real",
-        "Cycle time and throughput automatically improve because the team works harder",
-        "The team delivers more customer value because the target aligns incentives",
-        "Velocity becomes comparable across teams once everyone targets the same growth"
+        "The cheapest way to comply is to inflate estimates, so the number rises while actual delivery stays flat",
+        "Cycle time and throughput automatically improve because the team is now working noticeably harder",
+        "The team delivers more genuine customer value because the target finally aligns everyone's incentives",
+        "Velocity becomes comparable across teams once every team is targeting the same rate of growth"
       ],
       "answer": 0,
       "explanation": "When a measure becomes a target it ceases to be a good measure: the rational response is estimate inflation (same work, bigger numbers). Reality stays flat, trust erodes, and velocity loses meaning."
@@ -207,7 +207,7 @@
       "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "A manager proposes tying each developer's bonus to the share of story points they personally completed each Sprint. Which of the following are valid senior objections grounded in the reviewer?",
+      "question": "A manager proposes tying each developer's bonus to the share of story points they personally completed each Sprint. Which of the following are valid senior objections?",
       "options": [
         "Story points are a team planning convention and explicitly must not be summed to an individual",
         "It induces estimate inflation and incentivizes claiming points over collaborating — Goodhart's Law in action",
@@ -225,10 +225,10 @@
       "type": "mcq",
       "question": "Velocity has climbed for several Sprints. What is the most reliable way to tell whether this reflects genuinely faster delivery rather than point inflation?",
       "options": [
-        "Corroborate with measured flow metrics like cycle time and throughput, which come from real timestamps and are harder to game than points",
-        "Confirm the team hit its velocity target each Sprint, which proves the gains are real",
-        "Compare the team's velocity against a peer team that has a similar velocity",
-        "Check that the burndown line is descending faster than in earlier Sprints"
+        "Corroborate with measured flow metrics like cycle time and throughput, which come from timestamps and are harder to game",
+        "Confirm the team hit its velocity target each Sprint, since meeting the target each time proves the gains must be real",
+        "Compare this team's velocity against a peer team that happens to report a broadly similar velocity number",
+        "Check that the Sprint burndown line is descending faster now than it did during the earlier Sprints"
       ],
       "answer": 0,
       "explanation": "Points can be inflated, so a rising velocity is ambiguous on its own. Cycle time and throughput are measured from timestamps and far harder to game; if they improved too, the speedup is real, if only the points grew it is inflation."
@@ -240,10 +240,10 @@
       "type": "mcq",
       "question": "Leadership wants a portfolio dashboard comparing delivery across multiple ARTs and asks for 'normalized velocity.' What is the senior recommendation?",
       "options": [
-        "Decline to normalize velocity for comparison or ranking and instead report flow metrics, DORA, PI predictability, and outcome/OKR progress",
-        "Build a conversion factor so each ART's points map onto one shared velocity scale for ranking",
-        "Pick the highest-velocity ART as the baseline and grade the others against it",
-        "Average all ARTs' velocities into one portfolio velocity that leadership can target"
+        "Decline to normalize velocity for ranking and instead report flow metrics, DORA, PI predictability, and outcome/OKR progress",
+        "Build a conversion factor so each ART's points all map onto one shared velocity scale that can be used for ranking",
+        "Pick the single highest-velocity ART as the baseline and then grade every other ART against that one number",
+        "Average all of the ARTs' velocities together into one portfolio velocity figure that leadership can set as a target"
       ],
       "answer": 0,
       "explanation": "Points are team-local, so any normalized-velocity comparison is invalid and Goodhart-prone. The right cross-ART signals are flow metrics, DORA, PI predictability (planned vs. achieved business value), and outcomes — harder to game and aligned to leadership's real question."
@@ -253,12 +253,12 @@
       "source": "agile-leadership/agile-estimation-and-metrics-reviewer.md",
       "difficulty": "hard",
       "type": "mcq",
-      "question": "A team's velocity and feature-shipping rate are both very high, yet the business is unhappy. Which statement best captures the underlying problem the reviewer warns about?",
+      "question": "A team's velocity and feature-shipping rate are both very high, yet the business is unhappy. Which statement best captures the underlying problem?",
       "options": [
-        "High output does not imply outcome — you can have screaming velocity while building features nobody uses, so value (adoption, revenue, OKRs) must be measured separately",
-        "High velocity guarantees high value, so the dissatisfaction must be a reporting error",
-        "The team should raise velocity further until the business becomes satisfied",
-        "DORA metrics already capture customer value, so no additional outcome metric is needed"
+        "High output does not imply outcome — you can have screaming velocity while building features nobody uses, so value must be measured separately",
+        "High velocity guarantees that high value was created, so the business dissatisfaction must simply be a reporting or dashboard error",
+        "The team should keep pushing velocity even higher until the business eventually becomes satisfied with the delivery rate",
+        "DORA metrics already fully capture customer value, so there is no need to track any additional outcome metric at all"
       ],
       "answer": 0,
       "explanation": "Output (velocity, features) is easy to count and game but does not imply outcome; you can ship a lot while creating no value. Outcome metrics (adoption, revenue, OKRs) measure value, and DORA measures delivery health — a different thing from product value."

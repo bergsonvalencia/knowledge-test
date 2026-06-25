@@ -103,7 +103,7 @@
       "question": "Given `A = [3, 0, 4]` and `B = [0, 5, 0]`, what is the cosine similarity of A and B?",
       "options": [
         "0, because the dot product is 0 (the vectors are orthogonal)",
-        "≈ 0.6, similar to the body's worked example",
+        "≈ 0.6, since both vectors point in roughly the same direction",
         "1, because both vectors have magnitude 5",
         "≈ 0.48, scaling the dot product by the magnitudes"
       ],
@@ -184,7 +184,7 @@
       "source": "ai/nlp-and-embeddings-reviewer.md",
       "difficulty": "hard",
       "type": "multi",
-      "question": "According to the representation cheat-sheet, which statements are TRUE? (Select all that apply.)",
+      "question": "Comparing the major text representations, which statements are TRUE? (Select all that apply.)",
       "options": [
         "Bag-of-words is sparse, does not capture word order, and does not capture meaning",
         "word2vec / GloVe vectors are dense and capture meaning, but are not context-aware",
@@ -193,7 +193,7 @@
         "One-hot vectors are dense and encode semantic similarity between words"
       ],
       "answer": [0, 1, 2],
-      "explanation": "Per the cheat-sheet: BoW is sparse, order-blind, meaning-blind; word2vec/GloVe are dense, capture static meaning, no context; contextual BERT is dense and captures meaning + order + context. TF-IDF is sparse, vocabulary-sized, and order-blind (not dense/low-dim/ordered), and one-hot is sparse with no semantics."
+      "explanation": "BoW is sparse, order-blind, meaning-blind; word2vec/GloVe are dense, capture static meaning, no context; contextual BERT is dense and captures meaning + order + context. TF-IDF is sparse, vocabulary-sized, and order-blind (not dense/low-dim/ordered), and one-hot is sparse with no semantics."
     },
     {
       "subtopic": "Over-cleaning for neural models",
